@@ -74,7 +74,8 @@ export class FakeMal {
     readonly baseUrl: string,
   ) {}
 
-  static async start(options: FakeMalOptions): Promise<FakeMal> {
+  /** Starts on `port`, or a random free port if omitted (tests). */
+  static async start(options: FakeMalOptions, port = 0): Promise<FakeMal> {
     // The handler needs the instance, and the instance needs the listening server's port.
     const ref: { fake?: FakeMal } = {};
     const server = createServer((req, res) => {
@@ -83,9 +84,9 @@ export class FakeMal {
         res.writeHead(500).end(String(err));
       });
     });
-    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
-    const { port } = server.address() as AddressInfo;
-    ref.fake = new FakeMal(options, server, `http://127.0.0.1:${String(port)}`);
+    await new Promise<void>((resolve) => server.listen(port, "127.0.0.1", resolve));
+    const bound = (server.address() as AddressInfo).port;
+    ref.fake = new FakeMal(options, server, `http://127.0.0.1:${String(bound)}`);
     return ref.fake;
   }
 
