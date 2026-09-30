@@ -28,6 +28,7 @@ export interface FakeListItem {
     id: number;
     title: string;
     main_picture?: { medium: string; large: string };
+    alternative_titles?: { synonyms: string[]; en: string; ja: string };
     media_type: string;
     num_episodes: number;
     status: string;

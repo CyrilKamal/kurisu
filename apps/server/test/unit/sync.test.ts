@@ -58,6 +58,9 @@ describe("toMirrorRows", () => {
     expect(anime).toEqual({
       malId: 1,
       title: "Show",
+      titleEn: null,
+      titleJa: null,
+      synonyms: [],
       mainPictureUrl: "https://cdn.myanimelist.net/m.jpg",
       mediaType: "tv",
       numEpisodes: 12,
@@ -76,6 +79,20 @@ describe("toMirrorRows", () => {
     });
     // Timezone offsets are normalized.
     expect(entry.malUpdatedAt).toEqual(new Date("2026-09-01T03:00:00Z"));
+  });
+
+  it("keeps alternative titles, turning MAL's empty strings into null", () => {
+    const { anime } = toMirrorRows(
+      malItem({
+        node: {
+          alternative_titles: { en: " The Show ", ja: "", synonyms: ["TS", " ", "Show!"] },
+        },
+      }),
+      "u",
+      syncedAt,
+    );
+
+    expect(anime).toMatchObject({ titleEn: "The Show", titleJa: null, synonyms: ["TS", "Show!"] });
   });
 
   it("treats MAL's 0 episodes as unknown", () => {

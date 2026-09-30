@@ -8,6 +8,7 @@ import type { FakeListItem } from "../support/fakeMal.js";
 export function fixtureList(): FakeListItem[] {
   return [
     item(900001, "Fixture Watching Show", "watching", {
+      alt: { synonyms: ["FWS"], en: "The Watching Show", ja: "" },
       num_episodes: 12,
       num_episodes_watched: 7,
       updated_at: "2026-09-28T10:00:00+00:00",
@@ -62,6 +63,7 @@ function item(
     is_rewatching?: boolean;
     airing?: string;
     picture?: boolean;
+    alt?: { synonyms: string[]; en: string; ja: string };
     updated_at: string;
     start_date?: string;
     finish_date?: string;
@@ -82,6 +84,7 @@ function item(
       media_type: opts.media_type ?? "tv",
       num_episodes: opts.num_episodes,
       status: opts.airing ?? "finished_airing",
+      ...(opts.alt ? { alternative_titles: opts.alt } : {}),
     },
     list_status: {
       status,

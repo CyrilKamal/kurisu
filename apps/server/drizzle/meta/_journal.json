@@ -15,6 +15,13 @@
       "when": 1790738820722,
       "tag": "0001_list_mirror",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790747576617,
+      "tag": "0002_anime_alt_titles",
+      "breakpoints": true
     }
   ]
 }
