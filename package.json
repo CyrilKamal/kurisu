@@ -15,7 +15,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:up": "docker compose --env-file .env.local up -d --wait db",
-    "db:down": "docker compose --env-file .env.local down"
+    "db:down": "docker compose --env-file .env.local down",
+    "db:migrate": "pnpm --filter @kurisu/server db:migrate",
+    "db:generate": "pnpm --filter @kurisu/server db:generate"
   },
   "devDependencies": {
     "prettier": "^3.9.9"

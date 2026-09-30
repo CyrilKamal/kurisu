@@ -1,14 +1,8 @@
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-
 import { buildApp } from "./app.js";
 import { loadConfig } from "./config.js";
+import { loadLocalEnvFile } from "./env.js";
 
-// Secrets live in the repo-root .env.local (gitignored). Real environment variables win.
-const envFile = fileURLToPath(new URL("../../../.env.local", import.meta.url));
-if (existsSync(envFile)) {
-  process.loadEnvFile(envFile);
-}
+loadLocalEnvFile();
 
 const config = loadConfig();
 const app = buildApp(config);
