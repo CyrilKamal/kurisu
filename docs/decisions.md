@@ -122,3 +122,21 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** A shared docker-compose test database; mocking `fetch`; testing against live MAL.
 **Why:** Real Postgres catches SQL and migration bugs that mocks can't. A fake HTTP server exercises real request encoding. Live MAL can't run in CI and has undocumented rate limits.
 **Consequences:** Integration tests need Docker, which CI's `ubuntu-latest` has. The fake must track MAL's real behavior; the manual live login at the end of the milestone is the check that it does.
+
+## 2026-09-29 — List mirror: full fetch, then atomic replace (Milestone 1)
+**Decision:**
+- Each sync fetches the user's whole MAL anime list first: `limit=1000`, `nsfw=true`, following `paging.next` only while it stays on MAL's API host.
+- It then upserts and deletes in one Postgres transaction, so the mirror exactly matches MAL.
+- Anime metadata goes in a shared `anime` table; per-user progress goes in `list_entries`.
+- MAL calls retry 429 and 5xx responses with capped, jittered backoff that honors `Retry-After`. A 401 triggers one refresh and one retry.
+- Every attempt is recorded in `sync_runs` with a short error code.
+
+**Alternatives:** Applying each page as it arrives; incremental sync by `updated_at` (MAL doesn't return deletions); per-user copies of anime metadata.
+**Why:** Fetch-then-replace never leaves a half-applied list. A MAL outage mid-sync keeps the previous mirror instead of deleting entries that weren't fetched yet. Full syncs are cheap: most lists fit in one or two requests.
+**Consequences:** Every sync re-reads the whole list, which is fine given the cooldown below. Lists above ~100k entries would hit the page cap. List statuses are a Postgres enum; media type and airing status stay as text, so a new MAL value can't break a sync.
+
+## 2026-09-29 — Manual re-sync with a 60-second cooldown (Milestone 1)
+**Decision:** Besides the sync on login, users can press Re-sync (`POST /sync`). Each user gets at most one sync per 60 seconds; anything sooner gets a 429 with `Retry-After`. A second request while a sync is running joins that run instead of starting another.
+**Alternatives:** Login-only sync, as the hard rule "sync on login and after writes only" suggests; background polling.
+**Why:** Milestone 1's Done-when criteria require that re-sync works, and M1 has no writes to trigger one. A cooldown keeps manual syncs from probing MAL's undocumented rate limits. There is still no polling.
+**Consequences:** Edits made directly on myanimelist.net show up only after a login or a manual re-sync. Milestone 2 adds the post-write sync the hard rule describes.
