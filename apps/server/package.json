@@ -13,7 +13,8 @@
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/scripts/migrate.ts"
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "dev:fake-mal": "tsx test/support/runFakeMal.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@kurisu/shared": "workspace:*",
     "@testcontainers/postgresql": "^12.2.0",
     "@types/node": "^24.19.0",
     "@types/pg": "^8.23.1",
