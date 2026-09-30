@@ -81,7 +81,7 @@ export async function startHarness(): Promise<Harness> {
 
 export async function resetDatabase(db: Db): Promise<void> {
   await db.execute(
-    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs CASCADE`,
+    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes CASCADE`,
   );
 }
 
