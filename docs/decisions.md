@@ -255,3 +255,21 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** Classifying messages up front to pick a model; always using Flash; no escalation.
 **Why:** Flash's free quota is small, about 20 a day, so it's spent only where Flash-Lite couldn't finish, as the design intends ("Flash for ambiguous requests"). Rate limits keep a chatty session inside the free tier.
 **Consequences:** An escalated message costs two runs of latency. The in-memory rate limiter and busy flag assume a single server process.
+
+## 2026-09-30 — Eval harness: the real agent on a real Postgres, a fake MAL writer, judged on writes (Milestone 2)
+**Decision:**
+- `pnpm eval` starts a throwaway Postgres (Testcontainers) with the real migrations.
+- For each case it loads the snapshot as a fresh list, then runs the production `runAgent` with the production prompt, tools, search and commit path. The only fake is the `ListWriter`, which records writes instead of sending PATCHes.
+- It scores the committed changes against the case's normalized expectations, and counts "asked" when the agent held a proposal or its reply asks a question.
+- It reports update accuracy, wrong-write rate, clarification precision and recall, median and p90 latency (after a warm-up call), and cost per update. The cost is also shown at the agent model's paid prices, because local models cost $0.
+- It breaks results down by tag, explains each failure with the tool calls, and writes a JSON report.
+
+**Alternatives:** Mocked tools; scoring the model's tool calls instead of the writes; an in-memory database.
+**Why:** Everything except the MAL network call is the code users run, so the eval measures the system rather than the prompt alone: grounding, the clear-match rule, normalization and the commit path included.
+**Consequences:** Each run needs Docker and Ollama, so it isn't part of CI. `eval:validate` is. Each case costs one snapshot reload (a few hundred rows), which is negligible next to model latency.
+
+## 2026-09-30 — Eval model: ornith:9b over qwen3.6:27b, for now (Milestone 2)
+**Decision:** `config/models.json` keeps `ornith:9b` as the eval model.
+**Alternatives:** `qwen3.6:27b`.
+**Why:** On the 5 example cases with prompt v1, `ornith:9b` scored 4/5 with no wrong writes, median 1.35 s. `qwen3.6:27b` scored 3/5 with no wrong writes, median 3.96 s. It once replied without searching at all ("Fixture isn't a recognized anime title"). The 27B model also runs partly on CPU on the 16 GB GPU.
+**Consequences:** Five synthetic cases are thin evidence. Re-run both models on the real ~150 cases before settling. Both failed the multi-show and sequel example, and both asked unneeded questions (clarification precision 33%), which is prompt work once the real cases exist.

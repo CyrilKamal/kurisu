@@ -74,3 +74,24 @@ Tips:
 - Titles that aren't on your list aren't supported in this milestone. The agent should say so and write nothing, so those are `no-action` cases.
 
 `cases/examples.yaml` shows the format against a separate made-up list (`snapshots/examples.json`).
+
+## Running the eval
+
+```bash
+pnpm eval                                  # every case, on the eval model in config/models.json
+pnpm eval --tag nickname                   # one category (repeat --tag for several)
+pnpm eval --case plain-apothecary-7        # one case (repeatable)
+pnpm eval --model ollama:qwen3.6:27b       # compare another model
+```
+
+It needs Docker (it starts a throwaway Postgres) and Ollama running with the model pulled. Each case starts from the snapshot. The real agent runs with the real prompt and tools, and a fake MAL client records writes instead of sending them.
+
+The report prints:
+
+- **Update accuracy:** the share of cases handled exactly right.
+- **Wrong-write rate:** writes that shouldn't have happened, out of all writes.
+- **Clarification precision:** of the times it asked, how often asking was expected. Recall is printed too.
+- **Median latency** (and p90).
+- **Cost per update:** $0 on a local model. The report also shows the equivalent at the agent model's paid prices.
+
+It also breaks accuracy down by tag and, for every failure, shows the expected versus actual writes, the reply, and the tool calls the agent made. The full JSON report lands in `eval/results/` (gitignored).
