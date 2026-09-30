@@ -199,3 +199,28 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** Hard-coded defaults in `config.ts`; environment variables only.
 **Why:** CLAUDE.md says model IDs live in config, not code, and swapping a model must be a config change. The IDs are the current ones from Google's model and pricing pages (2026-09-30). The context cap is necessary: `qwen3.6:27b`'s 256K default made Ollama crash on the 16 GB RTX 5080, while 8K ran fine (69% GPU / 31% CPU).
 **Consequences:** Prices go stale; Flash rises on 2027-01-01, noted in the file. The eval model is `ornith:9b` until the benchmark on the example cases picks between it and `qwen3.6:27b`.
+
+## 2026-09-30 — The write path: proposals, a locked commit state machine, undo through the same path (Milestone 2)
+**Decision:**
+- `proposeUpdate` resolves relative progress into absolute values, applies the normalization rules, and stores prior values plus only the changed fields.
+- Each proposal has an idempotency key of run + anime + resulting values, so a repeated tool call yields the same proposal.
+- `commitProposal`, in `writes/commit.ts`, is the only code that reaches MAL. It locks the proposal row and moves it `pending → committing → committed`. A retried or concurrent commit returns the stored result without a second PATCH.
+- A commit is refused as `stale` if the mirror moved since the proposal was made.
+- After a write, the mirror takes MAL's own response, and a change-log row records the before and after values.
+- Undo proposes the prior values and commits them through the same function. It's refused if the entry has changed since.
+- Proposals that need confirmation (unclear match, or progress going backwards) wait for the user.
+- Lint and an architecture test allow only `commit.ts` to import the write client.
+
+**Alternatives:** Letting the model pass write arguments; storing deltas; last-write-wins without a staleness check; undo via a separate MAL call.
+**Why:** These make CLAUDE.md's write rules structural rather than prompt-dependent: a single write path, idempotency, no double-counting, and a change log with prior values. The locked state machine was verified by sabotage: removing the row lock makes the concurrent-commit test fail.
+**Consequences:** One extra database round trip per commit. A proposal made before a re-sync that touched the same entry must be re-proposed, which is correct but surfaces as a "stale" failure the agent has to handle.
+
+## 2026-09-30 — Title search: pg_trgm over all names, with a clear-match rule (Milestone 2)
+**Decision:**
+- `search_my_list` scores every name of every show on the user's list (title, English, Japanese, synonyms) against every query variant. The score is the greater of `pg_trgm`'s `similarity` and `word_similarity`, and the best one is kept.
+- A candidate is a clear match if it scores at least 0.6 and beats every rival by 0.15, or if it's the only in-progress show (watching or on hold) among near-tied matches. That second case covers sequel seasons ("frieren ep 5" with season 1 completed and season 2 watching).
+- No trigram indexes: one user's list is a few hundred rows.
+
+**Alternatives:** Exact and substring matching only; embeddings; asking the model to pick without scores.
+**Why:** Trigrams handle typos and partial titles in-database with no new dependency. An explicit, testable clear-match rule decides which writes may commit without asking, instead of trusting the model's confidence.
+**Consequences:** The thresholds are guesses until the eval runs, so tune them against clarification precision and wrong-write rate. Abbreviations MAL doesn't list as synonyms ("JJK") depend on the model expanding them.
