@@ -165,7 +165,7 @@ export const proposals = pgTable(
       .references(() => anime.malId),
     source: proposalSource("source").notNull(),
     // The agent run that proposed it; null for undo proposals.
-    runId: uuid("run_id"),
+    runId: uuid("run_id").references((): AnyPgColumn => agentRuns.id),
     // Proposing the same change twice (e.g. a repeated tool call) returns the same proposal.
     idempotencyKey: text("idempotency_key").notNull(),
     // The entry's four list fields when proposed. Commit refuses if the mirror has moved since.
@@ -213,4 +213,95 @@ export const changes = pgTable(
     undoneByChangeId: uuid("undone_by_change_id").references((): AnyPgColumn => changes.id),
   },
   (table) => [index("changes_user_committed_idx").on(table.userId, table.committedAt.desc())],
+);
+
+export const chatRole = pgEnum("chat_role", ["user", "assistant"]);
+export const agentOutcome = pgEnum("agent_outcome", [
+  "committed",
+  "needs_confirmation",
+  "clarification",
+  "no_action",
+  "error",
+]);
+export const agentStepKind = pgEnum("agent_step_kind", ["model_call", "tool_call"]);
+
+/** A chat thread. The Chat screen shows the user's latest one. */
+export const conversations = pgTable(
+  "conversations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("conversations_user_created_idx").on(table.userId, table.createdAt.desc())],
+);
+
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    role: chatRole("role").notNull(),
+    content: text("content").notNull(),
+    // The agent run that produced an assistant message.
+    runId: uuid("run_id").references((): AnyPgColumn => agentRuns.id),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("chat_messages_conversation_idx").on(table.conversationId, table.createdAt)],
+);
+
+/**
+ * One agent run: a user message handled by one model (a second run if it escalated).
+ * CLAUDE.md: log prompt version, model, tool calls with arguments, latency, tokens and outcome.
+ */
+export const agentRuns = pgTable(
+  "agent_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    conversationId: uuid("conversation_id").references(() => conversations.id, {
+      onDelete: "set null",
+    }),
+    // Set on an escalated run: the run it retried.
+    escalatedFromRunId: uuid("escalated_from_run_id").references((): AnyPgColumn => agentRuns.id),
+    promptVersion: text("prompt_version").notNull(),
+    model: text("model").notNull(),
+    startedAt: timestamptz("started_at").notNull().defaultNow(),
+    finishedAt: timestamptz("finished_at"),
+    latencyMs: integer("latency_ms"),
+    inputTokens: integer("input_tokens").notNull().default(0),
+    outputTokens: integer("output_tokens").notNull().default(0),
+    outcome: agentOutcome("outcome"),
+    // A short error code when the run failed.
+    error: text("error"),
+  },
+  (table) => [index("agent_runs_user_started_idx").on(table.userId, table.startedAt.desc())],
+);
+
+/** Every model call and tool call within a run, in order, with arguments and results. */
+export const agentRunSteps = pgTable(
+  "agent_run_steps",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    runId: uuid("run_id")
+      .notNull()
+      .references(() => agentRuns.id, { onDelete: "cascade" }),
+    seq: integer("seq").notNull(),
+    kind: agentStepKind("kind").notNull(),
+    toolName: text("tool_name"),
+    args: jsonb("args"),
+    // Truncated; enough to debug a run without storing whole lists.
+    result: jsonb("result"),
+    latencyMs: integer("latency_ms").notNull(),
+    inputTokens: integer("input_tokens"),
+    outputTokens: integer("output_tokens"),
+    error: text("error"),
+  },
+  (table) => [uniqueIndex("agent_run_steps_run_seq_idx").on(table.runId, table.seq)],
 );
