@@ -22,6 +22,27 @@ interface IssuedCode {
   used: boolean;
 }
 
+/** One entry of the fake user's MAL anime list, in MAL's API shape. */
+export interface FakeListItem {
+  node: {
+    id: number;
+    title: string;
+    main_picture?: { medium: string; large: string };
+    media_type: string;
+    num_episodes: number;
+    status: string;
+  };
+  list_status: {
+    status: "watching" | "completed" | "on_hold" | "dropped" | "plan_to_watch";
+    score: number;
+    num_episodes_watched: number;
+    is_rewatching: boolean;
+    updated_at: string;
+    start_date?: string;
+    finish_date?: string;
+  };
+}
+
 export class FakeMal {
   /** Access-token lifetime MAL reports in `expires_in`. */
   accessTokenLifetimeSeconds = 2_678_400;
@@ -29,6 +50,19 @@ export class FakeMal {
   readonly tokenGrants: string[] = [];
   /** Every secret handed out (codes, verifiers, tokens), so tests can check none reach the logs. */
   readonly issuedSecrets: string[] = [];
+
+  /** The user's list as MAL would return it. */
+  list: FakeListItem[] = [];
+  /** Page size the fake uses, whatever `limit` the client asks for, so tests can force paging. */
+  pageSize = 1000;
+  /** Status codes to return for the next anime-list requests, in order (e.g. [503, 429]). */
+  animeListFailures: number[] = [];
+  /** If set, the first page's `paging.next` points here instead of the real next page. */
+  nextPageOverride: string | undefined;
+  /** If set, every anime-list request at or past this offset gets a 503 (MAL down mid-sync). */
+  unavailableFromOffset: number | undefined;
+  /** Every anime-list request URL received, to check query parameters. */
+  readonly animeListRequests: URL[] = [];
 
   private readonly codes = new Map<string, IssuedCode>();
   private readonly accessTokens = new Map<string, number>(); // token -> expiry (ms epoch)
@@ -68,11 +102,22 @@ export class FakeMal {
     this.refreshTokens.clear();
   }
 
+  /** Makes MAL reject every current access token, even though they haven't expired. */
+  invalidateAccessTokens(): void {
+    this.accessTokens.clear();
+  }
+
   reset(): void {
     this.tokenGrants.length = 0;
     this.codes.clear();
     this.accessTokens.clear();
     this.refreshTokens.clear();
+    this.list = [];
+    this.pageSize = 1000;
+    this.animeListFailures = [];
+    this.nextPageOverride = undefined;
+    this.unavailableFromOffset = undefined;
+    this.animeListRequests.length = 0;
   }
 
   stop(): Promise<void> {
@@ -102,7 +147,38 @@ export class FakeMal {
       json(res, 200, { id: this.options.user.id, name: this.options.user.name });
       return;
     }
+    if (req.method === "GET" && url.pathname === "/v2/users/@me/animelist") {
+      this.animeList(url, req, res);
+      return;
+    }
     json(res, 404, { error: "not_found" });
+  }
+
+  private animeList(url: URL, req: IncomingMessage, res: ServerResponse): void {
+    this.animeListRequests.push(url);
+    const failure = this.animeListFailures.shift();
+    if (failure !== undefined) {
+      res.writeHead(failure, failure === 429 ? { "retry-after": "0" } : {}).end();
+      return;
+    }
+    if (!this.isAuthorized(req)) {
+      json(res, 401, { error: "invalid_token" });
+      return;
+    }
+
+    const offset = Number(url.searchParams.get("offset") ?? "0");
+    if (this.unavailableFromOffset !== undefined && offset >= this.unavailableFromOffset) {
+      res.writeHead(503).end();
+      return;
+    }
+    const data = this.list.slice(offset, offset + this.pageSize);
+    const paging: { next?: string } = {};
+    if (offset + this.pageSize < this.list.length) {
+      const next = new URL(url);
+      next.searchParams.set("offset", String(offset + this.pageSize));
+      paging.next = this.nextPageOverride ?? next.toString();
+    }
+    json(res, 200, { data, paging });
   }
 
   /** The consent screen, auto-approved: redirects back with a code, like MAL after "Allow". */
