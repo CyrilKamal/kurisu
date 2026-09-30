@@ -140,3 +140,24 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** Login-only sync, as the hard rule "sync on login and after writes only" suggests; background polling.
 **Why:** Milestone 1's Done-when criteria require that re-sync works, and M1 has no writes to trigger one. A cooldown keeps manual syncs from probing MAL's undocumented rate limits. There is still no polling.
 **Consequences:** Edits made directly on myanimelist.net show up only after a login or a manual re-sync. Milestone 2 adds the post-write sync the hard rule describes.
+
+## 2026-09-29 — Shared API contract package, enforced by server tests (Milestone 1)
+**Decision:**
+- `packages/shared` holds zod schemas and types for every server response the web app reads, plus shared constants (session cookie name, list statuses, login and sync error codes).
+- The web app parses every API response with these schemas.
+- The server's source doesn't import the package. Instead, contract tests parse real responses with it and use type-level checks to pin the error-code unions and constants.
+
+**Alternatives:** The server imports the shared package directly (needs a build step or project references, because the package ships TypeScript source outside the server's `rootDir`); duplicating types in the web app; generating types from an OpenAPI spec.
+**Why:** It catches contract drift in CI with zero build tooling. The package is TypeScript source that Next's Turbopack compiles directly and Vitest runs as-is.
+**Consequences:** Server route types aren't checked against the contract at compile time, only in tests, so every new endpoint needs a contract test. If the server needs the package at runtime later, give it a build step.
+
+## 2026-09-29 — List screen: server-rendered, tabs in the URL (Milestone 1)
+**Decision:**
+- The List screen is a Server Component. It fetches `/me` and `/list` from the API, forwarding only the session cookie.
+- The selected status tab lives in the query string (`?status=`), and tabs are plain links.
+- Re-sync and Log out are small client components that POST, then call `router.refresh()`.
+- Cover art goes through `next/image`, allowlisted to `cdn.myanimelist.net`.
+
+**Alternatives:** A client-rendered page with a data-fetching library; tab state held in React state.
+**Why:** It needs almost no client JavaScript, tabs are linkable and survive reloads, and the session cookie never has to be readable by JS.
+**Consequences:** Every tab switch is a server round trip, which is fine at list sizes of a few hundred. Revisit if the list needs client-side search or instant filtering.

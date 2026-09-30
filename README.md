@@ -25,6 +25,7 @@ Layout:
 
 - `apps/web`: Next.js PWA (App Router). Proxies `/api/*` to the server.
 - `apps/server`: Fastify service that holds MAL tokens and talks to Postgres.
+- `packages/shared`: the API contract (zod schemas) the web app and server tests share.
 
 ## License
 

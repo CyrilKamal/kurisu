@@ -108,6 +108,8 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
 - Build: `pnpm build`
 - One package only: `pnpm --filter @kurisu/server <script>` or `pnpm --filter @kurisu/web <script>`
 - Database migrations: apply with `pnpm db:migrate` (reads `DATABASE_URL` from `.env.local`). After changing `apps/server/src/db/schema.ts`, generate SQL with `pnpm db:generate --name <what_changed>` and commit the files in `apps/server/drizzle/`. Never edit an applied migration; add a new one.
+- Click through the app without MAL credentials: `pnpm --filter @kurisu/server dev:fake-mal` starts a fake MAL on :4010 (auto-approved consent, synthetic list). Then run `pnpm dev` with `MAL_AUTH_BASE_URL=http://127.0.0.1:4010/v1/oauth2`, `MAL_API_BASE_URL=http://127.0.0.1:4010/v2`, `MAL_CLIENT_ID=fake-client-id` and `MAL_CLIENT_SECRET=fake-client-secret`.
+- API contract: response schemas live in `packages/shared`. Change them together with the server, and add a contract test in `apps/server/test/integration/contract.test.ts` for any new endpoint.
 - Eval harness: _Milestone 2_
 
 Next.js 16 ships version-matched docs in `apps/web/node_modules/next/dist/docs/`; read them before writing web code (see `apps/web/AGENTS.md`).
