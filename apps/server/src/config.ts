@@ -28,6 +28,13 @@ const envSchema = z.object({
   TOKEN_ENCRYPTION_KEY: z
     .string()
     .refine((value) => Buffer.from(value, "base64").length === 32, "must be 32 bytes, base64"),
+
+  // Models. Which model plays each role lives in config/models.json; these override it.
+  GEMINI_API_KEY: optional(z.string().min(1).optional()),
+  OLLAMA_BASE_URL: optional(url.default("http://127.0.0.1:11434")),
+  AGENT_MODEL: optional(z.string().optional()),
+  AGENT_ESCALATION_MODEL: optional(z.string().optional()),
+  EVAL_MODEL: optional(z.string().optional()),
 });
 
 export interface Config {
@@ -44,6 +51,12 @@ export interface Config {
     apiBaseUrl: string;
   };
   tokenEncryptionKey: string;
+  llm: {
+    geminiApiKey: string | null;
+    ollamaBaseUrl: string;
+    /** Per-role overrides of config/models.json, as "provider:model" refs. */
+    overrides: { agent?: string; escalation?: string; eval?: string };
+  };
 }
 
 /**
@@ -71,5 +84,14 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       apiBaseUrl: parsed.MAL_API_BASE_URL.replace(/\/+$/, ""),
     },
     tokenEncryptionKey: parsed.TOKEN_ENCRYPTION_KEY,
+    llm: {
+      geminiApiKey: parsed.GEMINI_API_KEY ?? null,
+      ollamaBaseUrl: parsed.OLLAMA_BASE_URL.replace(/\/+$/, ""),
+      overrides: {
+        ...(parsed.AGENT_MODEL ? { agent: parsed.AGENT_MODEL } : {}),
+        ...(parsed.AGENT_ESCALATION_MODEL ? { escalation: parsed.AGENT_ESCALATION_MODEL } : {}),
+        ...(parsed.EVAL_MODEL ? { eval: parsed.EVAL_MODEL } : {}),
+      },
+    },
   };
 }
