@@ -33,4 +33,11 @@ describe("architecture", () => {
       expect(file.startsWith("llm/providers/"), `${file} imports a model SDK`).toBe(true);
     }
   });
+
+  it("writes to MAL only from writes/commit.ts", () => {
+    // Nothing writes to MAL except commit_update.
+    expect(importers(/from\s+["'][^"']*writeClient\.js["']/)).toEqual(["writes/commit.ts"]);
+    // And the write client is the only code that sends a PATCH to MAL.
+    expect(importers(/method:\s*"PATCH"/)).toEqual(["mal/writeClient.ts"]);
+  });
 });

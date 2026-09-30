@@ -33,6 +33,9 @@ export interface RequestedChange {
   isRewatching?: boolean;
 }
 
+/** The four list fields a proposal can change, as they stand. */
+export type ListState = Pick<EntryState, "status" | "episodesWatched" | "score" | "isRewatching">;
+
 export type ListChange = Partial<
   Pick<EntryState, "status" | "episodesWatched" | "score" | "isRewatching">
 >;

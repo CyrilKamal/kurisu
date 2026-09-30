@@ -64,6 +64,10 @@ export class FakeMal {
   unavailableFromOffset: number | undefined;
   /** Every anime-list request URL received, to check query parameters. */
   readonly animeListRequests: URL[] = [];
+  /** Every list-status PATCH received: the anime and the form fields sent. */
+  readonly patchRequests: { animeId: number; form: Record<string, string> }[] = [];
+  /** Status codes to return for the next PATCHes, in order (e.g. [503]). */
+  patchFailures: number[] = [];
 
   private readonly codes = new Map<string, IssuedCode>();
   private readonly accessTokens = new Map<string, number>(); // token -> expiry (ms epoch)
@@ -120,6 +124,8 @@ export class FakeMal {
     this.nextPageOverride = undefined;
     this.unavailableFromOffset = undefined;
     this.animeListRequests.length = 0;
+    this.patchRequests.length = 0;
+    this.patchFailures = [];
   }
 
   stop(): Promise<void> {
@@ -149,11 +155,57 @@ export class FakeMal {
       json(res, 200, { id: this.options.user.id, name: this.options.user.name });
       return;
     }
+    const patch = /^\/v2\/anime\/(\d+)\/my_list_status$/.exec(url.pathname);
+    if (req.method === "PATCH" && patch?.[1]) {
+      this.patchListStatus(Number(patch[1]), new URLSearchParams(await readBody(req)), req, res);
+      return;
+    }
     if (req.method === "GET" && url.pathname === "/v2/users/@me/animelist") {
       this.animeList(url, req, res);
       return;
     }
     json(res, 404, { error: "not_found" });
+  }
+
+  /** MAL's list-status update: applies the form fields and returns the entry's new state. */
+  private patchListStatus(
+    animeId: number,
+    form: URLSearchParams,
+    req: IncomingMessage,
+    res: ServerResponse,
+  ): void {
+    this.patchRequests.push({ animeId, form: Object.fromEntries(form) });
+    const failure = this.patchFailures.shift();
+    if (failure !== undefined) {
+      json(res, failure, { error: "injected_failure" });
+      return;
+    }
+    if (!this.isAuthorized(req)) {
+      json(res, 401, { error: "invalid_token" });
+      return;
+    }
+    const item = this.list.find((i) => i.node.id === animeId);
+    if (!item) {
+      json(res, 404, { error: "not_found" });
+      return;
+    }
+    const ls = item.list_status;
+    const status = form.get("status");
+    if (status) ls.status = status as typeof ls.status;
+    const episodes = form.get("num_watched_episodes");
+    if (episodes !== null) ls.num_episodes_watched = Number(episodes);
+    const score = form.get("score");
+    if (score !== null) ls.score = Number(score);
+    const rewatching = form.get("is_rewatching");
+    if (rewatching !== null) ls.is_rewatching = rewatching === "true";
+    ls.updated_at = new Date().toISOString().replace("Z", "+00:00");
+    json(res, 200, {
+      status: ls.status,
+      score: ls.score,
+      num_episodes_watched: ls.num_episodes_watched,
+      is_rewatching: ls.is_rewatching,
+      updated_at: ls.updated_at,
+    });
   }
 
   private animeList(url: URL, req: IncomingMessage, res: ServerResponse): void {

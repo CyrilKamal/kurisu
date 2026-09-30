@@ -3,13 +3,18 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
+
+import type { ListChange, ListState } from "../writes/normalize.js";
 
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
 
@@ -24,6 +29,14 @@ export const listStatus = pgEnum("list_status", [
 
 export const syncTrigger = pgEnum("sync_trigger", ["login", "manual"]);
 export const syncStatus = pgEnum("sync_status", ["running", "succeeded", "failed"]);
+export const proposalStatus = pgEnum("proposal_status", [
+  "pending",
+  "committing",
+  "committed",
+  "failed",
+  "cancelled",
+]);
+export const proposalSource = pgEnum("proposal_source", ["agent", "undo"]);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -134,4 +147,70 @@ export const syncRuns = pgTable(
     error: text("error"),
   },
   (table) => [index("sync_runs_user_started_idx").on(table.userId, table.startedAt.desc())],
+);
+
+/**
+ * A staged change to one list entry. Only commitProposal() turns a proposal into a MAL write.
+ * Values are absolute (never "+2"), so committing the same proposal twice cannot double-count.
+ */
+export const proposals = pgTable(
+  "proposals",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    animeId: integer("anime_id")
+      .notNull()
+      .references(() => anime.malId),
+    source: proposalSource("source").notNull(),
+    // The agent run that proposed it; null for undo proposals.
+    runId: uuid("run_id"),
+    // Proposing the same change twice (e.g. a repeated tool call) returns the same proposal.
+    idempotencyKey: text("idempotency_key").notNull(),
+    // The entry's four list fields when proposed. Commit refuses if the mirror has moved since.
+    before: jsonb("before").$type<ListState>().notNull(),
+    // Only the fields that change, with their new values.
+    change: jsonb("change").$type<ListChange>().notNull(),
+    requiresConfirmation: boolean("requires_confirmation").notNull().default(false),
+    // Why confirmation is needed, e.g. ambiguous_match or progress_backwards.
+    confirmationReason: text("confirmation_reason"),
+    status: proposalStatus("status").notNull().default("pending"),
+    // A short error code when a commit failed.
+    error: text("error"),
+    undoOfChangeId: uuid("undo_of_change_id").references((): AnyPgColumn => changes.id),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+    committedAt: timestamptz("committed_at"),
+  },
+  (table) => [
+    uniqueIndex("proposals_user_idempotency_key_idx").on(table.userId, table.idempotencyKey),
+    index("proposals_user_created_idx").on(table.userId, table.createdAt.desc()),
+  ],
+);
+
+/** The change log: every committed write, with prior values so it can be undone. */
+export const changes = pgTable(
+  "changes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    animeId: integer("anime_id")
+      .notNull()
+      .references(() => anime.malId),
+    proposalId: uuid("proposal_id")
+      .notNull()
+      .unique()
+      .references((): AnyPgColumn => proposals.id),
+    // Prior values of exactly the fields that changed.
+    before: jsonb("before").$type<ListChange>().notNull(),
+    // New values of those fields, as MAL confirmed them.
+    after: jsonb("after").$type<ListChange>().notNull(),
+    committedAt: timestamptz("committed_at").notNull().defaultNow(),
+    // Set when this change was undone, pointing at the change that undid it.
+    undoneByChangeId: uuid("undone_by_change_id").references((): AnyPgColumn => changes.id),
+  },
+  (table) => [index("changes_user_committed_idx").on(table.userId, table.committedAt.desc())],
 );
