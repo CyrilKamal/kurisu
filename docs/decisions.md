@@ -91,3 +91,34 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** Tag-pinned actions; relying on GitHub push protection alone; no release-age delay.
 **Why:** Pinning and release-age delays blunt compromised-package attacks, which usually get caught within days. gitleaks backs up push protection with rules that also catch generic secrets.
 **Consequences:** Brand-new releases can't be installed for a day. Dependabot PRs arrive a week behind releases, which is fine for a personal project.
+
+## 2026-09-29 — Drizzle ORM with generated SQL migrations (Milestone 1)
+**Decision:** Drizzle ORM (0.45, stable line) on node-postgres. Schema lives in `apps/server/src/db/schema.ts`; drizzle-kit generates plain SQL migrations into `apps/server/drizzle/`, applied by our own `pnpm db:migrate` runner.
+**Alternatives:** Prisma; Kysely + node-pg-migrate; raw SQL.
+**Why:** Types come straight from the TypeScript schema, with no codegen step or engine binary. Queries stay close to SQL, and migrations are reviewable SQL files. Drizzle 1.0 is still in beta, so we stay on the stable line.
+**Consequences:** Migrations are forward-only, so fixes go in a new migration. Moving to Drizzle 1.0 later will need an upgrade pass.
+
+## 2026-09-29 — OAuth flow and session design (Milestone 1)
+**Decision:**
+- MAL is registered as a confidential "web" app; the client secret is sent in the token request body.
+- The PKCE verifier is stored encrypted in an `oauth_states` row with a 10-minute expiry. An atomic UPDATE consumes that row, so each state works exactly once.
+- A state cookie binds the callback to the browser that started the login.
+- Sessions are 32 random bytes in an httpOnly, SameSite=Lax cookie, with only the SHA-256 hash stored. They last 30 days.
+- POST routes also require `Origin` to match `WEB_ORIGIN`.
+- Login failures redirect to `/?login_error=<code>` with a fixed set of codes.
+
+**Alternatives:** A "public" MAL client with no secret; keeping the verifier in a signed or encrypted cookie; JWT sessions; an OAuth library.
+**Why:** The backend can keep a secret, so a confidential client is stronger. Server-side state makes single use enforceable. Hashed opaque sessions can be revoked, and a database leak doesn't expose them. Libraries we checked assume S256, and MAL only supports `plain`.
+**Consequences:** Logins need the database. Expired states and sessions are pruned at login time, with no background job. Refresh is serialized per user in-process, which is fine for one server process. Multiple instances would need a database lock.
+
+## 2026-09-29 — Token encryption: AES-256-GCM bound to row context (Milestone 1)
+**Decision:** Encrypt MAL tokens and PKCE verifiers with AES-256-GCM using `TOKEN_ENCRYPTION_KEY` and a random 96-bit IV per value. Stored as `v1:<iv>:<tag>:<ciphertext>`. Authenticated data binds each value to its purpose and owner, e.g. `mal_refresh_token:<userId>`.
+**Alternatives:** pgcrypto in the database; a KMS; libsodium secretbox.
+**Why:** It uses only Node's built-in crypto, with no extra service or native dependency. GCM detects tampering. Binding the context means a ciphertext copied onto another user's row won't decrypt.
+**Consequences:** Losing the key means everyone re-logs into MAL. An undecryptable token sets `needs_reauth` rather than crashing. The `v1` prefix allows key rotation later.
+
+## 2026-09-29 — Integration tests: Testcontainers Postgres + fake MAL server (Milestone 1)
+**Decision:** Integration tests start a real Postgres 18 (same digest as docker-compose) through Testcontainers, once per run. They drive the app with `app.inject` against a fake MAL, a real local HTTP server that enforces `plain` PKCE (the exchange only succeeds if the verifier equals the challenge). Tests also check that no issued secret ever appears in the logs.
+**Alternatives:** A shared docker-compose test database; mocking `fetch`; testing against live MAL.
+**Why:** Real Postgres catches SQL and migration bugs that mocks can't. A fake HTTP server exercises real request encoding. Live MAL can't run in CI and has undocumented rate limits.
+**Consequences:** Integration tests need Docker, which CI's `ubuntu-latest` has. The fake must track MAL's real behavior; the manual live login at the end of the milestone is the check that it does.
