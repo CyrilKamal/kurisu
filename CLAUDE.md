@@ -110,6 +110,8 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
 - Database migrations: apply with `pnpm db:migrate` (reads `DATABASE_URL` from `.env.local`). After changing `apps/server/src/db/schema.ts`, generate SQL with `pnpm db:generate --name <what_changed>` and commit the files in `apps/server/drizzle/`. Never edit an applied migration; add a new one.
 - Click through the app without MAL credentials: `pnpm --filter @kurisu/server dev:fake-mal` starts a fake MAL on :4010 (auto-approved consent, synthetic list). Then run `pnpm dev` with `MAL_AUTH_BASE_URL=http://127.0.0.1:4010/v1/oauth2`, `MAL_API_BASE_URL=http://127.0.0.1:4010/v2`, `MAL_CLIENT_ID=fake-client-id` and `MAL_CLIENT_SECRET=fake-client-secret`.
 - API contract: response schemas live in `packages/shared`. Change them together with the server, and add a contract test in `apps/server/test/integration/contract.test.ts` for any new endpoint.
-- Eval harness: _Milestone 2_
+- Eval cases: `pnpm eval:validate` checks every file in `apps/server/eval/cases/` (CI runs it; `--verbose` shows each case's normalized expectation). The format and rules are in `apps/server/eval/README.md`. Never write or edit the user's real eval cases; only `examples.yaml` is ours.
+- Eval snapshot: `pnpm eval:snapshot` re-exports the sanitized list snapshot from the dev DB. Don't re-export once cases depend on it.
+- Eval harness run: _Milestone 2, coming in a later PR_
 
 Next.js 16 ships version-matched docs in `apps/web/node_modules/next/dist/docs/`; read them before writing web code (see `apps/web/AGENTS.md`).
