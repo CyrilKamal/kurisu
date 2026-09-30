@@ -178,3 +178,24 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** JSON or TypeScript case files; expected tool-call transcripts instead of expected writes; a synthetic list; a local-only snapshot.
 **Why:** YAML is the quickest format to hand-write 150 cases in. Judging on resulting writes rather than exact tool-call sequences lets prompts and tool usage evolve without rewriting cases. A real list tests the real nicknames, sequels and title collisions; sanitizing keeps personal data out of the repo, as CLAUDE.md requires.
 **Consequences:** The snapshot is frozen once cases depend on it, and re-exporting would break relative cases. The public repo reveals which shows are on the list (titles and progress only), which the developer accepted. Normalization rules are shared, so changing a rule changes eval expectations too, deliberately.
+
+## 2026-09-30 — One model provider interface; Gemini via SDK, Ollama via REST (Milestone 2)
+**Decision:**
+- Every model call goes through `ModelClient` in `apps/server/src/llm/`. It routes a `provider:model` ref to a `ModelProvider`, and each provider reports tool calls, text, token usage and latency in one shape.
+- Gemini uses the official `@google/genai` SDK. Ollama uses plain `fetch` to `/api/chat`.
+- A lint rule plus an architecture test forbid importing any model SDK outside `src/llm/providers/`.
+- Providers never retry on their own. They classify failures (`rate_limited`, `unavailable`, `auth`, `bad_request`, `bad_response`) so the caller decides.
+
+**Alternatives:** Raw REST for Gemini too; an abstraction library (e.g. LangChain, Vercel AI SDK); the Ollama npm client.
+**Why:** Gemini 3 function calling needs thought signatures replayed exactly, which the SDK handles; we keep the model's raw turn as opaque `providerState`. Ollama's API is small and stable, so an SDK buys nothing. One narrow interface keeps swaps a config change, as CLAUDE.md requires.
+**Consequences:** A new provider is one file under `providers/`. The SDK's automatic retries are off (`attempts: 1`), so 429s reach the routing logic.
+
+## 2026-09-30 — Model roles and prices live in config/models.json (Milestone 2)
+**Decision:**
+- `apps/server/config/models.json` maps roles to models: `agent` → `gemini:gemini-3.5-flash-lite`, `escalation` → `gemini:gemini-3.8-flash`, `eval` → a local Ollama model. Roles can be overridden per environment (`AGENT_MODEL`, `AGENT_ESCALATION_MODEL`, `EVAL_MODEL`).
+- The same file holds paid-tier prices per 1M tokens, for cost-per-update reporting, and Ollama options.
+- Ollama's context is capped at 8,192 tokens (`numCtx`).
+
+**Alternatives:** Hard-coded defaults in `config.ts`; environment variables only.
+**Why:** CLAUDE.md says model IDs live in config, not code, and swapping a model must be a config change. The IDs are the current ones from Google's model and pricing pages (2026-09-30). The context cap is necessary: `qwen3.6:27b`'s 256K default made Ollama crash on the 16 GB RTX 5080, while 8K ran fine (69% GPU / 31% CPU).
+**Consequences:** Prices go stale; Flash rises on 2027-01-01, noted in the file. The eval model is `ornith:9b` until the benchmark on the example cases picks between it and `qwen3.6:27b`.
