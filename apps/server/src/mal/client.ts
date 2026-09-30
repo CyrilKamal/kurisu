@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Read-only MAL API calls. Milestone 1 has no write path: nothing here may modify a MAL list.
+// Read-only MAL API calls. Writes live in writeClient.ts, which only writes/commit.ts may use.
 
 const meSchema = z.object({
   id: z.number().int().positive(),
@@ -136,13 +136,32 @@ export async function fetchAnimeListPage(
   return { items: parsed.data.data, next };
 }
 
-async function getJson(url: URL, accessToken: string, retry: RetryOptions): Promise<unknown> {
+function getJson(url: URL, accessToken: string, retry: RetryOptions): Promise<unknown> {
+  return malRequestJson(url, accessToken, retry);
+}
+
+/**
+ * One authenticated MAL API request with retries on 429, 5xx and network errors. Only use it
+ * for idempotent requests: GETs, and PATCHes that carry absolute values.
+ */
+export async function malRequestJson(
+  url: URL,
+  accessToken: string,
+  retry: RetryOptions,
+  init: { method?: "GET" | "PATCH"; form?: URLSearchParams } = {},
+): Promise<unknown> {
   const path = url.pathname;
   for (let attempt = 0; ; attempt++) {
     let res: Response;
     try {
       res = await fetch(url, {
-        headers: { authorization: `Bearer ${accessToken}`, accept: "application/json" },
+        method: init.method ?? "GET",
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          accept: "application/json",
+          ...(init.form ? { "content-type": "application/x-www-form-urlencoded" } : {}),
+        },
+        ...(init.form ? { body: init.form } : {}),
         signal: AbortSignal.timeout(15_000),
       });
     } catch (err) {
