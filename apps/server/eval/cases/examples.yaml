@@ -1,0 +1,45 @@
+# Example cases showing the format. They run against the synthetic "examples" snapshot,
+# not your real list. See ../README.md for the full reference.
+snapshot: examples
+cases:
+  - id: example-plain
+    message: "watched ep 8 of fixture watching show"
+    tags: [plain]
+    expect:
+      writes:
+        - anime: "Fixture Watching Show"
+          episodes_watched: 8
+
+  - id: example-nickname-relative
+    message: "FWS, two more episodes"
+    tags: [nickname, relative]
+    notes: "FWS is a synonym on MAL; the list is at 7, so two more means 9."
+    expect:
+      writes:
+        - anime: "FWS"
+          episodes_watched: 9
+
+  - id: example-multi-sequel
+    message: "caught up on another isekai fixture to ep 12 and started season 2 of isekai chronicles"
+    tags: [multi, sequel]
+    notes: "Season 2 is its own MAL entry. Starting it moves it from plan_to_watch to watching automatically."
+    expect:
+      writes:
+        - anime: "Another Isekai Fixture"
+          episodes_watched: 12
+        - anime: 900012
+          episodes_watched: 1
+
+  - id: example-ambiguous
+    message: "dropping the isekai one"
+    tags: [ambiguous]
+    notes: "Two isekai shows are on the list, so the agent should ask which one."
+    expect:
+      clarify: true
+
+  - id: example-no-action
+    message: "what should I watch tonight?"
+    tags: [no-action]
+    notes: "Not a progress update: nothing should be written."
+    expect:
+      writes: []

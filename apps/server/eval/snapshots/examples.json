@@ -1,0 +1,80 @@
+{
+  "name": "examples",
+  "description": "Synthetic list for the example cases. Titles and progress are made up.",
+  "source": "synthetic",
+  "exportedAt": "2026-09-30T00:00:00.000Z",
+  "entries": [
+    {
+      "id": 900001,
+      "title": "Fixture Watching Show",
+      "titleEn": "The Watching Show",
+      "titleJa": null,
+      "synonyms": ["FWS"],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "watching",
+      "episodesWatched": 7,
+      "isRewatching": false
+    },
+    {
+      "id": 900002,
+      "title": "Fixture Completed Film",
+      "titleEn": null,
+      "titleJa": null,
+      "synonyms": [],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 900011,
+      "title": "Isekai Chronicles: Reborn as a Fixture",
+      "titleEn": "Reborn as a Fixture",
+      "titleJa": null,
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 900012,
+      "title": "Isekai Chronicles: Reborn as a Fixture Season 2",
+      "titleEn": "Reborn as a Fixture Season 2",
+      "titleJa": null,
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 900013,
+      "title": "Another Isekai Fixture",
+      "titleEn": null,
+      "titleJa": null,
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "watching",
+      "episodesWatched": 10,
+      "isRewatching": false
+    },
+    {
+      "id": 900005,
+      "title": "Fixture Unannounced Sequel",
+      "titleEn": null,
+      "titleJa": null,
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": null,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    }
+  ]
+}
