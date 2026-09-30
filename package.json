@@ -1,0 +1,23 @@
+{
+  "name": "kurisu",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose --env-file .env.local up -d --wait db",
+    "db:down": "docker compose --env-file .env.local down"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.9"
+  }
+}
