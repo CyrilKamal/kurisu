@@ -5,6 +5,7 @@ import {
   type ListStatus,
 } from "@kurisu/shared";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { apiGet } from "@/lib/api";
@@ -34,7 +35,7 @@ export default async function ListPage(props: PageProps<"/list">) {
   const visible = list.entries.filter((entry) => entry.status === selected);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-16">
+    <main className="mx-auto max-w-2xl px-4 pb-24">
       <header className="sticky top-0 z-10 -mx-4 border-b border-zinc-200 bg-white/90 px-4 pt-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <div className="min-w-0">
@@ -44,6 +45,12 @@ export default async function ListPage(props: PageProps<"/list">) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href="/list/changes"
+              className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              History
+            </Link>
             <ResyncButton />
             <LogoutButton />
           </div>
