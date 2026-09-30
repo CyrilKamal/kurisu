@@ -118,7 +118,11 @@ describe("GET /auth/mal/callback", () => {
       cookies: { [SESSION_COOKIE]: session?.value ?? "" },
     });
     expect(me.statusCode).toBe(200);
-    expect(me.json()).toEqual({ user: { malUsername: TEST_MAL_USER.name }, needsReauth: false });
+    expect(me.json()).toMatchObject({
+      user: { malUsername: TEST_MAL_USER.name },
+      needsReauth: false,
+      lastSync: { trigger: "login", status: "succeeded" },
+    });
   });
 
   it("logging in again updates the same user instead of creating another", async () => {

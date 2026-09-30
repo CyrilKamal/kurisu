@@ -52,7 +52,11 @@ export async function startHarness(): Promise<Harness> {
     LOG_LEVEL: "trace",
   });
   const logs = new LogCapture();
-  const app = buildApp(config, { logStream: logs });
+  const app = buildApp(config, {
+    logStream: logs,
+    // Real backoff shape, millisecond delays, so retry tests stay fast.
+    malRetry: { retries: 3, baseDelayMs: 1, maxDelayMs: 5 },
+  });
   await app.ready();
 
   const { db, close: closeDb } = createDb(config.databaseUrl);
@@ -76,7 +80,9 @@ export async function startHarness(): Promise<Harness> {
 }
 
 export async function resetDatabase(db: Db): Promise<void> {
-  await db.execute(sql`TRUNCATE users, sessions, mal_tokens, oauth_states CASCADE`);
+  await db.execute(
+    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs CASCADE`,
+  );
 }
 
 export interface LoginResult {
