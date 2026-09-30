@@ -10,6 +10,8 @@ import type { Db } from "../db/client.js";
 import { malTokens, users } from "../db/schema.js";
 import { fetchMe } from "../mal/client.js";
 import { buildAuthorizeUrl, exchangeCode, type MalOAuthConfig } from "../mal/oauth.js";
+import { latestSyncRun, type ListSync } from "../sync/listSync.js";
+import { toLastSync } from "../sync/summary.js";
 import { requireSameOrigin, requireUser } from "./guards.js";
 import {
   consumeOAuthState,
@@ -47,10 +49,11 @@ export interface AuthRouteDeps {
   db: Db;
   cipher: TokenCipher;
   tokenStore: TokenStore;
+  listSync: ListSync;
 }
 
 export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): void {
-  const { config, db, cipher, tokenStore } = deps;
+  const { config, db, cipher, tokenStore, listSync } = deps;
   const oauth: MalOAuthConfig = { ...config.mal };
   const cookieBase = {
     httpOnly: true,
@@ -126,6 +129,10 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       maxAge: SESSION_TTL_MS / 1000,
     });
     request.log.info({ userId }, "MAL login succeeded");
+
+    // Sync on login, so the List screen opens on fresh data. A failed sync doesn't fail the
+    // login: the run is recorded and the List screen offers a retry.
+    await listSync.run(userId, "login");
     return reply.redirect("/list");
   });
 
@@ -151,6 +158,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     return {
       user: { malUsername: user.malUsername },
       needsReauth: tokens?.needsReauth ?? true,
+      lastSync: toLastSync(await latestSyncRun(db, user.id)),
     };
   });
 }

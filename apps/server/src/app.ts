@@ -6,10 +6,15 @@ import { createTokenStore } from "./auth/tokenStore.js";
 import type { Config } from "./config.js";
 import { createTokenCipher } from "./crypto/tokenCipher.js";
 import { createDb } from "./db/client.js";
+import { registerListRoutes } from "./list/routes.js";
+import type { RetryOptions } from "./mal/client.js";
+import { createListSync } from "./sync/listSync.js";
 
 export interface BuildAppOptions {
   /** Where log lines go; defaults to stdout. Tests pass a stream to inspect what gets logged. */
   logStream?: NodeJS.WritableStream;
+  /** Backoff for MAL API retries. Tests shorten it. */
+  malRetry?: RetryOptions;
 }
 
 /** Builds the HTTP app without listening, so tests can drive it with `app.inject`. */
@@ -29,12 +34,27 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
 
   const cipher = createTokenCipher(config.tokenEncryptionKey);
   const tokenStore = createTokenStore({ db, cipher, oauth: config.mal });
+  const listSync = createListSync({
+    db,
+    tokenStore,
+    apiBaseUrl: config.mal.apiBaseUrl,
+    log: app.log,
+    ...(options.malRetry ? { retry: options.malRetry } : {}),
+  });
+  app.addHook("onReady", async () => {
+    try {
+      await listSync.recoverInterruptedRuns();
+    } catch (err) {
+      app.log.warn({ err }, "could not mark interrupted sync runs");
+    }
+  });
 
   void app.register(fastifyCookie);
   app.decorateRequest("user", null);
 
   app.get("/health", () => ({ status: "ok" }));
-  registerAuthRoutes(app, { config, db, cipher, tokenStore });
+  registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
+  registerListRoutes(app, { config, db, listSync });
 
   return app;
 }

@@ -1,6 +1,28 @@
-import { boolean, index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
+
+/** MAL's five list statuses. */
+export const listStatus = pgEnum("list_status", [
+  "watching",
+  "completed",
+  "on_hold",
+  "dropped",
+  "plan_to_watch",
+]);
+
+export const syncTrigger = pgEnum("sync_trigger", ["login", "manual"]);
+export const syncStatus = pgEnum("sync_status", ["running", "succeeded", "failed"]);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -45,3 +67,63 @@ export const oauthStates = pgTable("oauth_states", {
   expiresAt: timestamptz("expires_at").notNull(),
   consumedAt: timestamptz("consumed_at"),
 });
+
+/**
+ * Anime metadata from MAL, shared by all users. Holds only what the List screen shows;
+ * later milestones add columns through new migrations.
+ */
+export const anime = pgTable("anime", {
+  malId: integer("mal_id").primaryKey(),
+  title: text("title").notNull(),
+  mainPictureUrl: text("main_picture_url"),
+  // MAL values like tv, movie, ova. Kept as text so a new MAL value can't break a sync.
+  mediaType: text("media_type"),
+  // Null when MAL doesn't know yet (it reports 0).
+  numEpisodes: integer("num_episodes"),
+  // MAL values like currently_airing, finished_airing, not_yet_aired.
+  airingStatus: text("airing_status"),
+  updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+});
+
+/** The local mirror of each user's MAL anime list. Reads come from here, never live MAL. */
+export const listEntries = pgTable(
+  "list_entries",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    animeId: integer("anime_id")
+      .notNull()
+      .references(() => anime.malId),
+    status: listStatus("status").notNull(),
+    // 0 means unscored, as on MAL.
+    score: integer("score").notNull(),
+    numEpisodesWatched: integer("num_episodes_watched").notNull(),
+    isRewatching: boolean("is_rewatching").notNull(),
+    // MAL allows partial dates (e.g. "2024-03"), so these stay as MAL's strings.
+    startDate: text("start_date"),
+    finishDate: text("finish_date"),
+    malUpdatedAt: timestamptz("mal_updated_at").notNull(),
+    syncedAt: timestamptz("synced_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.animeId] })],
+);
+
+/** One row per sync attempt, for the "last synced" display, cooldowns and debugging. */
+export const syncRuns = pgTable(
+  "sync_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    trigger: syncTrigger("trigger").notNull(),
+    status: syncStatus("status").notNull(),
+    startedAt: timestamptz("started_at").notNull().defaultNow(),
+    finishedAt: timestamptz("finished_at"),
+    entriesCount: integer("entries_count"),
+    // A short error code (see sync/listSync.ts), never a raw message.
+    error: text("error"),
+  },
+  (table) => [index("sync_runs_user_started_idx").on(table.userId, table.startedAt.desc())],
+);

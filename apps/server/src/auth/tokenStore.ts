@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { TokenDecryptionError, type TokenCipher } from "../crypto/tokenCipher.js";
 import type { Db, Executor } from "../db/client.js";
 import { malTokens } from "../db/schema.js";
+import { MalApiError } from "../mal/client.js";
 import { MalOAuthError, refreshTokens, type MalOAuthConfig, type MalTokens } from "../mal/oauth.js";
 
 /** Refresh this long before MAL's reported expiry, so a request never races the deadline. */
@@ -113,4 +114,24 @@ export function createTokenStore(deps: {
   }
 
   return { save, getValidAccessToken, refresh };
+}
+
+/**
+ * Runs a MAL API call with a valid access token. If MAL still rejects the token (401), refreshes
+ * once and retries, since MAL can revoke a token before its reported expiry.
+ */
+export async function withMalAccessToken<T>(
+  tokenStore: TokenStore,
+  userId: string,
+  call: (accessToken: string) => Promise<T>,
+): Promise<T> {
+  const token = await tokenStore.getValidAccessToken(userId);
+  try {
+    return await call(token);
+  } catch (err) {
+    if (err instanceof MalApiError && err.status === 401) {
+      return call(await tokenStore.refresh(userId));
+    }
+    throw err;
+  }
 }
