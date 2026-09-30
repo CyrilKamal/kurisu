@@ -1,10 +1,11 @@
 import { afterAll, describe, expect, it } from "vitest";
 
-import { buildApp } from "../src/app.js";
-import { loadConfig } from "../src/config.js";
+import { buildApp } from "../../src/app.js";
+import { testConfig } from "../support/testConfig.js";
 
 describe("GET /health", () => {
-  const app = buildApp(loadConfig({ LOG_LEVEL: "silent" }));
+  // The pg pool connects lazily, so /health needs no running database.
+  const app = buildApp(testConfig());
   afterAll(() => app.close());
 
   it("returns ok", async () => {

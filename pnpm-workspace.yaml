@@ -9,3 +9,7 @@ allowBuilds:
   esbuild: true
   sharp: false
   unrs-resolver: false
+  # Optional native/postinstall steps pulled in by testcontainers; pure-JS fallbacks work.
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
