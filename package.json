@@ -20,7 +20,8 @@
     "db:generate": "pnpm --filter @kurisu/server db:generate",
     "eval:validate": "pnpm --filter @kurisu/server eval:validate",
     "eval:snapshot": "pnpm --filter @kurisu/server eval:snapshot",
-    "llm:smoke": "pnpm --filter @kurisu/server llm:smoke"
+    "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",
+    "eval": "pnpm --filter @kurisu/server eval"
   },
   "devDependencies": {
     "prettier": "^3.9.9"
