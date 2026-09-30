@@ -24,3 +24,8 @@ Layout:
 
 - `apps/web`: Next.js PWA (App Router). Proxies `/api/*` to the server.
 - `apps/server`: Fastify service that holds MAL tokens and talks to Postgres.
+Status: Milestone 1 (MAL login, list mirror, List screen) in progress. Setup and commands will be documented here once the project is scaffolded.
+
+## License
+
+[MIT](LICENSE)
