@@ -103,11 +103,11 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
 - Install: `pnpm install`
 - Dev servers: `pnpm dev` (server on :4000, web on :3000; web proxies `/api/*` to the server)
 - Local Postgres (reads `.env.local`): `pnpm db:up` / `pnpm db:down`
-- Tests: `pnpm test`
+- Tests: `pnpm test` (all). Server only: `pnpm --filter @kurisu/server test:unit`, or `test:integration` (starts a Postgres container via Testcontainers; needs Docker running)
 - Lint, typecheck, format: `pnpm lint`, `pnpm typecheck`, `pnpm format` (CI runs `pnpm format:check`)
 - Build: `pnpm build`
 - One package only: `pnpm --filter @kurisu/server <script>` or `pnpm --filter @kurisu/web <script>`
-- Database migrations: _added with the database schema (Milestone 1, OAuth PR)_
+- Database migrations: apply with `pnpm db:migrate` (reads `DATABASE_URL` from `.env.local`). After changing `apps/server/src/db/schema.ts`, generate SQL with `pnpm db:generate --name <what_changed>` and commit the files in `apps/server/drizzle/`. Never edit an applied migration; add a new one.
 - Eval harness: _Milestone 2_
 
 Next.js 16 ships version-matched docs in `apps/web/node_modules/next/dist/docs/`; read them before writing web code (see `apps/web/AGENTS.md`).
