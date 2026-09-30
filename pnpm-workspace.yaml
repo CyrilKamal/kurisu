@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+
+# Supply-chain hardening: don't install versions published less than a day ago.
+minimumReleaseAge: 1440
+
+# Only these dependencies may run install scripts.
+allowBuilds:
+  esbuild: true
+  sharp: false
+  unrs-resolver: false
