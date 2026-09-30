@@ -28,12 +28,16 @@ export interface SearchCandidate extends ListEntryView {
   matchScore: number;
   /** The name that matched best (title, English, Japanese or a synonym). */
   matchedName: string;
-  /**
-   * True if the words clearly point at this show: it is the top match by a margin, or the only
-   * in-progress show among equally good matches (e.g. "frieren ep 5" with season 1 completed and
-   * season 2 watching).
-   */
+  /** True if the words point at this show clearly enough for some change (see clearBy). */
   clear: boolean;
+  /**
+   * Why it's clear:
+   * - "unique": the top match, ahead of every other by a margin. Clear for any change.
+   * - "only_in_progress": tied with other matches, but the only one being watched or on hold
+   *   (e.g. "frieren ep 5" with season 1 completed and season 2 watching). Clear only for
+   *   forward progress; dropping or scoring "the isekai one" among several must still ask.
+   */
+  clearBy: "unique" | "only_in_progress" | null;
 }
 
 /**
@@ -87,7 +91,7 @@ export async function searchMyList(
     LIMIT ${limit}
   `);
 
-  const candidates = rows.rows.map((row): Omit<SearchCandidate, "clear"> => ({
+  const candidates = rows.rows.map((row): Omit<SearchCandidate, "clear" | "clearBy"> => ({
     animeId: row.anime_id,
     title: row.title,
     titleEn: row.title_en,
@@ -104,7 +108,9 @@ export async function searchMyList(
 }
 
 /** Applies the clear-match rule to candidates sorted best first. */
-export function markClear(candidates: Omit<SearchCandidate, "clear">[]): SearchCandidate[] {
+export function markClear(
+  candidates: Omit<SearchCandidate, "clear" | "clearBy">[],
+): SearchCandidate[] {
   const top = candidates[0];
   if (!top) return [];
   const contenders = candidates.filter((c) => top.matchScore - c.matchScore < CLEAR_MARGIN);
@@ -112,12 +118,12 @@ export function markClear(candidates: Omit<SearchCandidate, "clear">[]): SearchC
   const strongEnough = top.matchScore >= CLEAR_MATCH;
 
   return candidates.map((candidate) => {
-    const isContender = contenders.includes(candidate);
-    const clear =
-      strongEnough &&
-      isContender &&
-      (contenders.length === 1 || (active.length === 1 && active[0] === candidate));
-    return { ...candidate, clear };
+    let clearBy: SearchCandidate["clearBy"] = null;
+    if (strongEnough && contenders.includes(candidate)) {
+      if (contenders.length === 1) clearBy = "unique";
+      else if (active.length === 1 && active[0] === candidate) clearBy = "only_in_progress";
+    }
+    return { ...candidate, clear: clearBy !== null, clearBy };
   });
 }
 

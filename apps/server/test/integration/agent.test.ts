@@ -5,7 +5,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { PROGRESS_SYNC_V1 } from "../../src/agent/prompts/progressSync.v1.js";
 import { runAgent } from "../../src/agent/runAgent.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
-import { agentRuns, agentRunSteps, proposals, users } from "../../src/db/schema.js";
+import {
+  agentRuns,
+  agentRunSteps,
+  anime,
+  listEntries,
+  proposals,
+  users,
+} from "../../src/db/schema.js";
 import { parseModelRef } from "../../src/llm/modelConfig.js";
 import { ModelProviderError } from "../../src/llm/types.js";
 import { createMalListWriter } from "../../src/writes/commit.js";
@@ -246,6 +253,94 @@ describe("runAgent", () => {
   });
 });
 
+describe("the clear-match tie-break", () => {
+  /** Three isekai shows; only one is in progress, so "isekai" ties them all. */
+  async function addIsekaiShows() {
+    const shows = [
+      { malId: 910001, title: "Isekai Alpha", status: "completed" as const, episodes: 12 },
+      { malId: 910002, title: "Isekai Beta", status: "plan_to_watch" as const, episodes: 0 },
+      { malId: 910003, title: "Isekai Gamma", status: "watching" as const, episodes: 4 },
+    ];
+    await h.db
+      .insert(anime)
+      .values(shows.map((s) => ({ malId: s.malId, title: s.title, numEpisodes: 12 })));
+    // ...and on the fake MAL, so a committed write succeeds.
+    h.fakeMal.list.push(
+      ...shows.map((s) => ({
+        node: {
+          id: s.malId,
+          title: s.title,
+          media_type: "tv",
+          num_episodes: 12,
+          status: "finished_airing",
+        },
+        list_status: {
+          status: s.status,
+          score: 0,
+          num_episodes_watched: s.episodes,
+          is_rewatching: false,
+          updated_at: "2026-09-01T00:00:00+00:00",
+        },
+      })),
+    );
+    await h.db.insert(listEntries).values(
+      shows.map((s) => ({
+        userId,
+        animeId: s.malId,
+        status: s.status,
+        score: 0,
+        numEpisodesWatched: s.episodes,
+        isRewatching: false,
+        malUpdatedAt: new Date(),
+        syncedAt: new Date(),
+      })),
+    );
+  }
+
+  function tieScript(change: Record<string, unknown>): ScriptStep[] {
+    return [
+      { toolCalls: [{ name: "search_my_list", arguments: { queries: ["isekai"] } }] },
+      (req) => {
+        const results = lastToolResult(req).results as { anime_id: number; clear_match: boolean }[];
+        const gamma = results.find((r) => r.anime_id === 910003);
+        expect(gamma?.clear_match).toBe(true);
+        return {
+          toolCalls: [{ name: "propose_update", arguments: { anime_id: 910003, ...change } }],
+        };
+      },
+      (req) => ({
+        toolCalls: [
+          { name: "commit_update", arguments: { proposal_id: lastToolResult(req).proposal_id } },
+        ],
+      }),
+      { text: "Done." },
+    ];
+  }
+
+  it("lets forward progress through for the one show in progress", async () => {
+    await addIsekaiShows();
+    models.script(LITE.ref, tieScript({ episodes_delta: 1 }));
+
+    const result = await run("one more ep of the isekai one");
+
+    expect(result.outcome).toBe("committed");
+    expect(h.fakeMal.patchRequests).toEqual([
+      { animeId: 910003, form: { num_watched_episodes: "5" } },
+    ]);
+  });
+
+  it("holds anything else for confirmation, as the design asks for 'the isekai one'", async () => {
+    await addIsekaiShows();
+    models.script(LITE.ref, tieScript({ status: "dropped" }));
+
+    const result = await run("dropping the isekai one");
+
+    expect(result.outcome).toBe("needs_confirmation");
+    expect(result.pending[0]?.confirmationReason).toBe("ambiguous_match");
+    expect(h.fakeMal.patchRequests).toHaveLength(0);
+  });
+});
+
 describe("chat API", () => {
   it("runs the agent and returns the thread with the change it made", async () => {
     models.script(LITE.ref, updateScript("fixture watching show", { episodes_watched: 8 }));
@@ -326,6 +421,25 @@ describe("chat API", () => {
     );
 
     expect(body.messages[1]?.content).toBe("Which show do you mean?");
+  });
+
+  it("never shows a reply that claims a change nothing made", async () => {
+    // A model that pattern-matches an earlier "Updated ..." reply without calling any tools.
+    models.script(LITE.ref, [{ text: "Updated Fixture Watching Show: you're on episode 9." }]);
+    models.script(FLASH.ref, [{ text: "Updated it again." }]);
+
+    const body = contract.chatThreadResponseSchema.parse(
+      (await post("/chat/messages", { text: "two more of that one" })).json(),
+    );
+
+    expect(body.messages[1]?.content).toMatch(/didn't change anything/);
+    expect(body.messages[1]?.changes).toEqual([]);
+    // The model's own words stay in the run log for debugging.
+    const [step] = await h.db
+      .select()
+      .from(agentRunSteps)
+      .where(eq(agentRunSteps.kind, "model_call"));
+    expect(JSON.stringify(step?.result)).toContain("Updated Fixture Watching Show");
   });
 
   it("explains a missing API key without escalating", async () => {

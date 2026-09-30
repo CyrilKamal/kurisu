@@ -1,5 +1,6 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 
+import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
 import { runAgent, type AgentDeps, type RunResult } from "../agent/runAgent.js";
 import type { Db } from "../db/client.js";
 import { anime, changes, chatMessages, conversations, proposals } from "../db/schema.js";
@@ -108,13 +109,25 @@ export async function handleChatMessage(
     .values({
       conversationId,
       role: "assistant",
-      content: run.outcome === "error" ? errorReply(run.error) : run.reply || "Done.",
+      content: replyFor(run),
       runId: run.runId,
     })
     .returning({ id: chatMessages.id });
   if (!assistantMessage) throw new Error("chat message insert returned no row");
 
   return { userMessageId: userMessage.id, assistantMessageId: assistantMessage.id, run };
+}
+
+/**
+ * What the user sees. A reply must never claim a change that didn't happen: if the run
+ * committed and held nothing but the text says something changed, it's replaced with an honest
+ * message (the model's original text stays in agent_run_steps).
+ */
+function replyFor(run: RunResult): string {
+  if (run.outcome === "error") return errorReply(run.error);
+  const wroteNothing = run.committed.length === 0 && run.pending.length === 0;
+  if (wroteNothing && !run.asked && claimsChange(run.reply)) return NOTHING_CHANGED_REPLY;
+  return run.reply || "Done.";
 }
 
 function errorReply(error: string | null): string {

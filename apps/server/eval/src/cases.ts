@@ -33,6 +33,10 @@ export const evalCaseSchema = z
   .object({
     id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, "use lowercase letters, digits and dashes"),
     message: z.string().min(1),
+    /** Earlier turns of the conversation, oldest first, for follow-ups like "the second one". */
+    history: z
+      .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1) }).strict())
+      .default([]),
     tags: z.array(z.string().regex(/^[a-z0-9-]+$/)).default([]),
     notes: z.string().optional(),
     expect: z

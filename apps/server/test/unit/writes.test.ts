@@ -8,7 +8,7 @@ function candidate(
   animeId: number,
   matchScore: number,
   status: ListStatus = "completed",
-): Omit<SearchCandidate, "clear"> {
+): Omit<SearchCandidate, "clear" | "clearBy"> {
   return {
     animeId,
     title: `Show ${String(animeId)}`,
@@ -24,7 +24,7 @@ function candidate(
   };
 }
 
-const clearIds = (list: Omit<SearchCandidate, "clear">[]) =>
+const clearIds = (list: Omit<SearchCandidate, "clear" | "clearBy">[]) =>
   markClear(list)
     .filter((c) => c.clear)
     .map((c) => c.animeId);
@@ -47,6 +47,13 @@ describe("markClear", () => {
     // "frieren ep 5": season 1 completed, season 2 watching, both match "frieren" equally.
     expect(clearIds([candidate(1, 1, "completed"), candidate(2, 1, "watching")])).toEqual([2]);
     expect(clearIds([candidate(1, 1, "on_hold"), candidate(2, 1, "plan_to_watch")])).toEqual([1]);
+  });
+
+  it("says why a match is clear", () => {
+    const [unique] = markClear([candidate(1, 0.9), candidate(2, 0.5)]);
+    const tied = markClear([candidate(1, 1, "completed"), candidate(2, 1, "watching")]);
+    expect(unique?.clearBy).toBe("unique");
+    expect(tied.map((c) => c.clearBy)).toEqual([null, "only_in_progress"]);
   });
 
   it("stays unclear when several tied shows are in progress", () => {

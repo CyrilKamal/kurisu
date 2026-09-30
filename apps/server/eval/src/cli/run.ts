@@ -5,6 +5,7 @@
  *   pnpm eval --model ollama:qwen3.6:27b
  *   pnpm eval --tag nickname --tag multi
  *   pnpm eval --case plain-001 --file examples.yaml --limit 20
+ *   pnpm eval --prompt progress-sync@1     compare an older prompt version
  *
  * Needs Docker (a throwaway Postgres) and, for local models, Ollama running.
  * Writes a full JSON report to eval/results/.
@@ -15,7 +16,7 @@ import { parseArgs } from "node:util";
 
 import { asc, eq } from "drizzle-orm";
 
-import { PROGRESS_SYNC_V1 } from "../../../src/agent/prompts/progressSync.v1.js";
+import { CURRENT_PROMPT, PROMPTS } from "../../../src/agent/prompts/index.js";
 import { runAgent } from "../../../src/agent/runAgent.js";
 import { agentRunSteps } from "../../../src/db/schema.js";
 import { loadLocalEnvFile } from "../../../src/env.js";
@@ -33,7 +34,6 @@ import { aggregate, scoreCase, type CaseRun, type Metrics } from "../score.js";
 import { loadSnapshot, type Snapshot } from "../snapshot.js";
 
 const RESULTS_DIR = fileURLToPath(new URL("../../results/", import.meta.url));
-const PROMPT = PROGRESS_SYNC_V1;
 
 const { values } = parseArgs({
   options: {
@@ -42,8 +42,16 @@ const { values } = parseArgs({
     case: { type: "string", multiple: true },
     file: { type: "string", multiple: true },
     limit: { type: "string" },
+    prompt: { type: "string" },
   },
 });
+
+const promptVersion = values.prompt ?? CURRENT_PROMPT.version;
+if (!Object.hasOwn(PROMPTS, promptVersion)) {
+  console.error(`Unknown prompt "${promptVersion}". Known: ${Object.keys(PROMPTS).join(", ")}`);
+  process.exit(1);
+}
+const PROMPT = PROMPTS[promptVersion as keyof typeof PROMPTS];
 
 loadLocalEnvFile();
 const modelsFile = loadModelsFile();
@@ -144,7 +152,13 @@ async function runCase(
 
   const result = await runAgent(
     { db, models, writeListStatus: writer, prompt: PROMPT },
-    { userId, conversationId: null, history: [], message: resolved.case.message, model: ref },
+    {
+      userId,
+      conversationId: null,
+      history: resolved.case.history,
+      message: resolved.case.message,
+      model: ref,
+    },
   );
 
   const actual = new Map<number, ListChange>();

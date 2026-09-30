@@ -12,8 +12,15 @@ cases:
 
   - id: example-nickname-relative
     message: "FWS, two more episodes"
-    tags: [nickname, relative]
-    notes: "FWS is a synonym on MAL; the list is at 7, so two more means 9."
+    tags: [nickname, relative, history]
+    notes: >-
+      FWS is a synonym on MAL; the list is at 7, so two more means 9. The history is an earlier
+      exchange: the agent must still search and commit anew, not just say "Updated".
+    history:
+      - role: user
+        content: "watched ep 7 of FWS"
+      - role: assistant
+        content: "Updated Fixture Watching Show: you're on episode 7."
     expect:
       writes:
         - anime: "FWS"
