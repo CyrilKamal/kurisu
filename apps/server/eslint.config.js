@@ -22,5 +22,24 @@ export default defineConfig([
     files: ["**/*.js"],
     extends: [tseslint.configs.disableTypeChecked],
   },
+  {
+    // CLAUDE.md: every model call goes through one provider interface. SDKs live only there.
+    files: ["**/*.ts"],
+    ignores: ["src/llm/providers/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@google/genai", "@google/genai/*", "ollama", "openai", "@anthropic-ai/*"],
+              message:
+                "Model SDKs may only be imported in src/llm/providers/. Use the ModelClient from src/llm/.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   prettier,
 ]);
