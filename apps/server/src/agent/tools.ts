@@ -18,8 +18,8 @@ export interface RunContext {
   writeListStatus: ListWriter;
   /** Anime ids a search or get_entry returned in this run. Only these can be proposed. */
   seen: Set<number>;
-  /** Anime ids a search marked as a clear match in this run. */
-  clear: Set<number>;
+  /** Anime ids a search marked as a clear match in this run, and why (see SearchCandidate). */
+  clear: Map<number, "unique" | "only_in_progress">;
   /** Proposals created in this run. The model can only commit these. */
   proposalIds: Set<string>;
   committed: Change[];
@@ -126,7 +126,8 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   const candidates = await searchMyList(ctx.db, ctx.userId, args.data.slice(0, 4));
   for (const c of candidates) {
     ctx.seen.add(c.animeId);
-    if (c.clear) ctx.clear.add(c.animeId);
+    // A later, sharper search can upgrade a tie-break match to a unique one, never downgrade.
+    if (c.clearBy && ctx.clear.get(c.animeId) !== "unique") ctx.clear.set(c.animeId, c.clearBy);
   }
   if (candidates.length === 0) return { result: { results: [], note: "Not on the user's list." } };
   return {
@@ -159,7 +160,7 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
     userId: ctx.userId,
     runId: ctx.runId,
     animeId: a.anime_id,
-    clearMatch: ctx.clear.has(a.anime_id),
+    clearMatch: isClearFor(ctx.clear.get(a.anime_id), a),
     ...(a.status !== undefined && { status: a.status }),
     ...(a.episodes_watched !== undefined && { episodesWatched: a.episodes_watched }),
     ...(a.episodes_delta !== undefined && { episodesDelta: a.episodes_delta }),
@@ -211,6 +212,29 @@ async function commitTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
     default:
       return failure(result.status, "The change was not written.");
   }
+}
+
+/**
+ * A unique match is clear for any change. A match that only won a tie by being the one show in
+ * progress is clear only for forward progress (episodes, or starting/finishing it): "finished
+ * frieren" means the season being watched, but "dropping the isekai one" among several isekai
+ * shows must ask first, as the design says.
+ */
+function isClearFor(
+  clearBy: "unique" | "only_in_progress" | undefined,
+  change: z.infer<typeof proposeArgs>,
+): boolean {
+  if (clearBy === "unique") return true;
+  if (clearBy !== "only_in_progress") return false;
+  const forwardStatus =
+    change.status === undefined || change.status === "watching" || change.status === "completed";
+  const progress =
+    change.episodes_watched !== undefined ||
+    change.episodes_delta !== undefined ||
+    change.status !== undefined;
+  return (
+    progress && forwardStatus && change.score === undefined && change.is_rewatching === undefined
+  );
 }
 
 function entryForModel(entry: ListEntryView) {
