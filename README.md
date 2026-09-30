@@ -6,3 +6,7 @@ A personal anime agent. Tell it what you watched in plain language, and it keeps
 - Decision log: [docs/decisions.md](docs/decisions.md)
 
 Status: Milestone 1 (MAL login, list mirror, List screen) in progress. Setup and commands will be documented here once the project is scaffolded.
+
+## License
+
+[MIT](LICENSE)
