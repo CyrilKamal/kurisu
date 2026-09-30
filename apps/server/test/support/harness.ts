@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { inject } from "vitest";
 
-import { buildApp } from "../../src/app.js";
+import { buildApp, type BuildAppOptions } from "../../src/app.js";
 import { OAUTH_STATE_COOKIE } from "../../src/auth/routes.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import { createTokenStore, type TokenStore } from "../../src/auth/tokenStore.js";
@@ -42,7 +42,9 @@ export interface Harness {
   close(): Promise<void>;
 }
 
-export async function startHarness(): Promise<Harness> {
+export async function startHarness(
+  options: Pick<BuildAppOptions, "models" | "roles"> = {},
+): Promise<Harness> {
   const fakeMal = await FakeMal.start({ ...TEST_MAL_CLIENT, user: TEST_MAL_USER });
   const config = testConfig({
     DATABASE_URL: inject("databaseUrl"),
@@ -56,6 +58,7 @@ export async function startHarness(): Promise<Harness> {
     logStream: logs,
     // Real backoff shape, millisecond delays, so retry tests stay fast.
     malRetry: { retries: 3, baseDelayMs: 1, maxDelayMs: 5 },
+    ...options,
   });
   await app.ready();
 
@@ -81,7 +84,7 @@ export async function startHarness(): Promise<Harness> {
 
 export async function resetDatabase(db: Db): Promise<void> {
   await db.execute(
-    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes CASCADE`,
+    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages CASCADE`,
   );
 }
 
