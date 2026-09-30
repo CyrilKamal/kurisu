@@ -1,0 +1,4738 @@
+{
+  "name": "my-list",
+  "description": "Sanitized export of a real MAL anime list (348 entries). Scores, dates, tags, comments and the username are removed.",
+  "source": "mal-mirror",
+  "exportedAt": "2026-09-30T05:57:21.799Z",
+  "entries": [
+    {
+      "id": 1,
+      "title": "Cowboy Bebop",
+      "titleEn": "Cowboy Bebop",
+      "titleJa": "カウボーイビバップ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "completed",
+      "episodesWatched": 26,
+      "isRewatching": false
+    },
+    {
+      "id": 6,
+      "title": "Trigun",
+      "titleEn": "Trigun",
+      "titleJa": "トライガン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 8,
+      "title": "Bouken Ou Beet",
+      "titleEn": "Beet the Vandel Buster",
+      "titleJa": "冒険王ビィト",
+      "synonyms": [
+        "Adventure King Beet"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 52,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 19,
+      "title": "Monster",
+      "titleEn": "Monster",
+      "titleJa": "モンスター",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 74,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 20,
+      "title": "Naruto",
+      "titleEn": "Naruto",
+      "titleJa": "ナルト",
+      "synonyms": [
+        "NARUTO"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 220,
+      "status": "completed",
+      "episodesWatched": 220,
+      "isRewatching": false
+    },
+    {
+      "id": 21,
+      "title": "One Piece",
+      "titleEn": "One Piece",
+      "titleJa": "ONE PIECE",
+      "synonyms": [
+        "OP"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": null,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 57,
+      "title": "Beck",
+      "titleEn": "Beck: Mongolian Chop Squad",
+      "titleJa": "ベック",
+      "synonyms": [
+        "BECK"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 121,
+      "title": "Fullmetal Alchemist",
+      "titleEn": "Fullmetal Alchemist",
+      "titleJa": "鋼の錬金術師",
+      "synonyms": [
+        "Hagane no Renkinjutsushi",
+        "FMA",
+        "Full Metal Alchemist"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 51,
+      "status": "completed",
+      "episodesWatched": 51,
+      "isRewatching": false
+    },
+    {
+      "id": 205,
+      "title": "Samurai Champloo",
+      "titleEn": "Samurai Champloo",
+      "titleJa": "サムライチャンプルー",
+      "synonyms": [
+        "SAMURAI CHAMPLOO"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "completed",
+      "episodesWatched": 26,
+      "isRewatching": false
+    },
+    {
+      "id": 227,
+      "title": "FLCL",
+      "titleEn": "FLCL",
+      "titleJa": "フリクリ",
+      "synonyms": [
+        "Fooly Cooly",
+        "Furi Kuri"
+      ],
+      "mediaType": "ova",
+      "numEpisodes": 6,
+      "status": "completed",
+      "episodesWatched": 6,
+      "isRewatching": false
+    },
+    {
+      "id": 249,
+      "title": "InuYasha",
+      "titleEn": "InuYasha",
+      "titleJa": "犬夜叉",
+      "synonyms": [
+        "Inu Yasha"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 167,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 263,
+      "title": "Hajime no Ippo",
+      "titleEn": "Fighting Spirit",
+      "titleJa": "はじめの一歩 THE FIGHTING!",
+      "synonyms": [
+        "The First Step",
+        "Hajime no Ippo: The Fighting"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 75,
+      "status": "completed",
+      "episodesWatched": 75,
+      "isRewatching": false
+    },
+    {
+      "id": 269,
+      "title": "Bleach",
+      "titleEn": "Bleach",
+      "titleJa": "BLEACH - ブリーチ -",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 366,
+      "status": "completed",
+      "episodesWatched": 366,
+      "isRewatching": false
+    },
+    {
+      "id": 270,
+      "title": "Hellsing",
+      "titleEn": "Hellsing",
+      "titleJa": "Hellsing [ヘルシング]",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 392,
+      "title": "Yuu☆Yuu☆Hakusho",
+      "titleEn": "Yu Yu Hakusho: Ghost Files",
+      "titleJa": "幽☆遊☆白書",
+      "synonyms": [
+        "Yu Yu Hakusho",
+        "Ghost Fighter",
+        "Poltergeist Report",
+        "YuYu Hakusho"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 112,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 1292,
+      "title": "Afro Samurai",
+      "titleEn": "Afro Samurai",
+      "titleJa": "アフロサムライ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 5,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 1535,
+      "title": "Death Note",
+      "titleEn": "Death Note",
+      "titleJa": "デスノート",
+      "synonyms": [
+        "DN"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 37,
+      "status": "completed",
+      "episodesWatched": 37,
+      "isRewatching": false
+    },
+    {
+      "id": 1575,
+      "title": "Code Geass: Hangyaku no Lelouch",
+      "titleEn": "Code Geass: Lelouch of the Rebellion",
+      "titleJa": "コードギアス 反逆のルルーシュ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 1604,
+      "title": "Katekyou Hitman Reborn!",
+      "titleEn": "Reborn!",
+      "titleJa": "家庭教師ヒットマンREBORN!",
+      "synonyms": [
+        "Kateikyoushi Hitman Reborn!",
+        "Home Tutor Hitman Reborn!"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 203,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 1735,
+      "title": "Naruto: Shippuuden",
+      "titleEn": "Naruto Shippuden",
+      "titleJa": "-ナルト- 疾風伝",
+      "synonyms": [
+        "Naruto Hurricane Chronicles"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 500,
+      "status": "completed",
+      "episodesWatched": 500,
+      "isRewatching": false
+    },
+    {
+      "id": 2001,
+      "title": "Tengen Toppa Gurren Lagann",
+      "titleEn": "Gurren Lagann",
+      "titleJa": "天元突破グレンラガン",
+      "synonyms": [
+        "Tengen Toppa Gurren-Lagann",
+        "Making Break-Through Gurren Lagann",
+        "Heavenly Breakthrough Gurren Lagann",
+        "TTGL",
+        "Gurren Laggan"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 27,
+      "status": "completed",
+      "episodesWatched": 27,
+      "isRewatching": false
+    },
+    {
+      "id": 2025,
+      "title": "Darker than Black: Kuro no Keiyakusha",
+      "titleEn": "Darker than Black",
+      "titleJa": "Darker than BLACK -黒の契約者-",
+      "synonyms": [
+        "DTB"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 2167,
+      "title": "Clannad",
+      "titleEn": "Clannad",
+      "titleJa": "CLANNAD",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 23,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 2402,
+      "title": "Ashita no Joe",
+      "titleEn": "Tomorrow's Joe",
+      "titleJa": "あしたのジョー",
+      "synonyms": [
+        "Rocky Joe",
+        "Champion Joe"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 79,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 2904,
+      "title": "Code Geass: Hangyaku no Lelouch R2",
+      "titleEn": "Code Geass: Lelouch of the Rebellion R2",
+      "titleJa": "コードギアス 反逆のルルーシュ R2",
+      "synonyms": [
+        "Code Geass: Hangyaku no Lelouch 2nd Season",
+        "Code Geass: Hangyaku no Lelouch Second Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 3002,
+      "title": "Gyakkyou Burai Kaiji: Ultimate Survivor",
+      "titleEn": "Kaiji: Ultimate Survivor",
+      "titleJa": "逆境無頼カイジ Ultimate Survivor",
+      "synonyms": [
+        "Tobaku Mokushiroku Kaiji",
+        "The Suffering Pariah Kaiji"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 3588,
+      "title": "Soul Eater",
+      "titleEn": "Soul Eater",
+      "titleJa": "ソウルイーター",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 51,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 4181,
+      "title": "Clannad: After Story",
+      "titleEn": "Clannad: After Story",
+      "titleJa": "CLANNAD〜AFTER STORY〜 クラナド アフターストーリー",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 5081,
+      "title": "Bakemonogatari",
+      "titleEn": "Bakemonogatari",
+      "titleJa": "化物語",
+      "synonyms": [
+        "Ghostory",
+        "Monstory"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 15,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 6114,
+      "title": "Rainbow: Nisha Rokubou no Shichinin",
+      "titleEn": "Rainbow",
+      "titleJa": "RAINBOW 二舎六房の七人",
+      "synonyms": [
+        "Rainbow: Criminal Seven of Compound Two Cell Six"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 7674,
+      "title": "Bakuman.",
+      "titleEn": "Bakuman.",
+      "titleJa": "バクマン。",
+      "synonyms": [
+        "Bakuman Season 1"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 9253,
+      "title": "Steins;Gate",
+      "titleEn": "Steins;Gate",
+      "titleJa": "STEINS;GATE",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 10087,
+      "title": "Fate/Zero",
+      "titleEn": "Fate/Zero",
+      "titleJa": "フェイト/ゼロ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 10620,
+      "title": "Mirai Nikki (TV)",
+      "titleEn": "The Future Diary",
+      "titleJa": "未来日記",
+      "synonyms": [
+        "Mirai Nikki",
+        "Mirai Nikki (2011)"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 11061,
+      "title": "Hunter x Hunter (2011)",
+      "titleEn": "Hunter x Hunter",
+      "titleJa": "HUNTER×HUNTER（ハンター×ハンター）",
+      "synonyms": [
+        "HxH (2011)"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 148,
+      "status": "completed",
+      "episodesWatched": 148,
+      "isRewatching": false
+    },
+    {
+      "id": 11111,
+      "title": "Another",
+      "titleEn": "Another",
+      "titleJa": "アナザー",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 11757,
+      "title": "Sword Art Online",
+      "titleEn": "Sword Art Online",
+      "titleJa": "ソードアート・オンライン",
+      "synonyms": [
+        "S.A.O",
+        "SAO"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 12189,
+      "title": "Hyouka",
+      "titleEn": "Hyouka",
+      "titleJa": "氷菓",
+      "synonyms": [
+        "Hyou-ka",
+        "Hyouka: You can't escape",
+        "Hyou-ka: You can't escape",
+        "Hyoka"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 22,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 13601,
+      "title": "Psycho-Pass",
+      "titleEn": "Psycho-Pass",
+      "titleJa": "サイコパス",
+      "synonyms": [
+        "Psychopath"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 22,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 14075,
+      "title": "Zetsuen no Tempest",
+      "titleEn": "Blast of Tempest",
+      "titleJa": "絶園のテンペスト",
+      "synonyms": [
+        "Zetsuen no Tempest: The Civilization Blaster"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 14513,
+      "title": "Magi: The Labyrinth of Magic",
+      "titleEn": "Magi: The Labyrinth of Magic",
+      "titleJa": "マギ The labyrinth of magic",
+      "synonyms": [
+        "Magi Season 1"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 14719,
+      "title": "JoJo no Kimyou na Bouken (TV)",
+      "titleEn": "JoJo's Bizarre Adventure (2012)",
+      "titleJa": "ジョジョの奇妙な冒険",
+      "synonyms": [
+        "JoJo no Kimyou na Bouken (2012)",
+        "Battle Tendency",
+        "Phantom Blood",
+        "Sentou Chouryuu",
+        "JoJo's Bizarre Adventure The Animation"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "completed",
+      "episodesWatched": 26,
+      "isRewatching": false
+    },
+    {
+      "id": 16498,
+      "title": "Shingeki no Kyojin",
+      "titleEn": "Attack on Titan",
+      "titleJa": "進撃の巨人",
+      "synonyms": [
+        "AoT",
+        "SnK"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 16592,
+      "title": "Danganronpa: Kibou no Gakuen to Zetsubou no Koukousei The Animation",
+      "titleEn": "Danganronpa: The Animation",
+      "titleJa": "ダンガンロンパ 希望の学園と絶望の高校生 THE ANIMATION",
+      "synonyms": [
+        "Dangan Ronpa: The Animation"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 17074,
+      "title": "Monogatari Series: Second Season",
+      "titleEn": "Monogatari Series: Second Season",
+      "titleJa": "〈物語〉シリーズ セカンドシーズン",
+      "synonyms": [
+        "Nekomonogatari: Shiro",
+        "Kabukimonogatari",
+        "Otorimonogatari",
+        "Onimonogatari",
+        "Koimonogatari"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 17265,
+      "title": "Log Horizon",
+      "titleEn": "Log Horizon",
+      "titleJa": "ログ・ホライズン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 18115,
+      "title": "Magi: The Kingdom of Magic",
+      "titleEn": "Magi: The Kingdom of Magic",
+      "titleJa": "マギ The kingdom of magic",
+      "synonyms": [
+        "Magi: The Labyrinth of Magic 2",
+        "Magi Season 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 18179,
+      "title": "Yowamushi Pedal",
+      "titleEn": "Yowamushi Pedal",
+      "titleJa": "弱虫ペダル",
+      "synonyms": [
+        "Yowapeda"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 38,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 19815,
+      "title": "No Game No Life",
+      "titleEn": "No Game, No Life",
+      "titleJa": "ノーゲーム・ノーライフ",
+      "synonyms": [
+        "NGNL"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 20507,
+      "title": "Noragami",
+      "titleEn": "Noragami",
+      "titleJa": "ノラガミ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 20583,
+      "title": "Haikyuu!!",
+      "titleEn": "Haikyu!!",
+      "titleJa": "ハイキュー!!",
+      "synonyms": [
+        "High Kyuu!!",
+        "HQ!!"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 20785,
+      "title": "Mahouka Koukou no Rettousei",
+      "titleEn": "The Irregular at Magic High School",
+      "titleJa": "魔法科高校の劣等生",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "completed",
+      "episodesWatched": 26,
+      "isRewatching": false
+    },
+    {
+      "id": 20899,
+      "title": "JoJo no Kimyou na Bouken Part 3: Stardust Crusaders",
+      "titleEn": "JoJo's Bizarre Adventure: Stardust Crusaders",
+      "titleJa": "ジョジョの奇妙な冒険 スターダストクルセイダース",
+      "synonyms": [
+        "Dai San Bu Kuujou Joutarou: Mirai e no Isan",
+        "JoJo's Bizarre Adventure Part 3"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 21843,
+      "title": "Shingeki no Bahamut: Genesis",
+      "titleEn": "Rage of Bahamut: Genesis",
+      "titleJa": "神撃のバハムート GENESIS",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 21881,
+      "title": "Sword Art Online II",
+      "titleEn": "Sword Art Online II",
+      "titleJa": "ソードアート・オンライン II",
+      "synonyms": [
+        "Phantom Bullet",
+        "SAO II",
+        "Sword Art Online 2",
+        "SAO 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 22199,
+      "title": "Akame ga Kill!",
+      "titleEn": "Akame ga Kill!",
+      "titleJa": "アカメが斬る！",
+      "synonyms": [
+        "Akame ga Kiru!"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 22319,
+      "title": "Tokyo Ghoul",
+      "titleEn": "Tokyo Ghoul",
+      "titleJa": "東京喰種-トーキョーグール-",
+      "synonyms": [
+        "Tokyo Kushu",
+        "Toukyou Kushu",
+        "Toukyou Ghoul"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 22535,
+      "title": "Kiseijuu: Sei no Kakuritsu",
+      "titleEn": "Parasyte: The Maxim",
+      "titleJa": "寄生獣 セイの格率",
+      "synonyms": [
+        "Parasite",
+        "Parasitic Beasts",
+        "Parasyte"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 23273,
+      "title": "Shigatsu wa Kimi no Uso",
+      "titleEn": "Your Lie in April",
+      "titleJa": "四月は君の嘘",
+      "synonyms": [
+        "Kimiuso"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 22,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 23283,
+      "title": "Zankyou no Terror",
+      "titleEn": "Terror in Resonance",
+      "titleJa": "残響のテロル",
+      "synonyms": [
+        "Terror in Tokyo",
+        "Terror of Resonance"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 23755,
+      "title": "Nanatsu no Taizai",
+      "titleEn": "The Seven Deadly Sins",
+      "titleJa": "七つの大罪",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 24405,
+      "title": "World Trigger",
+      "titleEn": "World Trigger",
+      "titleJa": "ワールドトリガー",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 73,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 24439,
+      "title": "Kekkai Sensen",
+      "titleEn": "Blood Blockade Battlefront",
+      "titleJa": "血界戦線",
+      "synonyms": [
+        "Bloodline Battlefront"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 24833,
+      "title": "Ansatsu Kyoushitsu",
+      "titleEn": "Assassination Classroom",
+      "titleJa": "暗殺教室",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 22,
+      "status": "completed",
+      "episodesWatched": 22,
+      "isRewatching": false
+    },
+    {
+      "id": 25183,
+      "title": "Gangsta.",
+      "titleEn": "Gangsta.",
+      "titleJa": "GANGSTA. ギャングスタ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 25777,
+      "title": "Shingeki no Kyojin Season 2",
+      "titleEn": "Attack on Titan Season 2",
+      "titleJa": "進撃の巨人 Season2",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 26055,
+      "title": "JoJo no Kimyou na Bouken Part 3: Stardust Crusaders - Egypt-hen",
+      "titleEn": "JoJo's Bizarre Adventure: Stardust Crusaders - Battle in Egypt",
+      "titleJa": "ジョジョの奇妙な冒険 スターダストクルセイダース エジプト編",
+      "synonyms": [
+        "JoJo's Bizarre Adventure Part 3",
+        "JoJo's Bizarre Adventure: Stardust Crusaders - Egypt Arc"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 26243,
+      "title": "Owari no Seraph",
+      "titleEn": "Seraph of the End: Vampire Reign",
+      "titleJa": "終わりのセラフ",
+      "synonyms": [
+        "Seraph of the End",
+        "SOTE"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 27631,
+      "title": "God Eater",
+      "titleEn": "God Eater",
+      "titleJa": "GOD EATER",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 27899,
+      "title": "Tokyo Ghoul √A",
+      "titleEn": "Tokyo Ghoul √A",
+      "titleJa": "東京喰種√A",
+      "synonyms": [
+        "Tokyo Ghoul Root A",
+        "Tokyo Ghoul 2nd Season",
+        "Tokyo Ghoul Second Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 28121,
+      "title": "Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka",
+      "titleEn": "Is It Wrong to Try to Pick Up Girls in a Dungeon?",
+      "titleJa": "ダンジョンに出会いを求めるのは間違っているだろうか",
+      "synonyms": [
+        "DanMachi",
+        "Is It Wrong That I Want to Meet You in a Dungeon"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 28223,
+      "title": "Death Parade",
+      "titleEn": "Death Parade",
+      "titleJa": "デス・パレード",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 28623,
+      "title": "Koutetsujou no Kabaneri",
+      "titleEn": "Kabaneri of the Iron Fortress",
+      "titleJa": "甲鉄城のカバネリ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 28851,
+      "title": "Koe no Katachi",
+      "titleEn": "A Silent Voice",
+      "titleJa": "聲の形",
+      "synonyms": [
+        "The Shape of Voice"
+      ],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 28891,
+      "title": "Haikyuu!! Second Season",
+      "titleEn": "Haikyu!! 2nd Season",
+      "titleJa": "ハイキュー!! セカンドシーズン",
+      "synonyms": [
+        "Haikyuu!! Second Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 28999,
+      "title": "Charlotte",
+      "titleEn": "Charlotte",
+      "titleJa": "Charlotte（シャーロット）",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 30187,
+      "title": "Sakurako-san no Ashimoto ni wa Shitai ga Umatteiru",
+      "titleEn": "Beautiful Bones -Sakurako's Investigation-",
+      "titleJa": "櫻子さんの足下には死体が埋まっている",
+      "synonyms": [
+        "A Corpse is Buried Under Sakurako's Feet."
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 30276,
+      "title": "One Punch Man",
+      "titleEn": "One-Punch Man",
+      "titleJa": "ワンパンマン",
+      "synonyms": [
+        "One Punch-Man",
+        "OPM"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 30503,
+      "title": "Noragami Aragoto",
+      "titleEn": "Noragami Aragoto",
+      "titleJa": "ノラガミ ARAGOTO",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 30654,
+      "title": "Ansatsu Kyoushitsu 2nd Season",
+      "titleEn": "Assassination Classroom Second Season",
+      "titleJa": "暗殺教室　第２期",
+      "synonyms": [
+        "Ansatsu Kyoushitsu Season 2",
+        "Ansatsu Kyoushitsu Final Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 31043,
+      "title": "Boku dake ga Inai Machi",
+      "titleEn": "Erased",
+      "titleJa": "僕だけがいない街",
+      "synonyms": [
+        "The Town Where Only I am Missing",
+        "BokuMachi"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 31229,
+      "title": "Servamp",
+      "titleEn": "Servamp",
+      "titleJa": "SERVAMP（サーヴァンプ）",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 31240,
+      "title": "Re:Zero kara Hajimeru Isekai Seikatsu",
+      "titleEn": "Re:ZERO -Starting Life in Another World-",
+      "titleJa": "Re:ゼロから始める異世界生活",
+      "synonyms": [
+        "Re: Life in a different world from zero",
+        "ReZero"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 31478,
+      "title": "Bungou Stray Dogs",
+      "titleEn": "Bungo Stray Dogs",
+      "titleJa": "文豪ストレイドッグス",
+      "synonyms": [
+        "Literary Stray Dogs",
+        "BSD"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 31741,
+      "title": "Magi: Sinbad no Bouken (TV)",
+      "titleEn": "Magi: Adventure of Sinbad",
+      "titleJa": "マギ シンドバッドの冒険",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 31798,
+      "title": "Kiznaiver",
+      "titleEn": "Kiznaiver",
+      "titleJa": "キズナイーバー",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 31904,
+      "title": "Big Order (TV)",
+      "titleEn": null,
+      "titleJa": "ビッグオーダー",
+      "synonyms": [
+        "Big Order"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 31933,
+      "title": "JoJo no Kimyou na Bouken Part 4: Diamond wa Kudakenai",
+      "titleEn": "JoJo's Bizarre Adventure: Diamond Is Unbreakable",
+      "titleJa": "ジョジョの奇妙な冒険 ダイヤモンドは砕けない",
+      "synonyms": [
+        "JoJo no Kimyou na Bouken Part 4: Diamond wa Kudakenai",
+        "Diamond is not Crash"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 39,
+      "status": "completed",
+      "episodesWatched": 39,
+      "isRewatching": false
+    },
+    {
+      "id": 31964,
+      "title": "Boku no Hero Academia",
+      "titleEn": "My Hero Academia",
+      "titleJa": "僕のヒーローアカデミア",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 32182,
+      "title": "Mob Psycho 100",
+      "titleEn": "Mob Psycho 100",
+      "titleJa": "モブサイコ100",
+      "synonyms": [
+        "Mob Psycho Hyaku",
+        "Mob Psycho One Hundred"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 32281,
+      "title": "Kimi no Na wa.",
+      "titleEn": "Your Name.",
+      "titleJa": "君の名は。",
+      "synonyms": [],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 32729,
+      "title": "Orange",
+      "titleEn": "Orange",
+      "titleJa": "orange（オレンジ）",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 32867,
+      "title": "Bungou Stray Dogs 2nd Season",
+      "titleEn": "Bungo Stray Dogs 2",
+      "titleJa": "文豪ストレイドッグス",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 32935,
+      "title": "Haikyuu!! Karasuno Koukou vs. Shiratorizawa Gakuen Koukou",
+      "titleEn": "Haikyu!! 3rd Season",
+      "titleJa": "ハイキュー!! 烏野高校 VS 白鳥沢学園高校",
+      "synonyms": [
+        "Haikyuu!! Third Season",
+        "Haikyuu!! Karasuno High VS Shiratorizawa Academy"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "completed",
+      "episodesWatched": 10,
+      "isRewatching": false
+    },
+    {
+      "id": 32998,
+      "title": "91 Days",
+      "titleEn": "91 Days",
+      "titleJa": "91Days",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 33486,
+      "title": "Boku no Hero Academia 2nd Season",
+      "titleEn": "My Hero Academia Season 2",
+      "titleJa": "僕のヒーローアカデミア",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 33889,
+      "title": "Saredo Tsumibito wa Ryuu to Odoru",
+      "titleEn": "Dances with the Dragons",
+      "titleJa": "されど罪人は竜と踊る",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 33926,
+      "title": "Quanzhi Gaoshou",
+      "titleEn": "The King's Avatar",
+      "titleJa": "全职高手",
+      "synonyms": [
+        "Quan Zhi Gao Shou",
+        "Full-Time Expert",
+        "Expert of All Classes",
+        "マスターオブスキル"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 34134,
+      "title": "One Punch Man 2nd Season",
+      "titleEn": "One-Punch Man Season 2",
+      "titleJa": "ワンパンマン 2期",
+      "synonyms": [
+        "One Punch-Man 2",
+        "One-Punch Man 2",
+        "OPM 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 34542,
+      "title": "Inuyashiki",
+      "titleEn": "Inuyashiki: Last Hero",
+      "titleJa": "いぬやしき",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 34566,
+      "title": "Boruto: Naruto Next Generations",
+      "titleEn": "Boruto: Naruto Next Generations",
+      "titleJa": "BORUTO -NARUTO NEXT GENERATIONS-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 293,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 34572,
+      "title": "Black Clover",
+      "titleEn": "Black Clover",
+      "titleJa": "ブラッククローバー",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 170,
+      "status": "completed",
+      "episodesWatched": 170,
+      "isRewatching": false
+    },
+    {
+      "id": 34577,
+      "title": "Nanatsu no Taizai: Imashime no Fukkatsu",
+      "titleEn": "The Seven Deadly Sins: Revival of the Commandments",
+      "titleJa": "七つの大罪 戒めの復活",
+      "synonyms": [
+        "Seven Deadly Sins Season 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 34599,
+      "title": "Made in Abyss",
+      "titleEn": "Made in Abyss",
+      "titleJa": "メイドインアビス",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 35120,
+      "title": "Devilman: Crybaby",
+      "titleEn": "Devilman: Crybaby",
+      "titleJa": "DEVILMAN crybaby",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 10,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 35507,
+      "title": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e",
+      "titleEn": "Classroom of the Elite",
+      "titleJa": "ようこそ実力至上主義の教室へ",
+      "synonyms": [
+        "Welcome to the Classroom of the Elite",
+        "You-jitsu",
+        "You-zitsu"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 35737,
+      "title": "Pluto",
+      "titleEn": "Pluto",
+      "titleJa": "プルートウ",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 8,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 35760,
+      "title": "Shingeki no Kyojin Season 3",
+      "titleEn": "Attack on Titan Season 3",
+      "titleJa": "進撃の巨人 Season3",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 35790,
+      "title": "Tate no Yuusha no Nariagari",
+      "titleEn": "The Rising of the Shield Hero",
+      "titleJa": "盾の勇者の成り上がり",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 35839,
+      "title": "Sora yori mo Tooi Basho",
+      "titleEn": "A Place Further Than The Universe",
+      "titleJa": "宇宙よりも遠い場所",
+      "synonyms": [
+        "Uchuu yori mo Tooi Basho",
+        "A Story That Leads to the Antarctica",
+        "Yorimoi"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 36456,
+      "title": "Boku no Hero Academia 3rd Season",
+      "titleEn": "My Hero Academia Season 3",
+      "titleJa": "僕のヒーローアカデミア",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 36474,
+      "title": "Sword Art Online: Alicization",
+      "titleEn": "Sword Art Online: Alicization",
+      "titleJa": "ソードアート・オンライン アリシゼーション",
+      "synonyms": [
+        "Sword Art Online III",
+        "SAO Alicization",
+        "Sword Art Online 3",
+        "SAO 3"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 36563,
+      "title": "Megalo Box",
+      "titleEn": "Megalobox",
+      "titleJa": "メガロボクス",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 36649,
+      "title": "Banana Fish",
+      "titleEn": "Banana Fish",
+      "titleJa": "BANANA FISH",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 37105,
+      "title": "Grand Blue",
+      "titleEn": "Grand Blue Dreaming",
+      "titleJa": "ぐらんぶる",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 37347,
+      "title": "Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka II",
+      "titleEn": "Is It Wrong to Try to Pick Up Girls in a Dungeon? II",
+      "titleJa": "ダンジョンに出会いを求めるのは間違っているだろうかII",
+      "synonyms": [
+        "DanMachi 2nd Season",
+        "Is It Wrong That I Want to Meet You in a Dungeon 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 37349,
+      "title": "Goblin Slayer",
+      "titleEn": "Goblin Slayer",
+      "titleJa": "ゴブリンスレイヤー",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 37407,
+      "title": "Penguin Highway",
+      "titleEn": null,
+      "titleJa": "ペンギン・ハイウェイ",
+      "synonyms": [],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 37510,
+      "title": "Mob Psycho 100 II",
+      "titleEn": "Mob Psycho 100 II",
+      "titleJa": "モブサイコ100 II",
+      "synonyms": [
+        "Mob Psycho 100 2nd Season",
+        "Mob Psycho Hyaku",
+        "Mob Psycho One Hundred"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 37520,
+      "title": "Dororo",
+      "titleEn": "Dororo",
+      "titleJa": "どろろ",
+      "synonyms": [
+        "Dororo to Hyakkimaru"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 37521,
+      "title": "Vinland Saga",
+      "titleEn": null,
+      "titleJa": "ヴィンランド・サガ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 37525,
+      "title": "Babylon",
+      "titleEn": "Babylon",
+      "titleJa": "バビロン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 37779,
+      "title": "Yakusoku no Neverland",
+      "titleEn": "The Promised Neverland",
+      "titleJa": "約束のネバーランド",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 37926,
+      "title": "Nakanohito Genome [Jikkyouchuu]",
+      "titleEn": "The Ones Within",
+      "titleJa": "ナカノヒトゲノム【実況中】",
+      "synonyms": [
+        "Naka no Hito Genome [Jikkyouchuu]"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 37932,
+      "title": "Quanzhi Gaoshou 2",
+      "titleEn": "The King's Avatar 2",
+      "titleJa": "全职高手2",
+      "synonyms": [
+        "Quan Zhi Gao Shou 2nd Season",
+        "Full-Time Expert 2nd Season",
+        "Master of Skills 2nd Season",
+        "マスターオブスキル 2期"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 37936,
+      "title": "Wu Shan Wu Xing (2020)",
+      "titleEn": "Fog Hill of Five Elements",
+      "titleJa": "雾山五行",
+      "synonyms": [
+        "Wushan Wuxing",
+        "Fog Hill of the Five Elements",
+        "Five Elements in the Misty Mountain"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 3,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 37991,
+      "title": "JoJo no Kimyou na Bouken Part 5: Ougon no Kaze",
+      "titleEn": "JoJo's Bizarre Adventure: Golden Wind",
+      "titleJa": "ジョジョの奇妙な冒険 黄金の風",
+      "synonyms": [
+        "JoJo's Bizarre Adventure Part 5: Golden Wind",
+        "JoJo no Kimyou na Bouken Part 5: Ougon no Kaze",
+        "Le Bizzarre Avventure Di GioGio Parte 5: Vento Aureo"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 39,
+      "status": "completed",
+      "episodesWatched": 39,
+      "isRewatching": false
+    },
+    {
+      "id": 38000,
+      "title": "Kimetsu no Yaiba",
+      "titleEn": "Demon Slayer: Kimetsu no Yaiba",
+      "titleJa": "鬼滅の刃",
+      "synonyms": [
+        "Blade of Demon Destruction"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 26,
+      "status": "completed",
+      "episodesWatched": 26,
+      "isRewatching": false
+    },
+    {
+      "id": 38003,
+      "title": "Bungou Stray Dogs 3rd Season",
+      "titleEn": "Bungo Stray Dogs 3",
+      "titleJa": "文豪ストレイドッグス 第3期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 38408,
+      "title": "Boku no Hero Academia 4th Season",
+      "titleEn": "My Hero Academia Season 4",
+      "titleJa": "僕のヒーローアカデミア",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 38524,
+      "title": "Shingeki no Kyojin Season 3 Part 2",
+      "titleEn": "Attack on Titan Season 3 Part 2",
+      "titleJa": "進撃の巨人 Season3 Part.2",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "completed",
+      "episodesWatched": 10,
+      "isRewatching": false
+    },
+    {
+      "id": 38594,
+      "title": "Kimi to, Nami ni Noretara",
+      "titleEn": "Ride Your Wave",
+      "titleJa": "きみと、波にのれたら",
+      "synonyms": [],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 38656,
+      "title": "Darwin's Game",
+      "titleEn": "Darwin's Game",
+      "titleJa": "ダーウィンズゲーム",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 38671,
+      "title": "Enen no Shouboutai",
+      "titleEn": "Fire Force",
+      "titleJa": "炎炎ノ消防隊",
+      "synonyms": [
+        "Fire Brigade of Flames"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 38691,
+      "title": "Dr. Stone",
+      "titleEn": "Dr. Stone",
+      "titleJa": "ドクターストーン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 38826,
+      "title": "Tenki no Ko",
+      "titleEn": "Weathering with You",
+      "titleJa": "天気の子",
+      "synonyms": [],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 38883,
+      "title": "Haikyuu!! To the Top",
+      "titleEn": "Haikyu!! To the Top",
+      "titleJa": "ハイキュー!! TO THE TOP",
+      "synonyms": [
+        "Haikyuu!! (2020)",
+        "Haikyuu!! Fourth Season",
+        "Haikyuu!! 4th Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 39198,
+      "title": "Kanata no Astra",
+      "titleEn": "Astra Lost in Space",
+      "titleJa": "彼方のアストラ",
+      "synonyms": [
+        "Astra Lost in Space"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 39463,
+      "title": "Gleipnir",
+      "titleEn": "Gleipnir",
+      "titleJa": "グレイプニル",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 39535,
+      "title": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+      "titleEn": "Mushoku Tensei: Jobless Reincarnation",
+      "titleJa": "無職転生 ～異世界行ったら本気だす～",
+      "synonyms": [
+        "Jobless Reincarnation: I Will Seriously Try If I Go To Another World"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 39587,
+      "title": "Re:Zero kara Hajimeru Isekai Seikatsu 2nd Season",
+      "titleEn": "Re:ZERO -Starting Life in Another World- Season 2",
+      "titleJa": "Re：ゼロから始める異世界生活 2",
+      "synonyms": [
+        "Re: Life in a different world from zero 2nd Season",
+        "ReZero 2nd Season",
+        "Re:Zero - Starting Life in Another World 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 39617,
+      "title": "Yakusoku no Neverland 2nd Season",
+      "titleEn": "The Promised Neverland Season 2",
+      "titleJa": "約束のネバーランド",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 39701,
+      "title": "Nanatsu no Taizai: Kamigami no Gekirin",
+      "titleEn": "The Seven Deadly Sins: Imperial Wrath of the Gods",
+      "titleJa": "七つの大罪 神々の逆鱗",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "on_hold",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 40028,
+      "title": "Shingeki no Kyojin: The Final Season",
+      "titleEn": "Attack on Titan: Final Season",
+      "titleJa": "進撃の巨人 The Final Season",
+      "synonyms": [
+        "Shingeki no Kyojin Season 4",
+        "Attack on Titan Season 4"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 16,
+      "status": "completed",
+      "episodesWatched": 16,
+      "isRewatching": false
+    },
+    {
+      "id": 40052,
+      "title": "Great Pretender",
+      "titleEn": null,
+      "titleJa": "GREAT PRETENDER",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 23,
+      "status": "completed",
+      "episodesWatched": 23,
+      "isRewatching": false
+    },
+    {
+      "id": 40056,
+      "title": "Deca-Dence",
+      "titleEn": null,
+      "titleJa": "デカダンス",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 40221,
+      "title": "Kami no Tou",
+      "titleEn": "Tower of God",
+      "titleJa": "神之塔 -Tower of God-",
+      "synonyms": [
+        "Sin-ui Tap",
+        "신의 탑"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 40333,
+      "title": "Uzumaki",
+      "titleEn": "Uzumaki: Spiral Into Horror",
+      "titleJa": "うずまき",
+      "synonyms": [
+        "The Spiral"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 4,
+      "status": "dropped",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 40356,
+      "title": "Tate no Yuusha no Nariagari Season 2",
+      "titleEn": "The Rising of the Shield Hero Season 2",
+      "titleJa": "盾の勇者の成り上がり Season2",
+      "synonyms": [
+        "Tate no Yuusha no Nariagari 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 40454,
+      "title": "Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka III",
+      "titleEn": "Is It Wrong to Try to Pick Up Girls in a Dungeon? III",
+      "titleJa": "ダンジョンに出会いを求めるのは間違っているだろうかIII",
+      "synonyms": [
+        "DanMachi 3rd Season",
+        "Is It Wrong That I Want to Meet You in a Dungeon 3rd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 40456,
+      "title": "Kimetsu no Yaiba Movie: Mugen Ressha-hen",
+      "titleEn": "Demon Slayer: Kimetsu no Yaiba - The Movie: Mugen Train",
+      "titleJa": "劇場版 鬼滅の刃 無限列車編",
+      "synonyms": [
+        "Gekijouban Kimetsu no Yaiba: Mugen Ressha-hen",
+        "Kimetsu no Yaiba: Infinity Train",
+        "Demon Slayer Movie: Infinity Train"
+      ],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 40496,
+      "title": "Maou Gakuin no Futekigousha: Shijou Saikyou no Maou no Shiso, Tensei shite Shison-tachi no Gakkou e Kayou",
+      "titleEn": "The Misfit of Demon King Academy",
+      "titleJa": "魔王学院の不適合者 ～史上最強の魔王の始祖、転生して子孫たちの学校へ通う～",
+      "synonyms": [
+        "The Misfit of Demon King Academy: History's Strongest Demon King Reincarnates and Goes to School with His Descendants"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 40497,
+      "title": "Mahouka Koukou no Rettousei: Raihousha-hen",
+      "titleEn": "The Irregular at Magic High School: Visitor Arc",
+      "titleJa": "魔法科高校の劣等生 来訪者編",
+      "synonyms": [
+        "Mahouka Koukou no Rettousei 2nd Season",
+        "The Irregular at Magic High School Season 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 40532,
+      "title": "Appare-Ranman!",
+      "titleEn": "Appare-Ranman!",
+      "titleJa": "天晴爛漫！",
+      "synonyms": [
+        "Appare Ranman!"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 40748,
+      "title": "Jujutsu Kaisen",
+      "titleEn": "Jujutsu Kaisen",
+      "titleJa": "呪術廻戦",
+      "synonyms": [
+        "Sorcery Fight",
+        "JJK"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 40776,
+      "title": "Haikyuu!! To the Top Part 2",
+      "titleEn": "Haikyu!! To the Top 2nd-cour",
+      "titleJa": "ハイキュー TO THE TOP 第2クール",
+      "synonyms": [
+        "Haikyu!! TO THE TOP 2nd-cour, Haikyu!! TO THE TOP Part 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 40834,
+      "title": "Ousama Ranking",
+      "titleEn": "Ranking of Kings",
+      "titleJa": "王様ランキング",
+      "synonyms": [
+        "King Ranking"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 23,
+      "status": "completed",
+      "episodesWatched": 23,
+      "isRewatching": false
+    },
+    {
+      "id": 40852,
+      "title": "Dr. Stone: Stone Wars",
+      "titleEn": null,
+      "titleJa": "ドクターストーン STONE WARS",
+      "synonyms": [
+        "Dr. Stone 2nd Season",
+        "Dr. Stone Second Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 40904,
+      "title": "Bokutachi no Remake",
+      "titleEn": "Remake Our Life!",
+      "titleJa": "ぼくたちのリメイク",
+      "synonyms": [
+        "Bokurema"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 40908,
+      "title": "Kemono Jihen",
+      "titleEn": "Kemono Jihen",
+      "titleJa": "怪物事変",
+      "synonyms": [
+        "Monster Incidents"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 40911,
+      "title": "Yuukoku no Moriarty",
+      "titleEn": "Moriarty the Patriot",
+      "titleJa": "憂国のモリアーティ",
+      "synonyms": [
+        "Moriarty's Patriotism"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 40956,
+      "title": "Enen no Shouboutai: Ni no Shou",
+      "titleEn": "Fire Force Season 2",
+      "titleJa": "炎炎ノ消防隊 弐ノ章",
+      "synonyms": [
+        "Enen no Shouboutai 2nd Season",
+        "Fire Force 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 40964,
+      "title": "Back Arrow",
+      "titleEn": "Back Arrow",
+      "titleJa": "バック・アロウ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "dropped",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 41025,
+      "title": "Fumetsu no Anata e",
+      "titleEn": "To Your Eternity",
+      "titleJa": "不滅のあなたへ",
+      "synonyms": [
+        "To You, the Immortal"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 20,
+      "status": "completed",
+      "episodesWatched": 20,
+      "isRewatching": false
+    },
+    {
+      "id": 41120,
+      "title": "Fugou Keiji: Balance:Unlimited",
+      "titleEn": "The Millionaire Detective – Balance: Unlimited",
+      "titleJa": "富豪刑事 Balance:UNLIMITED",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 41345,
+      "title": "Noblesse",
+      "titleEn": "Noblesse",
+      "titleJa": "NOBLESSE -ノブレス-",
+      "synonyms": [
+        "노블레스"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 41353,
+      "title": "The God of High School",
+      "titleEn": "The God of High School",
+      "titleJa": "THE GOD OF HIGH SCHOOL ゴッド・オブ・ハイスクール",
+      "synonyms": [
+        "Gat Obeu Hai Seukul",
+        "갓 오브 하이스쿨",
+        "GOHS"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 41433,
+      "title": "Akudama Drive",
+      "titleEn": "Akudama Drive",
+      "titleJa": "アクダマドライブ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 41457,
+      "title": "86",
+      "titleEn": "86 Eighty-Six",
+      "titleJa": "86―エイティシックス―",
+      "synonyms": [
+        "Eighty Six"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 41467,
+      "title": "Bleach: Sennen Kessen-hen",
+      "titleEn": "Bleach: Thousand-Year Blood War",
+      "titleJa": "BLEACH 千年血戦篇",
+      "synonyms": [
+        "Bleach: Thousand-Year Blood War Arc"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 41468,
+      "title": "Burn the Witch",
+      "titleEn": null,
+      "titleJa": "BURN THE WITCH",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 3,
+      "status": "completed",
+      "episodesWatched": 3,
+      "isRewatching": false
+    },
+    {
+      "id": 41587,
+      "title": "Boku no Hero Academia 5th Season",
+      "titleEn": "My Hero Academia Season 5",
+      "titleJa": "僕のヒーローアカデミア",
+      "synonyms": [
+        "My Hero Academia 5"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 41619,
+      "title": "Munou na Nana",
+      "titleEn": "Talentless Nana",
+      "titleJa": "無能なナナ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 42192,
+      "title": "Edens Zero",
+      "titleEn": "Edens Zero",
+      "titleJa": "EDENS ZERO",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 42205,
+      "title": "Shaman King (2021)",
+      "titleEn": null,
+      "titleJa": "SHAMAN KING",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 52,
+      "status": "completed",
+      "episodesWatched": 52,
+      "isRewatching": false
+    },
+    {
+      "id": 42249,
+      "title": "Tokyo Revengers",
+      "titleEn": "Tokyo Revengers",
+      "titleJa": "東京リベンジャーズ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 42307,
+      "title": "Subarashiki Kono Sekai The Animation",
+      "titleEn": "The World Ends with You: The Animation",
+      "titleJa": "すばらしきこのせかい The Animation",
+      "synonyms": [
+        "It's a Wonderful World",
+        "This Wonderful World",
+        "Subarashiki Konosekai",
+        "Subaseka",
+        "TWEWY"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 42544,
+      "title": "Kaizoku Oujo",
+      "titleEn": "Fena: Pirate Princess",
+      "titleJa": "海賊王女",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 42627,
+      "title": "Peach Boy Riverside",
+      "titleEn": "Peach Boy Riverside",
+      "titleJa": "ピーチボーイリバーサイド",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 42923,
+      "title": "SK∞",
+      "titleEn": "SK8 the Infinity",
+      "titleJa": "SK∞ エスケーエイト",
+      "synonyms": [
+        "SK Eight",
+        "Skate"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 43299,
+      "title": "Wonder Egg Priority",
+      "titleEn": "Wonder Egg Priority",
+      "titleJa": "ワンダーエッグ・プライオリティ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 43325,
+      "title": "Yuukoku no Moriarty Part 2",
+      "titleEn": "Moriarty the Patriot Part 2",
+      "titleJa": "憂国のモリアーティ",
+      "synonyms": [
+        "Moriarty's Patriotism Part 2",
+        "Moriarty the Patriot 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 43523,
+      "title": "Tsuki ga Michibiku Isekai Douchuu",
+      "titleEn": "Tsukimichi: Moonlit Fantasy",
+      "titleJa": "月が導く異世界道中",
+      "synonyms": [
+        "Moon-led Journey Across Another World"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 43629,
+      "title": "Tokyo Babylon 2021",
+      "titleEn": null,
+      "titleJa": "東京BABYLON 2021",
+      "synonyms": [],
+      "mediaType": "unknown",
+      "numEpisodes": null,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 43690,
+      "title": "Tenkuu Shinpan",
+      "titleEn": "High-Rise Invasion",
+      "titleJa": "天空侵犯",
+      "synonyms": [
+        "Sky-High Survival",
+        "Sky Violation"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 43760,
+      "title": "Hikari no Ou",
+      "titleEn": "The Fire Hunter",
+      "titleJa": "火狩りの王",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 43814,
+      "title": "Deatte 5-byou de Battle",
+      "titleEn": "Battle Game in 5 Seconds",
+      "titleJa": "出会って5秒でバトル",
+      "synonyms": [
+        "Dea5",
+        "Battle in 5 seconds after meeting."
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 44074,
+      "title": "Shiguang Dailiren",
+      "titleEn": "Link Click",
+      "titleJa": "时光代理人",
+      "synonyms": [
+        "時光代理人",
+        "Jikou Dairinin",
+        "Shi Guang Dai Li Ren"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 11,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 44511,
+      "title": "Chainsaw Man",
+      "titleEn": "Chainsaw Man",
+      "titleJa": "チェンソーマン",
+      "synonyms": [
+        "CSM"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 44961,
+      "title": "Platinum End",
+      "titleEn": "Platinum End",
+      "titleJa": "プラチナエンド",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 45560,
+      "title": "Orient",
+      "titleEn": "Orient",
+      "titleJa": "オリエント",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 45576,
+      "title": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+      "titleEn": "Mushoku Tensei: Jobless Reincarnation Part 2",
+      "titleJa": "無職転生 ～異世界行ったら本気だす～ 第2クール",
+      "synonyms": [
+        "Jobless Reincarnation Season 1 Part 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 46095,
+      "title": "Vivy: Fluorite Eye's Song",
+      "titleEn": "Vivy -Fluorite Eye's Song-",
+      "titleJa": "Vivy -Fluorite Eye's Song- (ヴィヴィ -フローライトアイズソング-)",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 46352,
+      "title": "Blue Period",
+      "titleEn": "Blue Period",
+      "titleJa": "ブルーピリオド",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 46569,
+      "title": "Jigokuraku",
+      "titleEn": "Hell's Paradise",
+      "titleJa": "地獄楽",
+      "synonyms": [
+        "Paradition",
+        "Heavenhell"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 47160,
+      "title": "Goblin Slayer II",
+      "titleEn": null,
+      "titleJa": "ゴブリンスレイヤーⅡ",
+      "synonyms": [
+        "Goblin Slayer 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 47161,
+      "title": "Shikkakumon no Saikyou Kenja",
+      "titleEn": "The Strongest Sage with the Weakest Crest",
+      "titleJa": "失格紋の最強賢者",
+      "synonyms": [
+        "The Strongest Sage of Disqualified Crest",
+        "Shikkakumon no Saikyokenja"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 47164,
+      "title": "Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka IV: Shin Shou - Meikyuu-hen",
+      "titleEn": "Is It Wrong to Try to Pick Up Girls in a Dungeon? IV",
+      "titleJa": "ダンジョンに出会いを求めるのは間違っているだろうかⅣ 新章 迷宮篇",
+      "synonyms": [
+        "DanMachi 4th Season",
+        "Is It Wrong That I Want to Meet You in a Dungeon 4th Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 47194,
+      "title": "Summertime Render",
+      "titleEn": "Summer Time Rendering",
+      "titleJa": "サマータイムレンダ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 47790,
+      "title": "Sekai Saikou no Ansatsusha, Isekai Kizoku ni Tensei suru",
+      "titleEn": "The World's Finest Assassin Gets Reincarnated in Another World as an Aristocrat",
+      "titleJa": "世界最高の暗殺者、異世界貴族に転生する",
+      "synonyms": [
+        "The world's best assassin, To reincarnate in a different world aristocrat",
+        "Ansatsu Kizoku"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 47917,
+      "title": "Bocchi the Rock!",
+      "titleEn": "Bocchi the Rock!",
+      "titleJa": "ぼっち・ざ・ろっく！",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 48316,
+      "title": "Kage no Jitsuryokusha ni Naritakute!",
+      "titleEn": "The Eminence in Shadow",
+      "titleJa": "陰の実力者になりたくて！",
+      "synonyms": [
+        "Shadow Garden"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 20,
+      "status": "completed",
+      "episodesWatched": 20,
+      "isRewatching": false
+    },
+    {
+      "id": 48375,
+      "title": "Mahouka Koukou no Rettousei: Tsuioku-hen",
+      "titleEn": "The Irregular at Magic High School: Reminiscence Arc",
+      "titleJa": "魔法科高校の劣等生 追憶編",
+      "synonyms": [],
+      "mediaType": "tv_special",
+      "numEpisodes": 1,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 48414,
+      "title": "Sabikui Bisco",
+      "titleEn": "Sabikui Bisco",
+      "titleJa": "錆喰いビスコ",
+      "synonyms": [
+        "Rust-Eater Bisco"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48417,
+      "title": "Maou Gakuin no Futekigousha II: Shijou Saikyou no Maou no Shiso, Tensei shite Shison-tachi no Gakkou e Kayou",
+      "titleEn": "The Misfit of Demon King Academy Ⅱ",
+      "titleJa": "魔王学院の不適合者 II～史上最強の魔王の始祖、転生して子孫たちの学校へ通う～",
+      "synonyms": [
+        "Maou Gakuin no Futekigousha: Shijou Saikyou no Maou no Shiso, Tensei shite Shison-tachi no Gakkou e Kayou 2nd Season",
+        "The Misfit of Demon King Academy 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48418,
+      "title": "Maou Gakuin no Futekigousha II: Shijou Saikyou no Maou no Shiso, Tensei shite Shison-tachi no Gakkou e Kayou Part 2",
+      "titleEn": "The Misfit of Demon King Academy II Part 2",
+      "titleJa": "魔王学院の不適合者 II ～史上最強の魔王の始祖、転生して子孫たちの学校へ通う～ 第2クール",
+      "synonyms": [
+        "Maou Gakuin no Futekigousha 2nd Season",
+        "The Misfit of Demon King Academy 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 48556,
+      "title": "Takt Op. Destiny",
+      "titleEn": "Takt Op. Destiny",
+      "titleJa": "takt op.Destiny",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48569,
+      "title": "86 Part 2",
+      "titleEn": "86 Eighty-Six Part 2",
+      "titleJa": "86―エイティシックス―",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48580,
+      "title": "Vanitas no Karte",
+      "titleEn": "The Case Study of Vanitas",
+      "titleJa": "ヴァニタスの手記",
+      "synonyms": [
+        "Vanitas no Shuki",
+        "Memoir of Vanitas",
+        "Vanitas no Carte"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48583,
+      "title": "Shingeki no Kyojin: The Final Season Part 2",
+      "titleEn": "Attack on Titan: Final Season Part 2",
+      "titleJa": "進撃の巨人 The Final Season Part 2",
+      "synonyms": [
+        "Shingeki no Kyojin Season 4",
+        "Attack on Titan Season 4"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48661,
+      "title": "JoJo no Kimyou na Bouken Part 6: Stone Ocean",
+      "titleEn": "JoJo's Bizarre Adventure: Stone Ocean",
+      "titleJa": "ジョジョの奇妙な冒険 ストーンオーシャン",
+      "synonyms": [
+        "JoJo's Bizarre Adventure Part 6: Stone Ocean"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48761,
+      "title": "Saihate no Paladin",
+      "titleEn": "The Faraway Paladin",
+      "titleJa": "最果てのパラディン",
+      "synonyms": [
+        "Paladin of the End",
+        "Ultimate Paladin"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48776,
+      "title": "Build Divide: Code Black",
+      "titleEn": "Build-Divide -#000000- Code Black",
+      "titleJa": "ビルディバイド -#000000(コードブラック)-",
+      "synonyms": [
+        "Build Divide: #000000"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 48849,
+      "title": "Sonny Boy",
+      "titleEn": "Sonny Boy",
+      "titleJa": "Sonny Boy (サニーボーイ)",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 49052,
+      "title": "Ao Ashi",
+      "titleEn": "Aoashi",
+      "titleJa": "アオアシ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 49114,
+      "title": "Vanitas no Karte Part 2",
+      "titleEn": "The Case Study of Vanitas Part 2",
+      "titleJa": "ヴァニタスの手記",
+      "synonyms": [
+        "Vanitas no Shuki 2nd Season",
+        "Memoir of Vanitas 2nd Season",
+        "Vanitas no Carte 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 49154,
+      "title": "High Card",
+      "titleEn": "High Card",
+      "titleJa": "HIGH CARD",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 49357,
+      "title": "Star Wars: Visions",
+      "titleEn": "Star Wars: Visions",
+      "titleJa": "スター・ウォーズ：ビジョンズ",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 9,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 49387,
+      "title": "Vinland Saga Season 2",
+      "titleEn": "Vinland Saga Season 2",
+      "titleJa": "ヴィンランド・サガ SEASON2",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 49413,
+      "title": "Shiguang Dailiren II",
+      "titleEn": "Link Click Season 2",
+      "titleJa": "时光代理人II",
+      "synonyms": [
+        "LINK CLICK Ⅱ",
+        "时光代理人 第二季",
+        "Link Click 2nd Season",
+        "時光代理人 -LINK CLICK- II"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 49596,
+      "title": "Blue Lock",
+      "titleEn": "Blue Lock",
+      "titleJa": "ブルーロック",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 49613,
+      "title": "Chiyu Mahou no Machigatta Tsukaikata",
+      "titleEn": "The Wrong Way to Use Healing Magic",
+      "titleJa": "治癒魔法の間違った使い方",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 49709,
+      "title": "Fumetsu no Anata e Season 2",
+      "titleEn": "To Your Eternity Season 2",
+      "titleJa": "不滅のあなたへ Season2",
+      "synonyms": [
+        "To Your Eternity 2nd Season",
+        "To You, the Immortal 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 20,
+      "status": "completed",
+      "episodesWatched": 20,
+      "isRewatching": false
+    },
+    {
+      "id": 49733,
+      "title": "Yuukoku no Moriarty OVA",
+      "titleEn": "Moriarty the Patriot OVA",
+      "titleJa": "憂国のモリアーティ",
+      "synonyms": [],
+      "mediaType": "ova",
+      "numEpisodes": 2,
+      "status": "completed",
+      "episodesWatched": 2,
+      "isRewatching": false
+    },
+    {
+      "id": 49818,
+      "title": "Guimi Zhi Zhu: Xiaochou Pian",
+      "titleEn": "Lord of Mysteries",
+      "titleJa": "诡秘之主 小丑篇",
+      "synonyms": [
+        "Lord of Mysteries: Clown Arc",
+        "Lord of the Mysteries",
+        "LOTM"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 49828,
+      "title": "Kidou Senshi Gundam: Suisei no Majo",
+      "titleEn": "Mobile Suit Gundam: The Witch from Mercury",
+      "titleJa": "機動戦士ガンダム 水星の魔女",
+      "synonyms": [
+        "G-Witch"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 49889,
+      "title": "Tsuki ga Michibiku Isekai Douchuu 2nd Season",
+      "titleEn": "Tsukimichi -Moonlit Fantasy- Season 2",
+      "titleJa": "月が導く異世界道中 第二幕",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 49918,
+      "title": "Boku no Hero Academia 6th Season",
+      "titleEn": "My Hero Academia Season 6",
+      "titleJa": "僕のヒーローアカデミア",
+      "synonyms": [
+        "My Hero Academia 6"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 49969,
+      "title": "Tribe Nine",
+      "titleEn": "Tribe Nine",
+      "titleJa": "TRIBE NINE（トライブナイン）",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 50002,
+      "title": "Edens Zero 2nd Season",
+      "titleEn": "Edens Zero Season 2",
+      "titleJa": "エデンズ ゼロ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 50172,
+      "title": "Mob Psycho 100 III",
+      "titleEn": "Mob Psycho 100 III",
+      "titleJa": "モブサイコ100 III",
+      "synonyms": [
+        "Mob Psycho 100 3rd Season",
+        "Mob Psycho Hyaku",
+        "Mob Psycho One Hundred"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 50204,
+      "title": "Tokyo 24-ku",
+      "titleEn": "Tokyo 24th Ward",
+      "titleJa": "東京24区",
+      "synonyms": [
+        "Tokyo Twenty Fourth Ward"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 50265,
+      "title": "Spy x Family",
+      "titleEn": null,
+      "titleJa": "SPY×FAMILY",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 50273,
+      "title": "Tomodachi Game",
+      "titleEn": "Tomodachi Game",
+      "titleJa": "トモダチゲーム",
+      "synonyms": [
+        "Friends Game"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 50330,
+      "title": "Bungou Stray Dogs 4th Season",
+      "titleEn": "Bungo Stray Dogs 4",
+      "titleJa": "文豪ストレイドッグス",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 50346,
+      "title": "Yofukashi no Uta",
+      "titleEn": "Call of the Night",
+      "titleJa": "よふかしのうた",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 50380,
+      "title": "Paripi Koumei",
+      "titleEn": "Ya Boy Kongming!",
+      "titleJa": "パリピ孔明",
+      "synonyms": [
+        "Party People Koumei"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 50602,
+      "title": "Spy x Family Part 2",
+      "titleEn": null,
+      "titleJa": "SPY×FAMILY",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 50608,
+      "title": "Tokyo Revengers: Seiya Kessen-hen",
+      "titleEn": "Tokyo Revengers: Christmas Showdown",
+      "titleJa": "東京リベンジャーズ 聖夜決戦編",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 50613,
+      "title": "Rurouni Kenshin: Meiji Kenkaku Romantan (2023)",
+      "titleEn": "Rurouni Kenshin",
+      "titleJa": "るろうに剣心 -明治剣客浪漫譚-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 50709,
+      "title": "Lycoris Recoil",
+      "titleEn": "Lycoris Recoil",
+      "titleJa": "リコリス・リコイル",
+      "synonyms": [
+        "LycoReco"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 50713,
+      "title": "Mahouka Koukou no Rettousei 3rd Season",
+      "titleEn": "The Irregular at Magic High School Season 3",
+      "titleJa": "魔法科高校の劣等生 第3シーズン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 50932,
+      "title": "Saikyou Onmyouji no Isekai Tenseiki",
+      "titleEn": "The Reincarnation of the Strongest Exorcist in Another World",
+      "titleJa": "最強陰陽師の異世界転生記",
+      "synonyms": [
+        "The Reincarnation of the Strongest Onmyouji in Another World"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 51009,
+      "title": "Jujutsu Kaisen 2nd Season",
+      "titleEn": "Jujutsu Kaisen Season 2",
+      "titleJa": "呪術廻戦 懐玉・玉折／渋谷事変",
+      "synonyms": [
+        "Jujutsu Kaisen: Kaigyoku Gyokusetsu",
+        "Jujutsu Kaisen: Shibuya Jihen",
+        "Jujutsu Kaisen: Hidden Inventory Arc",
+        "Jujutsu Kaisen: Shibuya Incident Arc",
+        "Sorcery Fight",
+        "JJK"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 23,
+      "status": "completed",
+      "episodesWatched": 23,
+      "isRewatching": false
+    },
+    {
+      "id": 51019,
+      "title": "Kimetsu no Yaiba: Katanakaji no Sato-hen",
+      "titleEn": "Demon Slayer: Kimetsu no Yaiba Swordsmith Village Arc",
+      "titleJa": "鬼滅の刃 刀鍛冶の里編",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 51096,
+      "title": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 2nd Season",
+      "titleEn": "Classroom of the Elite II",
+      "titleJa": "ようこそ実力至上主義の教室へ 2nd Season",
+      "synonyms": [
+        "Classroom of the Elite 2nd Season",
+        "You-jitsu 2nd Season",
+        "You-zitsu 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 51105,
+      "title": "NieR:Automata Ver1.1a",
+      "titleEn": "NieR:Automata Ver1.1a",
+      "titleJa": "NieR:Automata Ver1.1a",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 51179,
+      "title": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+      "titleEn": "Mushoku Tensei: Jobless Reincarnation Season 2",
+      "titleJa": "無職転生 II ～異世界行ったら本気だす～",
+      "synonyms": [
+        "Jobless Reincarnation: I Will Seriously Try If I Go To Another World",
+        "Mushoku Tensei: Isekai Ittara Honki Dasu 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 51180,
+      "title": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 3rd Season",
+      "titleEn": "Classroom of the Elite III",
+      "titleJa": "ようこそ実力至上主義の教室へ 3rd Season",
+      "synonyms": [
+        "Welcome to the Classroom of the Elite",
+        "You-jitsu 3rd Season",
+        "You-zitsu 3rd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 51297,
+      "title": "Ragna Crimson",
+      "titleEn": null,
+      "titleJa": "ラグナクリムゾン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 51367,
+      "title": "JoJo no Kimyou na Bouken Part 6: Stone Ocean Part 2",
+      "titleEn": "JoJo's Bizarre Adventure: Stone Ocean Part 2",
+      "titleJa": "ジョジョの奇妙な冒険 ストーンオーシャン",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 51368,
+      "title": "Orient: Awajishima Gekitou-hen",
+      "titleEn": null,
+      "titleJa": "オリエント 淡路島激闘編",
+      "synonyms": [
+        "Orient Part 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 51371,
+      "title": "Bucchigire!",
+      "titleEn": "Shine On! Bakumatsu Bad Boys",
+      "titleJa": "ブッチギレ!",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 51495,
+      "title": "Shin Shinka no Mi: Shiranai Uchi ni Kachigumi Jinsei",
+      "titleEn": "The Fruit of Evolution: Before I Knew It, My Life Had It Made Season 2",
+      "titleJa": "真・進化の実～知らないうちに勝ち組人生～",
+      "synonyms": [
+        "Shinka no Mi 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 51535,
+      "title": "Shingeki no Kyojin: The Final Season - Kanketsu-hen",
+      "titleEn": "Attack on Titan: Final Season - The Final Chapters",
+      "titleJa": "進撃の巨人 The Final Season完結編",
+      "synonyms": [
+        "Shingeki no Kyojin: The Final Season Part 3",
+        "Shingeki no Kyojin Season 4",
+        "Attack on Titan Season 4"
+      ],
+      "mediaType": "tv_special",
+      "numEpisodes": 2,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 51553,
+      "title": "Tongari Boushi no Atelier",
+      "titleEn": "Witch Hat Atelier",
+      "titleJa": "とんがり帽子のアトリエ",
+      "synonyms": [
+        "Atelier of Witch Hat"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 51673,
+      "title": "Shaman King: Flowers",
+      "titleEn": null,
+      "titleJa": "SHAMAN KING FLOWERS",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 51711,
+      "title": "Hyouken no Majutsushi ga Sekai wo Suberu",
+      "titleEn": "The Iceblade Sorcerer Shall Rule the World",
+      "titleJa": "冰剣の魔術師が世界を統べる",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 51818,
+      "title": "Enen no Shouboutai: San no Shou",
+      "titleEn": "Fire Force Season 3",
+      "titleJa": "炎炎ノ消防隊 参ノ章",
+      "synonyms": [
+        "Enen no Shouboutai 3rd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 52034,
+      "title": "[Oshi no Ko]",
+      "titleEn": "[Oshi No Ko]",
+      "titleJa": "【推しの子】",
+      "synonyms": [
+        "My Star"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 52211,
+      "title": "Mashle",
+      "titleEn": "Mashle: Magic and Muscles",
+      "titleJa": "マッシュル-MASHLE-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 52215,
+      "title": "Chi. Chikyuu no Undou ni Tsuite",
+      "titleEn": "Orb: On the Movements of the Earth",
+      "titleJa": "チ。―地球の運動について―",
+      "synonyms": [
+        "About the Movement of the Earth"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 52299,
+      "title": "Ore dake Level Up na Ken",
+      "titleEn": "Solo Leveling",
+      "titleJa": "俺だけレベルアップな件",
+      "synonyms": [
+        "Na Honjaman Level Up",
+        "나 혼자만 레벨업",
+        "I Level Up Alone"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 52347,
+      "title": "Shangri-La Frontier: Kusoge Hunter, Kamige ni Idoman to su",
+      "titleEn": "Shangri-La Frontier",
+      "titleJa": "シャングリラ・フロンティア～クソゲーハンター、神ゲーに挑まんとす～",
+      "synonyms": [
+        "Shangri-La Frontier: Crappy Game Hunter Challenges God-Tier Game",
+        "Shanfro"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 52588,
+      "title": "Kaijuu 8-gou",
+      "titleEn": "Kaiju No. 8",
+      "titleJa": "怪獣8号",
+      "synonyms": [
+        "8Kaijuu",
+        "Monster #8",
+        "Kaiju No. Eight",
+        "Kaiju #8"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 52635,
+      "title": "Kami no Tou: Ouji no Kikan",
+      "titleEn": "Tower of God Season 2: Return of the Prince",
+      "titleJa": "神之塔 -Tower of God- 王子の帰還",
+      "synonyms": [
+        "Sin-ui Tap",
+        "신의 탑",
+        "Tower of God: Return of the Prince",
+        "Kami no Tou 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 52657,
+      "title": "Ousama Ranking: Yuuki no Takarabako",
+      "titleEn": "Ranking of Kings: The Treasure Chest of Courage",
+      "titleJa": "王様ランキング 勇気の宝箱",
+      "synonyms": [
+        "Ranking of Kings: Treasure Chest of Courage"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "completed",
+      "episodesWatched": 10,
+      "isRewatching": false
+    },
+    {
+      "id": 52701,
+      "title": "Dungeon Meshi",
+      "titleEn": "Delicious in Dungeon",
+      "titleJa": "ダンジョン飯",
+      "synonyms": [
+        "Dungeon Food",
+        "Dungeon Dining"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 52741,
+      "title": "Undead Unluck",
+      "titleEn": null,
+      "titleJa": "アンデッドアンラック",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 52807,
+      "title": "One Punch Man 3",
+      "titleEn": "One-Punch Man Season 3",
+      "titleJa": "ワンパンマン 3",
+      "synonyms": [
+        "One Punch Man 3rd Season",
+        "OPM 3"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 52816,
+      "title": "Majo to Yajuu",
+      "titleEn": "The Witch and the Beast",
+      "titleJa": "魔女と野獣",
+      "synonyms": [
+        "Witch and the Beast"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 52991,
+      "title": "Sousou no Frieren",
+      "titleEn": "Frieren: Beyond Journey's End",
+      "titleJa": "葬送のフリーレン",
+      "synonyms": [
+        "Frieren at the Funeral",
+        "Frieren The Slayer"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 28,
+      "status": "completed",
+      "episodesWatched": 28,
+      "isRewatching": false
+    },
+    {
+      "id": 53199,
+      "title": "Kidou Senshi Gundam: Suisei no Majo Season 2",
+      "titleEn": "Mobile Suit Gundam: The Witch from Mercury Season 2",
+      "titleJa": "機動戦士ガンダム 水星の魔女",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 53273,
+      "title": "JoJo no Kimyou na Bouken Part 6: Stone Ocean Part 3",
+      "titleEn": "JoJo's Bizarre Adventure: Stone Ocean Part 3",
+      "titleJa": "ジョジョの奇妙な冒険 ストーンオーシャン",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 14,
+      "status": "completed",
+      "episodesWatched": 14,
+      "isRewatching": false
+    },
+    {
+      "id": 53393,
+      "title": "Tengoku Daimakyou",
+      "titleEn": "Heavenly Delusion",
+      "titleJa": "天国大魔境",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 53411,
+      "title": "Buddy Daddies",
+      "titleEn": null,
+      "titleJa": "Buddy Daddies",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 53439,
+      "title": "Boushoku no Berserk",
+      "titleEn": "Berserk of Gluttony",
+      "titleJa": "暴食のベルセルク",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 53447,
+      "title": "Tu Bian Yingxiong X",
+      "titleEn": "To Be Hero X",
+      "titleJa": "凸变英雄X",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 53613,
+      "title": "Dead Mount Death Play",
+      "titleEn": "Dead Mount Death Play",
+      "titleJa": "デッドマウント・デスプレイ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 53770,
+      "title": "Sentai Daishikkaku",
+      "titleEn": "Go! Go! Loser Ranger!",
+      "titleJa": "戦隊大失格",
+      "synonyms": [
+        "Ranger Reject"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 53887,
+      "title": "Spy x Family Season 2",
+      "titleEn": null,
+      "titleJa": "SPY×FAMILY Season 2",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 53998,
+      "title": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan",
+      "titleEn": "Bleach: Thousand-Year Blood War - The Separation",
+      "titleJa": "BLEACH 千年血戦篇-訣別譚-",
+      "synonyms": [
+        "Bleach: Thousand-Year Blood War Arc Part 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 54112,
+      "title": "Zom 100: Zombie ni Naru made ni Shitai 100 no Koto",
+      "titleEn": "Zom 100: Bucket List of the Dead",
+      "titleJa": "ゾン100～ゾンビになるまでにしたい100のこと～",
+      "synonyms": [
+        "Bucket List of The Dead, Zombie 100: 100 Things I Want to do Before I Become a Zombie"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 54449,
+      "title": "Ishura",
+      "titleEn": "Ishura",
+      "titleJa": "異修羅",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "dropped",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 54492,
+      "title": "Kusuriya no Hitorigoto",
+      "titleEn": "The Apothecary Diaries",
+      "titleJa": "薬屋のひとりごと",
+      "synonyms": [
+        "The Pharmacist's Monologue",
+        "Drugstore Soliloquy"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 54595,
+      "title": "Kage no Jitsuryokusha ni Naritakute! 2nd Season",
+      "titleEn": "The Eminence in Shadow Season 2",
+      "titleJa": "陰の実力者になりたくて！ 2nd Season",
+      "synonyms": [
+        "Shadow Garden 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 54703,
+      "title": "Fumetsu no Anata e Season 3",
+      "titleEn": "To Your Eternity Season 3",
+      "titleJa": "不滅のあなたへ Season3",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 22,
+      "status": "completed",
+      "episodesWatched": 22,
+      "isRewatching": false
+    },
+    {
+      "id": 54724,
+      "title": "Nige Jouzu no Wakagimi",
+      "titleEn": "The Elusive Samurai",
+      "titleJa": "逃げ上手の若君",
+      "synonyms": [
+        "Nigewaka"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 54789,
+      "title": "Boku no Hero Academia 7th Season",
+      "titleEn": "My Hero Academia Season 7",
+      "titleJa": "僕のヒーローアカデミア 第7期",
+      "synonyms": [
+        "My Hero Academia 7"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 21,
+      "status": "completed",
+      "episodesWatched": 21,
+      "isRewatching": false
+    },
+    {
+      "id": 54865,
+      "title": "Blue Lock vs. U-20 Japan",
+      "titleEn": "Blue Lock Season 2",
+      "titleJa": "ブルーロック VS. U-20 JAPAN",
+      "synonyms": [
+        "Blue Lock 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 14,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 54869,
+      "title": "High Card Season 2",
+      "titleEn": null,
+      "titleJa": "HIGH CARD season 2",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 54898,
+      "title": "Bungou Stray Dogs 5th Season",
+      "titleEn": "Bungo Stray Dogs 5",
+      "titleJa": "文豪ストレイドッグス",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 54900,
+      "title": "Wind Breaker",
+      "titleEn": "Wind Breaker",
+      "titleJa": "WIND BREAKER",
+      "synonyms": [
+        "Winbre",
+        "WBK"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 54918,
+      "title": "Tokyo Revengers: Tenjiku-hen",
+      "titleEn": "Tokyo Revengers: Tenjiku Arc",
+      "titleJa": "東京リベンジャーズ 天竺編",
+      "synonyms": [
+        "Tokyo Revengers Third Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 55644,
+      "title": "Dr. Stone: New World Part 2",
+      "titleEn": "Dr. Stone: New World Part 2",
+      "titleJa": "Dr.STONE NEW WORLD",
+      "synonyms": [
+        "Dr. Stone 3rd Season Part 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 55701,
+      "title": "Kimetsu no Yaiba: Hashira Geiko-hen",
+      "titleEn": "Demon Slayer: Kimetsu no Yaiba Hashira Training Arc",
+      "titleJa": "鬼滅の刃 柱稽古編",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 8,
+      "status": "completed",
+      "episodesWatched": 8,
+      "isRewatching": false
+    },
+    {
+      "id": 55791,
+      "title": "[Oshi no Ko] 2nd Season",
+      "titleEn": "[Oshi No Ko] Season 2",
+      "titleJa": "【推しの子】第2期",
+      "synonyms": [
+        "My Star Season 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 55813,
+      "title": "Mashle: Shinkakusha Kouho Senbatsu Shiken-hen",
+      "titleEn": "Mashle: Magic and Muscles - The Divine Visionary Candidate Exam Arc",
+      "titleJa": "マッシュル-MASHLE- 神覚者候補選抜試験編",
+      "synonyms": [
+        "Mashle 2nd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 55825,
+      "title": "Jigokuraku 2nd Season",
+      "titleEn": "Hell's Paradise Season 2",
+      "titleJa": "地獄楽第二期",
+      "synonyms": [
+        "Paradition, Heavenhell"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 55848,
+      "title": "Isekai Suicide Squad",
+      "titleEn": "Suicide Squad Isekai",
+      "titleJa": "異世界スーサイド・スクワッド",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 55888,
+      "title": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+      "titleEn": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+      "titleJa": "無職転生 II ～異世界行ったら本気だす～ (第2クール)",
+      "synonyms": [
+        "Jobless Reincarnation: I Will Seriously Try If I Go To Another World",
+        "Mushoku Tensei: Isekai Ittara Honki Dasu 2nd Season Part 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 56009,
+      "title": "Yuusha-kei ni Shosu: Choubatsu Yuusha 9004-tai Keimu Kiroku",
+      "titleEn": "Sentenced to Be a Hero",
+      "titleJa": "勇者刑に処す 懲罰勇者9004隊刑務記録",
+      "synonyms": [
+        "Sentenced to Brave Punishment",
+        "Punishment for Brave Hero: 9004 Corps Prison Record, Sentenced to Hero Punishment: The Service Records of the 9004th Penitent Hero Corps",
+        "Hero Punishment",
+        "Sentenced to Be a Hero: The Prison Records of Penal Hero Unit 9004"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 56038,
+      "title": "Lazarus",
+      "titleEn": null,
+      "titleJa": "ラザロ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 56063,
+      "title": "NieR:Automata Ver1.1a Part 2",
+      "titleEn": "NieR:Automata Ver1.1a (Cour 2)",
+      "titleJa": "NieR:Automata Ver1.1a 第2クール",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 56285,
+      "title": "Ninja Kamui",
+      "titleEn": null,
+      "titleJa": null,
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 56690,
+      "title": "Re:Monster",
+      "titleEn": "Re:Monster",
+      "titleJa": "Re:Monster",
+      "synonyms": [
+        "ReMonster"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 56784,
+      "title": "Bleach: Sennen Kessen-hen - Soukoku-tan",
+      "titleEn": "Bleach: Thousand-Year Blood War - The Conflict",
+      "titleJa": "BLEACH 千年血戦篇-相剋譚-",
+      "synonyms": [
+        "Bleach: Thousand-Year Blood War Arc Part 3"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 14,
+      "status": "completed",
+      "episodesWatched": 14,
+      "isRewatching": false
+    },
+    {
+      "id": 57184,
+      "title": "Great Pretender: Razbliuto",
+      "titleEn": null,
+      "titleJa": "GREAT PRETENDER razbliuto",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 4,
+      "status": "completed",
+      "episodesWatched": 4,
+      "isRewatching": false
+    },
+    {
+      "id": 57334,
+      "title": "Dandadan",
+      "titleEn": "Dan Da Dan",
+      "titleJa": "ダンダダン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 57555,
+      "title": "Chainsaw Man Movie: Reze-hen",
+      "titleEn": "Chainsaw Man – The Movie: Reze Arc",
+      "titleJa": "劇場版 チェンソーマン レゼ篇",
+      "synonyms": [
+        "Gekijouban Chainsaw Man: Reze-hen"
+      ],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 57658,
+      "title": "Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen",
+      "titleEn": "Jujutsu Kaisen: The Culling Game Part 1",
+      "titleJa": "呪術廻戦 「死滅回游 前編」",
+      "synonyms": [
+        "Jujutsu Kaisen 3rd Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 57892,
+      "title": "Hazurewaku no \"Joutai Ijou Skill\" de Saikyou ni Natta Ore ga Subete wo Juurin suru made",
+      "titleEn": "Failure Frame: I Became the Strongest and Annihilated Everything With Low-Level Spells",
+      "titleJa": "ハズレ枠の【状態異常スキル】で最強になった俺がすべてを蹂躙するまで",
+      "synonyms": [
+        "I became the strongest with the failure frame \"Abnormal State Skill\" as I devastated everything",
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 58059,
+      "title": "Tsue to Tsurugi no Wistoria",
+      "titleEn": "Wistoria: Wand and Sword",
+      "titleJa": "杖と剣のウィストリア",
+      "synonyms": [
+        "Wistoria's Wand and Sword"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 58567,
+      "title": "Ore dake Level Up na Ken Season 2: Arise from the Shadow",
+      "titleEn": "Solo Leveling Season 2: Arise from the Shadow",
+      "titleJa": "俺だけレベルアップな件 Season 2 -Arise from the Shadow-",
+      "synonyms": [
+        "Solo Leveling Second Season"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 58572,
+      "title": "Shangri-La Frontier: Kusoge Hunter, Kamige ni Idoman to su 2nd Season",
+      "titleEn": "Shangri-La Frontier Season 2",
+      "titleJa": "シャングリラ・フロンティア～クソゲーハンター、神ゲーに挑まんとす～ 2nd season",
+      "synonyms": [
+        "Shangri-La Frontier: Crappy Game Hunter Challenges God-Tier Game",
+        "Shanfro"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 25,
+      "status": "completed",
+      "episodesWatched": 25,
+      "isRewatching": false
+    },
+    {
+      "id": 58811,
+      "title": "Tougen Anki",
+      "titleEn": "Tougen Anki",
+      "titleJa": "桃源暗鬼",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 58913,
+      "title": "Hikaru ga Shinda Natsu",
+      "titleEn": "The Summer Hikaru Died",
+      "titleJa": "光が死んだ夏",
+      "synonyms": [
+        "Hikanatsu"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 58939,
+      "title": "Sakamoto Days",
+      "titleEn": "Sakamoto Days",
+      "titleJa": "SAKAMOTO DAYS",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 59027,
+      "title": "Spy x Family Season 3",
+      "titleEn": "Spy x Family Season 3",
+      "titleJa": "SPY×FAMILY Season 3",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 59062,
+      "title": "Gachiakuta",
+      "titleEn": "Gachiakuta",
+      "titleJa": "ガチアクタ",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "completed",
+      "episodesWatched": 24,
+      "isRewatching": false
+    },
+    {
+      "id": 59160,
+      "title": "Wind Breaker Season 2",
+      "titleEn": "Wind Breaker Season 2",
+      "titleJa": "WIND BREAKER Season 2",
+      "synonyms": [
+        "Winbre",
+        "WBK"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 59177,
+      "title": "Kaijuu 8-gou 2nd Season",
+      "titleEn": "Kaiju No. 8 Season 2",
+      "titleJa": "怪獣8号 第2期",
+      "synonyms": [
+        "8Kaijuu",
+        "Monster #8",
+        "Kaiju No. Eight",
+        "Kaiju #8"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 59189,
+      "title": "Sentai Daishikkaku 2nd Season",
+      "titleEn": "Go! Go! Loser Ranger! Season 2",
+      "titleJa": "戦隊大失格 2nd Season",
+      "synonyms": [
+        "Ranger Reject Season 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 59192,
+      "title": "Kimetsu no Yaiba Movie 1: Mugenjou-hen - Akaza Sairai",
+      "titleEn": "Demon Slayer: Kimetsu no Yaiba Infinity Castle I",
+      "titleJa": "劇場版 鬼滅の刃 無限城編 第一章 猗窩座再来",
+      "synonyms": [
+        "Demon Slayer: Kimetsu no Yaiba - The Movie: Infinity Castle - Part 1: Akaza Returns"
+      ],
+      "mediaType": "movie",
+      "numEpisodes": 1,
+      "status": "completed",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 59193,
+      "title": "Mushoku Tensei III: Isekai Ittara Honki Dasu",
+      "titleEn": "Mushoku Tensei: Jobless Reincarnation Season 3",
+      "titleJa": "無職転生 III ～異世界行ったら本気だす～",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 14,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 59205,
+      "title": "Clevatess: Majuu no Ou to Akago to Shikabane no Yuusha",
+      "titleEn": "Clevatess",
+      "titleJa": "クレバテス-魔獣の王と赤子と屍の勇者-",
+      "synonyms": [
+        "Clevatess: The King of Devil Beasts, The Baby and the Brave of Undead"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 59229,
+      "title": "Enen no Shouboutai: San no Shou Part 2",
+      "titleEn": "Fire Force Season 3 Part 2",
+      "titleJa": "炎炎ノ消防隊 参ノ章 第2クール",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 59708,
+      "title": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 4th Season: 2-nensei-hen 1 Gakki",
+      "titleEn": "Classroom of the Elite 4th Season: Second Year, First Semester",
+      "titleJa": "ようこそ実力至上主義の教室へ 4th Season 2年生編1学期",
+      "synonyms": [
+        "Welcome to the Classroom of the Elite, You-jitsu 4th Season, Classroom of the Elite IV: Year 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 16,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 59978,
+      "title": "Sousou no Frieren 2nd Season",
+      "titleEn": "Frieren: Beyond Journey's End Season 2",
+      "titleJa": "葬送のフリーレン 第2期",
+      "synonyms": [
+        "Frieren at the Funeral Season 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "completed",
+      "episodesWatched": 10,
+      "isRewatching": false
+    },
+    {
+      "id": 59983,
+      "title": "Tsue to Tsurugi no Wistoria Season 2",
+      "titleEn": "Wistoria: Wand and Sword Season 2",
+      "titleJa": "杖と剣のウィストリア Season 2",
+      "synonyms": [
+        "Wistoria's Wand and Sword Season 2"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "watching",
+      "episodesWatched": 9,
+      "isRewatching": false
+    },
+    {
+      "id": 59989,
+      "title": "Kami no Tou: Koubou-sen",
+      "titleEn": "Tower of God Season 2: Workshop Battle",
+      "titleJa": "神之塔 -Tower of God- 工房戦",
+      "synonyms": [
+        "Sin-ui Tap",
+        "신의 탑",
+        "Kami no Tou 2nd Season",
+        "Tower of God: Workshop Battle"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 60058,
+      "title": "[Oshi no Ko] 3rd Season",
+      "titleEn": "[Oshi No Ko] Season 3",
+      "titleJa": "【推しの子】 第3期",
+      "synonyms": [
+        "My Star Season 3"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 60098,
+      "title": "Boku no Hero Academia: Final Season",
+      "titleEn": "My Hero Academia Final Season",
+      "titleJa": "僕のヒーローアカデミア FINAL SEASON",
+      "synonyms": [
+        "My Hero Academia 8"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 60146,
+      "title": "Saikyou no Ousama, Nidome no Jinsei wa Nani wo Suru?",
+      "titleEn": "The Beginning After the End",
+      "titleJa": "最強の王様、二度目の人生は何をする?",
+      "synonyms": [
+        "TBATE"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "dropped",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 60285,
+      "title": "Sakamoto Days Part 2",
+      "titleEn": "Sakamoto Days Part 2",
+      "titleJa": "SAKAMOTO DAYS 第２クール",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 11,
+      "status": "completed",
+      "episodesWatched": 11,
+      "isRewatching": false
+    },
+    {
+      "id": 60489,
+      "title": "Takopii no Genzai",
+      "titleEn": "Takopi's Original Sin",
+      "titleJa": "タコピーの原罪",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 6,
+      "status": "completed",
+      "episodesWatched": 6,
+      "isRewatching": false
+    },
+    {
+      "id": 60543,
+      "title": "Dandadan 2nd Season",
+      "titleEn": "Dan Da Dan Season 2",
+      "titleJa": "ダンダダン 第2期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    },
+    {
+      "id": 60593,
+      "title": "Vigilante: Boku no Hero Academia Illegals",
+      "titleEn": "My Hero Academia: Vigilantes",
+      "titleJa": "ヴィジランテ -僕のヒーローアカデミア ILLEGALS-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 60636,
+      "title": "Bleach: Sennen Kessen-hen - Kashin-tan",
+      "titleEn": "Bleach: Thousand-Year Blood War - The Calamity",
+      "titleJa": "BLEACH 千年血戦篇-禍進譚-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 10,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 61200,
+      "title": "Shuumatsu no Walküre III",
+      "titleEn": "Record of Ragnarok III",
+      "titleJa": "終末のワルキューレIII",
+      "synonyms": [],
+      "mediaType": "ona",
+      "numEpisodes": 15,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 61469,
+      "title": "Steel Ball Run: JoJo no Kimyou na Bouken",
+      "titleEn": "Steel Ball Run: JoJo's Bizarre Adventure",
+      "titleJa": "スティール・ボール・ラン ジョジョの奇妙な冒険",
+      "synonyms": [
+        "JoJo's Bizarre Adventure Part 7: Steel Ball Run",
+        "JoJo no Kimyou na Bouken Part 7: Steel Ball Run",
+        "SBR"
+      ],
+      "mediaType": "ona",
+      "numEpisodes": null,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 61603,
+      "title": "Ao Ashi Season 2",
+      "titleEn": "Aoashi Season 2",
+      "titleJa": "アオアシ Season2",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": null,
+      "status": "plan_to_watch",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 61942,
+      "title": "Vigilante: Boku no Hero Academia Illegals 2nd Season",
+      "titleEn": "My Hero Academia: Vigilantes Season 2",
+      "titleJa": "ヴィジランテ -僕のヒーローアカデミア ILLEGALS- 第2期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "completed",
+      "episodesWatched": 13,
+      "isRewatching": false
+    },
+    {
+      "id": 61967,
+      "title": "Black Clover 2nd Season",
+      "titleEn": "Black Clover Season 2",
+      "titleJa": "ブラッククローバー 2nd season",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": null,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 62001,
+      "title": "Yomi no Tsugai",
+      "titleEn": "Daemons of the Shadow Realm",
+      "titleJa": "黄泉のツガイ",
+      "synonyms": [
+        "Tsugai of the Underworld"
+      ],
+      "mediaType": "tv",
+      "numEpisodes": 24,
+      "status": "watching",
+      "episodesWatched": 17,
+      "isRewatching": false
+    },
+    {
+      "id": 62513,
+      "title": "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou",
+      "titleEn": "Clevatess Season 2",
+      "titleJa": "クレバテスⅡ-魔獣の王と偽りの勇者伝承-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 13,
+      "status": "watching",
+      "episodesWatched": 1,
+      "isRewatching": false
+    },
+    {
+      "id": 63130,
+      "title": "Boku no Hero Academia: More",
+      "titleEn": "My Hero Academia: More",
+      "titleJa": "僕のヒーローアカデミア More",
+      "synonyms": [],
+      "mediaType": "tv_special",
+      "numEpisodes": 1,
+      "status": "watching",
+      "episodesWatched": 0,
+      "isRewatching": false
+    },
+    {
+      "id": 63375,
+      "title": "Nippon Sangoku",
+      "titleEn": "Nippon Sangoku: The Three Nations of the Crimson Sun",
+      "titleJa": "日本三國",
+      "synonyms": [],
+      "mediaType": "tv",
+      "numEpisodes": 12,
+      "status": "completed",
+      "episodesWatched": 12,
+      "isRewatching": false
+    }
+  ]
+}

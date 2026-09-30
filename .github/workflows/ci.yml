@@ -30,6 +30,8 @@ jobs:
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
+      - name: Validate eval cases
+        run: pnpm eval:validate
 
   test:
     name: Test

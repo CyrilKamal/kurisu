@@ -10,3 +10,9 @@ apps/server/drizzle/
 
 # Hand-written docs are not auto-formatted
 *.md
+
+# Generated eval list snapshots (pnpm eval:snapshot)
+apps/server/eval/snapshots/
+
+# Hand-written eval cases: never reformat the author's files
+apps/server/eval/cases/

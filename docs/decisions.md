@@ -161,3 +161,20 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** A client-rendered page with a data-fetching library; tab state held in React state.
 **Why:** It needs almost no client JavaScript, tabs are linkable and survive reloads, and the session cookie never has to be readable by JS.
 **Consequences:** Every tab switch is a server round trip, which is fine at list sizes of a few hundred. Revisit if the list needs client-side search or instant filtering.
+
+## 2026-09-30 — Mirror MAL's alternative titles (Milestone 2)
+**Decision:** List sync also fetches `alternative_titles` and stores them on `anime` as `title_en`, `title_ja` and a `synonyms` array. MAL's empty strings become null.
+**Alternatives:** Matching on the main title only; asking the model to know every show's aliases.
+**Why:** Nicknames and English names are how people refer to shows ("Apothecary Diaries" instead of "Kusuriya no Hitorigoto"). MAL already has them, and one extra field costs nothing during the full sync.
+**Consequences:** The mirror needs one re-sync after migrating to fill them in. `search_my_list` and the eval snapshot both use them.
+
+## 2026-09-30 — Eval cases: YAML against a frozen, sanitized list snapshot (Milestone 2)
+**Decision:**
+- Cases are YAML files in `apps/server/eval/cases/`, validated with zod. They're checked in CI by `pnpm eval:validate`.
+- Each case names shows by any known title or by MAL id, and states the intended writes, whether the agent should ask, or that it should do nothing.
+- Expected writes pass through the same normalization function as `propose_update` (`src/writes/normalize.ts`), so cases state intent rather than derived fields.
+- The list is a committed, sanitized export of the developer's real list (`eval/snapshots/my-list.json`): ids, titles, alternative titles, media type, status, progress and episode counts. Scores, dates, tags, comments and the username are dropped.
+
+**Alternatives:** JSON or TypeScript case files; expected tool-call transcripts instead of expected writes; a synthetic list; a local-only snapshot.
+**Why:** YAML is the quickest format to hand-write 150 cases in. Judging on resulting writes rather than exact tool-call sequences lets prompts and tool usage evolve without rewriting cases. A real list tests the real nicknames, sequels and title collisions; sanitizing keeps personal data out of the repo, as CLAUDE.md requires.
+**Consequences:** The snapshot is frozen once cases depend on it, and re-exporting would break relative cases. The public repo reveals which shows are on the list (titles and progress only), which the developer accepted. Normalization rules are shared, so changing a rule changes eval expectations too, deliberately.

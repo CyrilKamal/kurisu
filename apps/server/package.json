@@ -14,7 +14,9 @@
     "test:integration": "vitest run --project integration",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/scripts/migrate.ts",
-    "dev:fake-mal": "tsx test/support/runFakeMal.ts"
+    "dev:fake-mal": "tsx test/support/runFakeMal.ts",
+    "eval:validate": "tsx eval/src/cli/validate.ts",
+    "eval:snapshot": "tsx eval/src/cli/exportSnapshot.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",
@@ -36,6 +38,7 @@
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.0",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.2",
+    "yaml": "^2.9.1"
   }
 }

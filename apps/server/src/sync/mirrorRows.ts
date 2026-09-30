@@ -11,10 +11,14 @@ export function toMirrorRows(
   syncedAt: Date,
 ): { anime: AnimeRow; entry: ListEntryRow } {
   const { node, list_status: listStatus } = item;
+  const alt = node.alternative_titles;
   return {
     anime: {
       malId: node.id,
       title: node.title,
+      titleEn: nonEmptyOrNull(alt?.en),
+      titleJa: nonEmptyOrNull(alt?.ja),
+      synonyms: (alt?.synonyms ?? []).map((s) => s.trim()).filter((s) => s.length > 0),
       mainPictureUrl: httpsUrlOrNull(node.main_picture?.medium ?? node.main_picture?.large),
       mediaType: node.media_type ?? null,
       // MAL reports 0 when the episode count isn't known yet.
@@ -35,6 +39,12 @@ export function toMirrorRows(
       syncedAt,
     },
   };
+}
+
+/** MAL sends "" for missing alternative titles. */
+function nonEmptyOrNull(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed !== undefined && trimmed.length > 0 ? trimmed : null;
 }
 
 /** Only keep image URLs that are plain https links. */

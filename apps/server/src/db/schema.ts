@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -69,12 +70,19 @@ export const oauthStates = pgTable("oauth_states", {
 });
 
 /**
- * Anime metadata from MAL, shared by all users. Holds only what the List screen shows;
- * later milestones add columns through new migrations.
+ * Anime metadata from MAL, shared by all users. Later milestones add columns through new
+ * migrations.
  */
 export const anime = pgTable("anime", {
   malId: integer("mal_id").primaryKey(),
   title: text("title").notNull(),
+  // MAL's alternative titles, used to match nicknames and translated names.
+  titleEn: text("title_en"),
+  titleJa: text("title_ja"),
+  synonyms: text("synonyms")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   mainPictureUrl: text("main_picture_url"),
   // MAL values like tv, movie, ova. Kept as text so a new MAL value can't break a sync.
   mediaType: text("media_type"),

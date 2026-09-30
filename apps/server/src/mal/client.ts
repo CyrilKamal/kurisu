@@ -30,6 +30,13 @@ const animeListItemSchema = z.object({
     media_type: z.string().nullish(),
     num_episodes: z.number().int().nonnegative().nullish(),
     status: z.string().nullish(),
+    alternative_titles: z
+      .object({
+        synonyms: z.array(z.string()).nullish(),
+        en: z.string().nullish(),
+        ja: z.string().nullish(),
+      })
+      .nullish(),
   }),
   list_status: z.object({
     status: z.enum(MAL_LIST_STATUSES),
@@ -80,7 +87,7 @@ export interface RetryOptions {
 
 export const DEFAULT_RETRY: RetryOptions = { retries: 3, baseDelayMs: 500, maxDelayMs: 30_000 };
 
-const LIST_FIELDS = "list_status,num_episodes,media_type,status,main_picture";
+const LIST_FIELDS = "list_status,num_episodes,media_type,status,main_picture,alternative_titles";
 const LIST_PAGE_SIZE = 1000; // MAL's maximum for this endpoint
 
 export async function fetchMe(apiBaseUrl: string, accessToken: string): Promise<MalUser> {

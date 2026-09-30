@@ -124,6 +124,12 @@ describe("sync on login", () => {
     // Partial dates are kept as MAL sent them.
     const [film] = await h.db.select().from(listEntries).where(eq(listEntries.animeId, 900002));
     expect(film).toMatchObject({ startDate: "2026-08", finishDate: "2026-08-15", score: 9 });
+
+    // Alternative titles are mirrored for nickname matching.
+    const [show] = await h.db.select().from(anime).where(eq(anime.malId, 900001));
+    expect(show).toMatchObject({ titleEn: "The Watching Show", titleJa: null, synonyms: ["FWS"] });
+    const request = h.fakeMal.animeListRequests[0];
+    expect(request?.searchParams.get("fields")).toContain("alternative_titles");
   });
 
   it("a failed sync doesn't fail the login", async () => {
