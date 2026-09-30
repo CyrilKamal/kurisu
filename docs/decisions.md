@@ -224,3 +224,34 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** Exact and substring matching only; embeddings; asking the model to pick without scores.
 **Why:** Trigrams handle typos and partial titles in-database with no new dependency. An explicit, testable clear-match rule decides which writes may commit without asking, instead of trusting the model's confidence.
 **Consequences:** The thresholds are guesses until the eval runs, so tune them against clarification precision and wrong-write rate. Abbreviations MAL doesn't list as synonyms ("JJK") depend on the model expanding them.
+
+## 2026-09-30 — Agent loop: grounding enforced in the tools, outcomes from what happened (Milestone 2)
+**Decision:**
+- The agent is a bounded tool loop: at most 6 model turns, with the last 6 chat messages as context.
+- The tools enforce the rules:
+  - `propose_update` accepts only anime ids that `search_my_list` or `get_entry` returned in the same run.
+  - It passes "clear match" only for ids a search marked clear, which decides whether the proposal waits for confirmation.
+  - `commit_update` accepts only proposals created in the same run.
+- Tool arguments are validated with zod and errors go back to the model, so it can correct itself.
+- A run's outcome comes from what actually happened: committed, needs_confirmation (a proposal waiting for the user), clarification (the reply asks something), no_action, or error.
+- Every run and every step is logged to `agent_runs` / `agent_run_steps`: prompt version, model, tool calls with arguments, latency, tokens and outcome.
+- Prompt v1 (`progress-sync@1`) spells out the mapping from phrases to fields and tells the model to ask instead of guessing on unclear matches.
+
+**Alternatives:** Trusting the prompt for grounding; a single-shot parse into a JSON plan with no tools; asking the model to self-report its outcome.
+**Why:** Sabotage checks showed the tests fail if either grounding rule is removed, so wrong writes don't depend on the model obeying the prompt. Deriving outcomes from events keeps the eval's clarification metric honest.
+**Consequences:** "Asked a question" is detected by a question mark in the reply. That's crude, so the prompt forbids trailing pleasantries, and the eval's clarification precision will show whether it holds.
+
+## 2026-09-30 — Chat routing and API (Milestone 2)
+**Decision:**
+- Each message runs on the agent model, Flash-Lite. If that run wrote nothing and ended asking, holding a change, or failing (not for a missing API key), it's retried once on the escalation model, Flash.
+- The escalated answer replaces the first only if it succeeds, and the first run's held proposals are then cancelled. Both runs are logged, linked by `escalated_from_run_id`.
+- Endpoints:
+  - `POST /chat/messages`: 10 per minute per user, one at a time.
+  - `GET /chat`, `GET /changes`
+  - `POST /proposals/:id/confirm` and `/cancel`
+  - `POST /changes/:id/undo`
+- Every response is in the shared contract.
+
+**Alternatives:** Classifying messages up front to pick a model; always using Flash; no escalation.
+**Why:** Flash's free quota is small, about 20 a day, so it's spent only where Flash-Lite couldn't finish, as the design intends ("Flash for ambiguous requests"). Rate limits keep a chatty session inside the free tier.
+**Consequences:** An escalated message costs two runs of latency. The in-memory rate limiter and busy flag assume a single server process.
