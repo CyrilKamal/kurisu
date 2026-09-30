@@ -13,6 +13,18 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
+    # Majors we deliberately hold back; see "Toolchain pins" in docs/decisions.md.
+    # Remove an entry once the blocker is gone.
+    ignore:
+      # The web app's lint needs ESLint 9 until eslint-config-next's plugins support 10.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      # typescript-eslint supports TypeScript < 6.1 only.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # Node's type definitions must match the Node 24 runtime (.nvmrc), not the newest Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
