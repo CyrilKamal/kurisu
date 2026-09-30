@@ -73,7 +73,8 @@ export function createGeminiProvider(options: GeminiOptions): ModelProvider {
           throw new ModelProviderError(
             "gemini",
             kindForStatus(err.status),
-            `HTTP ${String(err.status)}`,
+            // Google's error text (e.g. "model is overloaded") never contains the API key.
+            `HTTP ${String(err.status)}: ${err.message.slice(0, 200)}`,
             err.status,
           );
         }
