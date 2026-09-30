@@ -39,6 +39,26 @@ Each write names an `anime` and at least one field:
 
 `anime` can be any title the snapshot knows: the main title, English, Japanese or a synonym, matched case-insensitively. It can also be a MAL id. If a title matches more than one entry, the validator tells you to use the id.
 
+### Earlier turns (optional)
+
+Add `history` when a message only makes sense after an earlier exchange, like a clarifying question and its answer, or "one more" after an update:
+
+```yaml
+  - id: followup-second-one
+    message: "the second one"
+    history:
+      - role: user
+        content: "dropping the isekai one"
+      - role: assistant
+        content: "Which one: Isekai Alpha or Isekai Beta?"
+    expect:
+      writes:
+        - anime: "Isekai Beta"
+          status: dropped
+```
+
+The agent sees the history as the conversation so far. Writes are still judged only on what it commits for the new message.
+
 ### What counts as correct
 
 - **Writes**: a case passes only if the agent writes exactly the listed changes, no more and no less. Any write to an anime you didn't list counts as a wrong write.

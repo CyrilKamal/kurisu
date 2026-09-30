@@ -176,6 +176,33 @@ describe("loadCases", () => {
     ]);
   });
 
+  it("accepts earlier turns and rejects a malformed one", () => {
+    // Separate files: one invalid case rejects its whole file.
+    const result = load({
+      "a.yaml": `${header}
+  - id: with-history
+    message: "one more"
+    history:
+      - { role: user, content: "watched ep 6 of apothecary" }
+      - { role: assistant, content: "Updated it." }
+    expect: { writes: [{ anime: 1, episodes_watched: 7 }] }
+`,
+      "b.yaml": `${header}
+  - id: bad-history
+    message: m
+    history: [{ role: system, content: "x" }]
+    expect: { clarify: true }
+`,
+    });
+
+    expect(result.cases.map((c) => [c.case.id, c.case.history.length])).toEqual([
+      ["with-history", 2],
+    ]);
+    expect(result.errors.map((e) => e.message)).toEqual([
+      expect.stringMatching(/^case #1 \(bad-history\) history\.0\.role/),
+    ]);
+  });
+
   it("reports invalid YAML without crashing", () => {
     const result = load({ "a.yaml": "snapshot: test\ncases: [\n" });
     expect(result.errors[0]?.message).toMatch(/not valid YAML/);

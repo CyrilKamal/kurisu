@@ -1,7 +1,7 @@
 import fastifyCookie from "@fastify/cookie";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
-import { PROGRESS_SYNC_V1 } from "./agent/prompts/progressSync.v1.js";
+import { CURRENT_PROMPT } from "./agent/prompts/index.js";
 import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
 import { registerChatRoutes } from "./chat/routes.js";
@@ -83,7 +83,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     db,
     models,
     writeListStatus,
-    prompt: PROGRESS_SYNC_V1,
+    prompt: CURRENT_PROMPT,
     roles: options.roles ?? {
       agent: configuredRoles.agent,
       escalation: configuredRoles.escalation,
