@@ -14,3 +14,5 @@ allowBuilds:
   cpu-features: false
   protobufjs: false
   ssh2: false
+  # Only a no-op preinstall echo; nothing needed at install time.
+  "@google/genai": false

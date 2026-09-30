@@ -19,7 +19,8 @@
     "db:migrate": "pnpm --filter @kurisu/server db:migrate",
     "db:generate": "pnpm --filter @kurisu/server db:generate",
     "eval:validate": "pnpm --filter @kurisu/server eval:validate",
-    "eval:snapshot": "pnpm --filter @kurisu/server eval:snapshot"
+    "eval:snapshot": "pnpm --filter @kurisu/server eval:snapshot",
+    "llm:smoke": "pnpm --filter @kurisu/server llm:smoke"
   },
   "devDependencies": {
     "prettier": "^3.9.9"

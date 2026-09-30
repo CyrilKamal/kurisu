@@ -16,10 +16,12 @@
     "db:migrate": "tsx src/scripts/migrate.ts",
     "dev:fake-mal": "tsx test/support/runFakeMal.ts",
     "eval:validate": "tsx eval/src/cli/validate.ts",
-    "eval:snapshot": "tsx eval/src/cli/exportSnapshot.ts"
+    "eval:snapshot": "tsx eval/src/cli/exportSnapshot.ts",
+    "llm:smoke": "tsx src/scripts/llmSmoke.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",
+    "@google/genai": "^2.24.0",
     "drizzle-orm": "^0.45.3",
     "fastify": "^5.12.5",
     "pg": "^8.23.0",
