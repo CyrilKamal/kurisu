@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { changes, listEntries, proposals, users } from "../../src/db/schema.js";
+import { agentRuns, changes, listEntries, proposals, users } from "../../src/db/schema.js";
 import { searchMyList } from "../../src/list/search.js";
 import { commitProposal, createMalListWriter, type ListWriter } from "../../src/writes/commit.js";
 import { proposeUpdate, type ProposeInput } from "../../src/writes/propose.js";
@@ -40,10 +40,20 @@ beforeEach(async () => {
   const [user] = await h.db.select().from(users);
   if (!user) throw new Error("no user");
   userId = user.id;
-  runId = randomUUID();
+  runId = await newRun();
 });
 
 const deps = () => ({ db: h.db, writeListStatus: writer });
+
+/** Proposals belong to an agent run; tests stand in for one. */
+async function newRun(): Promise<string> {
+  const [run] = await h.db
+    .insert(agentRuns)
+    .values({ userId, promptVersion: "test", model: "test:model" })
+    .returning({ id: agentRuns.id });
+  if (!run) throw new Error("run insert failed");
+  return run.id;
+}
 
 async function propose(input: Partial<ProposeInput> & { animeId: number }) {
   const result = await proposeUpdate(h.db, { userId, runId, clearMatch: true, ...input });
@@ -118,7 +128,7 @@ describe("propose → commit", () => {
   it("returns the same proposal when the same change is proposed twice in a run", async () => {
     const a = await propose({ animeId: WATCHING, episodesWatched: 8 });
     const b = await propose({ animeId: WATCHING, episodesWatched: 8 });
-    runId = randomUUID();
+    runId = await newRun();
     const c = await propose({ animeId: WATCHING, episodesWatched: 8 });
 
     expect(b.id).toBe(a.id);
@@ -295,7 +305,7 @@ describe("undo", () => {
 
   it("refuses to undo over a newer change", async () => {
     const first = await commitOne({ animeId: WATCHING, episodesWatched: 8 });
-    runId = randomUUID();
+    runId = await newRun();
     await commitOne({ animeId: WATCHING, episodesWatched: 9 });
     h.fakeMal.patchRequests.length = 0;
 

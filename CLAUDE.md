@@ -113,6 +113,7 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
 - Eval cases: `pnpm eval:validate` checks every file in `apps/server/eval/cases/` (CI runs it; `--verbose` shows each case's normalized expectation). The format and rules are in `apps/server/eval/README.md`. Never write or edit the user's real eval cases; only `examples.yaml` is ours.
 - Eval snapshot: `pnpm eval:snapshot` re-exports the sanitized list snapshot from the dev DB. Don't re-export once cases depend on it.
 - Models: which model plays each role (agent, escalation, eval), paid-tier prices and Ollama options live in `apps/server/config/models.json`; override a role with `AGENT_MODEL` / `AGENT_ESCALATION_MODEL` / `EVAL_MODEL`. `pnpm llm:smoke [--role agent|escalation|eval] [--model provider:model]` checks a live tool-calling round trip. Evals need Ollama running locally (`ollama list` shows the pulled models).
+- Agent prompts live in `apps/server/src/agent/prompts/`. Any change to a prompt gets a new version (a new file, e.g. `progressSync.v2.ts`), because every agent run logs the prompt version and evals compare versions.
 - Eval harness run: _Milestone 2, coming in a later PR_
 
 Next.js 16 ships version-matched docs in `apps/web/node_modules/next/dist/docs/`; read them before writing web code (see `apps/web/AGENTS.md`).
