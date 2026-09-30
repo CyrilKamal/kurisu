@@ -91,3 +91,77 @@ export const syncErrorResponseSchema = z.object({
   lastSync: lastSyncSchema.nullable(),
 });
 export type SyncErrorResponse = z.infer<typeof syncErrorResponseSchema>;
+
+/** The list fields a change touches (only the ones that changed are present). */
+export const listChangeSchema = z
+  .object({
+    status: listStatusSchema.optional(),
+    episodesWatched: z.number().int().nonnegative().optional(),
+    score: z.number().int().min(0).max(10).optional(),
+    isRewatching: z.boolean().optional(),
+  })
+  .strict();
+export type ListChange = z.infer<typeof listChangeSchema>;
+
+/** A committed write to MAL, from the change log. */
+export const changeViewSchema = z.object({
+  id: z.uuid(),
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  before: listChangeSchema,
+  after: listChangeSchema,
+  committedAt: z.iso.datetime(),
+  /** True once someone pressed Undo on it. */
+  undone: z.boolean(),
+  /** True if this change is itself an undo. */
+  isUndo: z.boolean(),
+});
+export type ChangeView = z.infer<typeof changeViewSchema>;
+
+/** A change the agent staged that waits for the user to confirm it. */
+export const pendingProposalViewSchema = z.object({
+  id: z.uuid(),
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  before: listChangeSchema,
+  change: listChangeSchema,
+  reason: z.string().nullable(),
+});
+export type PendingProposalView = z.infer<typeof pendingProposalViewSchema>;
+
+export const chatMessageViewSchema = z.object({
+  id: z.uuid(),
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+  createdAt: z.iso.datetime(),
+  changes: z.array(changeViewSchema),
+  pending: z.array(pendingProposalViewSchema),
+});
+export type ChatMessageView = z.infer<typeof chatMessageViewSchema>;
+
+/** GET /chat, and POST /chat/messages (the new user and assistant messages). */
+export const chatThreadResponseSchema = z.object({ messages: z.array(chatMessageViewSchema) });
+
+/** GET /changes: newest first. */
+export const changesResponseSchema = z.object({ changes: z.array(changeViewSchema) });
+
+/** POST /proposals/:id/confirm and POST /changes/:id/undo, on success. */
+export const changeResponseSchema = z.object({ change: changeViewSchema });
+
+/** Why a confirm, cancel or undo didn't happen. */
+export const WRITE_ERRORS = [
+  "not_found",
+  "stale",
+  "changed_since",
+  "already_undone",
+  "cancelled",
+  "not_cancellable",
+  "in_progress",
+  "not_on_list",
+  "reauth_required",
+  "mal_rejected",
+  "mal_unavailable",
+  "invalid_response",
+  "internal_error",
+] as const;
+export const writeErrorResponseSchema = z.object({ error: z.enum(WRITE_ERRORS) });
