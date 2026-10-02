@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import { normalizeChange, type ListChange } from "../../src/writes/normalize.js";
+import { isProgressBeforeAiring } from "../../src/writes/propose.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 
 export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
@@ -187,6 +188,11 @@ function resolveCase(
     if (Object.keys(normalized.change).length === 0) {
       warnings.push(`${label}: this write changes nothing (the list already has these values).`);
       continue;
+    }
+    if (isProgressBeforeAiring(entry, normalized.change)) {
+      warnings.push(
+        `${label}: the snapshot says this show hasn't aired yet, so the agent holds progress on it for confirmation instead of writing it. Expect clarify: true and no write for it, unless you're testing that rule.`,
+      );
     }
     changes.set(entry.id, normalized.change);
   }

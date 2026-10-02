@@ -3,8 +3,8 @@
  *
  *   pnpm eval:snapshot [--name my-list] [--user <mal username>]
  *
- * Keeps only what the eval needs (ids, titles, alternative titles, media type, status,
- * episode progress and counts). Drops scores, dates, tags, comments and the username.
+ * Keeps only what the eval needs (ids, titles, alternative titles, media type, airing status,
+ * list status, episode progress and counts). Drops scores, dates, tags, comments and the username.
  */
 import { writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
@@ -55,6 +55,7 @@ try {
       status: listEntries.status,
       episodesWatched: listEntries.numEpisodesWatched,
       isRewatching: listEntries.isRewatching,
+      airingStatus: anime.airingStatus,
     })
     .from(listEntries)
     .innerJoin(anime, eq(listEntries.animeId, anime.malId))

@@ -14,7 +14,8 @@
       "numEpisodes": 12,
       "status": "watching",
       "episodesWatched": 7,
-      "isRewatching": false
+      "isRewatching": false,
+      "airingStatus": "currently_airing"
     },
     {
       "id": 900002,
@@ -26,7 +27,8 @@
       "numEpisodes": 1,
       "status": "completed",
       "episodesWatched": 1,
-      "isRewatching": false
+      "isRewatching": false,
+      "airingStatus": "finished_airing"
     },
     {
       "id": 900011,
@@ -38,7 +40,8 @@
       "numEpisodes": 12,
       "status": "completed",
       "episodesWatched": 12,
-      "isRewatching": false
+      "isRewatching": false,
+      "airingStatus": "finished_airing"
     },
     {
       "id": 900012,
@@ -50,7 +53,8 @@
       "numEpisodes": 12,
       "status": "plan_to_watch",
       "episodesWatched": 0,
-      "isRewatching": false
+      "isRewatching": false,
+      "airingStatus": "currently_airing"
     },
     {
       "id": 900013,
@@ -62,7 +66,8 @@
       "numEpisodes": 24,
       "status": "watching",
       "episodesWatched": 10,
-      "isRewatching": false
+      "isRewatching": false,
+      "airingStatus": "finished_airing"
     },
     {
       "id": 900005,
@@ -74,7 +79,8 @@
       "numEpisodes": null,
       "status": "plan_to_watch",
       "episodesWatched": 0,
-      "isRewatching": false
+      "isRewatching": false,
+      "airingStatus": "not_yet_aired"
     }
   ]
 }

@@ -20,6 +20,9 @@ export const MAL_LIST_STATUSES = [
   "plan_to_watch",
 ] as const;
 
+/** MAL's anime status (not the list status) for a show that hasn't started airing. */
+export const NOT_YET_AIRED = "not_yet_aired";
+
 const animeListItemSchema = z.object({
   node: z.object({
     id: z.number().int().positive(),

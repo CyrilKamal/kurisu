@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
 import { anime, listEntries, proposals } from "../db/schema.js";
+import { NOT_YET_AIRED } from "../mal/client.js";
 import {
   normalizeChange,
   type ListChange,
@@ -69,6 +70,7 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
       score: listEntries.score,
       isRewatching: listEntries.isRewatching,
       numEpisodes: anime.numEpisodes,
+      airingStatus: anime.airingStatus,
     })
     .from(listEntries)
     .innerJoin(anime, eq(listEntries.animeId, anime.malId))
@@ -102,7 +104,9 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
     ? "ambiguous_match"
     : goesBackwards
       ? "progress_backwards"
-      : null;
+      : isProgressBeforeAiring(entry, change)
+        ? "not_yet_aired"
+        : null;
 
   const idempotencyKey = keyFor(input.runId, input.animeId, change);
   await db
@@ -128,6 +132,22 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
     .limit(1);
   if (!proposal) throw new Error("proposal insert returned no row");
   return { ok: true, proposal };
+}
+
+/**
+ * Progress on a show MAL says hasn't aired (more episodes, or completing it). Unlikely to be
+ * right, but the mirror's airing status is only as fresh as the last sync, so such a change is
+ * held for confirmation rather than refused. Status changes like dropping it are fine.
+ */
+export function isProgressBeforeAiring(
+  entry: { airingStatus: string | null; episodesWatched: number },
+  change: ListChange,
+): boolean {
+  return (
+    entry.airingStatus === NOT_YET_AIRED &&
+    ((change.episodesWatched !== undefined && change.episodesWatched > entry.episodesWatched) ||
+      change.status === "completed")
+  );
 }
 
 /** Same run, same anime, same resulting values: the same proposal. */

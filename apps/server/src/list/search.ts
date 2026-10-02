@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
 import { anime, listEntries } from "../db/schema.js";
+import { NOT_YET_AIRED } from "../mal/client.js";
 import type { ListStatus } from "../writes/normalize.js";
 
 /** Below this, a name isn't considered a match at all. */
@@ -21,6 +22,8 @@ export interface ListEntryView {
   episodesWatched: number;
   score: number;
   isRewatching: boolean;
+  /** MAL's airing status: finished_airing, currently_airing or not_yet_aired. */
+  airingStatus: string | null;
 }
 
 export interface SearchCandidate extends ListEntryView {
@@ -36,6 +39,7 @@ export interface SearchCandidate extends ListEntryView {
    * - "only_in_progress": tied with other matches, but the only one being watched or on hold
    *   (e.g. "frieren ep 5" with season 1 completed and season 2 watching). Clear only for
    *   forward progress; dropping or scoring "the isekai one" among several must still ask.
+   *   A show that hasn't aired yet isn't in progress, even if the list says watching.
    */
   clearBy: "unique" | "only_in_progress" | null;
 }
@@ -68,12 +72,13 @@ export async function searchMyList(
     episodes_watched: number;
     score: number;
     is_rewatching: boolean;
+    airing_status: string | null;
     match_score: number;
     matched_name: string;
   }>(sql`
     SELECT a.mal_id AS anime_id, a.title, a.title_en, a.media_type, a.num_episodes,
            le.status, le.num_episodes_watched AS episodes_watched, le.score, le.is_rewatching,
-           m.score AS match_score, m.name AS matched_name
+           a.airing_status, m.score AS match_score, m.name AS matched_name
     FROM ${listEntries} le
     JOIN ${anime} a ON a.mal_id = le.anime_id
     CROSS JOIN LATERAL (
@@ -101,6 +106,7 @@ export async function searchMyList(
     episodesWatched: row.episodes_watched,
     score: row.score,
     isRewatching: row.is_rewatching,
+    airingStatus: row.airing_status,
     matchScore: Math.round(row.match_score * 1000) / 1000,
     matchedName: row.matched_name,
   }));
@@ -114,7 +120,9 @@ export function markClear(
   const top = candidates[0];
   if (!top) return [];
   const contenders = candidates.filter((c) => top.matchScore - c.matchScore < CLEAR_MARGIN);
-  const active = contenders.filter((c) => c.status === "watching" || c.status === "on_hold");
+  const active = contenders.filter(
+    (c) => (c.status === "watching" || c.status === "on_hold") && c.airingStatus !== NOT_YET_AIRED,
+  );
   const strongEnough = top.matchScore >= CLEAR_MATCH;
 
   return candidates.map((candidate) => {
@@ -144,6 +152,7 @@ export async function getEntry(
       episodesWatched: listEntries.numEpisodesWatched,
       score: listEntries.score,
       isRewatching: listEntries.isRewatching,
+      airingStatus: anime.airingStatus,
     })
     .from(listEntries)
     .innerJoin(anime, eq(listEntries.animeId, anime.malId))

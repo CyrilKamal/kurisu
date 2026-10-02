@@ -285,3 +285,21 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** Keeping the tie-break for all changes; removing it entirely.
 **Why:** With the tie-break applying to everything, "dropping the isekai one" dropped the only isekai show in progress without asking. That was a wrong write in the eval, and it contradicts the design doc: "ambiguous ones ('the isekai one' matching three shows) ask first". Removing the tie-break would make "finished frieren" (season 1 completed, season 2 watching) ask every time.
 **Consequences:** Status and score changes on vague references now surface as Confirm cards. The user's eval cases will show whether the boundary is right.
+
+## 2026-10-01 — The agent sees MAL's airing status; unaired shows aren't "in progress" (Milestone 2)
+**Decision:**
+- Search and `get_entry` now return MAL's airing status. The mirror has stored it since Milestone 1, but the agent couldn't see it.
+- The in-progress tie-break skips shows MAL says haven't aired.
+- `propose_update` holds progress on an unaired show (more episodes, or completing it) for confirmation, with reason `not_yet_aired`. Status changes like dropping it go through.
+- Eval snapshots carry `airingStatus`. Older snapshots load with it unknown, and `eval:validate` warns about cases that expect a write the agent will hold.
+- The prompt is unchanged: the server enforces the rules, and the field explains itself.
+
+**Alternatives:**
+- Asking the user to move upcoming shows to Plan to Watch.
+- Refusing progress on unaired shows outright.
+- Prompt v3 telling the model about airing status.
+
+**Why:** The user keeps upcoming sequels in Watching, so the brief will cover them when they premiere (Milestone 3). Without the airing status, "black clover ep 3" picked the unaired season 2 as the season in progress. The mirror's airing status is only as fresh as the last sync, so a just-premiered show could still read "not yet aired"; that calls for confirming, not refusing. A prompt change can't be measured until the real eval cases exist, so it waits.
+**Consequences:**
+- A franchise whose only "watching" entry hasn't aired now gets a question instead of a guess.
+- The eval snapshot must be re-exported to carry airing status for the user's real list. That has to happen before the cases are written.

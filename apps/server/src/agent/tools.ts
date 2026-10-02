@@ -246,6 +246,7 @@ function entryForModel(entry: ListEntryView) {
     status: entry.status,
     episodes_watched: entry.episodesWatched,
     total_episodes: entry.numEpisodes ?? "unknown",
+    ...(entry.airingStatus ? { airing_status: entry.airingStatus } : {}),
     ...(entry.score > 0 ? { score: entry.score } : {}),
     ...(entry.isRewatching ? { rewatching: true } : {}),
   };
