@@ -24,6 +24,7 @@ const snapshot: Snapshot = {
       status: "watching",
       episodesWatched: 6,
       isRewatching: false,
+      airingStatus: "finished_airing",
     },
     {
       id: 2,
@@ -36,6 +37,7 @@ const snapshot: Snapshot = {
       status: "plan_to_watch",
       episodesWatched: 0,
       isRewatching: false,
+      airingStatus: "finished_airing",
     },
     {
       id: 3,
@@ -48,6 +50,20 @@ const snapshot: Snapshot = {
       status: "plan_to_watch",
       episodesWatched: 0,
       isRewatching: false,
+      airingStatus: "finished_airing",
+    },
+    {
+      id: 4,
+      title: "Upcoming Sequel",
+      titleEn: null,
+      titleJa: null,
+      synonyms: [],
+      mediaType: "tv",
+      numEpisodes: null,
+      status: "watching",
+      episodesWatched: 0,
+      isRewatching: false,
+      airingStatus: "not_yet_aired",
     },
   ],
 };
@@ -203,9 +219,42 @@ describe("loadCases", () => {
     ]);
   });
 
+  it("warns when a case expects progress on a show that hasn't aired", () => {
+    const result = load({
+      "a.yaml": `${header}
+  - id: early-progress
+    message: m
+    expect: { writes: [{ anime: "Upcoming Sequel", episodes_watched: 1 }] }
+  - id: early-drop
+    message: m
+    expect: { writes: [{ anime: "Upcoming Sequel", status: dropped }] }
+`,
+    });
+
+    expect(result.errors).toEqual([]);
+    expect(result.warnings.map((w) => [w.caseId, w.message])).toEqual([
+      ["early-progress", expect.stringMatching(/hasn't aired yet.*clarify: true/)],
+    ]);
+  });
+
   it("reports invalid YAML without crashing", () => {
     const result = load({ "a.yaml": "snapshot: test\ncases: [\n" });
     expect(result.errors[0]?.message).toMatch(/not valid YAML/);
+  });
+});
+
+describe("loadSnapshot", () => {
+  it("loads snapshots exported before airing status existed, with it unknown", () => {
+    dir = mkdtempSync(path.join(tmpdir(), "kurisu-snapshot-"));
+    const oldEntry = Object.fromEntries(
+      Object.entries(snapshot.entries[0] ?? {}).filter(([key]) => key !== "airingStatus"),
+    );
+    writeFileSync(
+      path.join(dir, "old.json"),
+      JSON.stringify({ ...snapshot, name: "old", entries: [oldEntry] }),
+    );
+
+    expect(loadSnapshot("old", `${dir}${path.sep}`).entries[0]?.airingStatus).toBeNull();
   });
 });
 

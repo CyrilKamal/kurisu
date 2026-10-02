@@ -173,7 +173,7 @@ export const proposals = pgTable(
     // Only the fields that change, with their new values.
     change: jsonb("change").$type<ListChange>().notNull(),
     requiresConfirmation: boolean("requires_confirmation").notNull().default(false),
-    // Why confirmation is needed, e.g. ambiguous_match or progress_backwards.
+    // Why confirmation is needed: ambiguous_match, progress_backwards or not_yet_aired.
     confirmationReason: text("confirmation_reason"),
     status: proposalStatus("status").notNull().default("pending"),
     // A short error code when a commit failed.

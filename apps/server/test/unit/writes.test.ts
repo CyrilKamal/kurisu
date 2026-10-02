@@ -8,6 +8,7 @@ function candidate(
   animeId: number,
   matchScore: number,
   status: ListStatus = "completed",
+  airingStatus = "finished_airing",
 ): Omit<SearchCandidate, "clear" | "clearBy"> {
   return {
     animeId,
@@ -19,6 +20,7 @@ function candidate(
     episodesWatched: 0,
     score: 0,
     isRewatching: false,
+    airingStatus,
     matchScore,
     matchedName: `Show ${String(animeId)}`,
   };
@@ -58,6 +60,19 @@ describe("markClear", () => {
 
   it("stays unclear when several tied shows are in progress", () => {
     expect(clearIds([candidate(1, 1, "watching"), candidate(2, 1, "watching")])).toEqual([]);
+  });
+
+  it("a show that hasn't aired isn't in progress, even if the list says watching", () => {
+    // "black clover ep 3": season 1 completed, season 2 parked in Watching before it airs.
+    expect(
+      clearIds([candidate(1, 1, "completed"), candidate(2, 1, "watching", "not_yet_aired")]),
+    ).toEqual([]);
+    // Once it airs, the tie-break picks it again.
+    expect(
+      clearIds([candidate(1, 1, "completed"), candidate(2, 1, "watching", "currently_airing")]),
+    ).toEqual([2]);
+    // A unique match is still clear; propose_update holds progress on it instead.
+    expect(clearIds([candidate(1, 0.9, "watching", "not_yet_aired")])).toEqual([1]);
   });
 
   it("an in-progress show outside the tie doesn't count", () => {

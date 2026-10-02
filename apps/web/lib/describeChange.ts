@@ -35,6 +35,8 @@ export function confirmationReasonLabel(reason: string | null): string {
       return "Not sure this is the show you meant.";
     case "progress_backwards":
       return "This moves your progress backwards.";
+    case "not_yet_aired":
+      return "MyAnimeList says this show hasn't aired yet.";
     default:
       return "Needs your confirmation.";
   }

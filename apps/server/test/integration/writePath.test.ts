@@ -18,6 +18,7 @@ let runId: string;
 
 const WATCHING = 900001; // Fixture Watching Show: watching, 7 / 12
 const ON_HOLD = 900003; // Fixture Paused Show: on_hold, 10 / 24
+const NOT_AIRED = 900005; // Fixture Unannounced Sequel: plan_to_watch, not yet aired, ? episodes
 
 beforeAll(async () => {
   h = await startHarness();
@@ -180,6 +181,21 @@ describe("the confirmation gate", () => {
     });
   });
 
+  it("holds progress on a show MAL says hasn't aired, but not status changes", async () => {
+    const started = await propose({ animeId: NOT_AIRED, episodesWatched: 1 });
+    expect(started).toMatchObject({
+      change: { episodesWatched: 1, status: "watching" },
+      requiresConfirmation: true,
+      confirmationReason: "not_yet_aired",
+    });
+    expect(await propose({ animeId: NOT_AIRED, status: "completed" })).toMatchObject({
+      confirmationReason: "not_yet_aired",
+    });
+
+    const dropped = await propose({ animeId: NOT_AIRED, status: "dropped" });
+    expect(dropped).toMatchObject({ requiresConfirmation: false, confirmationReason: null });
+  });
+
   it("lets the user cancel a held proposal", async () => {
     const proposal = await propose({ animeId: WATCHING, episodesWatched: 8, clearMatch: false });
 
@@ -325,6 +341,13 @@ describe("search_my_list", () => {
       expect(result[0]).toMatchObject({ animeId: WATCHING, clear: true });
     }
     expect(bySynonym[0]?.matchedName).toBe("FWS");
+  });
+
+  it("returns MAL's airing status with each entry", async () => {
+    const [aired] = await searchMyList(h.db, userId, ["fixture watching show"]);
+    const [upcoming] = await searchMyList(h.db, userId, ["fixture unannounced sequel"]);
+    expect(aired?.airingStatus).toBe("finished_airing");
+    expect(upcoming).toMatchObject({ animeId: NOT_AIRED, airingStatus: "not_yet_aired" });
   });
 
   it("takes the best score across query variants", async () => {

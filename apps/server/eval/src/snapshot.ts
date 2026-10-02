@@ -9,7 +9,8 @@ export const SNAPSHOTS_DIR = fileURLToPath(new URL("../snapshots/", import.meta.
 
 /**
  * One list entry as the eval sees it. Deliberately sanitized: no scores, dates, tags, comments
- * or usernames, only what's needed to resolve titles and judge progress updates.
+ * or usernames, only what's needed to resolve titles and judge progress updates. Snapshots
+ * exported before airing status was added load with it unknown.
  */
 export const snapshotEntrySchema = z
   .object({
@@ -23,6 +24,8 @@ export const snapshotEntrySchema = z
     status: z.enum(MAL_LIST_STATUSES),
     episodesWatched: z.number().int().nonnegative(),
     isRewatching: z.boolean(),
+    /** MAL's airing status (finished_airing, currently_airing, not_yet_aired). Null if unknown. */
+    airingStatus: z.string().nullable().default(null),
   })
   .strict();
 export type SnapshotEntry = z.infer<typeof snapshotEntrySchema>;

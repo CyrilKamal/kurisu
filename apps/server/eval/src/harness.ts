@@ -58,6 +58,7 @@ export async function loadSnapshotIntoDb(db: Db, snapshot: Snapshot): Promise<st
         synonyms: e.synonyms,
         mediaType: e.mediaType,
         numEpisodes: e.numEpisodes,
+        airingStatus: e.airingStatus,
       })),
     );
     await db.insert(listEntries).values(
