@@ -46,7 +46,8 @@ export type ProposeError =
   | "no_change"
   | "episodes_exceed_total"
   | "negative_episodes"
-  | "score_out_of_range";
+  | "score_out_of_range"
+  | "rewatch_not_completed";
 
 export type ProposeResult = { ok: true; proposal: Proposal } | { ok: false; error: ProposeError };
 

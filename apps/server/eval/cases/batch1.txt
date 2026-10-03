@@ -50,7 +50,7 @@ watched bleach episode 380 => ask  // franchise-wide numbering: ask about the wr
 tags: ambiguous
 I think Bungou Stray Dogs is like a 7 => ask
 Just watched episode 6 of wistoria s2 => ask  // backwards from 9, held for confirmation
-just watched daemons => ask
+just watched daemons => Daemons of the Shadow Realm: ep 18  // "just watched X" with no number = the next episode (decided 2026-10-03)
 Watched 3 episodes of the isekai => ask
 Just watched episode one of blue => ask
 Dropping the isekai => ask

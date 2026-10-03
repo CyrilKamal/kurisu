@@ -234,6 +234,8 @@ function describeNormalizeError(error: string, total: number | null): string {
       return `episodes_watched is more than the show's ${String(total)} episodes.`;
     case "negative_episodes":
       return "episodes_watched can't be negative.";
+    case "rewatch_not_completed":
+      return "is_rewatching only applies to a show that's completed.";
     default:
       return "score must be a whole number from 0 to 10.";
   }

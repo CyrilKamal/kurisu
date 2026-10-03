@@ -402,3 +402,33 @@ The prompt already said to ask about the newest episode, and Flash-Lite ignored 
   - Seven Deadly Sins "season 3" now finds Imperial Wrath.
   - Attack on Titan "season 4" and both Tower of God cases stay unclear.
   - DanMachi "4th season" still resolves from the user's words.
+
+## 2026-10-03 — Rewatching only applies to a completed show; "just watched X" means the next episode (Milestone 2)
+**Decision:**
+- `normalizeChange` refuses `is_rewatching: true` unless the show ends up completed (error `rewatch_not_completed`). The tool tells the model that starting an unfinished show again means episode 1.
+- The user decided that "just watched X" with no number means the next episode. The batch-1 case "just watched daemons" changed from `ask` to episode 18, and the eval README records the convention.
+- The user also confirmed the strict wrong-write metric: a write to the right show with the wrong values counts as a wrong write.
+
+**Alternatives:** Leave rewatch handling to the prompt; report "wrong show" and "wrong values" separately.
+**Why:** On Flash-Lite, "Im going to start Seven Deadly Season 3 again" (an on-hold show) was written as a rewatch. MAL keeps a show completed while it's rewatched, so a rewatch of an unfinished show is always a misreading.
+**Consequences:** A user who really means to restart an unfinished show from the beginning gets episode 1, which is the same thing on MAL.
+
+## 2026-10-03 — Prompt v4 becomes the app's prompt (Milestone 2)
+**Decision:** `progress-sync@4` replaces `@3`. It says that "started" / "picked up" / "starting X again" set episode 1 rather than only the status, that "again" on an unfinished show isn't a rewatch, and that "just watched X" with no number means the next episode (the user's decision).
+**Alternatives:** Keep v3.
+**Why:** Batch 1 on Flash-Lite (the app's model), with the rewatch rule:
+
+| | v3 | v4 |
+| --- | --- | --- |
+| update accuracy | 88% | **98%** (49/50) |
+| wrong writes | 4/30 | **0/31** |
+| clarification precision | 80% | 88.9% |
+| clarification recall | 94% | 100% |
+| median latency | 2.4 s | 2.3 s |
+
+On the local eval model (ornith:9b) v4 roughly matches v3: 80% accuracy, 3 wrong writes against 2, and one error.
+
+**Consequences:**
+- Against the agreed pass level (95% accuracy, under 1% wrong writes, 90% clarification precision, judged on Flash-Lite), batch 1 now passes accuracy and wrong writes. Precision is one question short: the two extra asks are a held Mushoku Tensei drop and "did you mean Chainsaw Man?" for a show not on the list.
+- Batch 1 has been tuned against repeatedly, so these numbers are optimistic. A fresh batch is the honest check.
+- The local model trails Flash-Lite by about 18 points, so local runs show direction, not pass or fail.
