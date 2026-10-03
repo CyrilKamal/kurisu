@@ -16,8 +16,9 @@ const sleep = (ms: number) =>
 
 /**
  * For eval runs on free tiers with per-minute limits: spaces model calls to at most perMinute,
- * and when the provider still says "rate limited", waits and retries a few times instead of
- * failing the case. Only the eval uses this; the app makes one user's calls as they come.
+ * and when the provider says "rate limited" or "busy" (a 503 under high demand), waits and
+ * retries a few times instead of failing the case: those say nothing about the agent. Only the
+ * eval uses this; the app makes one user's calls as they come.
  */
 export function throttle(
   inner: ModelClient,
@@ -40,10 +41,12 @@ export function throttle(
         try {
           return await inner.chat(ref, request);
         } catch (err) {
-          const limited = err instanceof ModelProviderError && err.kind === "rate_limited";
-          if (!limited || attempt >= RATE_LIMIT_RETRIES) throw err;
+          const transient =
+            err instanceof ModelProviderError &&
+            (err.kind === "rate_limited" || err.kind === "unavailable");
+          if (!transient || attempt >= RATE_LIMIT_RETRIES) throw err;
           const backoff = RATE_LIMIT_BACKOFF_MS * (attempt + 1);
-          console.warn(`  rate limited; waiting ${String(backoff / 1000)} s and retrying`);
+          console.warn(`  ${err.kind}; waiting ${String(backoff / 1000)} s and retrying`);
           await wait(backoff);
           client.waitedMs += backoff;
         }

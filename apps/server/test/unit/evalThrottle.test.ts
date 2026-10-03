@@ -33,13 +33,20 @@ describe("throttle", () => {
     expect(models.waitedMs).toBe(waits.reduce((a, b) => a + b, 0));
   });
 
-  it("waits and retries when the provider is rate limited, but not for other errors", async () => {
+  it("waits and retries when the provider is rate limited or busy, but not for other errors", async () => {
     let calls = 0;
     const limited: ModelClient = {
       chat: () => {
         calls++;
         return calls < 3
-          ? Promise.reject(new ModelProviderError("gemini", "rate_limited", "quota", 429))
+          ? Promise.reject(
+              new ModelProviderError(
+                "gemini",
+                calls === 1 ? "rate_limited" : "unavailable",
+                "busy",
+                calls === 1 ? 429 : 503,
+              ),
+            )
           : Promise.resolve(RESPONSE);
       },
     };
