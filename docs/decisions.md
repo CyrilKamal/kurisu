@@ -315,3 +315,27 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** "Started" meaning only "moved to Watching" with no episode, which does nothing for a show already in Watching. Asking every time.
 **Why:** The user's call. The user often keeps shows in Watching at episode 0 before starting them, so a status-only meaning would make "started" do nothing for those. Prompt v1 already maps "started" to episode 1, so no prompt change is needed.
 **Consequences:** "Started" on a show past episode 1, or a completed one, counts as backwards progress and is held for confirmation. Whether "started" on a dropped show should also move it back to Watching is still open; the user's cases will show it.
+
+## 2026-10-03 — Search: exact names, one verdict per query, season numbers, franchise-only tie-break (Milestone 2)
+**Decision:** This refines "The in-progress tie-break applies only to forward progress".
+- **Exact names win.** A name that is exactly the query (ignoring case and punctuation) scores 1. Any other name is capped at 0.95, so "Another" no longer ties with "…in Another World". There's one exception: if other entries' names *start with* the query ("Bungou Stray Dogs 4th Season"), the exact match isn't decisive and the season rules decide.
+- **Each query is judged on its own.** One search can carry title variants or several shows ("World Trigger", "One Piece") without them competing. An entry is clear if any query makes it clear. The rule looks at the top 20 matches, not only the 5 the model sees.
+- **Season and part numbers count.** "Season 2", "2nd season", "IV", "s2", "Part 2", "Cour 2" and a trailing "3" narrow the candidates to that season. If a franchise numbers its seasons and the named one isn't on the list, nothing is clear. Franchises that name seasons after arcs ignore the number.
+- **The in-progress tie-break needs one franchise,** meaning every tied entry has a name starting with the same words. Shows that only share a word ("blue": Blue Lock and Grand Blue, "the isekai one") stay unclear, as the design doc asks.
+
+**Alternatives:** Keep one combined ranking with the word-containment score; make the model search one show per call; infer missing season numbers from MAL's id order.
+**Why:** The first real eval (50 cases) showed the server holding clear requests as ambiguous. "I am starting Another", "started World Trigger and dropped one piece", the full "Mushoku Tensei III: …" title and "One Punch Man 3" all tied with other entries. Inferring missing numbers from id order breaks on franchises split into parts (Attack on Titan, Mushoku Tensei).
+**Consequences:**
+- A named season that MAL calls by an arc name (Seven Deadly Sins "season 3") isn't found by number. It fails safe (nothing clear, so the agent asks), and a query without the number still finds the season in progress.
+- An unrelated show whose name starts with another show's full name would block the exact-name rule for it. On the user's list that hasn't happened.
+
+## 2026-10-03 — A held change counts from the moment it's proposed; runs that did work never end in an error (Milestone 2)
+**Decision:**
+- A proposal that needs confirmation joins the run's pending list as soon as `propose_update` creates it, not only after the model calls `commit_update` on it. That's what Chat already shows (a Confirm card), and the eval, the run outcome and escalation now agree with it.
+- A model that calls `commit_update` twice on the same held proposal is stopped there.
+- A run that wrote or held something but ran out of turns ends with a plain reply ("Done." / "That change needs your confirmation.") instead of an error, and `agent_runs.error` keeps the reason (`max_turns`, `repeated_commit`).
+- `propose_update` results say what to do next: commit it, or tell the user it needs confirmation.
+
+**Alternatives:** Count holds only through `commit_update` (the old behavior); raise the turn limit; auto-commit clear proposals the model forgot to commit.
+**Why:** In the first real eval, two runs looped on `commit_update` for a held change until they hit the turn limit, so Chat would have said "I got stuck" even though a Confirm card was ready. The harness also undercounted asking. Auto-committing would make the server, not the model, decide to write, which goes beyond "commit_update is the only way to write".
+**Consequences:** On the batch-1 cases (ornith:9b, prompt v1), these two decisions together took update accuracy from 52% to 68%, the wrong-write rate from 25% to 12.5%, and errors from 2 to 0. The rest is model behavior: claiming writes it didn't make, unneeded follow-up questions, and nickname mistakes. That's prompt work.

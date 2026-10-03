@@ -84,6 +84,8 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     proposalIds: new Set(),
     committed: [],
     pending: [],
+    toldWaiting: new Set(),
+    stopped: false,
   };
   const messages: LlmMessage[] = [
     ...input.history.map((m): LlmMessage =>
@@ -161,9 +163,21 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
       });
       messages.push({ role: "tool", toolCallId: call.id, name: call.name, content });
     }
+    if (ctx.stopped) break;
   }
 
-  if (reply === null && error === null) error = "max_turns";
+  // Ran out of turns, or stopped for repeating itself. If changes were written or held, the
+  // run still did its job: Chat shows them, so end with a plain reply instead of an error.
+  // agent_runs keeps the reason.
+  let stopReason: string | null = null;
+  if (reply === null && error === null) {
+    if (ctx.committed.length > 0 || ctx.pending.length > 0) {
+      stopReason = ctx.stopped ? "repeated_commit" : "max_turns";
+      reply = fallbackReply(ctx.committed.length, ctx.pending.length);
+    } else {
+      error = "max_turns";
+    }
+  }
   const text = reply ?? "";
   const asked = text.includes("?");
   const outcome: AgentOutcome = error
@@ -179,7 +193,14 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
 
   await db
     .update(agentRuns)
-    .set({ finishedAt: new Date(), latencyMs, inputTokens, outputTokens, outcome, error })
+    .set({
+      finishedAt: new Date(),
+      latencyMs,
+      inputTokens,
+      outputTokens,
+      outcome,
+      error: error ?? stopReason,
+    })
     .where(eq(agentRuns.id, run.id));
 
   return {
@@ -195,6 +216,13 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     inputTokens,
     outputTokens,
   };
+}
+
+function fallbackReply(committed: number, held: number): string {
+  if (held === 0) return "Done.";
+  const waiting =
+    held === 1 ? "That change needs your confirmation." : "Those changes need your confirmation.";
+  return committed > 0 ? `Done. ${waiting.replace("That change", "One change")}` : waiting;
 }
 
 function truncate(value: unknown, serialized: string): unknown {
