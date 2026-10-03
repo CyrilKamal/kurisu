@@ -27,6 +27,7 @@ describe("messages", () => {
   it("explains confirmation reasons and write errors in plain words", () => {
     expect(confirmationReasonLabel("ambiguous_match")).toMatch(/show you meant/);
     expect(confirmationReasonLabel("not_yet_aired")).toMatch(/hasn't aired yet/);
+    expect(confirmationReasonLabel("newest_episode_unknown")).toMatch(/newest episode/);
     expect(confirmationReasonLabel(null)).toMatch(/confirmation/);
     expect(writeErrorMessage("changed_since")).toMatch(/overwrite the newer change/);
     expect(writeErrorMessage("something_new")).toMatch(/Something went wrong/);

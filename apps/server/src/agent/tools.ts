@@ -9,6 +9,7 @@ import { MAL_LIST_STATUSES } from "../mal/client.js";
 import { commitProposal, type Change, type ListWriter } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
+import { mentionsNewestEpisode } from "./newestEpisode.js";
 
 /** Per-run state the tools share. Grounding rules live here, not in the prompt. */
 export interface RunContext {
@@ -29,8 +30,8 @@ export interface RunContext {
   toldWaiting: Set<string>;
   /** The user's message, so search can tell their words from titles the model supplied. */
   userMessage: string;
-  /** Shows the user's words matched without settling on one (see markClear). */
-  leftOpen: Set<number>;
+  /** Entries some search left tied; only the user's words can settle them (see markClear). */
+  contested: Set<number>;
   /** How often each exact search has run, to catch a model searching in circles. */
   searches: Map<string, number>;
   /** Set when the model keeps repeating itself; the run ends there. */
@@ -154,7 +155,7 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
 
   const candidates = await searchMyList(ctx.db, ctx.userId, queries, {
     userText: ctx.userMessage,
-    leftOpen: ctx.leftOpen,
+    contested: ctx.contested,
   });
   for (const c of candidates) {
     ctx.seen.add(c.animeId);
@@ -196,6 +197,7 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
     runId: ctx.runId,
     animeId: a.anime_id,
     clearMatch: isClearFor(ctx.clear.get(a.anime_id), a),
+    newestEpisodeUnknown: mentionsNewestEpisode(ctx.userMessage),
     ...(a.status !== undefined && { status: a.status }),
     ...(a.episodes_watched !== undefined && { episodesWatched: a.episodes_watched }),
     ...(a.episodes_delta !== undefined && { episodesDelta: a.episodes_delta }),

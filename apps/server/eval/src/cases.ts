@@ -4,9 +4,10 @@ import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { z } from "zod";
 
+import { mentionsNewestEpisode } from "../../src/agent/newestEpisode.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import { normalizeChange, type ListChange } from "../../src/writes/normalize.js";
-import { isProgressBeforeAiring } from "../../src/writes/propose.js";
+import { isProgress, isProgressBeforeAiring } from "../../src/writes/propose.js";
 import { parseShorthand } from "./shorthand.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 
@@ -209,6 +210,10 @@ function resolveCase(
     if (isProgressBeforeAiring(entry, normalized.change)) {
       warnings.push(
         `${label}: the snapshot says this show hasn't aired yet, so the agent holds progress on it for confirmation instead of writing it. Expect clarify: true and no write for it, unless you're testing that rule.`,
+      );
+    } else if (mentionsNewestEpisode(evalCase.message) && isProgress(entry, normalized.change)) {
+      warnings.push(
+        `${label}: the message means "the newest episode" without a number, so the agent holds progress for confirmation until airing schedules arrive (Milestone 3). Expect clarify: true and no write for it, unless you're testing that rule.`,
       );
     }
     changes.set(entry.id, normalized.change);

@@ -14,6 +14,7 @@ function entry(
     airing?: string;
     names?: string[];
     exact?: boolean | boolean[];
+    mediaType?: string;
   } = {},
 ): ScoredEntry {
   const perQuery = Array.isArray(scores) ? scores : [scores];
@@ -22,7 +23,7 @@ function entry(
     animeId,
     title: opts.names?.[0] ?? `Show ${String(animeId)}`,
     titleEn: null,
-    mediaType: "tv",
+    mediaType: opts.mediaType ?? "tv",
     numEpisodes: 12,
     status: opts.status ?? "completed",
     episodesWatched: 0,
@@ -134,42 +135,117 @@ describe("markClear", () => {
     expect(clearIds(blue.slice(0, 2), ["blue lock"])).toEqual([2]);
   });
 
-  describe("the user's words vs titles the model supplied", () => {
+  describe("a tie stays a tie", () => {
     const blue = () => [
       entry(1, [0.95, 1], { names: ["Blue Lock"], exact: [false, true] }),
       entry(2, [0.95, 0.95], { names: ["Blue Lock Season 2"], status: "watching" }),
       entry(3, [0.95, 0.3], { names: ["Grand Blue"], status: "plan_to_watch" }),
     ];
+    /** The same entries, scored only on the second query, as a later search would. */
+    const secondQueryOnly = (pool: ScoredEntry[]) =>
+      pool.map((e) => ({ ...e, scores: [e.scores[1] ?? 0], exact: [e.exact[1] ?? false] }));
 
-    it("a model's guess can't pick between different shows the user's words match", () => {
-      const queries = ["blue", "blue lock"];
-      // Without the message, "blue lock" alone would make season 2 clear...
-      expect(clearIds(blue(), queries)).toEqual([2]);
-      // ...but the user only said "blue", which also means Grand Blue.
+    it("a title the model supplied can't pick between entries another query left tied", () => {
+      // "blue" ties Blue Lock and Grand Blue; "blue lock" is the model's guess.
       expect(
-        markClear(blue(), queries, { userText: "watched ep 1 of blue" }).some((c) => c.clear),
+        markClear(blue(), ["blue", "blue lock"], { userText: "watched ep 1 of blue" }).some(
+          (c) => c.clear,
+        ),
+      ).toBe(false);
+      // Searched on its own, the same title does decide.
+      expect(clearIds(secondQueryOnly(blue()), ["blue lock"])).toEqual([2]);
+    });
+
+    it("holds within one franchise too, even against an exact name", () => {
+      // "tog s2": two entries are both Season 2. Naming one exactly is the model choosing.
+      const tog = [
+        entry(1, [0.7, 0.4], { names: ["Tower of God"] }),
+        entry(2, [0.95, 1], {
+          names: ["Kami no Tou: Ouji no Kikan", "Tower of God Season 2: Return of the Prince"],
+          exact: [false, true],
+          status: "watching",
+        }),
+        entry(3, [0.95, 0.5], {
+          names: ["Kami no Tou: Koubou-sen", "Tower of God Season 2: Workshop Battle"],
+          status: "watching",
+        }),
+      ];
+      const queries = ["tower of god season 2", "kami no tou ouji no kikan"];
+      expect(
+        markClear(tog, queries, { userText: "3 episodes done of tog s2" }).some((c) => c.clear),
       ).toBe(false);
     });
 
-    it("remembers that across the searches of one run", () => {
-      const leftOpen = new Set<number>();
-      const context = { userText: "watched ep 1 of blue", leftOpen };
-      markClear(blue(), ["blue"], context);
-      const later = blue().map((e) => ({
-        ...e,
-        scores: [e.scores[1] ?? 0],
-        exact: [e.exact[1] ?? false],
-      }));
-      expect(markClear(later, ["blue lock"], context).some((c) => c.clear)).toBe(false);
+    it("the user's own words can settle it", () => {
+      const danmachi = [
+        entry(1, [0.95, 0.9], { names: ["DanMachi"] }),
+        entry(2, [0.95, 0.9], { names: ["DanMachi II"] }),
+        entry(4, [0.95, 0.95], { names: ["DanMachi IV: Shin Shou"], status: "plan_to_watch" }),
+      ];
+      const marked = markClear(danmachi, ["danmachi", "danmachi 4th season"], {
+        userText: "Started DanMachi 4th Season",
+      });
+      expect(marked.filter((c) => c.clear).map((c) => c.animeId)).toEqual([4]);
     });
 
-    it("still lets the model decode a nickname that matches nothing literally", () => {
+    it("remembers a tie across the searches of one run", () => {
+      const contested = new Set<number>();
+      const context = { userText: "watched ep 1 of blue", contested };
+      markClear(blue(), ["blue"], context);
+      expect(markClear(secondQueryOnly(blue()), ["blue lock"], context).some((c) => c.clear)).toBe(
+        false,
+      );
+    });
+
+    it("still lets the model decode a nickname that ties with nothing", () => {
       const pool = [entry(7, [0, 1], { names: ["One Punch Man 3"], exact: [false, true] })];
       expect(
         markClear(pool, ["omp 3", "one punch man 3"], { userText: "started omp 3" }).map(
           (c) => c.clear,
         ),
       ).toEqual([true]);
+    });
+  });
+
+  describe("seasons MAL names after their arc", () => {
+    const sds = [
+      entry(23755, 0.95, { names: ["Nanatsu no Taizai", "The Seven Deadly Sins"] }),
+      entry(34577, 0.95, {
+        names: ["Nanatsu no Taizai: Imashime no Fukkatsu", "Seven Deadly Sins Season 2"],
+      }),
+      entry(39701, 0.95, { names: ["Nanatsu no Taizai: Kamigami no Gekirin"], status: "on_hold" }),
+    ];
+
+    it("finds season N as the one unnumbered entry newer than the numbered seasons before it", () => {
+      const marked = markClear(sds, ["seven deadly sins season 3"]);
+      expect(marked.filter((c) => c.clear).map((c) => [c.animeId, c.clearBy])).toEqual([
+        [39701, "unique"],
+      ]);
+      expect(clearIds(sds, ["seven deadly sins season 4"])).toEqual([]);
+    });
+
+    it("doesn't guess when that season comes in parts or only older entries fit", () => {
+      const aot = [
+        entry(25777, 0.95, { names: ["Attack on Titan Season 2"] }),
+        entry(35760, 0.95, { names: ["Attack on Titan Season 3"] }),
+        entry(40028, 0.95, { names: ["Attack on Titan: Final Season"] }),
+        entry(48583, 0.95, { names: ["Attack on Titan: Final Season Part 2"] }),
+        entry(51535, 0.95, {
+          names: ["Attack on Titan: Final Season - The Final Chapters"],
+          mediaType: "tv_special",
+          status: "plan_to_watch",
+        }),
+      ];
+      expect(clearIds(aot, ["aot season 4"])).toEqual([]);
+
+      // Mushoku Tensei's season 1 part 2 is older than season 2, so it can't be "season 4".
+      const mushoku = [
+        entry(39535, 0.95, { names: ["Mushoku Tensei"] }),
+        entry(45576, 0.95, { names: ["Mushoku Tensei Part 2"] }),
+        entry(51179, 0.95, { names: ["Mushoku Tensei II"] }),
+        entry(59193, 0.95, { names: ["Mushoku Tensei III"], status: "watching" }),
+      ];
+      expect(clearIds(mushoku, ["mushoku tensei season 4"])).toEqual([]);
     });
   });
 

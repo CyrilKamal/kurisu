@@ -109,6 +109,7 @@ You don't need to spell these out. The validator and the agent apply the same ru
 - A `dropped` show stays dropped unless you set a status.
 - A write that changes nothing gets a warning, since it's usually a typo in the case.
 - Progress on a show the snapshot says hasn't aired yet (more episodes, or completing it) is held for you to confirm instead of written, so the validator warns about cases that expect it. Status changes, like dropping it, are written as usual. An unaired show also doesn't count as "in progress" when the agent picks between seasons.
+- Progress from a message that means "the newest episode" without a number ("watched the newest ep", "the ep that dropped", "caught up on X") is held for you to confirm, since the app can't look up which episode is newest until Milestone 3. The validator warns about cases that expect it written.
 
 Example: `episodes_watched: 12` on a 12-episode show you're watching is expected as episodes 12 + `completed`.
 
