@@ -432,3 +432,13 @@ On the local eval model (ornith:9b) v4 roughly matches v3: 80% accuracy, 3 wrong
 - Against the agreed pass level (95% accuracy, under 1% wrong writes, 90% clarification precision, judged on Flash-Lite), batch 1 now passes accuracy and wrong writes. Precision is one question short: the two extra asks are a held Mushoku Tensei drop and "did you mean Chainsaw Man?" for a show not on the list.
 - Batch 1 has been tuned against repeatedly, so these numbers are optimistic. A fresh batch is the honest check.
 - The local model trails Flash-Lite by about 18 points, so local runs show direction, not pass or fail.
+
+## 2026-10-03 — A varied eval snapshot instead of a test MAL account (Milestone 2)
+**Decision:** Add `eval/snapshots/varied-list.json`: the user's sanitized list with 14 entries' status or progress changed by hand to cover states the real list lacks. Those states are shows mid-season, on hold and dropped part-way, rewatches in progress, a movie still to watch, and a season or part in progress. Batch 2 can use it with `snapshot: varied-list`. Batch 1 stays on `my-list`.
+**Alternatives:**
+- A second MAL account. It would need the user to sign up and build its list by hand, and creating accounts isn't something the assistant can do.
+- A fully synthetic list. Made-up titles can't test nicknames or real sequel naming.
+- Changing the user's real MAL list.
+
+**Why:** The user's real list has only 3 shows with episode progress, no rewatches, nothing on hold or dropped part-way, and no unwatched movies. Keeping the real titles keeps nickname and sequel cases realistic.
+**Consequences:** Cases on `varied-list` test behavior in states the user's list doesn't actually have, which is fine for an eval. The file is frozen and never re-exported. Its description and the eval README list exactly what changed.

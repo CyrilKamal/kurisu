@@ -13,6 +13,17 @@ Target: about 150 cases.
 
 `snapshots/my-list.json` is a sanitized copy of your list: titles, alternative titles, status, episode progress and whether each show has aired yet, with no scores, dates or username. Don't re-export it after you start writing: relative cases like "two more" depend on the frozen numbers.
 
+`snapshots/varied-list.json` is the same list with 14 shows changed to states your real list lacks:
+- **Mid-season:** Monster 30/74, Your Lie in April 3/22, Classroom of the Elite 4th Season 8/16, Misfit of Demon King Academy II Part 2 5/12
+- **One before the finale:** Made in Abyss 12/13
+- **A season or part in progress:** Spy x Family Season 3 4/13, Fire Force Season 3 Part 2 6/13
+- **On hold part-way:** Darker than Black 10/25, Hyouka 11/22
+- **Dropped part-way:** Servamp 3/12, Charlotte 6/13
+- **Rewatching:** Fullmetal Alchemist 10/51, Code Geass (season 1) 3/25
+- **A movie still to watch:** Penguin Highway
+
+To write cases against it, start the file with `snapshot: varied-list`, and look shows up with `pnpm eval:lookup <words> --snapshot varied-list`. It's made by hand, so it's never re-exported.
+
 ## Shorthand (fastest)
 
 One case per line: the message exactly as you'd type it, `=>`, then what should happen. These examples use the made-up `examples` snapshot:
