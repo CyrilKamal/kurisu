@@ -37,6 +37,8 @@ export function confirmationReasonLabel(reason: string | null): string {
       return "This moves your progress backwards.";
     case "not_yet_aired":
       return "MyAnimeList says this show hasn't aired yet.";
+    case "newest_episode_unknown":
+      return "I can't look up the newest episode yet, so check the episode number.";
     default:
       return "Needs your confirmation.";
   }

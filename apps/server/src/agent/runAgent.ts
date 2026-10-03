@@ -86,7 +86,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     pending: [],
     toldWaiting: new Set(),
     userMessage: input.message,
-    leftOpen: new Set(),
+    contested: new Set(),
     searches: new Map(),
     stop: null,
   };

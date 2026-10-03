@@ -381,3 +381,24 @@ The 5 synthetic examples went from 3/5 to 2/5. Their made-up titles confuse the 
 **Alternatives:** Running Gemini evals unthrottled and accepting failed cases; a paid tier.
 **Why:** The pass level is judged on Flash-Lite, the model the app uses, on its free tier, which limits calls per minute. One run of 50 cases is about 175 calls, roughly 20 minutes.
 **Consequences:** A Flash-Lite run uses part of the free tier's daily requests, which Chat shares.
+
+## 2026-10-03 — A tie stays a tie; arc-named seasons; "the newest episode" is held (Milestone 2)
+**Decision:** This refines "A model's guessed title can't settle what the user's words left open".
+- **A tie stays a tie.** When any search query in a run leaves entries tied, only a query made of the user's own words can make one of them clear. A title the model supplied can't, even an entry's exact name. This replaces the narrower rule that only covered ties between different franchises found by the user's words.
+- **Arc-named seasons.** If the user names season N, no entry is numbered N, and season N−1 is numbered, then season N is the one TV entry without a season number that is newer (higher MAL id) than every lower-numbered season. If none or several fit, or that season comes in parts, nothing is inferred.
+- **"The newest episode" is held.** If the message means the newest episode without giving a number ("the newest ep", "the ep that dropped", "caught up on X"), progress is held for confirmation with reason `newest_episode_unknown`. Chat explains "I can't look up the newest episode yet". `eval:validate` warns about cases that expect such a write.
+
+**Alternatives:** Prompt-only instructions; inferring every unnumbered season by MAL id order; refusing "newest episode" progress outright.
+**Why:** On the first Flash-Lite run there were 5 wrong writes:
+- 2 were Tower of God's two "Season 2" entries, resolved by a title the model named.
+- 2 were "the newest episode" read as one more.
+- 1 was "season 3" of Seven Deadly Sins, which MAL calls "Imperial Wrath of the Gods" and search couldn't find.
+
+The prompt already said to ask about the newest episode, and Flash-Lite ignored it. Holding instead of refusing keeps the right answer one tap away, until Milestone 3 brings airing schedules that can tell which episode is newest.
+**Consequences:**
+- Asking goes up wherever the model, not the user, would have picked between tied entries.
+- An inferred season is "unique" (clear for any change). The N−1 rule and the parts check keep it to cases like Seven Deadly Sins and Jujutsu Kaisen's Culling Game.
+- On the real list:
+  - Seven Deadly Sins "season 3" now finds Imperial Wrath.
+  - Attack on Titan "season 4" and both Tower of God cases stay unclear.
+  - DanMachi "4th season" still resolves from the user's words.

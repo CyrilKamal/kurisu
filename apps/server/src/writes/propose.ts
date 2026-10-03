@@ -32,6 +32,11 @@ export interface ProposeInput {
    * results). An unclear match is held for the user to confirm instead of being committed.
    */
   clearMatch: boolean;
+  /**
+   * The user said "the newest episode" without a number (decided by the caller from their
+   * message). Progress is then a guess, so it's held for them to confirm.
+   */
+  newestEpisodeUnknown?: boolean;
 }
 
 export type ProposeError =
@@ -106,7 +111,9 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
       ? "progress_backwards"
       : isProgressBeforeAiring(entry, change)
         ? "not_yet_aired"
-        : null;
+        : input.newestEpisodeUnknown && isProgress(entry, change)
+          ? "newest_episode_unknown"
+          : null;
 
   const idempotencyKey = keyFor(input.runId, input.animeId, change);
   await db
@@ -143,10 +150,14 @@ export function isProgressBeforeAiring(
   entry: { airingStatus: string | null; episodesWatched: number },
   change: ListChange,
 ): boolean {
+  return entry.airingStatus === NOT_YET_AIRED && isProgress(entry, change);
+}
+
+/** More episodes, or completing the show. */
+export function isProgress(entry: { episodesWatched: number }, change: ListChange): boolean {
   return (
-    entry.airingStatus === NOT_YET_AIRED &&
-    ((change.episodesWatched !== undefined && change.episodesWatched > entry.episodesWatched) ||
-      change.status === "completed")
+    (change.episodesWatched !== undefined && change.episodesWatched > entry.episodesWatched) ||
+    change.status === "completed"
   );
 }
 

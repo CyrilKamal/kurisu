@@ -77,8 +77,8 @@ export async function searchMyList(
     limit?: number;
     /** The user's message, so titles the model supplied can be told from the user's words. */
     userText?: string;
-    /** Shows the user's words left open, kept across the searches of one agent run. */
-    leftOpen?: Set<number>;
+    /** Entries some search left tied, kept across the searches of one agent run. */
+    contested?: Set<number>;
   } = {},
 ): Promise<SearchCandidate[]> {
   const limit = options.limit ?? 5;
@@ -179,36 +179,39 @@ export async function searchMyList(
  *    in Blue Lock and Grand Blue, "the isekai one") stay unclear.
  * An entry is clear if any query makes it clear; "unique" beats "only_in_progress".
  *
- * With the user's message (userText), queries that appear in it are the user's own words; the
- * rest are titles the model supplied. If the user's words strongly match different shows
- * ("blue": Blue Lock and Grand Blue), a model-supplied title ("Blue Lock") can't make one of
- * those shows clear: choosing between them is the user's call. Model-supplied titles still
- * decode nicknames that match nothing literally ("omp 3" -> "One Punch Man 3"). Pass the same
- * leftOpen set to every search of a run, so a later search can't settle it either.
+ * A tie stays a tie. When a query leaves several entries tied ("blue": Blue Lock and Grand
+ * Blue; "Tower of God Season 2": its two Season 2 entries), only the user's own words can pick
+ * one of them later, not a title the model supplied ("Blue Lock", or one entry's exact name):
+ * choosing is the user's call. With the user's message (userText), queries that appear in it are
+ * the user's words; the rest are the model's. Model-supplied titles still decode nicknames that
+ * tie with nothing ("omp 3" -> "One Punch Man 3"). Pass the same contested set to every search
+ * of a run, so a later search can't settle a tie either.
  */
 export function markClear(
   pool: ScoredEntry[],
   queries: string[],
-  context: { userText?: string; leftOpen?: Set<number> } = {},
+  context: { userText?: string; contested?: Set<number> } = {},
 ): SearchCandidate[] {
   const said = context.userText === undefined ? null : ` ${normalizeName(context.userText)} `;
   const isUsersWords = (query: string) => said?.includes(` ${query} `) ?? false;
 
-  const leftOpen = context.leftOpen ?? new Set<number>();
-  queries.forEach((query, qi) => {
-    if (!isUsersWords(query)) return;
-    const contenders = contendersFor(pool, qi);
-    if (contenders.length > 1 && !sameFranchise(contenders)) {
-      for (const e of contenders) leftOpen.add(e.animeId);
-    }
-  });
+  const verdicts = queries.map((query, qi) => ({
+    query,
+    contenders: contendersFor(pool, qi),
+    found: clearForQuery(pool, qi, query),
+  }));
+  // Every entry a query tied without picking it is contested.
+  const contested = context.contested ?? new Set<number>();
+  for (const { contenders, found } of verdicts) {
+    if (contenders.length < 2) continue;
+    for (const e of contenders) if (e.animeId !== found?.id) contested.add(e.animeId);
+  }
 
   const clearBy = new Map<number, ClearBy>();
-  queries.forEach((query, qi) => {
-    const found = clearForQuery(pool, qi, query);
-    if (!found || (!isUsersWords(query) && leftOpen.has(found.id))) return;
+  for (const { query, found } of verdicts) {
+    if (!found || (!isUsersWords(query) && contested.has(found.id))) continue;
     if (found.by === "unique" || !clearBy.has(found.id)) clearBy.set(found.id, found.by);
-  });
+  }
   return pool.map((e) => {
     const by = clearBy.get(e.animeId) ?? null;
     return {
@@ -260,7 +263,11 @@ function clearForQuery(
   if (wanted.season !== null || wanted.part !== null) {
     const narrowed = contenders.filter((e) => matchesSeason(e.names, wanted));
     if (narrowed.length > 0) contenders = narrowed;
-    else if (numbersItsSeasons(contenders, wanted)) return null;
+    else if (numbersItsSeasons(contenders, wanted)) {
+      const inferred = unnumberedSeason(contenders, wanted);
+      if (!inferred) return null;
+      contenders = [inferred];
+    }
   }
   if (contenders.length === 1 && contenders[0]) return { id: contenders[0].animeId, by: "unique" };
   if (!sameFranchise(contenders)) return null;
@@ -271,6 +278,36 @@ function clearForQuery(
   return active.length === 1 && active[0]
     ? { id: active[0].animeId, by: "only_in_progress" }
     : null;
+}
+
+/**
+ * The entry that must be season N when no entry is numbered N: MAL names some seasons after
+ * their arc ("Nanatsu no Taizai: Kamigami no Gekirin" is season 3). When season N-1 is numbered,
+ * it's the one TV entry without a season number that is newer (a higher MAL id) than every
+ * entry numbered below N.
+ * If none or several fit, or that season comes in parts ("Final Season" and "Final Season Part
+ * 2"), the user has to say which, so there's no answer.
+ */
+function unnumberedSeason(entries: ScoredEntry[], wanted: SeasonRef): ScoredEntry | null {
+  const n = wanted.season;
+  if (n === null || n < 2 || wanted.part !== null) return null;
+  const seasonsOf = (e: ScoredEntry) =>
+    e.names.map((name) => seasonRef(name).season).filter((s): s is number => s !== null);
+  const lower = entries.filter((e) => seasonsOf(e).some((s) => s < n));
+  // Only the season right after the last numbered one can be inferred: "season 4" can't be
+  // the unnumbered entry that follows season 2.
+  const highestLower = Math.max(0, ...lower.flatMap((e) => seasonsOf(e).filter((s) => s < n)));
+  if (lower.length === 0 || highestLower !== n - 1) return null;
+  const newestLower = Math.max(...lower.map((e) => e.animeId));
+  const later = entries.filter(
+    (e) =>
+      seasonsOf(e).length === 0 &&
+      e.animeId > newestLower &&
+      (e.mediaType === "tv" || e.mediaType === "ona"),
+  );
+  const isLaterPart = (e: ScoredEntry) => e.names.some((name) => (seasonRef(name).part ?? 1) > 1);
+  if (later.some(isLaterPart)) return null;
+  return later.length === 1 ? (later[0] ?? null) : null;
 }
 
 /** Whether any of the entries has a number of the kind the query asks for in its names. */

@@ -181,6 +181,22 @@ describe("the confirmation gate", () => {
     });
   });
 
+  it("holds progress when the user meant 'the newest episode' without a number", async () => {
+    const guessed = await propose({
+      animeId: WATCHING,
+      episodesDelta: 1,
+      newestEpisodeUnknown: true,
+    });
+    expect(guessed).toMatchObject({
+      requiresConfirmation: true,
+      confirmationReason: "newest_episode_unknown",
+    });
+    // Status changes don't depend on which episode is newest.
+    expect(
+      await propose({ animeId: WATCHING, status: "on_hold", newestEpisodeUnknown: true }),
+    ).toMatchObject({ requiresConfirmation: false });
+  });
+
   it("holds progress on a show MAL says hasn't aired, but not status changes", async () => {
     const started = await propose({ animeId: NOT_AIRED, episodesWatched: 1 });
     expect(started).toMatchObject({
