@@ -5,21 +5,15 @@
  *   pnpm eval:validate            summary, errors and warnings
  *   pnpm eval:validate --verbose  also prints each case's expected change after normalization
  */
-import { loadCases } from "../cases.js";
+import { loadCases, type Problem } from "../cases.js";
 
 const verbose = process.argv.includes("--verbose");
 const { cases, errors, warnings } = loadCases();
 
-for (const problem of errors) {
-  console.error(
-    `ERROR   ${problem.file}${problem.caseId ? ` [${problem.caseId}]` : ""}: ${problem.message}`,
-  );
-}
-for (const problem of warnings) {
-  console.warn(
-    `warning ${problem.file}${problem.caseId ? ` [${problem.caseId}]` : ""}: ${problem.message}`,
-  );
-}
+const where = (p: Problem) =>
+  `${p.file}${p.line !== undefined ? `:${String(p.line)}` : ""}${p.caseId ? ` [${p.caseId}]` : ""}`;
+for (const problem of errors) console.error(`ERROR   ${where(problem)}: ${problem.message}`);
+for (const problem of warnings) console.warn(`warning ${where(problem)}: ${problem.message}`);
 
 if (verbose) {
   for (const { case: c, expectedChanges } of cases) {

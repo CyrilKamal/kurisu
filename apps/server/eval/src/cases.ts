@@ -7,6 +7,7 @@ import { z } from "zod";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import { normalizeChange, type ListChange } from "../../src/writes/normalize.js";
 import { isProgressBeforeAiring } from "../../src/writes/propose.js";
+import { parseShorthand } from "./shorthand.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 
 export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
@@ -70,6 +71,8 @@ export interface ResolvedCase {
 
 export interface Problem {
   file: string;
+  /** Set for shorthand (.txt) files. */
+  line?: number;
   caseId?: string;
   message: string;
 }
@@ -80,25 +83,38 @@ export interface LoadResult {
   warnings: Problem[];
 }
 
-/** Loads and checks every *.yaml file in the cases directory. */
+/** Loads and checks every case file in the cases directory: YAML, or shorthand (.txt). */
 export function loadCases(
   casesDir: string = CASES_DIR,
   snapshotLoader: (name: string) => Snapshot = loadSnapshot,
 ): LoadResult {
   const files = readdirSync(casesDir)
-    .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
+    .filter((f) => /\.(ya?ml|txt)$/.test(f))
     .sort();
   const result: LoadResult = { cases: [], errors: [], warnings: [] };
   const seenIds = new Map<string, string>();
   const indexes = new Map<string, TitleIndex | null>();
 
   for (const file of files) {
+    const text = readFileSync(`${casesDir}${file}`, "utf8");
     let parsed: unknown;
-    try {
-      parsed = parse(readFileSync(`${casesDir}${file}`, "utf8"));
-    } catch (err) {
-      result.errors.push({ file, message: `not valid YAML: ${(err as Error).message}` });
-      continue;
+    let lineOf = new Map<string, number>();
+    if (file.endsWith(".txt")) {
+      const shorthand = parseShorthand(text, file.replace(/\.txt$/, ""));
+      result.errors.push(...shorthand.errors.map((e) => ({ file, ...e })));
+      if (shorthand.cases.length === 0) {
+        if (shorthand.errors.length === 0) result.errors.push({ file, message: "no cases yet." });
+        continue;
+      }
+      parsed = { snapshot: shorthand.snapshot, cases: shorthand.cases };
+      lineOf = shorthand.lineOf;
+    } else {
+      try {
+        parsed = parse(text);
+      } catch (err) {
+        result.errors.push({ file, message: `not valid YAML: ${(err as Error).message}` });
+        continue;
+      }
     }
     const checked = caseFileSchema.safeParse(parsed);
     if (!checked.success) {
@@ -124,7 +140,8 @@ export function loadCases(
     if (!index) continue;
 
     for (const evalCase of cases) {
-      const where = { file, caseId: evalCase.id };
+      const line = lineOf.get(evalCase.id);
+      const where = { file, caseId: evalCase.id, ...(line !== undefined && { line }) };
       const firstFile = seenIds.get(evalCase.id);
       if (firstFile) {
         result.errors.push({ ...where, message: `duplicate case id (also in ${firstFile})` });

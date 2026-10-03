@@ -6,14 +6,48 @@ Target: about 150 cases.
 
 ## Quick start
 
-1. Create a file in `apps/server/eval/cases/`, one per category, such as `plain.yaml` or `nicknames.yaml`.
-2. Start it with `snapshot: my-list` and add cases (format below).
-3. Run `pnpm eval:validate`. It checks every file and points at typos. CI runs it too.
+1. Create a `.txt` file in `apps/server/eval/cases/`, such as `batch1.txt`, and write one case per line in the shorthand below. YAML files (format further down) work too, and both kinds can sit side by side.
+2. Use `pnpm eval:lookup <words>` to find a show's exact title, MAL id, status and episode count.
+3. Run `pnpm eval:validate`. It checks every file, points at the line, and suggests the title you probably meant. CI runs it too.
 4. Run `pnpm eval:validate --verbose` to see exactly what each case expects once the rules below are applied.
 
-`snapshots/my-list.json` is a sanitized copy of your list: titles, alternative titles, status, episode progress and whether each show has aired yet, with no scores, dates or username. Look up the episode numbers there when a case depends on them. Don't re-export it after you start writing: relative cases like "two more" depend on the frozen numbers.
+`snapshots/my-list.json` is a sanitized copy of your list: titles, alternative titles, status, episode progress and whether each show has aired yet, with no scores, dates or username. Don't re-export it after you start writing: relative cases like "two more" depend on the frozen numbers.
 
-## Format
+## Shorthand (fastest)
+
+One case per line: the message exactly as you'd type it, `=>`, then what should happen. These examples use the made-up `examples` snapshot:
+
+```text
+snapshot: examples
+// Lines starting with // are comments. A line like "tags: plain" tags every case below it.
+
+watched ep 8 of fixture watching show => Fixture Watching Show: ep 8  #plain
+FWS, two more episodes => FWS: ep 9  #nickname #relative
+started season 2 of isekai chronicles => 900012: ep 1  #sequel // titles are shared, so use the id
+finished another isekai fixture and dropping the isekai one => Another Isekai Fixture: completed; ask  #multi
+what should I watch tonight? => none  #no-action
+
+user: dropping the isekai one
+bot: Which one: Another Isekai Fixture or Isekai Chronicles season 2?
+the season 2 one => 900012: dropped  #ambiguous #history
+```
+
+After `=>`:
+
+| Write | Means |
+| --- | --- |
+| `none` | nothing should be written and nothing asked |
+| `ask` | the agent should ask (or hold a change for you to confirm) instead of writing |
+| `<title or MAL id>: <fields>` | this write should happen. Separate several with `;`, and add `; ask` when another part of the message should get a question. |
+
+Fields, separated by commas: `ep N` (the episode count after the update), `score N`, `rewatching`, `not rewatching`, or a status: `watching`, `completed`, `on hold`, `dropped`, `plan to watch` (or `ptw`).
+
+- `#tags` go at the end of the line, and `// notes` after them.
+- Earlier turns of a conversation go on the lines right above their case, as `user: …` and `bot: …`.
+- `snapshot:` defaults to `my-list`.
+- Case ids are made from the file name and the message's first words.
+
+## YAML format
 
 ```yaml
 snapshot: my-list
