@@ -112,6 +112,12 @@ You don't need to spell these out. The validator and the agent apply the same ru
 
 Example: `episodes_watched: 12` on a 12-episode show you're watching is expected as episodes 12 + `completed`.
 
+### What words mean (your decisions)
+
+Label every case the same way for the same wording, or no agent can pass them all. Decisions so far:
+
+- **"Started X" means episode 1 is watched.** Label it `X: ep 1`. On a Plan to Watch show, the status then moves to Watching automatically.
+
 ## Coverage checklist
 
 These categories come from the design doc. Aim for a spread, and use them as tags:
