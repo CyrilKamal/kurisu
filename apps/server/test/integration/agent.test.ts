@@ -195,6 +195,88 @@ describe("runAgent", () => {
     expect(h.fakeMal.patchRequests).toHaveLength(0);
   });
 
+  it("counts a held proposal as waiting even when the model never commits it", async () => {
+    models.script(LITE.ref, [
+      { toolCalls: [{ name: "search_my_list", arguments: { queries: ["fixture"] } }] },
+      (req) => {
+        const results = lastToolResult(req).results as { anime_id: number }[];
+        return {
+          toolCalls: [
+            {
+              name: "propose_update",
+              arguments: { anime_id: results[0]?.anime_id, episodes_delta: 1 },
+            },
+          ],
+        };
+      },
+      (req) => {
+        const proposed = lastToolResult(req);
+        expect(proposed.requires_confirmation).toBe(true);
+        expect(String(proposed.next)).toMatch(/Confirm button/);
+        return { text: "That one needs your confirmation." };
+      },
+    ]);
+
+    const result = await run("one more ep of fixture");
+
+    // Chat shows a Confirm card for it, so the run must say it's waiting, too.
+    expect(result.outcome).toBe("needs_confirmation");
+    expect(result.pending).toHaveLength(1);
+  });
+
+  it("stops a model that keeps committing a held proposal, keeping the Confirm card", async () => {
+    let heldId = "";
+    const commitAgain = () => ({
+      toolCalls: [{ name: "commit_update", arguments: { proposal_id: heldId } }],
+    });
+    models.script(LITE.ref, [
+      { toolCalls: [{ name: "search_my_list", arguments: { queries: ["fixture"] } }] },
+      (req) => {
+        const results = lastToolResult(req).results as { anime_id: number }[];
+        return {
+          toolCalls: [
+            { name: "propose_update", arguments: { anime_id: results[0]?.anime_id, score: 3 } },
+          ],
+        };
+      },
+      (req) => {
+        heldId = lastToolResult(req).proposal_id as string;
+        return commitAgain();
+      },
+      commitAgain,
+      commitAgain,
+      commitAgain,
+    ]);
+
+    const result = await run("fixture is a 3");
+
+    expect(result).toMatchObject({
+      outcome: "needs_confirmation",
+      error: null,
+      reply: "That change needs your confirmation.",
+    });
+    expect(result.pending).toHaveLength(1);
+    // It stopped at the second attempt instead of running out of turns.
+    expect(models.requests).toHaveLength(4);
+    const [logged] = await h.db.select().from(agentRuns).where(eq(agentRuns.id, result.runId));
+    expect(logged).toMatchObject({ outcome: "needs_confirmation", error: "repeated_commit" });
+  });
+
+  it("ends without an error when it runs out of turns after writing", async () => {
+    models.script(LITE.ref, [
+      ...updateScript("fixture watching show", { episodes_watched: 8 }).slice(0, 3),
+      ...Array.from({ length: 3 }, () => ({
+        toolCalls: [{ name: "search_my_list", arguments: { queries: ["x"] } }],
+      })),
+    ]);
+
+    const result = await run("watched ep 8");
+
+    expect(result).toMatchObject({ outcome: "committed", error: null, reply: "Done." });
+    const [logged] = await h.db.select().from(agentRuns).where(eq(agentRuns.id, result.runId));
+    expect(logged?.error).toBe("max_turns");
+  });
+
   it("only commits proposals from its own run", async () => {
     models.script(LITE.ref, updateScript("fixture watching show", { episodes_watched: 8 }));
     const first = await run("watched ep 8");
@@ -254,7 +336,10 @@ describe("runAgent", () => {
 });
 
 describe("the clear-match tie-break", () => {
-  /** Three isekai shows; only one is in progress, so "isekai" ties them all. */
+  /**
+   * Three entries whose names all start with "Isekai", so search treats them as seasons of one
+   * franchise; only one is in progress, and "isekai" ties them all.
+   */
   async function addIsekaiShows() {
     const shows = [
       { malId: 910001, title: "Isekai Alpha", status: "completed" as const, episodes: 12 },

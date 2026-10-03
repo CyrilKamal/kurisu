@@ -23,7 +23,12 @@ export interface RunContext {
   /** Proposals created in this run. The model can only commit these. */
   proposalIds: Set<string>;
   committed: Change[];
+  /** Proposals held for the user's confirmation; Chat shows each as a Confirm card. */
   pending: Proposal[];
+  /** Held proposals the model has already been told are waiting for the user. */
+  toldWaiting: Set<string>;
+  /** Set when the model keeps trying to write a held proposal: the run ends there. */
+  stopped: boolean;
 }
 
 export const TOOL_SPECS: ToolSpec[] = [
@@ -171,12 +176,25 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
 
   const p = result.proposal;
   ctx.proposalIds.add(p.id);
+  if (p.requiresConfirmation) {
+    // Held from the moment it's proposed: Chat shows it as a Confirm card either way.
+    if (!ctx.pending.some((held) => held.id === p.id)) ctx.pending.push(p);
+    return {
+      result: {
+        proposal_id: p.id,
+        change: changeForModel(p.change),
+        requires_confirmation: true,
+        ...(p.confirmationReason ? { reason: p.confirmationReason } : {}),
+        next: "The user will see a Confirm button for this change. Don't commit it; tell them it needs their confirmation.",
+      },
+    };
+  }
   return {
     result: {
       proposal_id: p.id,
       change: changeForModel(p.change),
-      requires_confirmation: p.requiresConfirmation,
-      ...(p.confirmationReason ? { reason: p.confirmationReason } : {}),
+      requires_confirmation: false,
+      next: "Call commit_update with this proposal_id to write it.",
     },
   };
 }
@@ -201,10 +219,13 @@ async function commitTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
       return { result: { status: "committed", change: changeForModel(result.change.after) } };
     case "needs_confirmation":
       if (!ctx.pending.some((p) => p.id === id)) ctx.pending.push(result.proposal);
+      // Asking again can't change the answer; a model stuck doing so would burn every turn.
+      if (ctx.toldWaiting.has(id)) ctx.stopped = true;
+      ctx.toldWaiting.add(id);
       return {
         result: {
           status: "waiting_for_user_confirmation",
-          note: "Tell the user this change needs their confirmation.",
+          note: "Don't call commit_update for this again. Tell the user this change needs their confirmation.",
         },
       };
     case "failed":

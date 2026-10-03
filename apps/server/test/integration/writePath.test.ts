@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { agentRuns, changes, listEntries, proposals, users } from "../../src/db/schema.js";
+import { agentRuns, anime, changes, listEntries, proposals, users } from "../../src/db/schema.js";
 import { searchMyList } from "../../src/list/search.js";
 import { commitProposal, createMalListWriter, type ListWriter } from "../../src/writes/commit.js";
 import { proposeUpdate, type ProposeInput } from "../../src/writes/propose.js";
@@ -341,6 +341,72 @@ describe("search_my_list", () => {
       expect(result[0]).toMatchObject({ animeId: WATCHING, clear: true });
     }
     expect(bySynonym[0]?.matchedName).toBe("FWS");
+  });
+
+  /** Adds made-up shows straight to the mirror; search only reads the mirror. */
+  async function addShows(
+    shows: {
+      id: number;
+      title: string;
+      titleEn?: string;
+      status: "watching" | "completed" | "plan_to_watch";
+    }[],
+  ) {
+    await h.db.insert(anime).values(
+      shows.map((s) => ({
+        malId: s.id,
+        title: s.title,
+        titleEn: s.titleEn ?? null,
+        numEpisodes: 12,
+      })),
+    );
+    await h.db.insert(listEntries).values(
+      shows.map((s) => ({
+        userId,
+        animeId: s.id,
+        status: s.status,
+        score: 0,
+        numEpisodesWatched: 0,
+        isRewatching: false,
+        malUpdatedAt: new Date(),
+        syncedAt: new Date(),
+      })),
+    );
+  }
+
+  const clearOf = async (queries: string[]) =>
+    (await searchMyList(h.db, userId, queries))
+      .filter((c) => c.clear)
+      .map((c) => [c.animeId, c.clearBy]);
+
+  it("ranks an exact name above names that only contain the words", async () => {
+    await addShows([
+      { id: 920001, title: "Another", status: "plan_to_watch" },
+      { id: 920002, title: "Starting Life in Another World", status: "completed" },
+      { id: 920003, title: "Reincarnated in Another World as an Aristocrat", status: "completed" },
+    ]);
+    expect(await clearOf(["another"])).toEqual([[920001, "unique"]]);
+  });
+
+  it("finds the season a query names, and the one in progress otherwise", async () => {
+    await addShows([
+      { id: 920011, title: "Stray Dogs", status: "completed" },
+      { id: 920014, title: "Stray Dogs 4th Season", titleEn: "Stray Dogs 4", status: "watching" },
+      {
+        id: 920015,
+        title: "Stray Dogs 5th Season",
+        titleEn: "Stray Dogs 5",
+        status: "plan_to_watch",
+      },
+    ]);
+    expect(await clearOf(["stray dogs"])).toEqual([[920014, "only_in_progress"]]);
+    expect(await clearOf(["stray dogs 5"])).toEqual([[920015, "unique"]]);
+    expect(await clearOf(["Stray Dogs 4th season"])).toEqual([[920014, "unique"]]);
+  });
+
+  it("judges each query on its own when one search covers several shows", async () => {
+    const clear = await clearOf(["fixture watching show", "fixture paused show"]);
+    expect(clear.map(([id]) => id).sort()).toEqual([WATCHING, ON_HOLD].sort());
   });
 
   it("returns MAL's airing status with each entry", async () => {
