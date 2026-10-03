@@ -10,6 +10,7 @@ import type { MAL_LIST_STATUSES } from "../mal/client.js";
  * - Setting status to completed without an episode count fills in the total, when known.
  * - Progress on a plan_to_watch or on_hold show moves it to watching.
  * - A dropped show stays dropped unless the status is set explicitly.
+ * - Rewatching only applies to a completed show.
  * - Fields already at the requested value are left out, so the result is only real changes.
  */
 
@@ -42,7 +43,14 @@ export type ListChange = Partial<
 
 export type NormalizeResult =
   | { ok: true; change: ListChange }
-  | { ok: false; error: "episodes_exceed_total" | "negative_episodes" | "score_out_of_range" };
+  | {
+      ok: false;
+      error:
+        | "episodes_exceed_total"
+        | "negative_episodes"
+        | "score_out_of_range"
+        | "rewatch_not_completed";
+    };
 
 export function normalizeChange(entry: EntryState, requested: RequestedChange): NormalizeResult {
   const total = entry.numEpisodes;
@@ -77,6 +85,12 @@ export function normalizeChange(entry: EntryState, requested: RequestedChange): 
     ) {
       status = "watching";
     }
+  }
+
+  // A rewatch is of a show already completed (MAL keeps it completed while rewatching).
+  // Starting one on a show not finished is a misread, e.g. "start it again" after a pause.
+  if (requested.isRewatching === true && status !== "completed") {
+    return { ok: false, error: "rewatch_not_completed" };
   }
 
   // Finishing the last episode of a rewatch ends the rewatch.

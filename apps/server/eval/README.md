@@ -107,6 +107,7 @@ You don't need to spell these out. The validator and the agent apply the same ru
 - `status: completed` with no episode count fills in the total, when MAL knows it.
 - Progress on a `plan_to_watch` or `on_hold` show sets `watching`.
 - A `dropped` show stays dropped unless you set a status.
+- `is_rewatching: true` only applies to a show that's completed. The validator rejects it otherwise.
 - A write that changes nothing gets a warning, since it's usually a typo in the case.
 - Progress on a show the snapshot says hasn't aired yet (more episodes, or completing it) is held for you to confirm instead of written, so the validator warns about cases that expect it. Status changes, like dropping it, are written as usual. An unaired show also doesn't count as "in progress" when the agent picks between seasons.
 - Progress from a message that means "the newest episode" without a number ("watched the newest ep", "the ep that dropped", "caught up on X") is held for you to confirm, since the app can't look up which episode is newest until Milestone 3. The validator warns about cases that expect it written.
@@ -117,7 +118,8 @@ Example: `episodes_watched: 12` on a 12-episode show you're watching is expected
 
 Label every case the same way for the same wording, or no agent can pass them all. Decisions so far:
 
-- **"Started X" means episode 1 is watched.** Label it `X: ep 1`. On a Plan to Watch show, the status then moves to Watching automatically.
+- **"Started X" means episode 1 is watched.** Label it `X: ep 1`. On a Plan to Watch show, the status then moves to Watching automatically. "Picked up X" and "going to start X (again)" mean the same.
+- **"Just watched X" with no number means the next episode** (one more than the list has).
 
 ## Coverage checklist
 

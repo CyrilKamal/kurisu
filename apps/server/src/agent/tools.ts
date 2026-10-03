@@ -331,6 +331,8 @@ async function explain(ctx: RunContext, error: ProposeError, id: number): Promis
       return "Use either episodes_watched or episodes_delta, not both.";
     case "no_change_requested":
       return "Say what to change: status, episodes, score or rewatching.";
+    case "rewatch_not_completed":
+      return "Rewatching is only for a show they've completed. For a show they haven't finished, starting it (again) means episodes_watched = 1.";
     default:
       return "Those values aren't valid.";
   }

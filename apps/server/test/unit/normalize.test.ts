@@ -80,6 +80,20 @@ describe("normalizeChange", () => {
     });
   });
 
+  it("only starts a rewatch on a completed show", () => {
+    const completed = { ...watching, status: "completed" as const, episodesWatched: 12 };
+    expect(normalizeChange(completed, { isRewatching: true, episodesWatched: 1 })).toEqual({
+      ok: true,
+      change: { isRewatching: true, episodesWatched: 1 },
+    });
+    // "start it again" on a show that was paused isn't a rewatch.
+    const paused = { ...watching, status: "on_hold" as const, episodesWatched: 0 };
+    expect(normalizeChange(paused, { status: "watching", isRewatching: true })).toEqual({
+      ok: false,
+      error: "rewatch_not_completed",
+    });
+  });
+
   it("drops fields that don't change anything", () => {
     expect(normalizeChange(watching, { episodesWatched: 5, status: "watching" })).toEqual({
       ok: true,
