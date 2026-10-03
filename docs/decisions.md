@@ -362,3 +362,22 @@ The 5 synthetic examples went from 3/5 to 2/5. Their made-up titles confuse the 
 - repeated identical searches
 - nickname mistakes ("bsd", "sds")
 - multi-show messages that write only some of the clear shows
+
+## 2026-10-03 — A model's guessed title can't settle what the user's words left open (Milestone 2)
+**Decision:**
+- Search now receives the user's message. A query that appears in it is treated as the user's own words; any other query is a title the model supplied.
+- When the user's words strongly match different shows ("blue": Blue Lock and Grand Blue), a model-supplied title ("Blue Lock") can't make one of those shows clear. The set of such shows lasts for the whole run, so a later search can't settle it either.
+- Model-supplied titles still decode nicknames that match nothing literally ("omp 3").
+- The same search run a third time ends the run with "I couldn't work out which show you mean…" instead of using up every turn.
+
+**Alternatives:** Ignore model-supplied titles entirely (nicknames would break); require the user's words to come first in the queries (relies on the model).
+**Why:** The batch-1 eval wrote "Blue Lock Season 2: ep 1" for "Just watched episode one of blue", which the user labeled as a question. Another run spent all six turns searching for a show that isn't on the list.
+**Consequences:**
+- If the model leaves the user's words out and decodes a nickname wrongly ("sds" → Sword Art Online), search can't tell. That's model knowledge.
+- On batch 1 (ornith:9b, v3): ambiguous cases 10/10, no errors, accuracy 80% (82% before, within run-to-run noise), and the "blue" wrong write is gone.
+
+## 2026-10-03 — Eval runs on Gemini are throttled (Milestone 2)
+**Decision:** `pnpm eval --rpm N` spaces model calls to at most N a minute, and Gemini defaults to 10. When the provider still says "rate limited", the harness waits (20, 40, 60 s) and retries instead of failing the case. Waiting is left out of the reported latency.
+**Alternatives:** Running Gemini evals unthrottled and accepting failed cases; a paid tier.
+**Why:** The pass level is judged on Flash-Lite, the model the app uses, on its free tier, which limits calls per minute. One run of 50 cases is about 175 calls, roughly 20 minutes.
+**Consequences:** A Flash-Lite run uses part of the free tier's daily requests, which Chat shares.
