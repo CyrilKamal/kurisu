@@ -339,3 +339,26 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** Count holds only through `commit_update` (the old behavior); raise the turn limit; auto-commit clear proposals the model forgot to commit.
 **Why:** In the first real eval, two runs looped on `commit_update` for a held change until they hit the turn limit, so Chat would have said "I got stuck" even though a Confirm card was ready. The harness also undercounted asking. Auto-committing would make the server, not the model, decide to write, which goes beyond "commit_update is the only way to write".
 **Consequences:** On the batch-1 cases (ornith:9b, prompt v1), these two decisions together took update accuracy from 52% to 68%, the wrong-write rate from 25% to 12.5%, and errors from 2 to 0. The rest is model behavior: claiming writes it didn't make, unneeded follow-up questions, and nickname mistakes. That's prompt work.
+
+## 2026-10-03 — Prompt v3 becomes the app's prompt (Milestone 2)
+**Decision:** `progress-sync@3` replaces `@1` as the prompt the app uses. Compared with v1 it adds:
+- the user's wording conventions: "started" / "picked up" = episode 1; "watched N episodes" = N more; "next episode" / "continued" = one more; a one-episode show watched = 1; no episode given, a vague amount or "the newest episode" → ask
+- nothing has changed until `commit_update` returns "committed"
+- commit clear changes without asking permission (the user can undo)
+- keep season numbers and full titles in searches, and search once more before saying a show isn't on the list
+- when a change is refused, say why without retrying a guess
+
+The name skips 2 because v2 was an eval-only experiment (see "Never show a reply that claims an unwritten change").
+**Alternatives:** Keep v1; tune further before switching.
+**Why:** On batch 1 (50 cases, ornith:9b, with the search fixes):
+- update accuracy went from 68% to 82%
+- the wrong-write rate went from 12.5% to 8.7%
+- plain, relative and sequel cases went from 56 / 50 / 57% to 89 / 83 / 86%
+
+The 5 synthetic examples went from 3/5 to 2/5. Their made-up titles confuse the model, so that's noise next to 50 real cases.
+**Consequences:** v3 now encodes conventions the user decided while labeling batch 1, so batch 1 no longer tests v3 without bias. The next batch is the real check. Still open:
+- the model's own guess can override an ambiguous name ("blue" → it searched "Blue Lock")
+- arithmetic on "watched N episodes"
+- repeated identical searches
+- nickname mistakes ("bsd", "sds")
+- multi-show messages that write only some of the clear shows
