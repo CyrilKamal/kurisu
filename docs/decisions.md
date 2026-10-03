@@ -309,3 +309,9 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Alternatives:** an `eval:import` command that converts shorthand into YAML files; YAML only.
 **Why:** The user wants to write cases fast, and a converter would leave two copies of every case that could drift apart. Reading shorthand directly means no extra step to forget. The labels are still entirely the user's: the parser only transcribes them.
 **Consequences:** Ids change if a message is edited, so comparing a case across runs works best once its wording is settled. Titles containing ":" work, because the last ":" separates the title from the fields. Tags are only read at the end of a line, so titles containing "#" also work.
+
+## 2026-10-02 — "Started X" means episode 1 watched (Milestone 2)
+**Decision:** The user decided that "started X" means they've watched episode 1, so eval cases label it as `episodes_watched: 1`. On a Plan to Watch or On Hold show, the normal rules then also set Watching. The eval README now has a section of wording conventions like this one, so every case uses the same meaning.
+**Alternatives:** "Started" meaning only "moved to Watching" with no episode, which does nothing for a show already in Watching. Asking every time.
+**Why:** The user's call. The user often keeps shows in Watching at episode 0 before starting them, so a status-only meaning would make "started" do nothing for those. Prompt v1 already maps "started" to episode 1, so no prompt change is needed.
+**Consequences:** "Started" on a show past episode 1, or a completed one, counts as backwards progress and is held for confirmation. Whether "started" on a dropped show should also move it back to Watching is still open; the user's cases will show it.
