@@ -303,3 +303,9 @@ Newest at the bottom. Entries are never edited or deleted; a reversal gets a new
 **Consequences:**
 - A franchise whose only "watching" entry hasn't aired now gets a question instead of a guess.
 - The eval snapshot must be re-exported to carry airing status for the user's real list. That has to happen before the cases are written.
+
+## 2026-10-02 — Shorthand eval cases are read directly, not converted to YAML (Milestone 2)
+**Decision:** `.txt` files in `eval/cases/` are a second case format. Each line holds one case: `<message> => <writes | ask | none> #tags // note`, optionally preceded by `user:`/`bot:` lines for earlier turns. `loadCases` parses them into the same case schema as YAML, so validation, the runner and reports treat both the same. Errors point at the line. Ids come from the file name and the message. `pnpm eval:lookup` searches a snapshot by name, list status or airing status, and prints the exact name to use in a case.
+**Alternatives:** an `eval:import` command that converts shorthand into YAML files; YAML only.
+**Why:** The user wants to write cases fast, and a converter would leave two copies of every case that could drift apart. Reading shorthand directly means no extra step to forget. The labels are still entirely the user's: the parser only transcribes them.
+**Consequences:** Ids change if a message is edited, so comparing a case across runs works best once its wording is settled. Titles containing ":" work, because the last ":" separates the title from the fields. Tags are only read at the end of a line, so titles containing "#" also work.

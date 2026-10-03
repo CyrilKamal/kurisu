@@ -20,6 +20,7 @@
     "db:generate": "pnpm --filter @kurisu/server db:generate",
     "eval:validate": "pnpm --filter @kurisu/server eval:validate",
     "eval:snapshot": "pnpm --filter @kurisu/server eval:snapshot",
+    "eval:lookup": "pnpm --filter @kurisu/server eval:lookup",
     "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",
     "eval": "pnpm --filter @kurisu/server eval"
   },

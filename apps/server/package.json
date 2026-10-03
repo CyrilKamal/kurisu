@@ -17,6 +17,7 @@
     "dev:fake-mal": "tsx test/support/runFakeMal.ts",
     "eval:validate": "tsx eval/src/cli/validate.ts",
     "eval:snapshot": "tsx eval/src/cli/exportSnapshot.ts",
+    "eval:lookup": "tsx eval/src/cli/lookup.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "eval": "tsx eval/src/cli/run.ts"
   },
