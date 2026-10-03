@@ -2,7 +2,7 @@
   "name": "my-list",
   "description": "Sanitized export of a real MAL anime list (348 entries). Scores, dates, tags, comments and the username are removed.",
   "source": "mal-mirror",
-  "exportedAt": "2026-10-03T00:29:55.520Z",
+  "exportedAt": "2026-10-03T04:21:17.709Z",
   "entries": [
     {
       "id": 1,
@@ -4984,7 +4984,7 @@
       ],
       "mediaType": "ona",
       "numEpisodes": null,
-      "status": "plan_to_watch",
+      "status": "watching",
       "episodesWatched": 0,
       "isRewatching": false,
       "airingStatus": "currently_airing"
