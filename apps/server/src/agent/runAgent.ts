@@ -85,7 +85,10 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     committed: [],
     pending: [],
     toldWaiting: new Set(),
-    stopped: false,
+    userMessage: input.message,
+    leftOpen: new Set(),
+    searches: new Map(),
+    stop: null,
   };
   const messages: LlmMessage[] = [
     ...input.history.map((m): LlmMessage =>
@@ -163,17 +166,20 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
       });
       messages.push({ role: "tool", toolCallId: call.id, name: call.name, content });
     }
-    if (ctx.stopped) break;
+    if (ctx.stop) break;
   }
 
   // Ran out of turns, or stopped for repeating itself. If changes were written or held, the
-  // run still did its job: Chat shows them, so end with a plain reply instead of an error.
-  // agent_runs keeps the reason.
+  // run still did its job: Chat shows them, so end with a plain reply instead of an error. A
+  // model searching in circles gets an honest question back. agent_runs keeps the reason.
   let stopReason: string | null = null;
   if (reply === null && error === null) {
     if (ctx.committed.length > 0 || ctx.pending.length > 0) {
-      stopReason = ctx.stopped ? "repeated_commit" : "max_turns";
+      stopReason = ctx.stop ?? "max_turns";
       reply = fallbackReply(ctx.committed.length, ctx.pending.length);
+    } else if (ctx.stop === "repeated_search") {
+      stopReason = ctx.stop;
+      reply = "I couldn't work out which show you mean. Could you give me its full title?";
     } else {
       error = "max_turns";
     }

@@ -73,8 +73,15 @@ export async function searchMyList(
   db: Db,
   userId: string,
   queries: string[],
-  limit = 5,
+  options: {
+    limit?: number;
+    /** The user's message, so titles the model supplied can be told from the user's words. */
+    userText?: string;
+    /** Shows the user's words left open, kept across the searches of one agent run. */
+    leftOpen?: Set<number>;
+  } = {},
 ): Promise<SearchCandidate[]> {
+  const limit = options.limit ?? 5;
   const cleaned = [...new Set(queries.map(normalizeName).filter((q) => q))];
   if (cleaned.length === 0) return [];
   // Drizzle spreads a JS array into separate parameters, so build the Postgres array explicitly.
@@ -153,7 +160,7 @@ export async function searchMyList(
     scores: row.scores.map(Number),
     exact: row.exact,
   }));
-  const marked = markClear(pool, cleaned);
+  const marked = markClear(pool, cleaned, options);
   // Clear matches first, so the model always sees them, then the best of the rest.
   return [...marked.filter((c) => c.clear), ...marked.filter((c) => !c.clear)].slice(0, limit);
 }
@@ -171,14 +178,36 @@ export async function searchMyList(
  *    one in progress is clear for forward progress. Different shows that share a word ("blue"
  *    in Blue Lock and Grand Blue, "the isekai one") stay unclear.
  * An entry is clear if any query makes it clear; "unique" beats "only_in_progress".
+ *
+ * With the user's message (userText), queries that appear in it are the user's own words; the
+ * rest are titles the model supplied. If the user's words strongly match different shows
+ * ("blue": Blue Lock and Grand Blue), a model-supplied title ("Blue Lock") can't make one of
+ * those shows clear: choosing between them is the user's call. Model-supplied titles still
+ * decode nicknames that match nothing literally ("omp 3" -> "One Punch Man 3"). Pass the same
+ * leftOpen set to every search of a run, so a later search can't settle it either.
  */
-export function markClear(pool: ScoredEntry[], queries: string[]): SearchCandidate[] {
+export function markClear(
+  pool: ScoredEntry[],
+  queries: string[],
+  context: { userText?: string; leftOpen?: Set<number> } = {},
+): SearchCandidate[] {
+  const said = context.userText === undefined ? null : ` ${normalizeName(context.userText)} `;
+  const isUsersWords = (query: string) => said?.includes(` ${query} `) ?? false;
+
+  const leftOpen = context.leftOpen ?? new Set<number>();
+  queries.forEach((query, qi) => {
+    if (!isUsersWords(query)) return;
+    const contenders = contendersFor(pool, qi);
+    if (contenders.length > 1 && !sameFranchise(contenders)) {
+      for (const e of contenders) leftOpen.add(e.animeId);
+    }
+  });
+
   const clearBy = new Map<number, ClearBy>();
   queries.forEach((query, qi) => {
     const found = clearForQuery(pool, qi, query);
-    if (found && (found.by === "unique" || !clearBy.has(found.id))) {
-      clearBy.set(found.id, found.by);
-    }
+    if (!found || (!isUsersWords(query) && leftOpen.has(found.id))) return;
+    if (found.by === "unique" || !clearBy.has(found.id)) clearBy.set(found.id, found.by);
   });
   return pool.map((e) => {
     const by = clearBy.get(e.animeId) ?? null;
@@ -201,18 +230,24 @@ export function markClear(pool: ScoredEntry[], queries: string[]): SearchCandida
   });
 }
 
-function clearForQuery(
-  pool: ScoredEntry[],
-  qi: number,
-  query: string,
-): { id: number; by: ClearBy } | null {
+/** The entries tied for best on one query (within CLEAR_MARGIN), if the best is strong enough. */
+function contendersFor(pool: ScoredEntry[], qi: number): ScoredEntry[] {
   const scoreOf = (e: ScoredEntry) => e.scores[qi] ?? 0;
   const ranked = pool
     .filter((e) => scoreOf(e) >= MIN_MATCH)
     .sort((a, b) => scoreOf(b) - scoreOf(a));
   const top = ranked[0];
-  if (!top || scoreOf(top) < CLEAR_MATCH) return null;
-  let contenders = ranked.filter((e) => scoreOf(top) - scoreOf(e) < CLEAR_MARGIN);
+  if (!top || scoreOf(top) < CLEAR_MATCH) return [];
+  return ranked.filter((e) => scoreOf(top) - scoreOf(e) < CLEAR_MARGIN);
+}
+
+function clearForQuery(
+  pool: ScoredEntry[],
+  qi: number,
+  query: string,
+): { id: number; by: ClearBy } | null {
+  let contenders = contendersFor(pool, qi);
+  if (contenders.length === 0) return null;
 
   const exact = contenders.filter((e) => e.exact[qi]);
   const siblings = contenders.filter(

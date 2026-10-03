@@ -134,6 +134,45 @@ describe("markClear", () => {
     expect(clearIds(blue.slice(0, 2), ["blue lock"])).toEqual([2]);
   });
 
+  describe("the user's words vs titles the model supplied", () => {
+    const blue = () => [
+      entry(1, [0.95, 1], { names: ["Blue Lock"], exact: [false, true] }),
+      entry(2, [0.95, 0.95], { names: ["Blue Lock Season 2"], status: "watching" }),
+      entry(3, [0.95, 0.3], { names: ["Grand Blue"], status: "plan_to_watch" }),
+    ];
+
+    it("a model's guess can't pick between different shows the user's words match", () => {
+      const queries = ["blue", "blue lock"];
+      // Without the message, "blue lock" alone would make season 2 clear...
+      expect(clearIds(blue(), queries)).toEqual([2]);
+      // ...but the user only said "blue", which also means Grand Blue.
+      expect(
+        markClear(blue(), queries, { userText: "watched ep 1 of blue" }).some((c) => c.clear),
+      ).toBe(false);
+    });
+
+    it("remembers that across the searches of one run", () => {
+      const leftOpen = new Set<number>();
+      const context = { userText: "watched ep 1 of blue", leftOpen };
+      markClear(blue(), ["blue"], context);
+      const later = blue().map((e) => ({
+        ...e,
+        scores: [e.scores[1] ?? 0],
+        exact: [e.exact[1] ?? false],
+      }));
+      expect(markClear(later, ["blue lock"], context).some((c) => c.clear)).toBe(false);
+    });
+
+    it("still lets the model decode a nickname that matches nothing literally", () => {
+      const pool = [entry(7, [0, 1], { names: ["One Punch Man 3"], exact: [false, true] })];
+      expect(
+        markClear(pool, ["omp 3", "one punch man 3"], { userText: "started omp 3" }).map(
+          (c) => c.clear,
+        ),
+      ).toEqual([true]);
+    });
+  });
+
   it("judges each query on its own, so one search can cover several shows", () => {
     const pool = [
       entry(1, [1, 0.3], { names: ["World Trigger"], exact: [true, false] }),

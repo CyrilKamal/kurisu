@@ -6,6 +6,7 @@
  *   pnpm eval --tag nickname --tag multi
  *   pnpm eval --case plain-001 --file examples.yaml --limit 20
  *   pnpm eval --prompt progress-sync@1     compare an older prompt version
+ *   pnpm eval --model gemini:gemini-3.5-flash-lite --rpm 10   free tiers: at most 10 calls a minute
  *
  * Needs Docker (a throwaway Postgres) and, for local models, Ollama running.
  * Writes a full JSON report to eval/results/.
@@ -31,9 +32,12 @@ import type { ListChange } from "../../../src/writes/normalize.js";
 import { loadCases, type ResolvedCase } from "../cases.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
 import { aggregate, scoreCase, type CaseRun, type Metrics } from "../score.js";
+import { throttle } from "../throttle.js";
 import { loadSnapshot, type Snapshot } from "../snapshot.js";
 
 const RESULTS_DIR = fileURLToPath(new URL("../../results/", import.meta.url));
+/** Calls per minute on Gemini unless --rpm says otherwise; below the free tier's limit. */
+const DEFAULT_GEMINI_RPM = 10;
 
 const { values } = parseArgs({
   options: {
@@ -43,6 +47,7 @@ const { values } = parseArgs({
     file: { type: "string", multiple: true },
     limit: { type: "string" },
     prompt: { type: "string" },
+    rpm: { type: "string" },
   },
 });
 
@@ -59,11 +64,18 @@ const roles = resolveRoles(modelsFile, {
   ...(process.env.EVAL_MODEL ? { eval: process.env.EVAL_MODEL } : {}),
 });
 const ref = values.model ? parseModelRef(values.model) : roles.eval;
-const models = createModelClient({
+const client = createModelClient({
   geminiApiKey: nonEmpty(process.env.GEMINI_API_KEY),
   ollamaBaseUrl: nonEmpty(process.env.OLLAMA_BASE_URL) ?? "http://127.0.0.1:11434",
   ollama: modelsFile.ollama,
 });
+// Gemini's free tier limits calls per minute; local models don't need a limit.
+const rpm = values.rpm ? Number(values.rpm) : ref.provider === "gemini" ? DEFAULT_GEMINI_RPM : null;
+if (rpm !== null && !(rpm > 0)) {
+  console.error("--rpm must be a positive number.");
+  process.exit(1);
+}
+const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm);
 
 const loaded = loadCases();
 if (loaded.errors.length > 0) {
@@ -85,6 +97,8 @@ if (selected.length === 0) {
 }
 
 console.log(`Eval: ${String(selected.length)} cases on ${ref.ref} with ${PROMPT.version}`);
+if (rpm !== null)
+  console.log(`At most ${String(rpm)} model calls a minute (waiting is left out of latency).`);
 console.log("Starting a throwaway Postgres...");
 const database = await startEvalDatabase();
 const snapshots = new Map<string, Snapshot>();
@@ -150,6 +164,7 @@ async function runCase(
   const userId = await loadSnapshotIntoDb(db, snapshot);
   const { writer } = createFakeWriter(db);
 
+  const waitedBefore = models.waitedMs;
   const result = await runAgent(
     { db, models, writeListStatus: writer, prompt: PROMPT },
     {
@@ -187,7 +202,7 @@ async function runCase(
     asked: result.asked || result.pending.length > 0,
     reply: result.reply,
     error: result.error,
-    latencyMs: result.latencyMs,
+    latencyMs: result.latencyMs - (models.waitedMs - waitedBefore),
     inputTokens: result.inputTokens,
     outputTokens: result.outputTokens,
     costUsd: costUsd(modelsFile, ref, {

@@ -262,11 +262,30 @@ describe("runAgent", () => {
     expect(logged).toMatchObject({ outcome: "needs_confirmation", error: "repeated_commit" });
   });
 
+  it("stops a model that runs the same search over and over, and asks the user instead", async () => {
+    models.script(
+      LITE.ref,
+      Array.from({ length: 6 }, () => ({
+        toolCalls: [
+          { name: "search_my_list", arguments: { queries: ["Some Show", "some show 2"] } },
+        ],
+      })),
+    );
+
+    const result = await run("started some show");
+
+    expect(result).toMatchObject({ outcome: "clarification", error: null });
+    expect(result.reply).toMatch(/full title\?/);
+    expect(models.requests).toHaveLength(3);
+    const [logged] = await h.db.select().from(agentRuns).where(eq(agentRuns.id, result.runId));
+    expect(logged?.error).toBe("repeated_search");
+  });
+
   it("ends without an error when it runs out of turns after writing", async () => {
     models.script(LITE.ref, [
       ...updateScript("fixture watching show", { episodes_watched: 8 }).slice(0, 3),
-      ...Array.from({ length: 3 }, () => ({
-        toolCalls: [{ name: "search_my_list", arguments: { queries: ["x"] } }],
+      ...Array.from({ length: 3 }, (_, i) => ({
+        toolCalls: [{ name: "search_my_list", arguments: { queries: [`x${String(i)}`] } }],
       })),
     ]);
 
@@ -310,8 +329,8 @@ describe("runAgent", () => {
 
     models.script(
       LITE.ref,
-      Array.from({ length: 6 }, () => ({
-        toolCalls: [{ name: "search_my_list", arguments: { queries: ["x"] } }],
+      Array.from({ length: 6 }, (_, i) => ({
+        toolCalls: [{ name: "search_my_list", arguments: { queries: [`x${String(i)}`] } }],
       })),
     );
     expect(await run("loop forever")).toMatchObject({ outcome: "error", error: "max_turns" });

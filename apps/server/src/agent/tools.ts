@@ -27,9 +27,18 @@ export interface RunContext {
   pending: Proposal[];
   /** Held proposals the model has already been told are waiting for the user. */
   toldWaiting: Set<string>;
-  /** Set when the model keeps trying to write a held proposal: the run ends there. */
-  stopped: boolean;
+  /** The user's message, so search can tell their words from titles the model supplied. */
+  userMessage: string;
+  /** Shows the user's words matched without settling on one (see markClear). */
+  leftOpen: Set<number>;
+  /** How often each exact search has run, to catch a model searching in circles. */
+  searches: Map<string, number>;
+  /** Set when the model keeps repeating itself; the run ends there. */
+  stop: "repeated_commit" | "repeated_search" | null;
 }
+
+/** A model that runs the same search this many times is going in circles. */
+const MAX_SAME_SEARCH = 3;
 
 export const TOOL_SPECS: ToolSpec[] = [
   {
@@ -128,7 +137,25 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   if (!args.success || args.data.length === 0) {
     return failure("invalid_arguments", "Pass queries: a list of title variants.");
   }
-  const candidates = await searchMyList(ctx.db, ctx.userId, args.data.slice(0, 4));
+  const queries = args.data.slice(0, 4);
+  const key = queries
+    .map((q) => q.trim().toLowerCase())
+    .sort()
+    .join("|");
+  const times = (ctx.searches.get(key) ?? 0) + 1;
+  ctx.searches.set(key, times);
+  if (times >= MAX_SAME_SEARCH) {
+    ctx.stop = "repeated_search";
+    return failure(
+      "repeated_search",
+      "This exact search already ran twice. Reply to the user now.",
+    );
+  }
+
+  const candidates = await searchMyList(ctx.db, ctx.userId, queries, {
+    userText: ctx.userMessage,
+    leftOpen: ctx.leftOpen,
+  });
   for (const c of candidates) {
     ctx.seen.add(c.animeId);
     // A later, sharper search can upgrade a tie-break match to a unique one, never downgrade.
@@ -136,7 +163,10 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   }
   if (candidates.length === 0) return { result: { results: [], note: "Not on the user's list." } };
   return {
-    result: { results: candidates.map((c) => ({ ...entryForModel(c), clear_match: c.clear })) },
+    result: {
+      results: candidates.map((c) => ({ ...entryForModel(c), clear_match: c.clear })),
+      ...(times > 1 && { note: "Same results as your earlier identical search." }),
+    },
   };
 }
 
@@ -220,7 +250,7 @@ async function commitTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
     case "needs_confirmation":
       if (!ctx.pending.some((p) => p.id === id)) ctx.pending.push(result.proposal);
       // Asking again can't change the answer; a model stuck doing so would burn every turn.
-      if (ctx.toldWaiting.has(id)) ctx.stopped = true;
+      if (ctx.toldWaiting.has(id)) ctx.stop = "repeated_commit";
       ctx.toldWaiting.add(id);
       return {
         result: {
