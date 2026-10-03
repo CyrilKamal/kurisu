@@ -1,0 +1,76 @@
+// Batch 1, messages by Cyril. Lines starting with "// TODO" wait on a decision; they are skipped
+// until the "// TODO Qn:" prefix is removed and the right side is filled in.
+
+tags: plain
+I am starting Another => Another: ep 1
+Just started bungo stray dogs 4 => Bungo Stray Dogs 4: ep 1
+Watched Wistoria Season 2 episode 12 => 59983: ep 12
+I just watched the next episode of Daemons => Daemons of the Shadow Realm: ep 18
+just continued on Wistoria Season 2 => Wistoria: Wand and Sword Season 2: ep 10
+Just finished Clevatess season 2 => Clevatess Season 2: completed
+I am dropping Mushoku Tensei III: Isekai Ittara Honki Dasu => Mushoku Tensei: Jobless Reincarnation Season 3: dropped
+Just finished Blue Lock Season 2 it was a 7 => Blue Lock Season 2: completed, score 7
+Im going to start Seven Deadly Season 3 again => The Seven Deadly Sins: Imperial Wrath of the Gods: ep 1
+
+tags: nickname
+Just watched episode 891 of OP => One Piece: ep 891
+Just started Suicide Squad => Suicide Squad Isekai: ep 1
+Just watched five episodes of TOG => ask  // two Season 2 entries are both in Watching
+Watched the newest episode of SBR => ask  #latest-episode
+Started DanMachi 4th Season, Is It Wrong That I Want to Meet You in a Dungeon 4th Season => Is It Wrong to Try to Pick Up Girls in a Dungeon? IV: ep 1
+Started Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka IV: Shin Shou - Meikyuu-hen => Is It Wrong to Try to Pick Up Girls in a Dungeon? IV: ep 1
+Finally picked up Gangster => Gangsta.: ep 1  // misspelled on purpose
+
+tags: relative
+Watched a few episodes of Nier Automata Part 2 => ask
+I just watched episode 15 of mushoku tensei season 3 => none  #no-action // past the 14 episodes: refuse and say why, no question
+Finished the rest of Daemons => Daemons of the Shadow Realm: completed
+watched four episodes of Clevatess Season 2 => Clevatess Season 2: ep 5
+Watched two more episodes of Wistoria Season 2 => Wistoria: Wand and Sword Season 2: ep 11
+watched six episodes of Boruto => Boruto: Naruto Next Generations: ep 6
+
+tags: multi
+Just started Beck and Saga of Tanya the Evil 2 => Beck: ep 1  // Tanya 2 isn't on the list
+Started Babylon and that boxing anime => Babylon: ep 1; ask
+Just picked up Banana Fish Log Horizon and Trigun => Banana Fish: ep 1; Log Horizon: ep 1; Trigun: ep 1
+Started World Trigger and dropped one piece => World Trigger: ep 1; One Piece: dropped
+I think I am gonna pick up sds season 3 again and put Daemons on hold => The Seven Deadly Sins: Imperial Wrath of the Gods: ep 1; Daemons of the Shadow Realm: on hold
+// TODO Q11: the list-style case, to add later
+
+tags: sequel
+Just watched MHA more => My Hero Academia: More: ep 1
+Just started Black clover s2 => ask  // season 2 hasn't aired, so progress is held for confirmation
+Watched episode 5 of bsd => Bungo Stray Dogs 4: ep 5  // the only season in progress
+I think im changing my rating of aot season 4 to a 5 => ask
+3 episodes done of tog s2 => ask
+// TODO Q14: a second franchise-name case (one season in progress), to come
+started omp 3 => One-Punch Man Season 3: ep 1
+watched bleach episode 380 => ask  // franchise-wide numbering: ask about the wraparound
+
+tags: ambiguous
+I think Bungou Stray Dogs is like a 7 => ask
+Just watched episode 6 of wistoria s2 => ask  // backwards from 9, held for confirmation
+just watched daemons => ask
+Watched 3 episodes of the isekai => ask
+Just watched episode one of blue => ask
+Dropping the isekai => ask
+
+user: Dropping the isekai
+bot: Which one do you mean: Isekai Suicide Squad or Mushoku Tensei III?
+Mushoku Tensei => Mushoku Tensei: Jobless Reincarnation Season 3: dropped  #history
+
+Watched some of TOG s2 => ask
+
+user: Watched some of TOG s2
+bot: How many episodes did you watch?
+5 => ask  #history // "5" still doesn't say which of the two Season 2 entries
+
+Watched the newest ep that dropped for TYBW s4 => ask  #latest-episode
+
+tags: no-action
+What do you think I should pick up from my to watch list? => none
+I think I am gonna watch Chainsmoker Cat => none
+Watched two episodes of black torch => none
+Read 6 chapters of blue lock => none
+Watched the first ep of Clevatess season 2 => none
+I dont know if you knew this but I love the color orange => none
