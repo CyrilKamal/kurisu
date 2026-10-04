@@ -1,0 +1,19 @@
+# Batch 2, message by Cyril: the list-style multi case. Its line breaks are part of the message,
+# which the one-line shorthand can't hold.
+snapshot: varied-list
+cases:
+  - id: batch2-starting-list
+    message: |-
+      starting:
+      hellsing
+      inuyasha
+      bocchi the rock
+    tags: [multi]
+    expect:
+      writes:
+        - anime: "Hellsing"
+          episodes_watched: 1
+        - anime: "InuYasha"
+          episodes_watched: 1
+        - anime: "Bocchi the Rock!"
+          episodes_watched: 1

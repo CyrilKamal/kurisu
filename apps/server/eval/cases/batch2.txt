@@ -1,0 +1,71 @@
+// Batch 2, messages by Cyril, against the varied-list snapshot. The list-style multi case has
+// line breaks, so it lives in batch2-multiline.yaml.
+snapshot: varied-list
+
+tags: plain
+Just watched the next episode monster => Monster: ep 31
+finished episode 9 of cote s4 => 59708: ep 9
+Im gonna put The Misfit of Demon King Academy II Part 2 on hold => The Misfit of Demon King Academy II Part 2: on hold
+Lets put The Apothecary Diaries back into the rotation => The Apothecary Diaries: plan to watch  // item: move back to Plan to Watch
+Death Note is a 10 => Death Note: score 10
+Im gonna watch cowboy bebop again => Cowboy Bebop: rewatching  // item: start a rewatch
+I just watched 4 episodes of FMA => Fullmetal Alchemist: ep 14
+Wow I just finished penguin highway what a movie => Penguin Highway: completed
+
+tags: nickname
+Watched 3 more eps of DTB => Darker than Black: ep 13
+Starting Yorimoi => A Place Further Than The Universe: ep 1
+I watched the next ep of ylia => Your Lie in April: ep 4
+gonna drop Hoyuka => Hyouka: dropped  // misspelled on purpose
+Watched the first 5 eps of Parasyte => Parasyte: The Maxim: ep 5
+
+tags: relative
+Watched 4 more episoddes of charlotte => Charlotte: ep 10  // dropped show: stays dropped by the rules
+Watched 2 eps of psycho pass => Psycho-Pass: ep 2
+watched 5 eps of made in abyss => none  #no-action // past the 13 episodes: refuse and say why (batch 1's rule)
+watched eight more eps of code geass => 1575: ep 11  // season 1, being rewatched
+watched the last 9 eps of spy x family s3 => Spy x Family Season 3: ep 13
+
+tags: multi
+Im starting fate/zero and bakuman and resuming servamp => Fate/Zero: ep 1; Bakuman.: ep 1; Servamp: watching
+Starting devilman crybaby and the eater one => Devilman: Crybaby: ep 1; ask
+Starting future diary and odd taxi => The Future Diary: ep 1  // Odd Taxi isn't on the list
+I watched two episodes of kabeneri of the iron fortress and 5 eps of kabeneri => Kabaneri of the Iron Fortress: ep 7  // item: same show twice (2 + 5)
+
+tags: sequel
+finished  episode 8 of fire force => Fire Force Season 3 Part 2: ep 8
+watched 3eps of s2 of link click => Link Click Season 2: ep 3
+I want to rate the chainsaw man movie a 9 => 57555: score 9  // Chainsaw Man – The Movie: Reze Arc
+Im rating the final mha season a 10 => My Hero Academia Final Season: score 10
+Watched 3 eps of mob psycho s4 => none  #no-action // item: a season that isn't on the list
+
+tags: ambiguous
+user: Just got to ep 37 in monster
+bot: Updated Monster: you're on episode 37.
+actually I meant ep 38 => Monster: ep 38  #history
+
+gonna start clannad => ask
+
+user: gonna start clannad
+bot: Which one: Clannad or Clannad: After Story?
+clannad => Clannad: ep 1  #history
+
+Going to move Tokyo revengers to dropped i started it and didn't like it => ask
+
+user: Going to move Tokyo revengers to dropped i started it and didn't like it
+bot: Which one: Christmas Showdown or Tenjiku Arc?
+Tenjiku arc => Tokyo Revengers: Tenjiku Arc: dropped  #history
+
+im dropping jjk => ask
+
+user: im dropping jjk
+bot: Which season: Jujutsu Kaisen, Season 2 or The Culling Game?
+culling game => Jujutsu Kaisen: The Culling Game Part 1: dropped  #history
+
+Im gonna score monogatari an 8 => ask
+
+tags: no-action
+I haven't finished made in abyss yet => none
+What ep am i on in yu yu hakusho => none
+Your name was sooooo good => none
+Im thinking about starting blast of the tempest => none  // "thinking about starting" = no write

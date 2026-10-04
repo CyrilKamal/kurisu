@@ -131,6 +131,8 @@ Label every case the same way for the same wording, or no agent can pass them al
 
 - **"Started X" means episode 1 is watched.** Label it `X: ep 1`. On a Plan to Watch show, the status then moves to Watching automatically. "Picked up X" and "going to start X (again)" mean the same.
 - **"Just watched X" with no number means the next episode** (one more than the list has).
+- **"Thinking about starting X" means nothing yet:** no write.
+- **"Resuming X" means back to Watching,** with the episode count unchanged.
 
 ## Coverage checklist
 
