@@ -250,6 +250,103 @@ describe("markClear", () => {
     });
   });
 
+  describe("conflicting guesses", () => {
+    const mha = () => [
+      entry(60098, [1, 0.5], {
+        names: ["Boku no Hero Academia: Final Season", "My Hero Academia Final Season"],
+        exact: [true, false],
+      }),
+      entry(54789, [0.5, 0.95], {
+        names: ["Boku no Hero Academia 7th Season", "My Hero Academia Season 7"],
+      }),
+    ];
+
+    it("the model's own titles pointing at two seasons of one show make neither clear", () => {
+      const marked = markClear(mha(), ["my hero academia final season", "mha season 7"], {
+        userText: "Im rating the final mha season a 10",
+      });
+      expect(marked.some((c) => c.clear)).toBe(false);
+      // Each title on its own would have been clear.
+      expect(
+        clearIds(mha(), ["my hero academia final season", "mha season 7"].slice(0, 1)),
+      ).toEqual([60098]);
+    });
+
+    it("a vague title from the model that fits different shows doesn't block a precise one", () => {
+      // "mha final season" also fits Attack on Titan's Final Season; it says nothing about MHA's.
+      const pool = [
+        entry(60098, [0.7, 1], {
+          names: ["Boku no Hero Academia: Final Season", "My Hero Academia Final Season"],
+          exact: [false, true],
+        }),
+        entry(40028, [0.76, 0.5], { names: ["Shingeki no Kyojin: The Final Season"] }),
+        entry(30654, [0.76, 0.3], { names: ["Ansatsu Kyoushitsu 2nd Season"] }),
+      ];
+      const marked = markClear(pool, ["mha final season", "my hero academia final season"], {
+        userText: "Im rating the final mha season a 10",
+      });
+      expect(marked.filter((c) => c.clear).map((c) => c.animeId)).toEqual([60098]);
+    });
+
+    it("seasons sharing an alternative name still count as later seasons", () => {
+      // "DanMachi" is season 1's alternative name, and season 2's is "DanMachi II".
+      const danmachi = [
+        entry(28121, 1, {
+          names: ["Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka", "DanMachi"],
+          exact: true,
+        }),
+        entry(37347, 0.95, {
+          names: ["Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka II", "DanMachi II"],
+        }),
+      ];
+      expect(clearIds(danmachi, ["danmachi"])).toEqual([]);
+    });
+
+    it("a search of only the model's guesses needs an exact name", () => {
+      // The user said "blue"; the model only searched its guess. The season tie-break that would
+      // pick Blue Lock Season 2 is a guess on a guess.
+      const blue = [
+        entry(49596, 1, { names: ["Blue Lock"], exact: true }),
+        entry(54865, 0.95, { names: ["Blue Lock Season 2"], status: "watching" }),
+      ];
+      const said = { userText: "Just watched episode one of blue" };
+      expect(markClear(blue, ["blue lock"], said).some((c) => c.clear)).toBe(false);
+      expect(clearIds(blue, ["blue lock"])).toEqual([54865]);
+
+      // An exact name still decodes a nickname the user wrote ("omp 3").
+      const opm = [entry(52807, 1, { names: ["One Punch Man 3"], exact: true })];
+      expect(
+        markClear(opm, ["one punch man 3"], { userText: "started omp 3" }).map((c) => c.clear),
+      ).toEqual([true]);
+    });
+
+    it("different shows that share a first word aren't a conflict", () => {
+      const tokyo = [
+        entry(22319, [1, 0.4], { names: ["Tokyo Ghoul"], exact: [true, false] }),
+        entry(42249, [0.4, 1], { names: ["Tokyo Revengers"], exact: [false, true] }),
+      ];
+      expect(clearIds(tokyo, ["tokyo ghoul", "tokyo revengers"]).sort()).toEqual([22319, 42249]);
+    });
+
+    it("a match from the user's own words isn't a guess", () => {
+      // "bsd" (the user's word) is season 1's alternative name; the model's full title finds the
+      // season in progress. Both stay clear and the model picks.
+      const bsd = [
+        entry(31478, [1, 1], { names: ["Bungou Stray Dogs", "BSD"], exact: [true, true] }),
+        entry(50330, [0, 0.95], { names: ["Bungou Stray Dogs 4th Season"], status: "watching" }),
+      ];
+      const marked = markClear(bsd, ["bsd", "bungou stray dogs"], {
+        userText: "Watched episode 5 of bsd",
+      });
+      expect(
+        marked
+          .filter((c) => c.clear)
+          .map((c) => c.animeId)
+          .sort(),
+      ).toEqual([31478, 50330]);
+    });
+  });
+
   describe("seasons MAL names after their arc", () => {
     const sds = [
       entry(23755, 0.95, { names: ["Nanatsu no Taizai", "The Seven Deadly Sins"] }),

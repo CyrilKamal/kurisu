@@ -188,7 +188,10 @@ export async function searchMyList(
  * choosing is the user's call. With the user's message (userText), queries that appear in it are
  * the user's words; the rest are the model's. Model-supplied titles still decode nicknames that
  * tie with nothing ("omp 3" -> "One Punch Man 3"). Pass the same contested set to every search
- * of a run, so a later search can't settle a tie either.
+ * of a run, so a later search can't settle a tie either. If the model's own titles point at two
+ * different seasons of one franchise, both are contested too: it's guessing between them. And
+ * a search with none of the user's words in it is all guesses, so only an entry's exact name
+ * makes it clear there.
  */
 export function markClear(
   pool: ScoredEntry[],
@@ -203,16 +206,43 @@ export function markClear(
     contenders: contendersFor(pool, qi),
     found: clearForQuery(pool, qi, query, context.answering === true && isUsersWords(query)),
   }));
-  // Every entry a query tied without picking it is contested.
+  // Every entry a query tied without picking it is contested, when the tie means something: it's
+  // in the user's own words ("blue"), or between seasons of one show ("Tower of God Season 2").
+  // A vague title from the model that happens to match different shows ("mha final season" also
+  // fits Attack on Titan's Final Season) says nothing about them.
   const contested = context.contested ?? new Set<number>();
-  for (const { contenders, found } of verdicts) {
+  for (const { query, contenders, found } of verdicts) {
     if (contenders.length < 2) continue;
+    const oneShow = contenders.every((e) =>
+      contenders.every((f) => e === f || seasonsOfOneShow(e, f)),
+    );
+    if (!isUsersWords(query) && !oneShow) continue;
     for (const e of contenders) if (e.animeId !== found?.id) contested.add(e.animeId);
   }
+  // Titles the model supplied that point at different seasons of one franchise ("My Hero
+  // Academia Final Season" and "mha season 7") are the model guessing between them.
+  const modelPicks = [
+    ...new Set(
+      verdicts.filter((v) => v.found && !isUsersWords(v.query)).map((v) => v.found?.id ?? 0),
+    ),
+  ].map((id) => pool.find((e) => e.animeId === id));
+  for (const [i, a] of modelPicks.entries()) {
+    for (const b of modelPicks.slice(i + 1)) {
+      if (a && b && seasonsOfOneShow(a, b)) {
+        contested.add(a.animeId);
+        contested.add(b.animeId);
+      }
+    }
+  }
+
+  // With none of the user's words in this search, the model's titles are all guesses: only an
+  // entry's exact name counts (that's how nicknames decode), not a fuzzy match or a tie-break.
+  const guessesOnly = said !== null && !queries.some(isUsersWords);
 
   const clearBy = new Map<number, ClearBy>();
   for (const { query, found } of verdicts) {
     if (!found || (!isUsersWords(query) && contested.has(found.id))) continue;
+    if (guessesOnly && !found.byExactName) continue;
     if (found.by === "unique" || !clearBy.has(found.id)) clearBy.set(found.id, found.by);
   }
   return pool.map((e) => {
@@ -253,20 +283,26 @@ function clearForQuery(
   query: string,
   /** The user named this entry exactly in answer to "which one?": siblings don't matter. */
   exactAnswers = false,
-): { id: number; by: ClearBy } | null {
+): { id: number; by: ClearBy; byExactName: boolean } | null {
   let contenders = contendersFor(pool, qi);
   if (contenders.length === 0) return null;
 
   const exact = contenders.filter((e) => e.exact[qi]);
-  // Later seasons carry the franchise name in their main or English title. Other shows'
-  // alternative names don't count ("Monster #8" is Kaiju No. 8, not a season of Monster).
-  const siblings = contenders.filter(
-    (e) =>
-      !e.exact[qi] &&
-      [e.title, e.titleEn].some((n) => n && normalizeName(n).startsWith(`${query} `)),
-  );
-  if (exact.length === 1 && exact[0] && (siblings.length === 0 || exactAnswers))
-    return { id: exact[0].animeId, by: "unique" };
+  const only = exact.length === 1 ? exact[0] : undefined;
+  // Later seasons have a name that starts with the exact one, and titles that show they're the
+  // same show. Another show's alternative name doesn't count ("Monster #8" is Kaiju No. 8, not a
+  // season of Monster), but seasons sharing one ("DanMachi", "DanMachi II") do.
+  const siblings = only
+    ? contenders.filter(
+        (e) =>
+          e !== only &&
+          e.names.some((n) => normalizeName(n).startsWith(`${query} `)) &&
+          seasonsOfOneShow(only, e),
+      )
+    : [];
+  if (only && (siblings.length === 0 || exactAnswers)) {
+    return { id: only.animeId, by: "unique", byExactName: true };
+  }
 
   const wanted = seasonRef(query);
   if (wanted.season !== null || wanted.part !== null) {
@@ -278,7 +314,9 @@ function clearForQuery(
       contenders = [inferred];
     }
   }
-  if (contenders.length === 1 && contenders[0]) return { id: contenders[0].animeId, by: "unique" };
+  if (contenders.length === 1 && contenders[0]) {
+    return { id: contenders[0].animeId, by: "unique", byExactName: false };
+  }
   if (!sameFranchise(contenders)) return null;
 
   // In progress: being watched, on hold or rewatched, and already airing.
@@ -288,7 +326,7 @@ function clearForQuery(
       e.airingStatus !== NOT_YET_AIRED,
   );
   return active.length === 1 && active[0]
-    ? { id: active[0].animeId, by: "only_in_progress" }
+    ? { id: active[0].animeId, by: "only_in_progress", byExactName: false }
     : null;
 }
 
@@ -355,6 +393,28 @@ function sameFranchise(entries: ScoredEntry[]): boolean {
         }),
       );
       if (shared) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * A stricter test for two entries, used to spot the model guessing between seasons: by main or
+ * English title, one starts the other ("Clannad" and "Clannad: After Story"), or they share their
+ * first two words or more ("My Hero Academia Final Season" and "My Hero Academia Season 7").
+ * Shows that only share a first word ("Tokyo Ghoul", "Tokyo Revengers") don't count.
+ */
+function seasonsOfOneShow(a: ScoredEntry, b: ScoredEntry): boolean {
+  const titles = (e: ScoredEntry) =>
+    [e.title, e.titleEn].filter((t): t is string => !!t).map(normalizeName);
+  for (const x of titles(a)) {
+    for (const y of titles(b)) {
+      if (x === y || x.startsWith(`${y} `) || y.startsWith(`${x} `)) return true;
+      const xs = x.split(" ");
+      const ys = y.split(" ");
+      let shared = 0;
+      while (shared < xs.length && shared < ys.length && xs[shared] === ys[shared]) shared++;
+      if (shared >= 2) return true;
     }
   }
   return false;
