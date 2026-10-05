@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DEFAULT_ANILIST_API_URL } from "./anilist/client.js";
+
 // .env files write unset optional variables as empty strings; treat those as missing
 // so the schema defaults apply.
 const emptyAsUndefined = (value: unknown) => (value === "" ? undefined : value);
@@ -23,6 +25,9 @@ const envSchema = z.object({
   MAL_REDIRECT_URI: optional(url.default("http://localhost:3000/api/auth/mal/callback")),
   MAL_AUTH_BASE_URL: optional(url.default("https://myanimelist.net/v1/oauth2")),
   MAL_API_BASE_URL: optional(url.default("https://api.myanimelist.net/v2")),
+
+  // AniList GraphQL API (airing schedules, streaming links). Only tests point it elsewhere.
+  ANILIST_API_URL: optional(url.default(DEFAULT_ANILIST_API_URL)),
 
   // 32 random bytes, base64-encoded. Encrypts MAL tokens at rest.
   TOKEN_ENCRYPTION_KEY: z
@@ -51,6 +56,7 @@ export interface Config {
     apiBaseUrl: string;
   };
   tokenEncryptionKey: string;
+  anilist: { apiUrl: string };
   llm: {
     geminiApiKey: string | null;
     ollamaBaseUrl: string;
@@ -84,6 +90,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       apiBaseUrl: parsed.MAL_API_BASE_URL.replace(/\/+$/, ""),
     },
     tokenEncryptionKey: parsed.TOKEN_ENCRYPTION_KEY,
+    anilist: { apiUrl: parsed.ANILIST_API_URL },
     llm: {
       geminiApiKey: parsed.GEMINI_API_KEY ?? null,
       ollamaBaseUrl: parsed.OLLAMA_BASE_URL.replace(/\/+$/, ""),

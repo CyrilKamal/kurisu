@@ -14,6 +14,7 @@ import {
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
+import type { StreamingLink } from "../anilist/client.js";
 import type { ListChange, ListState } from "../writes/normalize.js";
 
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
@@ -128,6 +129,34 @@ export const listEntries = pgTable(
     syncedAt: timestamptz("synced_at").notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.animeId] })],
+);
+
+/**
+ * AniList's airing data for a MAL entry, shared by all users and refreshed when it gets old
+ * (see anilist/cache.ts). A row with no `anilistId` records that AniList has no match.
+ */
+export const anilistMedia = pgTable(
+  "anilist_media",
+  {
+    malId: integer("mal_id")
+      .primaryKey()
+      .references(() => anime.malId, { onDelete: "cascade" }),
+    anilistId: integer("anilist_id"),
+    // AniList values like RELEASING, FINISHED, NOT_YET_RELEASED. Text, so a new value can't
+    // break a refresh.
+    status: text("status"),
+    episodes: integer("episodes"),
+    // The next episode to air and when, if AniList has scheduled one.
+    nextEpisode: integer("next_episode"),
+    nextAiringAt: timestamptz("next_airing_at"),
+    // Enabled official streaming links only.
+    streamingLinks: jsonb("streaming_links")
+      .$type<StreamingLink[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    fetchedAt: timestamptz("fetched_at").notNull(),
+  },
+  (table) => [index("anilist_media_anilist_id_idx").on(table.anilistId)],
 );
 
 /** One row per sync attempt, for the "last synced" display, cooldowns and debugging. */

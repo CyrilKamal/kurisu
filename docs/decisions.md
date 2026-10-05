@@ -549,3 +549,27 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 **Consequences:**
 - The extra questions stay for now. The friends beta (Milestone 5) will show whether they annoy anyone.
 - Any change that trades a question for a guess has to keep the wrong-write rate at zero.
+
+## 2026-10-05 — AniList client and a shared airing cache (Milestone 3)
+**Decision:**
+- A small AniList GraphQL client (`fetch` plus zod) makes two queries:
+  - Shows by MAL id: AniList id, status, episode count, next episode, and enabled streaming links.
+  - Episodes that aired in a time window.
+- It spaces requests 3 seconds apart, asks for 50 ids per request, and retries 429 and 5xx responses (honoring `Retry-After`).
+- Results go in an `anilist_media` table keyed by MAL id and shared by all users. A row younger than 6 hours isn't refetched.
+- A MAL id with no AniList match is logged with its title and stored without an AniList id, so it's skipped until the next refresh.
+- The latest aired episode is worked out from the cached next episode and its air time, and is unknown when:
+  - the row is more than 7 days old,
+  - the cached next episode aired more than 6 days ago (another may have aired since), or
+  - an airing show has no scheduled next episode.
+- A new architecture test allows network calls only from the API client modules.
+
+**Alternatives:** An AniList client library; fetching live on every brief and chat message; storing AniList ids on the `anime` table.
+**Why:**
+- AniList currently allows 30 requests a minute (normally 90). A cache shared by every user keeps briefs and chat well under that.
+- Chat can read the latest aired episode without waiting on AniList.
+- Two queries don't justify a GraphQL library.
+
+**Consequences:**
+- Airing data can be up to 6 hours old. Episode air times rarely move that fast, and the next-episode time still says when a new one has aired.
+- AniList's airing time is the Japanese broadcast time, so a streaming service may post an episode a bit later than the brief says.
