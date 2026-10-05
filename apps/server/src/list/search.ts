@@ -44,8 +44,8 @@ export interface SearchCandidate extends ListEntryView {
   /**
    * Why it's clear:
    * - "unique": the only show the words point at. Clear for any change.
-   * - "only_in_progress": tied with other seasons, but the only one being watched or on hold
-   *   (e.g. "frieren ep 5" with season 1 completed and season 2 watching). Clear only for
+   * - "only_in_progress": tied with other seasons, but the only one being watched, on hold or
+   *   rewatched (e.g. "frieren ep 5" with season 1 completed and season 2 watching). Clear only for
    *   forward progress; dropping or scoring "the isekai one" among several must still ask.
    *   A show that hasn't aired yet isn't in progress, even if the list says watching.
    */
@@ -79,6 +79,8 @@ export async function searchMyList(
     userText?: string;
     /** Entries some search left tied, kept across the searches of one agent run. */
     contested?: Set<number>;
+    /** The user is answering the agent's question, so naming an entry exactly picks it. */
+    answering?: boolean;
   } = {},
 ): Promise<SearchCandidate[]> {
   const limit = options.limit ?? 5;
@@ -168,8 +170,9 @@ export async function searchMyList(
 /**
  * The clear-match rule, applied to each query on its own. For one query, among the entries
  * within CLEAR_MARGIN of the best (which must reach CLEAR_MATCH):
- * 1. A single entry with exactly that name is clear, unless other seasons start with it
- *    ("Bungou Stray Dogs" is also the start of "Bungou Stray Dogs 4th Season").
+ * 1. A single entry with exactly that name is clear, unless other seasons' titles start with it
+ *    ("Bungou Stray Dogs" is also the start of "Bungou Stray Dogs 4th Season"). When the user
+ *    is answering "which one?", naming an entry exactly settles it anyway.
  * 2. A season or part number in the query ("danmachi 4th season", "tog s2") keeps only the
  *    entries that are that season. If none is, and the franchise numbers its seasons, the
  *    season isn't on the list, so nothing is clear. Franchises that name seasons after arcs
@@ -190,7 +193,7 @@ export async function searchMyList(
 export function markClear(
   pool: ScoredEntry[],
   queries: string[],
-  context: { userText?: string; contested?: Set<number> } = {},
+  context: { userText?: string; contested?: Set<number>; answering?: boolean } = {},
 ): SearchCandidate[] {
   const said = context.userText === undefined ? null : ` ${normalizeName(context.userText)} `;
   const isUsersWords = (query: string) => said?.includes(` ${query} `) ?? false;
@@ -198,7 +201,7 @@ export function markClear(
   const verdicts = queries.map((query, qi) => ({
     query,
     contenders: contendersFor(pool, qi),
-    found: clearForQuery(pool, qi, query),
+    found: clearForQuery(pool, qi, query, context.answering === true && isUsersWords(query)),
   }));
   // Every entry a query tied without picking it is contested.
   const contested = context.contested ?? new Set<number>();
@@ -248,15 +251,21 @@ function clearForQuery(
   pool: ScoredEntry[],
   qi: number,
   query: string,
+  /** The user named this entry exactly in answer to "which one?": siblings don't matter. */
+  exactAnswers = false,
 ): { id: number; by: ClearBy } | null {
   let contenders = contendersFor(pool, qi);
   if (contenders.length === 0) return null;
 
   const exact = contenders.filter((e) => e.exact[qi]);
+  // Later seasons carry the franchise name in their main or English title. Other shows'
+  // alternative names don't count ("Monster #8" is Kaiju No. 8, not a season of Monster).
   const siblings = contenders.filter(
-    (e) => !e.exact[qi] && e.names.some((n) => normalizeName(n).startsWith(`${query} `)),
+    (e) =>
+      !e.exact[qi] &&
+      [e.title, e.titleEn].some((n) => n && normalizeName(n).startsWith(`${query} `)),
   );
-  if (exact.length === 1 && exact[0] && siblings.length === 0)
+  if (exact.length === 1 && exact[0] && (siblings.length === 0 || exactAnswers))
     return { id: exact[0].animeId, by: "unique" };
 
   const wanted = seasonRef(query);
@@ -272,8 +281,11 @@ function clearForQuery(
   if (contenders.length === 1 && contenders[0]) return { id: contenders[0].animeId, by: "unique" };
   if (!sameFranchise(contenders)) return null;
 
+  // In progress: being watched, on hold or rewatched, and already airing.
   const active = contenders.filter(
-    (e) => (e.status === "watching" || e.status === "on_hold") && e.airingStatus !== NOT_YET_AIRED,
+    (e) =>
+      (e.status === "watching" || e.status === "on_hold" || e.isRewatching) &&
+      e.airingStatus !== NOT_YET_AIRED,
   );
   return active.length === 1 && active[0]
     ? { id: active[0].animeId, by: "only_in_progress" }

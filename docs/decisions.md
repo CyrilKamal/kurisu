@@ -442,3 +442,42 @@ On the local eval model (ornith:9b) v4 roughly matches v3: 80% accuracy, 3 wrong
 
 **Why:** The user's real list has only 3 shows with episode progress, no rewatches, nothing on hold or dropped part-way, and no unwatched movies. Keeping the real titles keeps nickname and sequel cases realistic.
 **Consequences:** Cases on `varied-list` test behavior in states the user's list doesn't actually have, which is fine for an eval. The file is frozen and never re-exported. Its description and the eval README list exactly what changed.
+
+## 2026-10-04 — Batch 2 fixes: sequel titles only, rewatches in progress, answers settle ties (Milestone 2)
+**Decision:**
+- **Sequel titles only.** When an exact name is checked for later seasons that start with it, only an entry's main or English title counts. Other shows' alternative names don't ("Monster #8" is Kaiju No. 8, not a season of Monster).
+- **Rewatches count.** A show being rewatched counts as "in progress" for the season tie-break.
+- **Answers settle ties.** When the user's message answers the agent's own question (the last turn was the agent's and asked something), naming an entry exactly settles a tie with its later seasons ("clannad" after "Clannad or After Story?").
+- **Prompt v5:**
+  - plans and maybes ("thinking about starting X") aren't updates
+  - an entry named for what the user said ("the final season", "the movie") is used as is, not mapped to a season number
+  - the agent only asks when a change needs the answer, with no offers or follow-up questions
+- **Relabel.** The batch-2 case "Lets put The Apothecary Diaries back into the rotation" was relabeled from Plan to Watch to no write: the show is already Watching, and the user agreed the wording means that.
+
+**Alternatives:** Treat batch 2's misses as model noise and keep tuning prompts only.
+**Why:** On batch 2's untouched run (Flash-Lite, v4: 82.5%, 2 wrong writes of 30, clarification precision 38%), most misses had general causes:
+- an alternative-name collision ("Monster", 2 cases)
+- rewatches not counting as in progress (Code Geass)
+- an answer to "which one?" still tying (Clannad)
+- a convention v4 didn't have yet (thinking about starting)
+- "final season" mapped to season 7
+- offer-style questions
+
+**Consequences:** Batch 2 is now tuned on too, like batch 1. The next unbiased check is real use or a new batch. "Answering" is inferred from the previous turn ending in a question, so a user answering some unrelated question by naming a franchise's first season exactly would get that season.
+
+## 2026-10-05 — Prompt v5 becomes the app's prompt (Milestone 2)
+**Decision:** `progress-sync@5`, together with the batch-2 search fixes above, replaces `@4` as the app's prompt.
+**Alternatives:** Keep v4.
+**Why:** On Flash-Lite:
+
+| | batch 2, v4 (untouched) | **batch 2, v5** | batch 1, v4 | **batch 1, v5** |
+| --- | --- | --- | --- | --- |
+| accuracy | 82.5% | **97.5%** | 98% | **96%** |
+| wrong writes | 2/30 | **1/34** | 0/31 | **0/31** |
+| clarification precision | 38% | **83%** | 89% | **83%** |
+| clarification recall | 100% | **100%** | 100% | 94% |
+
+Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which explained the refusal without asking, and the Mushoku Tensei follow-up, which is still held.
+**Consequences:**
+- The remaining wrong write is "Your name was sooooo good" → score 10. When v3 was written, v1's "never invent episode numbers or scores" line was dropped. Restoring it, plus a code guard, is the next step.
+- Clarification precision (83%) is still under the 90% target. The extra asks are mostly held changes and trailing questions.

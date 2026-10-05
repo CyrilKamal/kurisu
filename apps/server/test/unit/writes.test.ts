@@ -15,6 +15,7 @@ function entry(
     names?: string[];
     exact?: boolean | boolean[];
     mediaType?: string;
+    rewatching?: boolean;
   } = {},
 ): ScoredEntry {
   const perQuery = Array.isArray(scores) ? scores : [scores];
@@ -28,7 +29,7 @@ function entry(
     status: opts.status ?? "completed",
     episodesWatched: 0,
     score: 0,
-    isRewatching: false,
+    isRewatching: opts.rewatching ?? false,
     airingStatus: opts.airing ?? "finished_airing",
     matchScore: Math.max(...perQuery),
     matchedName: `Show ${String(animeId)}`,
@@ -204,6 +205,48 @@ describe("markClear", () => {
           (c) => c.clear,
         ),
       ).toEqual([true]);
+    });
+  });
+
+  describe("batch 2 fixes", () => {
+    it("other shows' alternative names don't make them look like later seasons", () => {
+      // Kaiju No. 8 is also called "Monster #8"; that doesn't make it a season of Monster.
+      const pool = [
+        entry(19, 1, { names: ["Monster"], exact: true, status: "watching" }),
+        entry(52588, 0.95, { names: ["Kaijuu 8-gou", "Kaiju No. 8", "Monster #8"] }),
+        entry(40908, 0.95, { names: ["Kemono Jihen", "Monster Incidents"] }),
+        entry(46095, 0.95, { names: ["Re:Monster"] }),
+      ];
+      expect(
+        markClear(pool, ["monster"])
+          .filter((c) => c.clear)
+          .map((c) => [c.animeId, c.clearBy]),
+      ).toEqual([[19, "unique"]]);
+    });
+
+    it("a show being rewatched counts as the season in progress", () => {
+      const geass = [
+        entry(1575, 0.95, { names: ["Code Geass"], rewatching: true }),
+        entry(2904, 0.95, { names: ["Code Geass R2"] }),
+      ];
+      expect(
+        markClear(geass, ["code geass"])
+          .filter((c) => c.clear)
+          .map((c) => c.clearBy),
+      ).toEqual(["only_in_progress"]);
+    });
+
+    it("naming an entry exactly settles it when the user is answering 'which one?'", () => {
+      const clannad = [
+        entry(2167, 1, { names: ["Clannad"], exact: true }),
+        entry(4181, 0.95, { names: ["Clannad: After Story"] }),
+      ];
+      expect(clearIds(clannad, ["clannad"])).toEqual([]);
+      expect(
+        markClear(clannad, ["clannad"], { userText: "clannad", answering: true })
+          .filter((c) => c.clear)
+          .map((c) => c.animeId),
+      ).toEqual([2167]);
     });
   });
 

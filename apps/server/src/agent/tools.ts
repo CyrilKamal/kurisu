@@ -32,6 +32,8 @@ export interface RunContext {
   userMessage: string;
   /** Entries some search left tied; only the user's words can settle them (see markClear). */
   contested: Set<number>;
+  /** The message answers the agent's own question ("which one?"). */
+  answering: boolean;
   /** How often each exact search has run, to catch a model searching in circles. */
   searches: Map<string, number>;
   /** Set when the model keeps repeating itself; the run ends there. */
@@ -156,6 +158,7 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   const candidates = await searchMyList(ctx.db, ctx.userId, queries, {
     userText: ctx.userMessage,
     contested: ctx.contested,
+    answering: ctx.answering,
   });
   for (const c of candidates) {
     ctx.seen.add(c.animeId);
