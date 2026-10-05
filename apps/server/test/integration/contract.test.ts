@@ -2,6 +2,8 @@ import * as contract from "@kurisu/shared";
 import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import type { LoginError } from "../../src/auth/routes.js";
+import type { BriefErrorCode } from "../../src/brief/routes.js";
+import { STREAMING_SERVICES } from "../../src/brief/services.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import { syncRuns } from "../../src/db/schema.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
@@ -9,6 +11,7 @@ import type { PushErrorCode } from "../../src/push/routes.js";
 import { generateVapidKeys } from "../../src/push/send.js";
 import type { SyncErrorCode } from "../../src/sync/listSync.js";
 import { fixtureList } from "../fixtures/animeList.js";
+import { FakeAniList } from "../support/fakeAniList.js";
 import { FakePushService } from "../support/fakePushService.js";
 import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
 import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
@@ -21,23 +24,28 @@ import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
 let h: Harness;
 let cookie: string;
 let pushService: FakePushService;
+let anilist: FakeAniList;
 
 beforeAll(async () => {
   pushService = await FakePushService.start();
+  anilist = await FakeAniList.start();
   const vapid = generateVapidKeys();
   h = await startHarness({
     env: {
       VAPID_PUBLIC_KEY: vapid.publicKey,
       VAPID_PRIVATE_KEY: vapid.privateKey,
       VAPID_SUBJECT: "mailto:test@example.com",
+      ANILIST_API_URL: anilist.apiUrl,
     },
     pushOrigins: [pushService.origin],
+    anilist: { minIntervalMs: 0 },
   });
 });
 
 afterAll(async () => {
   await h.close();
   await pushService.stop();
+  await anilist.stop();
 });
 
 beforeEach(async () => {
@@ -74,6 +82,10 @@ describe("shared constants", () => {
     expectTypeOf<LoginError>().toEqualTypeOf<contract.LoginError>();
     expectTypeOf<SyncErrorCode>().toEqualTypeOf<contract.SyncError>();
     expectTypeOf<PushErrorCode>().toEqualTypeOf<contract.PushError>();
+    expectTypeOf<BriefErrorCode>().toEqualTypeOf<contract.BriefError>();
+    expect(STREAMING_SERVICES.map(({ id, label }) => ({ id, label }))).toEqual(
+      contract.STREAMING_SERVICES.map(({ id, label }) => ({ id, label })),
+    );
   });
 });
 
@@ -181,5 +193,36 @@ describe("responses match the contract", () => {
       removed: 0,
       failed: 0,
     });
+  });
+
+  it("brief endpoints", async () => {
+    const send = (method: "POST" | "PUT", url: string, payload?: Record<string, unknown>) =>
+      h.app.inject({
+        method,
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        ...(payload ? { payload } : {}),
+      });
+
+    const defaults = await get("/brief/settings");
+    expect(contract.briefSettingsSchema.parse(defaults.json()).enabled).toBe(false);
+
+    const saved = await send("PUT", "/brief/settings", {
+      enabled: true,
+      time: "08:30",
+      timeZone: "Europe/Berlin",
+      services: ["crunchyroll"],
+    });
+    expect(contract.briefSettingsSchema.parse(saved.json()).time).toBe("08:30");
+
+    const invalid = await send("PUT", "/brief/settings", { enabled: true });
+    expect(contract.briefErrorResponseSchema.parse(invalid.json()).error).toBe("invalid_settings");
+
+    const test = await send("POST", "/brief/test");
+    expect(contract.briefTestResponseSchema.parse(test.json()).status).toBe("empty");
+
+    const tooSoon = await send("POST", "/brief/test");
+    expect(contract.briefErrorResponseSchema.parse(tooSoon.json()).error).toBe("too_soon");
   });
 });

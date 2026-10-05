@@ -2,7 +2,8 @@
   "roles": {
     "agent": "gemini:gemini-3.5-flash-lite",
     "escalation": "gemini:gemini-3.8-flash",
-    "eval": "ollama:ornith:9b"
+    "eval": "ollama:ornith:9b",
+    "brief": "gemini:gemini-3.5-flash-lite"
   },
   "ollama": {
     "numCtx": 8192,

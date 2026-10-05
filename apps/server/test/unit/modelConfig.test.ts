@@ -9,7 +9,12 @@ import {
 } from "../../src/llm/modelConfig.js";
 
 const file: ModelsFile = {
-  roles: { agent: "gemini:a", escalation: "gemini:b", eval: "ollama:qwen3.6:27b" },
+  roles: {
+    agent: "gemini:a",
+    escalation: "gemini:b",
+    eval: "ollama:qwen3.6:27b",
+    brief: "gemini:a",
+  },
   ollama: { numCtx: 8192, think: false },
   pricesPerMillionTokens: {
     "gemini:a": { input: 0.3, output: 2.5 },

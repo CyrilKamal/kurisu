@@ -29,7 +29,7 @@ export function parseModelRef(value: string): ModelRef {
   return { provider: provider as ProviderName, model, ref: value };
 }
 
-export const MODEL_ROLES = ["agent", "escalation", "eval"] as const;
+export const MODEL_ROLES = ["agent", "escalation", "eval", "brief"] as const;
 export type ModelRole = (typeof MODEL_ROLES)[number];
 
 const priceSchema = z.object({
@@ -68,7 +68,12 @@ export function resolveRoles(
     if (!value) throw new Error(`No model configured for role "${role}" in config/models.json.`);
     return parseModelRef(value);
   };
-  return { agent: pick("agent"), escalation: pick("escalation"), eval: pick("eval") };
+  return {
+    agent: pick("agent"),
+    escalation: pick("escalation"),
+    eval: pick("eval"),
+    brief: pick("brief"),
+  };
 }
 
 /**

@@ -46,6 +46,12 @@ export default async function ListPage(props: PageProps<"/list">) {
           </div>
           <div className="flex items-center gap-2">
             <Link
+              href="/list/brief"
+              className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              Brief
+            </Link>
+            <Link
               href="/list/changes"
               className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
