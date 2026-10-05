@@ -5,6 +5,7 @@ import { parse } from "yaml";
 import { z } from "zod";
 
 import { mentionsNewestEpisode } from "../../src/agent/newestEpisode.js";
+import { mentionsNumber } from "../../src/agent/scoreGiven.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import { normalizeChange, type ListChange } from "../../src/writes/normalize.js";
 import { isProgress, isProgressBeforeAiring } from "../../src/writes/propose.js";
@@ -214,6 +215,10 @@ function resolveCase(
     } else if (mentionsNewestEpisode(evalCase.message) && isProgress(entry, normalized.change)) {
       warnings.push(
         `${label}: the message means "the newest episode" without a number, so the agent holds progress for confirmation until airing schedules arrive (Milestone 3). Expect clarify: true and no write for it, unless you're testing that rule.`,
+      );
+    } else if (normalized.change.score !== undefined && !mentionsNumber(evalCase.message)) {
+      warnings.push(
+        `${label}: the message has no number in it, so the agent holds a score for confirmation instead of writing it. Expect clarify: true and no write for it, unless you're testing that rule.`,
       );
     }
     changes.set(entry.id, normalized.change);

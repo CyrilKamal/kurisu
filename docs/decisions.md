@@ -481,3 +481,16 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 **Consequences:**
 - The remaining wrong write is "Your name was sooooo good" → score 10. When v3 was written, v1's "never invent episode numbers or scores" line was dropped. Restoring it, plus a code guard, is the next step.
 - Clarification precision (83%) is still under the 90% target. The extra asks are mostly held changes and trailing questions.
+
+## 2026-10-05 — Scores need a number in the user's message; prompt v6 (Milestone 2)
+**Decision:**
+- If the user's message has no number in it (digits or a number word), a score in the proposed change is held for confirmation (reason `score_not_given`). Chat explains it, and `eval:validate` warns about cases expecting such a write.
+- Prompt v6 restores v1's "never invent an episode number or a score", which was dropped when v3 was written, and adds "liking a show isn't a score".
+- v6 is registered, but v5 stays the app's prompt until v6 is confirmed on batch 1 with Flash-Lite. Today's free quota only covered batch 2.
+
+**Alternatives:** Prompt only; refusing such scores outright.
+**Why:** Batch 2 on v5 turned "Your name was sooooo good" into a score of 10. A structural check catches invented scores whatever the model does, and holding them keeps a real "I'd give it a perfect score" one tap away.
+**Consequences:**
+- Batch 2 on v6 (Flash-Lite): 97.5%, and the invented score is gone.
+- One wrong write remains, and it varies between runs. "Im rating the final mha season a 10" went to Season 7 after the model added its own "mha season 7" search. It passed on v5.
+- Batch 1 on v6 locally: 82% (v5: 80%).

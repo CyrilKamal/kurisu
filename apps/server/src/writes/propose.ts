@@ -37,6 +37,11 @@ export interface ProposeInput {
    * message). Progress is then a guess, so it's held for them to confirm.
    */
   newestEpisodeUnknown?: boolean;
+  /**
+   * The user's message has no number in it (decided by the caller), so a score in this change
+   * wasn't given by them. It's held for them to confirm.
+   */
+  noNumberGiven?: boolean;
 }
 
 export type ProposeError =
@@ -114,7 +119,9 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
         ? "not_yet_aired"
         : input.newestEpisodeUnknown && isProgress(entry, change)
           ? "newest_episode_unknown"
-          : null;
+          : input.noNumberGiven && change.score !== undefined
+            ? "score_not_given"
+            : null;
 
   const idempotencyKey = keyFor(input.runId, input.animeId, change);
   await db
