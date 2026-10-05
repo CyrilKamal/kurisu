@@ -538,3 +538,14 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 
 - The two misses wrote nothing. Batch 1's Mushoku Tensei follow-up was held instead of written. Batch 2's "final mha season" asked "Season 7 or the Final Season?" because the model guessed both.
 - Precision is 21 of 25 asks. The four unneeded asks are the two misses, a DanMachi change held alongside the right one, and a recommendation reply that ended in a question. Removing any two of them would reach 90%.
+
+## 2026-10-05 — Milestone 2 is done, with clarification precision below target (Milestone 2)
+**Decision:** Milestone 2 counts as done at 97.8% accuracy, no wrong writes, and 84% clarification precision. The precision target was 90%.
+**Alternatives:** A fix round for the Mushoku Tensei follow-up and the extra DanMachi hold, which would have reached about 91%.
+**Why:**
+- Every miss was a question the agent didn't need to ask, never a wrong write. When in doubt, the agent should ask rather than write.
+- Tuning further on the same 90 cases would mostly fit to them.
+
+**Consequences:**
+- The extra questions stay for now. The friends beta (Milestone 5) will show whether they annoy anyone.
+- Any change that trades a question for a guess has to keep the wrong-write rate at zero.
