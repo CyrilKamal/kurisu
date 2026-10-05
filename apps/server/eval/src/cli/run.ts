@@ -36,8 +36,8 @@ import { throttle } from "../throttle.js";
 import { loadSnapshot, type Snapshot } from "../snapshot.js";
 
 const RESULTS_DIR = fileURLToPath(new URL("../../results/", import.meta.url));
-/** Calls per minute on Gemini unless --rpm says otherwise; below the free tier's limit. */
-const DEFAULT_GEMINI_RPM = 10;
+/** Calls per minute on Gemini unless --rpm says otherwise; well inside the paid tier's limit. */
+const DEFAULT_GEMINI_RPM = 60;
 
 const { values } = parseArgs({
   options: {
@@ -69,7 +69,7 @@ const client = createModelClient({
   ollamaBaseUrl: nonEmpty(process.env.OLLAMA_BASE_URL) ?? "http://127.0.0.1:11434",
   ollama: modelsFile.ollama,
 });
-// Gemini's free tier limits calls per minute; local models don't need a limit.
+// Gemini limits calls per minute; local models don't need a limit.
 const rpm = values.rpm ? Number(values.rpm) : ref.provider === "gemini" ? DEFAULT_GEMINI_RPM : null;
 if (rpm !== null && !(rpm > 0)) {
   console.error("--rpm must be a positive number.");

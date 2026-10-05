@@ -160,7 +160,7 @@ pnpm eval                                  # every case, on the eval model in co
 pnpm eval --tag nickname                   # one category (repeat --tag for several)
 pnpm eval --case plain-apothecary-7        # one case (repeatable)
 pnpm eval --model ollama:qwen3.6:27b       # compare another model
-pnpm eval --model gemini:gemini-3.5-flash-lite   # the app's model, throttled to 10 calls a minute
+pnpm eval --model gemini:gemini-3.5-flash-lite   # the app's model, throttled to 60 calls a minute
 pnpm eval --prompt progress-sync@1         # compare an older prompt version
 ```
 
