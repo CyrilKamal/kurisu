@@ -159,6 +159,27 @@ export const anilistMedia = pgTable(
   (table) => [index("anilist_media_anilist_id_idx").on(table.anilistId)],
 );
 
+/**
+ * A browser's Web Push subscription. The endpoint is a capability URL at the browser's push
+ * service, so it's never logged.
+ */
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    endpoint: text("endpoint").notNull().unique(),
+    // The browser's public key and auth secret, base64url, used to encrypt each message.
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    lastSentAt: timestamptz("last_sent_at"),
+  },
+  (table) => [index("push_subscriptions_user_idx").on(table.userId)],
+);
+
 /** One row per sync attempt, for the "last synced" display, cooldowns and debugging. */
 export const syncRuns = pgTable(
   "sync_runs",

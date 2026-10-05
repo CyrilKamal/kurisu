@@ -43,8 +43,12 @@ export interface Harness {
 }
 
 export async function startHarness(
-  options: Pick<BuildAppOptions, "models" | "roles"> = {},
+  options: Pick<BuildAppOptions, "models" | "roles" | "pushOrigins"> & {
+    /** Extra environment variables, e.g. VAPID keys. */
+    env?: Record<string, string>;
+  } = {},
 ): Promise<Harness> {
+  const { env, ...appOptions } = options;
   const fakeMal = await FakeMal.start({ ...TEST_MAL_CLIENT, user: TEST_MAL_USER });
   const config = testConfig({
     DATABASE_URL: inject("databaseUrl"),
@@ -52,13 +56,14 @@ export async function startHarness(
     MAL_API_BASE_URL: fakeMal.apiBaseUrl,
     // Log everything, so the no-secrets-in-logs check covers debug output too.
     LOG_LEVEL: "trace",
+    ...env,
   });
   const logs = new LogCapture();
   const app = buildApp(config, {
     logStream: logs,
     // Real backoff shape, millisecond delays, so retry tests stay fast.
     malRetry: { retries: 3, baseDelayMs: 1, maxDelayMs: 5 },
-    ...options,
+    ...appOptions,
   });
   await app.ready();
 
@@ -84,7 +89,7 @@ export async function startHarness(
 
 export async function resetDatabase(db: Db): Promise<void> {
   await db.execute(
-    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media CASCADE`,
+    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions CASCADE`,
   );
 }
 

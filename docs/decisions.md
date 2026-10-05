@@ -573,3 +573,37 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 **Consequences:**
 - Airing data can be up to 6 hours old. Episode air times rarely move that fast, and the next-episode time still says when a new one has aired.
 - AniList's airing time is the Japanese broadcast time, so a streaming service may post an episode a bit later than the brief says.
+
+## 2026-10-05 — Web push: web-push for encryption, our own send, known push services only (Milestone 3)
+**Decision:**
+- The `web-push` library encrypts and signs each message (VAPID, aes128gcm) through `generateRequestDetails`. We send the request ourselves with `fetch`.
+- The server only sends to the browsers' push services:
+  - FCM (Chrome and Android)
+  - Mozilla
+  - Apple (`web.push.apple.com`, `*.push.apple.com`)
+  - Windows (`*.notify.windows.com`)
+
+  It only stores subscriptions that point at them, and checks again before every send.
+- A 404 or 410 from a push service deletes that subscription. Endpoints and keys are never logged.
+- The VAPID public key comes from `GET /push/public-key`. The web app still reads only `API_INTERNAL_URL` from the environment. `pnpm --filter @kurisu/server push:keys` prints a key pair.
+- `POST /push/test` sends a "Notifications are on" message, at most once a minute.
+- The web app gets:
+  - `app/manifest.ts` (start URL `/chat`)
+  - placeholder icons drawn from an SVG of the semicolon-K and gear-ring idea, rendered to PNG with `ImageResponse`
+  - `public/sw.js`, registered from the root layout. It shows notifications, and a tap focuses an open window or opens the message's in-app path (Chat by default).
+
+**Alternatives:**
+- `web-push`'s own `sendNotification`.
+- Writing the RFC 8291 encryption ourselves.
+- A `NEXT_PUBLIC_VAPID_PUBLIC_KEY` build variable.
+- A third-party push provider.
+
+**Why:**
+- `sendNotification` only speaks HTTPS through Node's `https` module, which tests can't point at a plain local fake. Sending ourselves keeps the integration tests honest: they decrypt what was sent, as a browser would.
+- A subscription endpoint is a URL the user supplies. Without the allowlist, a crafted subscription could make the server POST to internal hosts.
+- Serving the public key keeps the earlier decision that the web app reads no secrets or extra config.
+
+**Consequences:**
+- A browser on a push service outside the list can't subscribe until we add its host.
+- Changing VAPID keys means every browser subscribes again.
+- iOS only allows push for the app added to the Home Screen, and a phone needs HTTPS to install it, so phone testing needs a tunnel or a deployment.

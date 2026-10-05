@@ -66,4 +66,38 @@ describe("loadConfig", () => {
     expect(() => loadConfig(env)).toThrow(/SERVER_PORT/);
     expect(() => loadConfig(env)).not.toThrow(/s3cret/);
   });
+
+  it("turns push on only with all three VAPID variables", () => {
+    expect(loadConfig(testEnv()).push).toBeNull();
+    expect(
+      loadConfig(testEnv({ VAPID_PUBLIC_KEY: "", VAPID_PRIVATE_KEY: "", VAPID_SUBJECT: "" })).push,
+    ).toBeNull();
+
+    const vapid = {
+      VAPID_PUBLIC_KEY: "pub",
+      VAPID_PRIVATE_KEY: "priv",
+      VAPID_SUBJECT: "mailto:a@b.example",
+    };
+    expect(loadConfig(testEnv(vapid)).push).toEqual({
+      publicKey: "pub",
+      privateKey: "priv",
+      subject: "mailto:a@b.example",
+    });
+
+    expect(() => loadConfig(testEnv({ VAPID_PUBLIC_KEY: "pub" }))).toThrow(/must be set together/);
+    expect(() => loadConfig(testEnv({ ...vapid, VAPID_SUBJECT: "someone@example.com" }))).toThrow(
+      /VAPID_SUBJECT: invalid/,
+    );
+  });
+
+  it("never echoes a VAPID private key in errors", () => {
+    let message = "";
+    try {
+      loadConfig(testEnv({ VAPID_PRIVATE_KEY: "very-secret-value", VAPID_SUBJECT: "nope" }));
+    } catch (err) {
+      message = (err as Error).message;
+    }
+    expect(message).toMatch(/^Invalid environment configuration/);
+    expect(message).not.toContain("very-secret-value");
+  });
 });

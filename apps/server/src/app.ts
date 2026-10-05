@@ -12,6 +12,8 @@ import { registerListRoutes } from "./list/routes.js";
 import { createModelClient, type ModelClient } from "./llm/modelClient.js";
 import { loadModelsFile, resolveRoles, type ModelRef } from "./llm/modelConfig.js";
 import type { RetryOptions } from "./mal/client.js";
+import { registerPushRoutes } from "./push/routes.js";
+import { createPushSender } from "./push/send.js";
 import { createListSync } from "./sync/listSync.js";
 import { createMalListWriter } from "./writes/commit.js";
 
@@ -23,6 +25,8 @@ export interface BuildAppOptions {
   /** Tests inject a scripted model client and the models it answers as. */
   models?: ModelClient;
   roles?: { agent: ModelRef; escalation: ModelRef | null };
+  /** Extra push-service origins to accept; tests point subscriptions at a local fake. */
+  pushOrigins?: string[];
 }
 
 /** Builds the HTTP app without listening, so tests can drive it with `app.inject`. */
@@ -72,12 +76,26 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     ...(options.malRetry ? { retry: options.malRetry } : {}),
   });
 
+  const push = createPushSender({
+    db,
+    vapid: config.push,
+    log: app.log,
+    ...(options.pushOrigins ? { extraOrigins: options.pushOrigins } : {}),
+  });
+  if (!config.push) app.log.info("VAPID keys not set; push notifications are off");
+
   void app.register(fastifyCookie);
   app.decorateRequest("user", null);
 
   app.get("/health", () => ({ status: "ok" }));
   registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
   registerListRoutes(app, { config, db, listSync });
+  registerPushRoutes(app, {
+    config,
+    db,
+    push,
+    ...(options.pushOrigins ? { extraOrigins: options.pushOrigins } : {}),
+  });
   registerChatRoutes(app, {
     config,
     db,

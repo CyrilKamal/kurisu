@@ -34,6 +34,16 @@ const envSchema = z.object({
     .string()
     .refine((value) => Buffer.from(value, "base64").length === 32, "must be 32 bytes, base64"),
 
+  // Web push (VAPID). All three or none; without them, push notifications are off.
+  VAPID_PUBLIC_KEY: optional(z.string().min(1).optional()),
+  VAPID_PRIVATE_KEY: optional(z.string().min(1).optional()),
+  VAPID_SUBJECT: optional(
+    z
+      .string()
+      .regex(/^(mailto:|https:\/\/)/, "must start with mailto: or https://")
+      .optional(),
+  ),
+
   // Models. Which model plays each role lives in config/models.json; these override it.
   GEMINI_API_KEY: optional(z.string().min(1).optional()),
   OLLAMA_BASE_URL: optional(url.default("http://127.0.0.1:11434")),
@@ -57,6 +67,8 @@ export interface Config {
   };
   tokenEncryptionKey: string;
   anilist: { apiUrl: string };
+  /** Null when the VAPID variables aren't set: push notifications are off. */
+  push: { publicKey: string; privateKey: string; subject: string } | null;
   llm: {
     geminiApiKey: string | null;
     ollamaBaseUrl: string;
@@ -76,6 +88,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     throw new Error(`Invalid environment configuration:\n${problems.join("\n")}`);
   }
   const parsed = result.data;
+  const vapid = [parsed.VAPID_PUBLIC_KEY, parsed.VAPID_PRIVATE_KEY, parsed.VAPID_SUBJECT];
+  if (vapid.some(Boolean) && !vapid.every(Boolean)) {
+    throw new Error(
+      "Invalid environment configuration:\n  VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT must be set together",
+    );
+  }
   return {
     nodeEnv: parsed.NODE_ENV,
     server: { host: parsed.SERVER_HOST, port: parsed.SERVER_PORT },
@@ -91,6 +109,14 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     },
     tokenEncryptionKey: parsed.TOKEN_ENCRYPTION_KEY,
     anilist: { apiUrl: parsed.ANILIST_API_URL },
+    push:
+      parsed.VAPID_PUBLIC_KEY && parsed.VAPID_PRIVATE_KEY && parsed.VAPID_SUBJECT
+        ? {
+            publicKey: parsed.VAPID_PUBLIC_KEY,
+            privateKey: parsed.VAPID_PRIVATE_KEY,
+            subject: parsed.VAPID_SUBJECT,
+          }
+        : null,
     llm: {
       geminiApiKey: parsed.GEMINI_API_KEY ?? null,
       ollamaBaseUrl: parsed.OLLAMA_BASE_URL.replace(/\/+$/, ""),
