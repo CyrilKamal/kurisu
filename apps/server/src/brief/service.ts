@@ -18,7 +18,7 @@ import type { ModelRef } from "../llm/modelConfig.js";
 import type { PushResult, PushSender } from "../push/send.js";
 import { buildBriefItems, chatText, episodeCount, pushText, type BriefItem } from "./build.js";
 import { writeSummary } from "./summary.js";
-import { briefTiming } from "./timing.js";
+import { briefTiming, localClock } from "./timing.js";
 
 const HOUR_MS = 60 * 60 * 1000;
 /** The first brief, and every test brief, covers the last day. */
@@ -349,4 +349,68 @@ function errorCode(err: unknown): string {
   if (name === "AniListUnavailableError") return "anilist_unavailable";
   if (name === "BriefPushError") return "push_failed";
   return "internal_error";
+}
+
+/**
+ * Lets a changed brief time apply today: clears today's daily brief if it sent nothing (nothing
+ * new had aired, or its time had passed). A brief that went out stays, so a day never gets two.
+ */
+export async function rearmToday(
+  db: Db,
+  userId: string,
+  timeZone: string,
+  now: Date = new Date(),
+): Promise<void> {
+  await db
+    .delete(briefs)
+    .where(
+      and(
+        eq(briefs.userId, userId),
+        eq(briefs.kind, "daily"),
+        eq(briefs.localDate, localClock(now, timeZone).date),
+        inArray(briefs.status, ["empty", "skipped_late"]),
+      ),
+    );
+}
+
+export interface BriefSchedule {
+  /** When the next daily brief goes out, or null when the brief is off. */
+  next: "today" | "tomorrow" | null;
+  /** The most recent daily brief, for the settings page. */
+  lastDaily: {
+    localDate: string;
+    status: (typeof briefs.$inferSelect)["status"];
+    episodes: number;
+    at: string;
+  } | null;
+}
+
+/** Where the user's daily brief stands, for the settings page. */
+export async function briefSchedule(
+  db: Db,
+  userId: string,
+  settings: { enabled: boolean; localTime: string; timeZone: string },
+  now: Date = new Date(),
+): Promise<BriefSchedule> {
+  const [last] = await db
+    .select()
+    .from(briefs)
+    .where(and(eq(briefs.userId, userId), eq(briefs.kind, "daily")))
+    .orderBy(desc(briefs.createdAt))
+    .limit(1);
+  const lastDaily =
+    last?.localDate != null
+      ? {
+          localDate: last.localDate,
+          status: last.status,
+          episodes: episodeCount(last.items ?? []),
+          at: last.updatedAt.toISOString(),
+        }
+      : null;
+
+  if (!settings.enabled) return { next: null, lastDaily };
+  const timing = briefTiming(settings, now);
+  if (!timing.due) return { next: "today", lastDaily };
+  const doneToday = lastDaily?.localDate === timing.localDate;
+  return { next: doneToday || timing.late ? "tomorrow" : "today", lastDaily };
 }

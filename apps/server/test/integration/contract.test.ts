@@ -206,7 +206,7 @@ describe("responses match the contract", () => {
       });
 
     const defaults = await get("/brief/settings");
-    expect(contract.briefSettingsSchema.parse(defaults.json()).enabled).toBe(false);
+    expect(contract.briefSettingsResponseSchema.parse(defaults.json()).enabled).toBe(false);
 
     const saved = await send("PUT", "/brief/settings", {
       enabled: true,
@@ -214,7 +214,7 @@ describe("responses match the contract", () => {
       timeZone: "Europe/Berlin",
       services: ["crunchyroll"],
     });
-    expect(contract.briefSettingsSchema.parse(saved.json()).time).toBe("08:30");
+    expect(contract.briefSettingsResponseSchema.parse(saved.json()).time).toBe("08:30");
 
     const invalid = await send("PUT", "/brief/settings", { enabled: true });
     expect(contract.briefErrorResponseSchema.parse(invalid.json()).error).toBe("invalid_settings");
