@@ -5,6 +5,7 @@ import { runAgent, type AgentDeps, type RunResult } from "../agent/runAgent.js";
 import type { Db, Executor } from "../db/client.js";
 import { anime, changes, chatMessages, conversations, proposals } from "../db/schema.js";
 import type { ModelRef } from "../llm/modelConfig.js";
+import type { CommitErrorCode } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 
 export interface ChatDeps extends AgentDeps {
@@ -121,13 +122,33 @@ export async function handleChatMessage(
 /**
  * What the user sees. A reply must never claim a change that didn't happen: if the run
  * committed and held nothing but the text says something changed, it's replaced with an honest
- * message (the model's original text stays in agent_run_steps).
+ * message (the model's original text stays in agent_run_steps). If a commit failed, that message
+ * says why, since the agent understood the user and asking them to repeat it would mislead.
  */
 function replyFor(run: RunResult): string {
   if (run.outcome === "error") return errorReply(run.error);
   const wroteNothing = run.committed.length === 0 && run.pending.length === 0;
-  if (wroteNothing && !run.asked && claimsChange(run.reply)) return NOTHING_CHANGED_REPLY;
+  if (wroteNothing && !run.asked && claimsChange(run.reply)) {
+    const failed = run.commitErrors.at(-1);
+    return failed ? commitFailedReply(failed) : NOTHING_CHANGED_REPLY;
+  }
   return run.reply || "Done.";
+}
+
+/** Worded like the web's messages for a failed confirm or undo. */
+function commitFailedReply(error: CommitErrorCode): string {
+  switch (error) {
+    case "reauth_required":
+      return "MyAnimeList needs you to log in again before I can change your list.";
+    case "mal_rejected":
+      return "MyAnimeList didn't accept the change, so your list is unchanged. Try again in a minute.";
+    case "mal_unavailable":
+      return "I couldn't reach MyAnimeList, so your list is unchanged. Try again in a minute.";
+    case "stale":
+      return "Your list changed while I was updating it, so I left it alone. Tell me again and I'll redo it.";
+    default:
+      return "Something went wrong saving that, so your list is unchanged. Try again in a minute.";
+  }
 }
 
 function errorReply(error: string | null): string {

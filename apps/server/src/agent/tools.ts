@@ -6,7 +6,12 @@ import { anime } from "../db/schema.js";
 import { getEntry, searchMyList, type ListEntryView } from "../list/search.js";
 import type { ToolCall, ToolSpec } from "../llm/types.js";
 import { MAL_LIST_STATUSES } from "../mal/client.js";
-import { commitProposal, type Change, type ListWriter } from "../writes/commit.js";
+import {
+  commitProposal,
+  type Change,
+  type CommitErrorCode,
+  type ListWriter,
+} from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
 import { mentionsNewestEpisode } from "./newestEpisode.js";
@@ -25,6 +30,8 @@ export interface RunContext {
   /** Proposals created in this run. The model can only commit these. */
   proposalIds: Set<string>;
   committed: Change[];
+  /** Why each commit the write path refused or MAL turned down failed, in order. */
+  commitErrors: CommitErrorCode[];
   /** Proposals held for the user's confirmation; Chat shows each as a Confirm card. */
   pending: Proposal[];
   /** Held proposals the model has already been told are waiting for the user. */
@@ -266,6 +273,7 @@ async function commitTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
         },
       };
     case "failed":
+      ctx.commitErrors.push(result.error);
       return failure(result.error, "The change was not written.");
     default:
       return failure(result.status, "The change was not written.");

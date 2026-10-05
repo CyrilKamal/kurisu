@@ -5,7 +5,7 @@ import { agentRuns, agentRunSteps } from "../db/schema.js";
 import type { ModelClient } from "../llm/modelClient.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import { ModelProviderError, type LlmMessage } from "../llm/types.js";
-import type { Change, ListWriter } from "../writes/commit.js";
+import type { Change, CommitErrorCode, ListWriter } from "../writes/commit.js";
 import type { Proposal } from "../writes/propose.js";
 import { executeTool, TOOL_SPECS, type RunContext } from "./tools.js";
 
@@ -37,6 +37,8 @@ export interface RunResult {
   committed: Change[];
   /** Proposals waiting for the user's confirmation. */
   pending: Proposal[];
+  /** Commits that failed in this run (MAL said no, or the write path refused), in order. */
+  commitErrors: CommitErrorCode[];
   error: string | null;
   latencyMs: number;
   inputTokens: number;
@@ -83,6 +85,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     clear: new Map(),
     proposalIds: new Set(),
     committed: [],
+    commitErrors: [],
     pending: [],
     toldWaiting: new Set(),
     userMessage: input.message,
@@ -220,6 +223,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     asked,
     committed: ctx.committed,
     pending: ctx.pending,
+    commitErrors: ctx.commitErrors,
     error,
     latencyMs,
     inputTokens,

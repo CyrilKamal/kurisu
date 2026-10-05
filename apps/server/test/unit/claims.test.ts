@@ -27,4 +27,32 @@ describe("claimsChange", () => {
       expect(claimsChange(reply), reply).toBe(false);
     }
   });
+
+  it("reads an honest failure as no claim", () => {
+    for (const reply of [
+      "PSYЯEN could not be updated right now.",
+      "PSYЯEN couldn't be updated right now.",
+      "PSYЯEN couldn’t be updated right now.",
+      "Fixture Watching Show wasn't updated: MyAnimeList rejected the change.",
+      "It hasn't been marked as completed.",
+      "I wasn't able to get it updated.",
+      "That cannot be changed right now.",
+      "I was unable to get that updated.",
+      "Nothing changed on your list.",
+      "Nothing was updated.",
+    ]) {
+      expect(claimsChange(reply), reply).toBe(false);
+    }
+  });
+
+  it("still spots a claim next to a negation", () => {
+    for (const reply of [
+      "Not a problem, I've updated it to episode 9.",
+      "Don't worry, updated it.",
+      "Frieren couldn't be updated, but I marked JJK as completed.",
+      "You hadn't started it, so I marked it as watching.",
+    ]) {
+      expect(claimsChange(reply), reply).toBe(true);
+    }
+  });
 });

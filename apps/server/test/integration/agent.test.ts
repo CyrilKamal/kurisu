@@ -546,6 +546,49 @@ describe("chat API", () => {
     expect(JSON.stringify(step?.result)).toContain("Updated Fixture Watching Show");
   });
 
+  it("keeps an honest reply when MAL turns the change down", async () => {
+    h.fakeMal.patchFailures = [400];
+    models.script(
+      LITE.ref,
+      updateScript(
+        "fixture watching show",
+        { episodes_watched: 8 },
+        "Fixture Watching Show could not be updated right now.",
+      ),
+    );
+
+    const body = contract.chatThreadResponseSchema.parse(
+      (await post("/chat/messages", { text: "watched ep 8 of fixture watching show" })).json(),
+    );
+
+    expect(body.messages[1]).toMatchObject({
+      content: "Fixture Watching Show could not be updated right now.",
+      changes: [],
+      pending: [],
+    });
+    expect(h.fakeMal.patchRequests).toHaveLength(1);
+    expect(models.requests.map((r) => r.ref)).not.toContain(FLASH.ref);
+  });
+
+  it("says MAL turned the change down, not 'tell me again', when the reply claims it worked", async () => {
+    h.fakeMal.patchFailures = [400];
+    models.script(
+      LITE.ref,
+      updateScript("fixture watching show", { episodes_watched: 8 }, "Updated it to episode 8."),
+    );
+
+    const body = contract.chatThreadResponseSchema.parse(
+      (await post("/chat/messages", { text: "watched ep 8 of fixture watching show" })).json(),
+    );
+
+    expect(body.messages[1]?.content).toBe(
+      "MyAnimeList didn't accept the change, so your list is unchanged. Try again in a minute.",
+    );
+    expect(body.messages[1]?.changes).toEqual([]);
+    const [runRow] = await h.db.select().from(agentRuns);
+    expect(runRow?.outcome).toBe("no_action");
+  });
+
   it("explains a missing API key without escalating", async () => {
     models.script(LITE.ref, [
       { throws: new ModelProviderError("gemini", "auth", "GEMINI_API_KEY is not set") },

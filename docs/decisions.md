@@ -651,3 +651,17 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
   - An AniList link marked disabled wasn't named.
   - The model's summary passed the check.
   - The agent resolved "watched psyren" from the brief's title.
+
+## 2026-10-05 — An honest "couldn't update" reply isn't a false claim (Milestone 2)
+**Decision:** This refines "Never show a reply that claims an unwritten change". Two changes:
+- `claimsChange` ignores a claim verb right after a negation, with only small words between: "could not be updated", "couldn't be updated" (either apostrophe), "hasn't been marked", "wasn't able to get it updated", "nothing changed".
+- Each run reports the commits that failed (`commitErrors`). If the reply still claims a change after a failed commit, Chat explains the failure instead of "I didn't change anything… Tell me the show and episode again". For example: "MyAnimeList didn't accept the change, so your list is unchanged. Try again in a minute." The wording matches the web's messages for a failed confirm or undo.
+
+**Alternatives:** Only the negation rule; only the failed-commit message.
+**Why:** Seen live: `commit_update` returned `mal_rejected`, and the model replied "PSYЯEN could not be updated right now." The claim pattern matched "updated", so the user was asked to repeat a request the agent had understood.
+- The negation rule lets the model's own reply through, which names the show. It also covers refusals where no commit happened.
+- The failed-commit message comes from the tool result, not from reading prose, so it is accurate however the model phrases things, even if it falsely says "Updated".
+**Consequences:**
+- A negated reply the rule doesn't recognize after a failed commit gets the templated failure message, which is still accurate.
+- One without a failed commit still gets "nothing changed".
+- The negation window is kept tight, so "Not a problem, I've updated it" still counts as a claim.
