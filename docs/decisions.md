@@ -494,3 +494,18 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 - Batch 2 on v6 (Flash-Lite): 97.5%, and the invented score is gone.
 - One wrong write remains, and it varies between runs. "Im rating the final mha season a 10" went to Season 7 after the model added its own "mha season 7" search. It passed on v5.
 - Batch 1 on v6 locally: 82% (v5: 80%).
+
+## 2026-10-05 — The model's guesses can't decide between seasons (Milestone 2)
+**Decision:** This refines "A tie stays a tie". Four rules, all about telling the model's guesses apart from the user's words:
+- **Conflicting guesses.** If titles the model supplied (not the user's words) point at two different seasons of one show, both are contested, and the agent asks. "One show" here means one entry's main or English title starts the other's, or their titles share at least their first two words. Shows that only share a first word ("Tokyo Ghoul", "Tokyo Revengers") don't count.
+- **Which ties count.** A tie only contests its entries when it's in the user's own words, or between seasons of one show. A vague model title that happens to fit different shows ("mha final season" also fits Attack on Titan's Final Season) no longer blocks a precise one.
+- **Searches of guesses only.** A search containing none of the user's words is all guesses. There, only an entry's exact name makes it clear: no fuzzy matches and no season tie-break. Nicknames still decode through exact names ("omp 3" → "One Punch Man 3").
+- **Later seasons.** An entry counts as a later season of an exact match if one of its names starts with the query and its title shows it's the same show. This refines the earlier titles-only check, which had stopped seasons that share an alternative name ("DanMachi", "DanMachi II") from counting.
+
+**Alternatives:** Prompt-only fixes; trusting the model's exact titles whenever they're unique.
+**Why:** Batch 2 on v6 wrote "Im rating the final mha season a 10" to Season 7. The model's vague "mha final season" tied My Hero Academia's Final Season with other shows, which blocked the precise title. Its own "mha season 7" guess was then the only clear match. Locally, "Just watched episode one of blue" was written to Blue Lock Season 2 after the model searched only its guess "Blue Lock".
+**Consequences:**
+- When the model guesses between seasons, the agent asks instead of writing. That trades a possible wrong write for a question.
+- On the real list, "final mha season" resolves to Final Season unless the model also guesses "season 7" (then it asks). DanMachi "4th season" still resolves, and "blue" asks however the model searches.
+- Local runs: batch 1 unchanged at 82%; batch 2 70% (its first local run).
+- The Flash-Lite check waits for the free quota to reset.
