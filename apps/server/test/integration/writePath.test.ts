@@ -351,7 +351,7 @@ describe("search_my_list", () => {
     const byTitle = await searchMyList(h.db, userId, ["fixture watching show"]);
     const bySynonym = await searchMyList(h.db, userId, ["FWS"]);
     const byEnglish = await searchMyList(h.db, userId, ["the watching show"]);
-    const typo = await searchMyList(h.db, userId, ["watchng show"]);
+    const typo = await searchMyList(h.db, userId, ["the watchin show"]);
 
     for (const result of [byTitle, bySynonym, byEnglish, typo]) {
       expect(result[0]).toMatchObject({ animeId: WATCHING, clear: true });

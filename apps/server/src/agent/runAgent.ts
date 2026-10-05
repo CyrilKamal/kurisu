@@ -87,6 +87,9 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     toldWaiting: new Set(),
     userMessage: input.message,
     contested: new Set(),
+    answering:
+      input.history.at(-1)?.role === "assistant" &&
+      input.history.at(-1)?.content.includes("?") === true,
     searches: new Map(),
     stop: null,
   };
