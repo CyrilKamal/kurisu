@@ -26,12 +26,32 @@ function importers(pattern: RegExp): string[] {
     .sort();
 }
 
+/** Drops block and line comments (roughly; enough for our own source). */
+function withoutComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+}
+
 describe("architecture", () => {
   it("imports model SDKs only in src/llm/providers/", () => {
     const sdkImport = /from\s+["'](@google\/genai|ollama|openai|@anthropic-ai\/[^"']+)["']/;
     for (const file of importers(sdkImport)) {
       expect(file.startsWith("llm/providers/"), `${file} imports a model SDK`).toBe(true);
     }
+  });
+
+  it("makes network calls only from the API client modules", () => {
+    // Keeps outside requests to the services we've vetted (MAL, AniList, model providers),
+    // so nothing can quietly fetch from another site.
+    const callers = sourceFiles(SRC)
+      .filter((file) => /(?<![\w.])fetch\(/.test(withoutComments(readFileSync(file, "utf8"))))
+      .map((file) => path.relative(SRC, file).split(path.sep).join("/"))
+      .sort();
+    expect(callers).toEqual([
+      "anilist/client.ts",
+      "llm/providers/ollama.ts",
+      "mal/client.ts",
+      "mal/oauth.ts",
+    ]);
   });
 
   it("writes to MAL only from writes/commit.ts", () => {
