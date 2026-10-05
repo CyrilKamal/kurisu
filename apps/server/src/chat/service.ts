@@ -2,7 +2,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 
 import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
 import { runAgent, type AgentDeps, type RunResult } from "../agent/runAgent.js";
-import type { Db } from "../db/client.js";
+import type { Db, Executor } from "../db/client.js";
 import { anime, changes, chatMessages, conversations, proposals } from "../db/schema.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import type { ListChange } from "../writes/normalize.js";
@@ -143,7 +143,8 @@ function errorReply(error: string | null): string {
   }
 }
 
-async function currentConversation(db: Db, userId: string): Promise<string> {
+/** The user's latest conversation, created if they have none. */
+export async function currentConversation(db: Executor, userId: string): Promise<string> {
   const [latest] = await db
     .select({ id: conversations.id })
     .from(conversations)

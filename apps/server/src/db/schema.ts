@@ -15,6 +15,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import type { StreamingLink } from "../anilist/client.js";
+import type { BriefItem } from "../brief/build.js";
 import type { ListChange, ListState } from "../writes/normalize.js";
 
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
@@ -178,6 +179,83 @@ export const pushSubscriptions = pgTable(
     lastSentAt: timestamptz("last_sent_at"),
   },
   (table) => [index("push_subscriptions_user_idx").on(table.userId)],
+);
+
+/** Each user's morning brief settings. No row means the brief is off. */
+export const briefSettings = pgTable("brief_settings", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  enabled: boolean("enabled").notNull().default(false),
+  // The user's local time for the brief, "HH:MM".
+  localTime: text("local_time").notNull().default("08:00"),
+  // IANA time zone from the user's browser, e.g. "America/New_York".
+  timeZone: text("time_zone").notNull().default("UTC"),
+  // Streaming service ids (see brief/services.ts) the user subscribes to.
+  services: text("services")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+});
+
+export const briefKind = pgEnum("brief_kind", ["daily", "test"]);
+export const briefStatus = pgEnum("brief_status", [
+  // Being built; nothing shown to the user yet.
+  "building",
+  // The chat message is saved; the push may not have gone out.
+  "ready",
+  "sent",
+  // Nothing new aired, so nothing was sent.
+  "empty",
+  // The server missed the brief time by too much; the day was skipped.
+  "skipped_late",
+  "failed",
+]);
+
+/**
+ * One row per brief: what went into it, how it was written, and whether it went out. A daily
+ * brief is unique per user and local date, so a retried job can't send a second one.
+ */
+export const briefs = pgTable(
+  "briefs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: briefKind("kind").notNull(),
+    // The user's local date the daily brief is for; null for tests.
+    localDate: text("local_date"),
+    status: briefStatus("status").notNull(),
+    // Episodes that aired after windowStart, up to windowEnd.
+    windowStart: timestamptz("window_start"),
+    windowEnd: timestamptz("window_end"),
+    items: jsonb("items").$type<BriefItem[]>(),
+    summary: text("summary"),
+    // "model" when the model wrote the summary line, "template" when it fell back.
+    summarySource: text("summary_source"),
+    model: text("model"),
+    promptVersion: text("prompt_version"),
+    inputTokens: integer("input_tokens"),
+    outputTokens: integer("output_tokens"),
+    summaryLatencyMs: integer("summary_latency_ms"),
+    chatMessageId: uuid("chat_message_id").references((): AnyPgColumn => chatMessages.id, {
+      onDelete: "set null",
+    }),
+    pushSent: integer("push_sent"),
+    pushFailed: integer("push_failed"),
+    // A short error code, never a raw message.
+    error: text("error"),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("briefs_daily_user_date_idx")
+      .on(table.userId, table.localDate)
+      .where(sql`${table.kind} = 'daily'`),
+    index("briefs_user_created_idx").on(table.userId, table.createdAt.desc()),
+  ],
 );
 
 /** One row per sync attempt, for the "last synced" display, cooldowns and debugging. */

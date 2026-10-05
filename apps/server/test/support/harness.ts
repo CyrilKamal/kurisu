@@ -43,7 +43,7 @@ export interface Harness {
 }
 
 export async function startHarness(
-  options: Pick<BuildAppOptions, "models" | "roles" | "pushOrigins"> & {
+  options: Pick<BuildAppOptions, "models" | "roles" | "pushOrigins" | "anilist"> & {
     /** Extra environment variables, e.g. VAPID keys. */
     env?: Record<string, string>;
   } = {},
@@ -89,7 +89,7 @@ export async function startHarness(
 
 export async function resetDatabase(db: Db): Promise<void> {
   await db.execute(
-    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions CASCADE`,
+    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs CASCADE`,
   );
 }
 

@@ -6,7 +6,17 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; 
  * POSTs to the server through the same-origin /api proxy (the browser sends the session cookie
  * and Origin header). Validates success bodies against the shared contract.
  */
-export async function postApi<T>(
+export function postApi<T>(
+  path: string,
+  schema: z.ZodType<T> | null,
+  body?: unknown,
+): Promise<ApiResult<T | null>> {
+  return sendApi("POST", path, schema, body);
+}
+
+/** Like postApi, for PUT and DELETE. */
+export async function sendApi<T>(
+  method: "POST" | "PUT" | "DELETE",
   path: string,
   schema: z.ZodType<T> | null,
   body?: unknown,
@@ -14,7 +24,7 @@ export async function postApi<T>(
   let res: Response;
   try {
     res = await fetch(`/api${path}`, {
-      method: "POST",
+      method,
       // Only send a JSON content type with a body: the server rejects empty JSON bodies.
       ...(body === undefined
         ? {}

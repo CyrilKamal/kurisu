@@ -22,6 +22,7 @@ export function testEnv(overrides: Record<string, string> = {}): Record<string, 
     MAL_CLIENT_SECRET: TEST_MAL_CLIENT.clientSecret,
     MAL_REDIRECT_URI: TEST_MAL_CLIENT.redirectUri,
     TOKEN_ENCRYPTION_KEY: TEST_ENCRYPTION_KEY,
+    BRIEF_SCHEDULER: "off",
     ...overrides,
   };
 }

@@ -2,8 +2,11 @@ import fastifyCookie from "@fastify/cookie";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { CURRENT_PROMPT } from "./agent/prompts/index.js";
+import { createAniListClient } from "./anilist/client.js";
 import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
+import { registerBriefRoutes } from "./brief/routes.js";
+import { createBriefScheduler } from "./brief/scheduler.js";
 import { registerChatRoutes } from "./chat/routes.js";
 import type { Config } from "./config.js";
 import { createTokenCipher } from "./crypto/tokenCipher.js";
@@ -24,7 +27,9 @@ export interface BuildAppOptions {
   malRetry?: RetryOptions;
   /** Tests inject a scripted model client and the models it answers as. */
   models?: ModelClient;
-  roles?: { agent: ModelRef; escalation: ModelRef | null };
+  roles?: { agent: ModelRef; escalation: ModelRef | null; brief?: ModelRef };
+  /** AniList request spacing and retries. Tests shorten them. */
+  anilist?: { minIntervalMs?: number; retry?: RetryOptions };
   /** Extra push-service origins to accept; tests point subscriptions at a local fake. */
   pushOrigins?: string[];
 }
@@ -84,6 +89,20 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   });
   if (!config.push) app.log.info("VAPID keys not set; push notifications are off");
 
+  const briefDeps = {
+    db,
+    anilist: createAniListClient({ apiUrl: config.anilist.apiUrl, ...options.anilist }),
+    push,
+    models,
+    model: options.roles?.brief ?? configuredRoles.brief,
+    log: app.log,
+  };
+  if (config.brief.scheduler && config.push) {
+    const scheduler = createBriefScheduler({ ...briefDeps, databaseUrl: config.databaseUrl });
+    app.addHook("onReady", () => scheduler.start());
+    app.addHook("onClose", () => scheduler.stop());
+  }
+
   void app.register(fastifyCookie);
   app.decorateRequest("user", null);
 
@@ -96,6 +115,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     push,
     ...(options.pushOrigins ? { extraOrigins: options.pushOrigins } : {}),
   });
+  registerBriefRoutes(app, { ...briefDeps, config });
   registerChatRoutes(app, {
     config,
     db,

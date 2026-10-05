@@ -191,3 +191,55 @@ export const PUSH_ERRORS = [
 ] as const;
 export type PushError = (typeof PUSH_ERRORS)[number];
 export const pushErrorResponseSchema = z.object({ error: z.enum(PUSH_ERRORS) });
+
+/**
+ * Streaming services the brief can name. The user picks theirs once; the brief only ever names
+ * one of these, and only when AniList lists the show on it.
+ */
+export const STREAMING_SERVICES = [
+  { id: "crunchyroll", label: "Crunchyroll" },
+  { id: "netflix", label: "Netflix" },
+  { id: "hidive", label: "HIDIVE" },
+  { id: "hulu", label: "Hulu" },
+  { id: "disney_plus", label: "Disney+" },
+  { id: "prime_video", label: "Prime Video" },
+  { id: "max", label: "Max" },
+  { id: "apple_tv", label: "Apple TV+" },
+  { id: "tubi", label: "Tubi" },
+  { id: "youtube", label: "YouTube" },
+  { id: "bilibili_tv", label: "Bilibili TV" },
+  { id: "retrocrush", label: "RetroCrush" },
+  { id: "adult_swim", label: "Adult Swim" },
+] as const;
+export type StreamingServiceId = (typeof STREAMING_SERVICES)[number]["id"];
+const streamingServiceIds = STREAMING_SERVICES.map((s) => s.id) as [
+  StreamingServiceId,
+  ...StreamingServiceId[],
+];
+
+/** GET and PUT /brief/settings. `time` is the user's local "HH:MM"; `timeZone` is IANA. */
+export const briefSettingsSchema = z.object({
+  enabled: z.boolean(),
+  time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  timeZone: z.string().min(1).max(64),
+  services: z.array(z.enum(streamingServiceIds)).max(STREAMING_SERVICES.length),
+});
+export type BriefSettings = z.infer<typeof briefSettingsSchema>;
+
+/** POST /brief/test: a brief of the last 24 hours, sent now. "empty" means nothing aired. */
+export const briefTestResponseSchema = z.object({
+  status: z.enum(["sent", "empty"]),
+  episodes: z.number().int().nonnegative(),
+  push: pushTestResponseSchema,
+});
+export type BriefTestResponse = z.infer<typeof briefTestResponseSchema>;
+
+/** Why a brief request didn't go through. */
+export const BRIEF_ERRORS = [
+  "invalid_settings",
+  "too_soon",
+  "anilist_unavailable",
+  "push_disabled",
+] as const;
+export type BriefError = (typeof BRIEF_ERRORS)[number];
+export const briefErrorResponseSchema = z.object({ error: z.enum(BRIEF_ERRORS) });
