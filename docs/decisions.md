@@ -607,3 +607,47 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 - A browser on a push service outside the list can't subscribe until we add its host.
 - Changing VAPID keys means every browser subscribes again.
 - iOS only allows push for the app added to the Home Screen, and a phone needs HTTPS to install it, so phone testing needs a tunnel or a deployment.
+
+## 2026-10-05 — The morning brief: pg-boss, once per local date, delivered into Chat (Milestone 3)
+**Decision:**
+- **Scheduler.** pg-boss (a Postgres-backed queue, tables in its own `pgboss` schema) runs inside the server.
+  - A `brief-tick` cron job every 5 minutes finds users who are due: brief on, at least one push subscription, and their local brief time passed today in their browser's time zone.
+  - It queues one `brief` job each, keyed by user and local date. Failed jobs retry 4 times with backoff.
+  - `BRIEF_SCHEDULER=off` stops it, and tests turn it off.
+- **Once a day.** A `briefs` row, unique on user and local date for daily briefs, makes each day's brief happen at most once.
+  - A brief goes building → ready (chat message saved) → sent. A retry after a failed push resends the push without posting the chat message again.
+  - A brief time missed by more than 4 hours (the server was down) skips that day.
+  - Each brief covers episodes since the last one, at most 48 hours back.
+  - The `briefs` row is the brief's run log: items, summary, model, prompt version, tokens, latency, push counts and an error code.
+- **Content.**
+  - Only Watching shows (your choice), and only episodes past the user's progress.
+  - Back-to-back episodes are grouped, and premieres and finales are marked.
+  - A day with nothing new sends nothing (your choice).
+  - The notification is templated. The chat message is one summary line from the model (new `brief` role, Flash-Lite, prompt `brief-summary@1`) followed by templated lines.
+  - The summary falls back to a template if the call fails, or if the line contains a number that isn't in the brief.
+- **Streaming services.** A fixed list of 13 licensed services, mapped to AniList site ids. A show's service is named only when AniList lists an enabled link to one the user picked. Otherwise the line says nothing about where to watch.
+- **Brief in Chat.** The brief is saved as an assistant message in the user's current conversation, so the agent sees it in its history and "watched it" or "watched psyren" has context. Tapping the notification opens `/chat`.
+- **Settings.** A page off the List header (`/list/brief`, your choice): this device's notifications (on, off, test), brief on or off, time, and services. "Send a brief now" (`POST /brief/test`, once a minute) sends the last 24 hours without using up the day's brief.
+
+**Alternatives:**
+- BullMQ (needs Redis).
+- graphile-worker.
+- An in-process timer.
+- Per-user cron schedules.
+- A fully templated brief.
+- Showing the brief only in the notification.
+
+**Why:**
+- pg-boss needs nothing beyond the Postgres we already run, and retries are built in.
+- A single 5-minute tick works for every time zone without one schedule per user.
+- A unique row in our own table is a stronger once-a-day guarantee than the queue's singleton keys, which only cover queued and active jobs.
+- Putting the brief in Chat is what makes the one-step reply work, and the agent didn't need to change.
+
+**Consequences:**
+- A brief arrives up to 5 minutes after its time.
+- The server must be running for briefs to go out. A laptop that sleeps through the brief time sends it late, or skips the day if it's more than 4 hours late.
+- Checked end to end against real AniList and Gemini in an isolated copy:
+  - Two shows that premiered that day were mapped and listed.
+  - An AniList link marked disabled wasn't named.
+  - The model's summary passed the check.
+  - The agent resolved "watched psyren" from the brief's title.
