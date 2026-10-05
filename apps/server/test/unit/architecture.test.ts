@@ -40,8 +40,8 @@ describe("architecture", () => {
   });
 
   it("makes network calls only from the API client modules", () => {
-    // Keeps outside requests to the services we've vetted (MAL, AniList, model providers),
-    // so nothing can quietly fetch from another site.
+    // Keeps outside requests to the services we've vetted (MAL, AniList, model providers,
+    // browsers' push services), so nothing can quietly fetch from another site.
     const callers = sourceFiles(SRC)
       .filter((file) => /(?<![\w.])fetch\(/.test(withoutComments(readFileSync(file, "utf8"))))
       .map((file) => path.relative(SRC, file).split(path.sep).join("/"))
@@ -51,7 +51,16 @@ describe("architecture", () => {
       "llm/providers/ollama.ts",
       "mal/client.ts",
       "mal/oauth.ts",
+      "push/send.ts",
     ]);
+  });
+
+  it("imports web-push only in src/push/", () => {
+    const files = importers(/from\s+["']web-push["']/);
+    expect(files).toEqual(["push/send.ts"]);
+    for (const file of files) {
+      expect(file.startsWith("push/"), `${file} imports web-push`).toBe(true);
+    }
   });
 
   it("writes to MAL only from writes/commit.ts", () => {

@@ -165,3 +165,29 @@ export const WRITE_ERRORS = [
   "internal_error",
 ] as const;
 export const writeErrorResponseSchema = z.object({ error: z.enum(WRITE_ERRORS) });
+
+/** GET /push/public-key: the VAPID key browsers subscribe with, or null when push is off. */
+export const pushPublicKeyResponseSchema = z.object({ publicKey: z.string().nullable() });
+export type PushPublicKeyResponse = z.infer<typeof pushPublicKeyResponseSchema>;
+
+/** POST and DELETE /push/subscriptions, on success. */
+export const pushSubscriptionResponseSchema = z.object({ subscribed: z.boolean() });
+
+/** POST /push/test, on success: how many of the user's browsers got the test notification. */
+export const pushTestResponseSchema = z.object({
+  sent: z.number().int().nonnegative(),
+  removed: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
+});
+export type PushTestResponse = z.infer<typeof pushTestResponseSchema>;
+
+/** Why a push request didn't go through. */
+export const PUSH_ERRORS = [
+  "push_disabled",
+  "invalid_subscription",
+  "unsupported_push_service",
+  "too_soon",
+  "no_subscriptions",
+] as const;
+export type PushError = (typeof PUSH_ERRORS)[number];
+export const pushErrorResponseSchema = z.object({ error: z.enum(PUSH_ERRORS) });

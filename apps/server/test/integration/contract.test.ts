@@ -5,8 +5,11 @@ import type { LoginError } from "../../src/auth/routes.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import { syncRuns } from "../../src/db/schema.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
+import type { PushErrorCode } from "../../src/push/routes.js";
+import { generateVapidKeys } from "../../src/push/send.js";
 import type { SyncErrorCode } from "../../src/sync/listSync.js";
 import { fixtureList } from "../fixtures/animeList.js";
+import { FakePushService } from "../support/fakePushService.js";
 import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
 import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
 
@@ -17,13 +20,24 @@ import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
 
 let h: Harness;
 let cookie: string;
+let pushService: FakePushService;
 
 beforeAll(async () => {
-  h = await startHarness();
+  pushService = await FakePushService.start();
+  const vapid = generateVapidKeys();
+  h = await startHarness({
+    env: {
+      VAPID_PUBLIC_KEY: vapid.publicKey,
+      VAPID_PRIVATE_KEY: vapid.privateKey,
+      VAPID_SUBJECT: "mailto:test@example.com",
+    },
+    pushOrigins: [pushService.origin],
+  });
 });
 
 afterAll(async () => {
   await h.close();
+  await pushService.stop();
 });
 
 beforeEach(async () => {
@@ -59,6 +73,7 @@ describe("shared constants", () => {
     // Checked by the type checker (pnpm typecheck), not at runtime.
     expectTypeOf<LoginError>().toEqualTypeOf<contract.LoginError>();
     expectTypeOf<SyncErrorCode>().toEqualTypeOf<contract.SyncError>();
+    expectTypeOf<PushErrorCode>().toEqualTypeOf<contract.PushError>();
   });
 });
 
@@ -102,5 +117,69 @@ describe("responses match the contract", () => {
     const res = await postSync();
     expect(res.statusCode).toBe(502);
     expect(contract.syncErrorResponseSchema.parse(res.json()).error).toBe("sync_failed");
+  });
+
+  it("push endpoints", async () => {
+    const send = (method: "POST" | "DELETE", url: string, payload?: Record<string, unknown>) =>
+      h.app.inject({
+        method,
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        ...(payload ? { payload } : {}),
+      });
+    const browser = pushService.browser("contract");
+
+    const publicKey = contract.pushPublicKeyResponseSchema.parse(
+      (await get("/push/public-key")).json(),
+    ).publicKey;
+    expect(typeof publicKey).toBe("string");
+
+    const noSubscriptions = await send("POST", "/push/test");
+    expect(noSubscriptions.statusCode).toBe(409);
+    expect(contract.pushErrorResponseSchema.parse(noSubscriptions.json()).error).toBe(
+      "no_subscriptions",
+    );
+
+    const subscribed = await send("POST", "/push/subscriptions", browser.subscription);
+    expect(contract.pushSubscriptionResponseSchema.parse(subscribed.json())).toEqual({
+      subscribed: true,
+    });
+
+    const rejected = await send("POST", "/push/subscriptions", {
+      ...browser.subscription,
+      endpoint: "https://evil.example/push",
+    });
+    expect(contract.pushErrorResponseSchema.parse(rejected.json()).error).toBe(
+      "unsupported_push_service",
+    );
+
+    const unsubscribed = await send("DELETE", "/push/subscriptions", {
+      endpoint: browser.subscription.endpoint,
+    });
+    expect(contract.pushSubscriptionResponseSchema.parse(unsubscribed.json())).toEqual({
+      subscribed: false,
+    });
+  });
+
+  it("POST /push/test success", async () => {
+    await h.app.inject({
+      method: "POST",
+      url: "/push/subscriptions",
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+      payload: pushService.browser("contract-test").subscription,
+    });
+    const res = await h.app.inject({
+      method: "POST",
+      url: "/push/test",
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+    });
+    expect(contract.pushTestResponseSchema.parse(res.json())).toEqual({
+      sent: 1,
+      removed: 0,
+      failed: 0,
+    });
   });
 });

@@ -8,6 +8,19 @@ const nextConfig: NextConfig = {
   rewrites() {
     return Promise.resolve([{ source: "/api/:path*", destination: `${apiInternalUrl()}/:path*` }]);
   },
+  headers() {
+    return Promise.resolve([
+      {
+        // Browsers must always fetch the latest service worker.
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+    ]);
+  },
   images: {
     // Cover art comes from MAL's CDN.
     remotePatterns: [new URL("https://cdn.myanimelist.net/**")],
