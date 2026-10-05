@@ -181,6 +181,17 @@ describe("the confirmation gate", () => {
     });
   });
 
+  it("holds a score the user's message didn't give", async () => {
+    expect(await propose({ animeId: WATCHING, score: 10, noNumberGiven: true })).toMatchObject({
+      requiresConfirmation: true,
+      confirmationReason: "score_not_given",
+    });
+    // Episode changes don't depend on it.
+    expect(
+      await propose({ animeId: WATCHING, episodesDelta: 1, noNumberGiven: true }),
+    ).toMatchObject({ requiresConfirmation: false });
+  });
+
   it("holds progress when the user meant 'the newest episode' without a number", async () => {
     const guessed = await propose({
       animeId: WATCHING,

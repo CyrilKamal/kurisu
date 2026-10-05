@@ -10,6 +10,7 @@ import { commitProposal, type Change, type ListWriter } from "../writes/commit.j
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
 import { mentionsNewestEpisode } from "./newestEpisode.js";
+import { mentionsNumber } from "./scoreGiven.js";
 
 /** Per-run state the tools share. Grounding rules live here, not in the prompt. */
 export interface RunContext {
@@ -201,6 +202,7 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
     animeId: a.anime_id,
     clearMatch: isClearFor(ctx.clear.get(a.anime_id), a),
     newestEpisodeUnknown: mentionsNewestEpisode(ctx.userMessage),
+    noNumberGiven: !mentionsNumber(ctx.userMessage),
     ...(a.status !== undefined && { status: a.status }),
     ...(a.episodes_watched !== undefined && { episodesWatched: a.episodes_watched }),
     ...(a.episodes_delta !== undefined && { episodesDelta: a.episodes_delta }),
