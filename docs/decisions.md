@@ -509,3 +509,32 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 - On the real list, "final mha season" resolves to Final Season unless the model also guesses "season 7" (then it asks). DanMachi "4th season" still resolves, and "blue" asks however the model searches.
 - Local runs: batch 1 unchanged at 82%; batch 2 70% (its first local run).
 - The Flash-Lite check waits for the free quota to reset.
+
+## 2026-10-05 — Gemini moves to the paid tier (Milestone 2)
+**Decision:** The Gemini API key's project is on the paid tier, with $5 of prepaid credit. Gemini evals now default to 60 calls a minute (`--rpm`).
+**Alternatives:** Staying on the free tier and spreading eval runs across days; running every eval locally.
+**Why:**
+- The free tier's daily quota (shared with Chat) covered about one batch of cases a day, so each fix waited a day for its Flash-Lite check.
+- A 90-case Flash-Lite run costs about $0.20 on the paid tier.
+- The paid tier doesn't use prompts to improve Google's products. That covers the design's rule that a paid tier comes before other users' data does, and CLAUDE.md's reminder to leave the free tier before Milestone 5.
+
+**Consequences:**
+- Eval runs and Chat cost real money, a few cents a day at the current volume.
+- A full run takes about 5 minutes instead of an afternoon.
+- The model IDs are unchanged.
+
+## 2026-10-05 — Prompt v6 becomes the app's prompt; Milestone 2 eval results (Milestone 2)
+**Decision:** Prompt v6 replaces v5 as the app's prompt.
+**Alternatives:** Keeping v5, which scored the same on batch 2 but can invent scores.
+**Why:** v6 held up on both batches with Flash-Lite after the conflicting-guesses fix. It doesn't invent scores, and it made no wrong writes.
+**Consequences:** Flash-Lite results for v6 on all 90 cases (batch 1 on my-list, batch 2 on varied-list):
+
+| Metric | Result | Target |
+|---|---|---|
+| Update accuracy | 97.8% (88/90) | ≥95% |
+| Wrong-write rate | 0% (0/63) | <1% |
+| Clarification precision (recall) | 84% (100%) | ≥90% |
+| Median latency | 2.4 s | |
+
+- The two misses wrote nothing. Batch 1's Mushoku Tensei follow-up was held instead of written. Batch 2's "final mha season" asked "Season 7 or the Final Season?" because the model guessed both.
+- Precision is 21 of 25 asks. The four unneeded asks are the two misses, a DanMachi change held alongside the right one, and a recommendation reply that ended in a question. Removing any two of them would reach 90%.

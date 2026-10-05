@@ -14,4 +14,4 @@ export const PROMPTS = {
 } as const;
 
 /** The prompt the app uses. */
-export const CURRENT_PROMPT = PROGRESS_SYNC_V5;
+export const CURRENT_PROMPT = PROGRESS_SYNC_V6;
