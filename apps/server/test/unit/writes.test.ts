@@ -68,6 +68,31 @@ describe("markClear", () => {
     expect(markClear(pool, ["another"])[0]?.clearBy).toBe("unique");
   });
 
+  it("outside the list, a series' own movies and specials don't stop its exact name", () => {
+    const tatami = [
+      entry(7785, 1, { names: ["Yojouhan Shinwa Taikei", "The Tatami Galaxy"], exact: true }),
+      entry(8985, 0.95, {
+        names: ["Yojouhan Shinwa Taikei Specials", "The Tatami Galaxy Specials"],
+        mediaType: "special",
+      }),
+    ];
+    const outside = (pool: ScoredEntry[], query: string) =>
+      markClear(pool, [query], { sideStoriesDontCount: true })
+        .filter((c) => c.clear)
+        .map((c) => c.animeId);
+    expect(outside(tatami, "the tatami galaxy")).toEqual([7785]);
+    // On the list the rule stays as it was: the user put the specials there.
+    expect(clearIds(tatami, ["the tatami galaxy"])).toEqual([]);
+
+    // Another TV season still counts: "mushishi" has Zoku Shou too.
+    const mushishi = [
+      entry(457, 1, { names: ["Mushishi"], exact: true }),
+      entry(21939, 0.95, { names: ["Mushishi Zoku Shou"] }),
+      entry(28957, 0.9, { names: ["Mushishi Tokubetsu-hen: Suzu no Shizuku"], mediaType: "movie" }),
+    ];
+    expect(outside(mushishi, "mushishi")).toEqual([]);
+  });
+
   it("an exact name that later seasons start with falls back to the season in progress", () => {
     // "bsd ep 5": the franchise name is also season 1's title, but season 4 is the one watched.
     const pool = [

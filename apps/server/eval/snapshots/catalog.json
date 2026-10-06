@@ -1,0 +1,634 @@
+{
+  "description": "AniList's answers to title searches, frozen so eval cases about adding shows have fixed answers. Show metadata only. A title already here is never re-searched.",
+  "source": "anilist",
+  "searches": [
+    {
+      "query": "ping pong the animation",
+      "frozenAt": "2026-10-06T19:44:05.977Z",
+      "shows": [
+        {
+          "anilistId": 20607,
+          "malId": 22135,
+          "title": "Ping Pong THE ANIMATION",
+          "titleEn": "Ping Pong the Animation",
+          "titleJa": "ピンポン THE ANIMATION",
+          "synonyms": [],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 11,
+          "duration": 23,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20607-fIOxVISIl0HY.jpg",
+          "startDate": "2014-04-11"
+        }
+      ]
+    },
+    {
+      "query": "tatami galaxy",
+      "frozenAt": "2026-10-06T19:44:08.916Z",
+      "shows": [
+        {
+          "anilistId": 7785,
+          "malId": 7785,
+          "title": "Yojouhan Shinwa Taikei",
+          "titleEn": "The Tatami Galaxy",
+          "titleJa": "四畳半神話大系",
+          "synonyms": [
+            "Yojo-Han Shinwa Taikei",
+            "Yojou-Han Shinwa Taikei",
+            "Yojohan Shinwa Taikei",
+            "四叠半神话大系",
+            "4½ Tatami Mythological Chronicles"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 11,
+          "duration": 23,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx7785-aTjIhsYva8cJ.jpg",
+          "startDate": "2010-04-23"
+        },
+        {
+          "anilistId": 8985,
+          "malId": 8985,
+          "title": "Yojouhan Shinwa Taikei Specials",
+          "titleEn": "The Tatami Galaxy Specials",
+          "titleJa": "四畳半神話大系 特典",
+          "synonyms": [],
+          "format": "SPECIAL",
+          "status": "FINISHED",
+          "episodes": 3,
+          "duration": 7,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx8985-evIGRMCQrkmE.jpg",
+          "startDate": "2010-08-20"
+        }
+      ]
+    },
+    {
+      "query": "shirobako",
+      "frozenAt": "2026-10-06T19:44:11.911Z",
+      "shows": [
+        {
+          "anilistId": 20812,
+          "malId": 25835,
+          "title": "SHIROBAKO",
+          "titleEn": "SHIROBAKO",
+          "titleJa": "SHIROBAKO",
+          "synonyms": [
+            "White Box"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 24,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20812-KvIP1yffJEPZ.jpg",
+          "startDate": "2014-10-09"
+        },
+        {
+          "anilistId": 101574,
+          "malId": 37804,
+          "title": "SHIROBAKO Movie",
+          "titleEn": "SHIROBAKO the Movie",
+          "titleJa": "劇場版 SHIROBAKO",
+          "synonyms": [
+            "White Box Movie"
+          ],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 120,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101574-JlsavnBJfQaC.jpg",
+          "startDate": "2020-02-29"
+        },
+        {
+          "anilistId": 20938,
+          "malId": 28105,
+          "title": "SHIROBAKO: Gekichuugeki Animation",
+          "titleEn": null,
+          "titleJa": "SHIROBAKO 劇中劇アニメーション",
+          "synonyms": [
+            "Exodus!",
+            "えくそだすっ！",
+            "Daisan Hikou Shoujo-Tai",
+            "第三飛行少女隊",
+            "Third Aerial Girls Squad",
+            "TAGS",
+            "SHIROBAKO Specials"
+          ],
+          "format": "SPECIAL",
+          "status": "FINISHED",
+          "episodes": 2,
+          "duration": 25,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/20938-HifuokPLOOgO.jpg",
+          "startDate": "2015-02-25"
+        }
+      ]
+    },
+    {
+      "query": "perfect blue",
+      "frozenAt": "2026-10-06T19:44:14.895Z",
+      "shows": [
+        {
+          "anilistId": 437,
+          "malId": 437,
+          "title": "PERFECT BLUE",
+          "titleEn": "Perfect Blue",
+          "titleJa": "PERFECT BLUE",
+          "synonyms": [
+            "パーフェクト・ブルー"
+          ],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 82,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx437-69NMlXKFeuse.jpg",
+          "startDate": "1998-02-28"
+        }
+      ]
+    },
+    {
+      "query": "look back",
+      "frozenAt": "2026-10-06T19:44:17.914Z",
+      "shows": [
+        {
+          "anilistId": 174788,
+          "malId": 58125,
+          "title": "Look Back",
+          "titleEn": "LOOK BACK",
+          "titleJa": "ルックバック",
+          "synonyms": [],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 58,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx174788-9LsUnn0oEppv.jpg",
+          "startDate": "2024-06-28"
+        }
+      ]
+    },
+    {
+      "query": "mushishi",
+      "frozenAt": "2026-10-06T19:44:20.906Z",
+      "shows": [
+        {
+          "anilistId": 457,
+          "malId": 457,
+          "title": "Mushishi",
+          "titleEn": "MUSHI-SHI",
+          "titleJa": "蟲師",
+          "synonyms": [
+            "מושישי",
+            "กีฏจารย์กับอาถรรพ์แมลงพิสดาร",
+            "Мастер Муши"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 26,
+          "duration": 25,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx457-l6cTtNgI9Bi6.png",
+          "startDate": "2005-10-23"
+        },
+        {
+          "anilistId": 20595,
+          "malId": 21939,
+          "title": "Mushishi Zoku Shou",
+          "titleEn": "MUSHI-SHI The Next Passage",
+          "titleJa": "蟲師 続章",
+          "synonyms": [
+            "Mushi-shi Zoku Shou",
+            "Mushishi Zokushou",
+            "Mushishi: The Next Chapter"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 10,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20595-HcUeaAnvaUhM.jpg",
+          "startDate": "2014-04-05"
+        },
+        {
+          "anilistId": 20526,
+          "malId": 21329,
+          "title": "Mushishi: Hihamukage",
+          "titleEn": "MUSHI-SHI OVA",
+          "titleJa": "蟲師 特別篇「日蝕む翳」",
+          "synonyms": [
+            "Mushi-shi Tokubetsu-hen: Hihamu Kage",
+            "MUSHI-SHI: The Shadow that Devours the Sun",
+            "MUSHI-SHI: L'ombre qui dévore le soleil"
+          ],
+          "format": "SPECIAL",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 45,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20526-PmuD69J3rkDF.png",
+          "startDate": "2014-01-04"
+        },
+        {
+          "anilistId": 20752,
+          "malId": 24687,
+          "title": "Mushishi Zoku Shou: Odoro no Michi",
+          "titleEn": "MUSHI-SHI The Next Passage Special - Path of Thorns",
+          "titleJa": "蟲師 続章「棘のみち」",
+          "synonyms": [
+            "Mushishi Zoku Shou Specials",
+            "Mushishi: Path of Thorns",
+            "Mushishi: Path of Overgrowth",
+            "Mushishi: La Voie des Broussailles"
+          ],
+          "format": "SPECIAL",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 47,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/nx20752-P5EpEJXWGroz.jpg",
+          "startDate": "2014-08-20"
+        },
+        {
+          "anilistId": 20751,
+          "malId": 24701,
+          "title": "Mushishi Zoku Shou 2",
+          "titleEn": "MUSHI-SHI The Next Passage 2",
+          "titleJa": "蟲師 続章 2",
+          "synonyms": [],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 10,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20751-O3XJ9u30y7Qj.png",
+          "startDate": "2014-10-19"
+        },
+        {
+          "anilistId": 21008,
+          "malId": 28957,
+          "title": "Mushishi Tokubetsu-hen: Suzu no Shizuku",
+          "titleEn": "MUSHI-SHI Special: Bell Droplets",
+          "titleJa": "蟲師 特別編「鈴の雫」",
+          "synonyms": [
+            "MUSHI-SHI: Drops of Bells"
+          ],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 47,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21008-6sn1vYneDtPc.png",
+          "startDate": "2015-05-16"
+        }
+      ]
+    },
+    {
+      "query": "natsume",
+      "frozenAt": "2026-10-06T19:44:23.915Z",
+      "shows": [
+        {
+          "anilistId": 188619,
+          "malId": 48953,
+          "title": "Natsume Yuujinchou × Kumamoto-ken: Hitoyoshi Kuma de no Yasashii Jikan",
+          "titleEn": null,
+          "titleJa": "夏目友人帳×熊本県「人吉・球磨での優しい時間」",
+          "synonyms": [
+            "Natsume's Book of Friends",
+            "Natsume Yuujinchou"
+          ],
+          "format": "ONA",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 2,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b188619-zBWxqUo3oWXo.png",
+          "startDate": "2021-04-21"
+        },
+        {
+          "anilistId": 4081,
+          "malId": 4081,
+          "title": "Natsume Yuujinchou",
+          "titleEn": "Natsume's Book of Friends Season 1",
+          "titleJa": "夏目友人帳",
+          "synonyms": [
+            "Natsume Yujincho",
+            "นัตสึเมะกับบันทึกพิศวง",
+            "Hữu Nhân Sổ - Natsume Yuujinchou",
+            "O Livro de Amigos de Natsume",
+            "나츠메 우인장"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 13,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx4081-xi08naD69tjr.jpg",
+          "startDate": "2008-07-08"
+        },
+        {
+          "anilistId": 11665,
+          "malId": 11665,
+          "title": "Natsume Yuujinchou Shi",
+          "titleEn": "Natsume's Book of Friends Season 4",
+          "titleJa": "夏目友人帳 肆",
+          "synonyms": [
+            "Natsume Yuujinchou Four",
+            "Natsume Yuujinchou 4",
+            "Natsume Yujincho 4"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 13,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx11665-nfbt94cwKySE.png",
+          "startDate": "2012-01-03"
+        },
+        {
+          "anilistId": 10379,
+          "malId": 10379,
+          "title": "Natsume Yuujinchou San",
+          "titleEn": "Natsume's Book of Friends Season 3",
+          "titleJa": "夏目友人帳 参",
+          "synonyms": [
+            "Natsume Yuujinchou Three",
+            "Natsume Yuujinchou 3",
+            "Natsume Yujincho 3",
+            "O Livro de Amigos de Natsume 3"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 13,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx10379-lS2Mk6lX4lZr.jpg",
+          "startDate": "2011-07-05"
+        },
+        {
+          "anilistId": 5300,
+          "malId": 5300,
+          "title": "Zoku Natsume Yuujinchou",
+          "titleEn": "Natsume's Book of Friends Season 2",
+          "titleJa": "続 夏目友人帳",
+          "synonyms": [
+            "Natsume Yuujinchou Two",
+            "Natsume Yuujinchou 2",
+            "Natsume Yujincho 2",
+            "O Livro de Amigos de Natsume 2"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 13,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx5300-t9N4PoOkPAdS.jpg",
+          "startDate": "2009-01-06"
+        },
+        {
+          "anilistId": 21710,
+          "malId": 32983,
+          "title": "Natsume Yuujinchou Go",
+          "titleEn": "Natsume's Book of Friends Season 5",
+          "titleJa": "夏目友人帳 伍",
+          "synonyms": [
+            "Natsume's Book of Friends Five"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 11,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21710-Y20fKQviC3hL.jpg",
+          "startDate": "2016-10-05"
+        },
+        {
+          "anilistId": 97983,
+          "malId": 34591,
+          "title": "Natsume Yuujinchou Roku",
+          "titleEn": "Natsume's Book of Friends Season 6",
+          "titleJa": "夏目友人帳 陸",
+          "synonyms": [
+            "Natsume Yuujinchou Season 6",
+            "Natsume's Book of Friends Six"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 11,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx97983-Uqn04SR6hVW9.jpg",
+          "startDate": "2017-04-12"
+        },
+        {
+          "anilistId": 166611,
+          "malId": 55823,
+          "title": "Natsume Yuujinchou Shichi",
+          "titleEn": "Natsume's Book of Friends Season 7",
+          "titleJa": "夏目友人帳 漆",
+          "synonyms": [
+            "Natsume Yuujinchou Season 7",
+            "Natsume's Book of Friends Seven"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 12,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx166611-MXGsOlPv2IKj.png",
+          "startDate": "2024-10-08"
+        }
+      ]
+    },
+    {
+      "query": "akira",
+      "frozenAt": "2026-10-06T19:44:26.913Z",
+      "shows": [
+        {
+          "anilistId": 47,
+          "malId": 47,
+          "title": "AKIRA",
+          "titleEn": "Akira",
+          "titleJa": "AKIRA",
+          "synonyms": [
+            "アキラ"
+          ],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 125,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx47-4CR68arv452h.jpg",
+          "startDate": "1988-07-16"
+        },
+        {
+          "anilistId": 126016,
+          "malId": 56836,
+          "title": "AKIRA (Shin Anime)",
+          "titleEn": null,
+          "titleJa": "アキラ (新アニメ)",
+          "synonyms": [
+            "Akira"
+          ],
+          "format": "TV",
+          "status": "NOT_YET_RELEASED",
+          "episodes": null,
+          "duration": null,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx126016-9PaIQHxFyyho.png",
+          "startDate": null
+        },
+        {
+          "anilistId": 10812,
+          "malId": 10812,
+          "title": "Toumei Shounen Tantei Akira",
+          "titleEn": null,
+          "titleJa": "透明少年探偵アキラ",
+          "synonyms": [
+            "Invisible Boy Detective Akira"
+          ],
+          "format": "SPECIAL",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 13,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/10812.jpg",
+          "startDate": "1970"
+        },
+        {
+          "anilistId": 199369,
+          "malId": 60546,
+          "title": "Momose Akira no Hatsukoi Hatan-chuu. PV",
+          "titleEn": null,
+          "titleJa": "百瀬アキラの初恋破綻中。PV",
+          "synonyms": [],
+          "format": "ONA",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 1,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx199369-i7tkJ637IdoP.png",
+          "startDate": "2024-12-18"
+        },
+        {
+          "anilistId": 102704,
+          "malId": 36822,
+          "title": "Kirakira",
+          "titleEn": null,
+          "titleJa": "きらきら",
+          "synonyms": [],
+          "format": "MUSIC",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 4,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx102704-RlQo2tdsWMTz.jpg",
+          "startDate": "2011-08-23"
+        },
+        {
+          "anilistId": 142262,
+          "malId": 50505,
+          "title": "Kira Kira",
+          "titleEn": "Kira Kira",
+          "titleJa": "きらきら (2021)",
+          "synonyms": [
+            "Kirakira"
+          ],
+          "format": "MUSIC",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 3,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx142262-xAZ1Jqg0zBVf.png",
+          "startDate": "2021-12-01"
+        }
+      ]
+    },
+    {
+      "query": "kino no tabi",
+      "frozenAt": "2026-10-06T19:44:29.902Z",
+      "shows": [
+        {
+          "anilistId": 3466,
+          "malId": 3466,
+          "title": "Kino no Tabi: the Beautiful World - Tou no Kuni: Free Lance",
+          "titleEn": null,
+          "titleJa": "キノの旅 the Beautiful World 塔の国 -Free Lance-",
+          "synonyms": [
+            "Kino no Tabi: Tower Country/Free Lance",
+            "Kino's Travels: Country of the Tower",
+            "Kino no Tabi Episode 00",
+            "Kino's Journey: Tower Country"
+          ],
+          "format": "OVA",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 14,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx3466-L3DQqyjomYR1.png",
+          "startDate": "2005-10-19"
+        },
+        {
+          "anilistId": 486,
+          "malId": 486,
+          "title": "Kino no Tabi: the Beautiful World",
+          "titleEn": "Kino's Journey",
+          "titleJa": "キノの旅 -the Beautiful World-",
+          "synonyms": [
+            "Kino's Travels: The Beautiful World",
+            "L'Odyssée de Kino",
+            "Kinos Resa"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 13,
+          "duration": 25,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx486-xXUgNOEBuxGs.jpg",
+          "startDate": "2003-04-08"
+        },
+        {
+          "anilistId": 98448,
+          "malId": 35079,
+          "title": "Kino no Tabi -the Beautiful World- the Animated Series",
+          "titleEn": "Kino's Journey -the Beautiful World- the Animated Series",
+          "titleJa": "キノの旅 -the Beautiful World- the Animated Series",
+          "synonyms": [],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 12,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/nx98448-OdfxrjAhkYvp.jpg",
+          "startDate": "2017-10-06"
+        },
+        {
+          "anilistId": 108973,
+          "malId": 38179,
+          "title": "Kino no Tabi -the Beautiful World- Haikyo no Kuni",
+          "titleEn": null,
+          "titleJa": "キノの旅 -the Beautiful World- 廃墟の国",
+          "synonyms": [
+            "Kino no Tabi: The Beautiful World - The Animated Series - Haikyo no Kuni - On Your Way"
+          ],
+          "format": "SPECIAL",
+          "status": "FINISHED",
+          "episodes": 27,
+          "duration": 4,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b108973-X8YjEtEpkjmx.jpg",
+          "startDate": "2016-07-23"
+        },
+        {
+          "anilistId": 1379,
+          "malId": 1379,
+          "title": "Kino no Tabi: Nanika wo Suru Tame ni -life goes on.-",
+          "titleEn": null,
+          "titleJa": "キノの旅 何かをするために -life goes on.-",
+          "synonyms": [
+            "Kino no Tabi: the Beautiful World - Life Goes On",
+            "Kino's Journey Movie",
+            "Kino no Tabi: In order to do something - Life Goes On.",
+            "Kino's Journey: Life Goes On"
+          ],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 30,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1379-poWbykTYlXzi.jpg",
+          "startDate": "2005-02-19"
+        },
+        {
+          "anilistId": 2175,
+          "malId": 2175,
+          "title": "Kino no Tabi: the Beautiful World - Byouki no Kuni: For You",
+          "titleEn": null,
+          "titleJa": "キノの旅 the Beautiful World 病気の国 -For You-",
+          "synonyms": [
+            "Kino's Journey: The Beautiful World - The Land of Sickness: For You",
+            "The Country of Illness",
+            "Land of Disease"
+          ],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 29,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/nx2175-ODWaMrFEJVCP.jpg",
+          "startDate": "2007-04-21"
+        }
+      ]
+    }
+  ]
+}

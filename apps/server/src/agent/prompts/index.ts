@@ -9,6 +9,7 @@ import { PROGRESS_SYNC_V9 } from "./progressSync.v9.js";
 import { PROGRESS_SYNC_V10 } from "./progressSync.v10.js";
 import { PROGRESS_SYNC_V11 } from "./progressSync.v11.js";
 import { PROGRESS_SYNC_V12 } from "./progressSync.v12.js";
+import { PROGRESS_SYNC_V13 } from "./progressSync.v13.js";
 import { RECOMMEND_V1 } from "./recommend.v1.js";
 
 /** Every prompt version, so the eval can compare them (pnpm eval --prompt progress-sync@1). */
@@ -24,10 +25,11 @@ export const PROMPTS = {
   [PROGRESS_SYNC_V10.version]: PROGRESS_SYNC_V10,
   [PROGRESS_SYNC_V11.version]: PROGRESS_SYNC_V11,
   [PROGRESS_SYNC_V12.version]: PROGRESS_SYNC_V12,
+  [PROGRESS_SYNC_V13.version]: PROGRESS_SYNC_V13,
 } as const;
 
 /** The prompt the app uses. */
-export const CURRENT_PROMPT = PROGRESS_SYNC_V12;
+export const CURRENT_PROMPT = PROGRESS_SYNC_V13;
 
 /** The recommendation agent's prompt. */
 export const RECOMMEND_PROMPT = RECOMMEND_V1;

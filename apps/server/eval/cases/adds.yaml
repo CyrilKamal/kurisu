@@ -1,0 +1,78 @@
+# Adding shows that aren't on the list. Messages and expected outcomes by Cyril (2026-10-06);
+# the frozen AniList searches they use are in snapshots/catalog.json.
+snapshot: my-list
+cases:
+  - id: add-started-ping-pong-typo
+    message: "started ping ping"
+    tags: [add, nickname]
+    expect:
+      adds:
+        - anime: "Ping Pong THE ANIMATION"
+          episodes_watched: 1
+
+  - id: add-begun-the-tatami-galaxy
+    message: "begun the tatami galaxy"
+    tags: [add, nickname]
+    expect:
+      adds:
+        - anime: "Yojouhan Shinwa Taikei"
+          episodes_watched: 1
+
+  - id: add-watched-first-3-shirobako
+    message: "just watched the first 3 eps of shirobako"
+    tags: [add]
+    expect:
+      adds:
+        - anime: "SHIROBAKO"
+          episodes_watched: 3
+
+  - id: add-finished-perfect-blue-10
+    message: "just finished perfect blue 10/10"
+    tags: [add]
+    expect:
+      adds:
+        - anime: "PERFECT BLUE"
+          status: completed
+          score: 10
+
+  - id: add-started-mushishi-asks
+    message: "started mushishi"
+    tags: [add, ambiguous]
+    notes: "Mushishi has the 2005 series plus sequels, specials and a movie: ask which one."
+    expect:
+      clarify: true
+
+  - id: add-watched-5-natsume-asks
+    message: "watched 5 eps of Natsume Yuujinchou"
+    tags: [add, ambiguous, sequel]
+    notes: "Season 1's exact title, but every later season starts with it: ask which season."
+    expect:
+      clarify: true
+
+  - id: add-bocchi-already-on-list
+    message: "add bocchi the rock"
+    tags: [add, no-action]
+    notes: "Already on Plan to Watch: no change and no question; it says where it is."
+    expect: {}
+
+  - id: add-monster-already-on-list
+    message: "add monster to my list"
+    tags: [add, no-action]
+    notes: "Already on Plan to Watch: no change and no question; it says where it is."
+    expect: {}
+
+  - id: add-akira-someday-no-action
+    message: "I think in the future im gonna start akira"
+    tags: [add, no-action]
+    expect: {}
+
+  - id: add-gonna-start-look-back-and-kusuriya
+    message: "gonna start look back and watched two eps of Kusuriya no hitorigoto"
+    tags: [add, multi, relative]
+    notes: "Look Back isn't on the list: going to start it adds it to Plan to Watch."
+    expect:
+      writes:
+        - anime: "Kusuriya no Hitorigoto"
+          episodes_watched: 2
+      adds:
+        - anime: "Look Back"
