@@ -850,3 +850,21 @@ Both are now structural checks, so no prompt can repeat them.
 **Consequences:**
 - Every v9 miss asked or held instead of writing: "watched both eps" asked which Bleach entry, and the usual flaky batch cases (MHA More, Mushoku Tensei follow-up, TYBW s4, Cowboy Bebop rewatch, Bleach ep 380).
 - Which batch cases miss varies from run to run, by about ±2 cases.
+
+## 2026-10-06 — Milestone 3 is done (Milestone 3)
+**Decision:** Milestone 3 counts as done (your call).
+- A daily pg-boss job builds each brief from AniList schedules and your Watching list, names only your streaming services when AniList has an active link, and sends a web push. Tapping it opens Chat, where the brief waits.
+- Verified live on desktop Chrome, including the daily job and replying in Chat.
+- Follow-ups shipped in the same milestone:
+  - "the newest episode" answered from AniList (prompt v7);
+  - split shows lined up by MAL's start date;
+  - your rules for replying to a brief (prompt v9), with code checks for named shows and episode numbers.
+- Flash-Lite with v9 on all 130 eval cases: 0 wrong writes; brief replies 34/35.
+
+**Alternatives:** Hosting the app first, so phone push could be tested.
+**Why:** Every done-when criterion is met. Phone push needs HTTPS hosting, which Milestone 5 (the friends beta) needs anyway.
+**Consequences:**
+- Briefs depend on this PC running.
+- Phone push is still untested.
+- The icons are placeholders.
+- Case 9 (a message between the brief and the reply) isn't covered.
