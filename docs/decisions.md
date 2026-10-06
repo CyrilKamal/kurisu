@@ -724,3 +724,21 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 - The answer can be up to a refresh old. The next-episode time in the cache moves "newest" forward on its own once that episode airs.
 - Shows without AniList data still get a Confirm card.
 - Frozen data for the user's 2 "newest episode" cases: Steel Ball Run ep 3, TYBW Kashin-tan ep 8.
+
+## 2026-10-06 — Prompt v7 becomes the app's prompt (Milestone 3)
+**Decision:** Prompt v7 replaces v6. v7 reads "the newest episode" from `latest_aired_episode`.
+**Alternatives:** Keeping v6, which always asks about the newest episode.
+**Why:** On the same 90 cases (your two newest-episode cases relabeled to the frozen ep 3 and ep 8), Flash-Lite with v7 beat v6 and made no wrong writes, the bar we set for switching.
+
+| | v7 | v6 |
+|---|---|---|
+| Update accuracy | 96.7% (87/90) | 94.4% (85/90) |
+| Wrong writes | 0/64 | 0/63 |
+| Clarification precision | 82.6% | 75.0% |
+
+**Consequences:**
+- v7's three misses all asked instead of writing:
+  - "TYBW s4": the model guessed the wrong Thousand-Year Blood War cour. Its seasons are named after arcs, not numbered, so it asked which one. v6 missed this too.
+  - The known Mushoku Tensei follow-up was held.
+  - "finished episode 8 of fire force" asked which season. It passed on v6 and in Milestone 2's final run, so it looks like run-to-run variation.
+- The Steel Ball Run newest-episode case now writes ep 3.
