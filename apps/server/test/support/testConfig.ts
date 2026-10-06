@@ -23,6 +23,8 @@ export function testEnv(overrides: Record<string, string> = {}): Record<string, 
     MAL_REDIRECT_URI: TEST_MAL_CLIENT.redirectUri,
     TOKEN_ENCRYPTION_KEY: TEST_ENCRYPTION_KEY,
     BRIEF_SCHEDULER: "off",
+    // Nothing listens here, so no test reaches the real AniList by accident.
+    ANILIST_API_URL: "http://127.0.0.1:9/",
     ...overrides,
   };
 }

@@ -82,6 +82,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     runId: run.id,
     writeListStatus: deps.writeListStatus,
     seen: new Set(),
+    latestAired: new Map(),
     clear: new Map(),
     proposalIds: new Set(),
     committed: [],

@@ -9,6 +9,7 @@
 import { parseArgs } from "node:util";
 
 import { MAL_LIST_STATUSES } from "../../../src/mal/client.js";
+import { frozenLatestAired, loadAiring } from "../airing.js";
 import { describeEntry, lookUp } from "../lookup.js";
 import { loadSnapshot } from "../snapshot.js";
 
@@ -43,7 +44,13 @@ if (hits.length === 0) {
     `Nothing in the "${values.snapshot}" snapshot matches. Fine for a not-on-your-list case, but try the show's other names first.`,
   );
 } else {
-  console.log(hits.slice(0, LIMIT).map(describeEntry).join("\n\n"));
+  const airing = loadAiring();
+  console.log(
+    hits
+      .slice(0, LIMIT)
+      .map((hit) => describeEntry(hit, frozenLatestAired(airing, hit.entry.id)))
+      .join("\n\n"),
+  );
   const more = hits.length - LIMIT;
   console.log(
     `\n${String(hits.length)} match${hits.length === 1 ? "" : "es"}${more > 0 ? ` (first ${String(LIMIT)} shown; narrow the search)` : ""}`,

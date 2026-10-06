@@ -1,0 +1,127 @@
+{
+  "description": "AniList airing data for the eval snapshots' watching and airing shows, frozen so 'the newest episode' cases have a fixed answer. Never re-exported.",
+  "source": "anilist",
+  "frozenAt": "2026-10-06T03:40:18.430Z",
+  "shows": [
+    {
+      "malId": 21,
+      "anilistId": 21,
+      "status": "RELEASING",
+      "latestAired": 1180
+    },
+    {
+      "malId": 34566,
+      "anilistId": 97938,
+      "status": "FINISHED",
+      "latestAired": 293
+    },
+    {
+      "malId": 43629,
+      "anilistId": 125369,
+      "status": "CANCELLED",
+      "latestAired": null
+    },
+    {
+      "malId": 48418,
+      "anilistId": 130590,
+      "status": "FINISHED",
+      "latestAired": 12
+    },
+    {
+      "malId": 50330,
+      "anilistId": 141249,
+      "status": "FINISHED",
+      "latestAired": 13
+    },
+    {
+      "malId": 52635,
+      "anilistId": 153406,
+      "status": "FINISHED",
+      "latestAired": 26
+    },
+    {
+      "malId": 54492,
+      "anilistId": 161645,
+      "status": "FINISHED",
+      "latestAired": 24
+    },
+    {
+      "malId": 54865,
+      "anilistId": 163146,
+      "status": "FINISHED",
+      "latestAired": 14
+    },
+    {
+      "malId": 55848,
+      "anilistId": 166710,
+      "status": "FINISHED",
+      "latestAired": 10
+    },
+    {
+      "malId": 56063,
+      "anilistId": 167420,
+      "status": "FINISHED",
+      "latestAired": 12
+    },
+    {
+      "malId": 59193,
+      "anilistId": 178789,
+      "status": "FINISHED",
+      "latestAired": 14
+    },
+    {
+      "malId": 59708,
+      "anilistId": 180745,
+      "status": "FINISHED",
+      "latestAired": 16
+    },
+    {
+      "malId": 59983,
+      "anilistId": 182300,
+      "status": "FINISHED",
+      "latestAired": 12
+    },
+    {
+      "malId": 60636,
+      "anilistId": 185874,
+      "status": "RELEASING",
+      "latestAired": 8
+    },
+    {
+      "malId": 61469,
+      "anilistId": 210482,
+      "status": "RELEASING",
+      "latestAired": 3
+    },
+    {
+      "malId": 61603,
+      "anilistId": 191788,
+      "status": "RELEASING",
+      "latestAired": 1
+    },
+    {
+      "malId": 61967,
+      "anilistId": 195604,
+      "status": "RELEASING",
+      "latestAired": 1
+    },
+    {
+      "malId": 62001,
+      "anilistId": 195600,
+      "status": "FINISHED",
+      "latestAired": 24
+    },
+    {
+      "malId": 62513,
+      "anilistId": 198946,
+      "status": "FINISHED",
+      "latestAired": 13
+    },
+    {
+      "malId": 63130,
+      "anilistId": 204356,
+      "status": "FINISHED",
+      "latestAired": 1
+    }
+  ]
+}

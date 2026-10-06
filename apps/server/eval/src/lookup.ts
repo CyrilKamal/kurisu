@@ -52,8 +52,11 @@ export function lookUp(
     });
 }
 
-/** One entry as a few readable lines. */
-export function describeEntry(hit: LookupHit): string {
+/**
+ * One entry as a few readable lines. `latestAired` is the frozen newest episode (airing shows
+ * only), which "the newest episode" cases should expect.
+ */
+export function describeEntry(hit: LookupHit, latestAired: number | null = null): string {
   const e = hit.entry;
   const also = [e.titleEn, ...e.synonyms].filter((n): n is string => !!n && n !== e.title);
   const facts = [
@@ -62,6 +65,7 @@ export function describeEntry(hit: LookupHit): string {
     `${String(e.episodesWatched)}/${e.numEpisodes === null ? "?" : String(e.numEpisodes)} eps`,
     ...(e.isRewatching ? ["rewatching"] : []),
     e.airingStatus ? e.airingStatus.replace(/_/g, " ") : "airing unknown",
+    ...(latestAired !== null ? [`newest aired ep ${String(latestAired)}`] : []),
   ];
   return [
     `${String(e.id).padEnd(7)} ${e.title}`,

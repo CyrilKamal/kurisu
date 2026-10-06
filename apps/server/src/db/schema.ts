@@ -150,6 +150,10 @@ export const anilistMedia = pgTable(
     // The next episode to air and when, if AniList has scheduled one.
     nextEpisode: integer("next_episode"),
     nextAiringAt: timestamptz("next_airing_at"),
+    // AniList numbers each part of a split show from 1; add this to get MAL's episode numbers
+    // for `anilistId` (see anilist/client.ts joinParts). next_episode and episodes are already
+    // in MAL's numbering.
+    episodeOffset: integer("episode_offset").notNull().default(0),
     // Enabled official streaming links only.
     streamingLinks: jsonb("streaming_links")
       .$type<StreamingLink[]>()

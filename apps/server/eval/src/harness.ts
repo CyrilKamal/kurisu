@@ -3,9 +3,10 @@ import { and, eq, sql } from "drizzle-orm";
 
 import { createDb, type Db } from "../../src/db/client.js";
 import { runMigrations } from "../../src/db/migrate.js";
-import { anime, listEntries, users } from "../../src/db/schema.js";
+import { anilistMedia, anime, listEntries, users } from "../../src/db/schema.js";
 import type { ListWriter } from "../../src/writes/commit.js";
 import type { ListChange } from "../../src/writes/normalize.js";
+import { airingRowsFor, type AiringFreeze } from "./airing.js";
 import type { Snapshot } from "./snapshot.js";
 
 // Same image as docker-compose.yml and the integration tests.
@@ -34,8 +35,15 @@ export async function startEvalDatabase(): Promise<EvalDatabase> {
   };
 }
 
-/** Resets the database to exactly the snapshot, as one user's list. Returns that user's id. */
-export async function loadSnapshotIntoDb(db: Db, snapshot: Snapshot): Promise<string> {
+/**
+ * Resets the database to exactly the snapshot, as one user's list, with the frozen AniList airing
+ * data for its shows. Returns that user's id.
+ */
+export async function loadSnapshotIntoDb(
+  db: Db,
+  snapshot: Snapshot,
+  airing: AiringFreeze | null = null,
+): Promise<string> {
   await db.execute(sql`
     TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs,
       proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages CASCADE
@@ -74,6 +82,10 @@ export async function loadSnapshotIntoDb(db: Db, snapshot: Snapshot): Promise<st
         syncedAt,
       })),
     );
+  }
+  if (airing) {
+    const rows = airingRowsFor(airing, new Set(snapshot.entries.map((e) => e.id)), new Date());
+    if (rows.length > 0) await db.insert(anilistMedia).values(rows);
   }
   return user.id;
 }

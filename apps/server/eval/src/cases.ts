@@ -10,6 +10,7 @@ import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import { normalizeChange, type ListChange } from "../../src/writes/normalize.js";
 import { isProgress, isProgressBeforeAiring } from "../../src/writes/propose.js";
 import { parseShorthand } from "./shorthand.js";
+import { frozenLatestAired, loadAiring, type AiringFreeze } from "./airing.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 
 export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
@@ -89,6 +90,7 @@ export interface LoadResult {
 export function loadCases(
   casesDir: string = CASES_DIR,
   snapshotLoader: (name: string) => Snapshot = loadSnapshot,
+  airing: AiringFreeze | null = loadAiring(),
 ): LoadResult {
   const files = readdirSync(casesDir)
     .filter((f) => /\.(ya?ml|txt)$/.test(f))
@@ -151,7 +153,7 @@ export function loadCases(
       }
       seenIds.set(evalCase.id, file);
 
-      const resolved = resolveCase(evalCase, index);
+      const resolved = resolveCase(evalCase, index, airing);
       result.errors.push(...resolved.errors.map((message) => ({ ...where, message })));
       result.warnings.push(...resolved.warnings.map((message) => ({ ...where, message })));
       if (resolved.errors.length === 0) {
@@ -165,6 +167,7 @@ export function loadCases(
 function resolveCase(
   evalCase: EvalCase,
   index: TitleIndex,
+  airing: AiringFreeze | null,
 ): { changes: Map<number, ListChange>; errors: string[]; warnings: string[] } {
   const changes = new Map<number, ListChange>();
   const errors: string[] = [];
@@ -213,9 +216,16 @@ function resolveCase(
         `${label}: the snapshot says this show hasn't aired yet, so the agent holds progress on it for confirmation instead of writing it. Expect clarify: true and no write for it, unless you're testing that rule.`,
       );
     } else if (mentionsNewestEpisode(evalCase.message) && isProgress(entry, normalized.change)) {
-      warnings.push(
-        `${label}: the message means "the newest episode" without a number, so the agent holds progress for confirmation until airing schedules arrive (Milestone 3). Expect clarify: true and no write for it, unless you're testing that rule.`,
-      );
+      const latest = frozenLatestAired(airing, entry.id);
+      if (latest === null) {
+        warnings.push(
+          `${label}: the message means "the newest episode" without a number, and the frozen airing data (snapshots/airing.json) has no latest episode for this show, so the agent holds progress for confirmation. Expect clarify: true and no write for it, unless you're testing that rule.`,
+        );
+      } else if (normalized.change.episodesWatched !== latest) {
+        warnings.push(
+          `${label}: the message means "the newest episode", which the frozen airing data says is ep ${String(latest)}. A write of any other episode is held for confirmation.`,
+        );
+      }
     } else if (normalized.change.score !== undefined && !mentionsNumber(evalCase.message)) {
       warnings.push(
         `${label}: the message has no number in it, so the agent holds a score for confirmation instead of writing it. Expect clarify: true and no write for it, unless you're testing that rule.`,

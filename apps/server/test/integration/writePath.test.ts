@@ -192,19 +192,24 @@ describe("the confirmation gate", () => {
     ).toMatchObject({ requiresConfirmation: false });
   });
 
-  it("holds progress when the user meant 'the newest episode' without a number", async () => {
-    const guessed = await propose({
-      animeId: WATCHING,
-      episodesDelta: 1,
-      newestEpisodeUnknown: true,
-    });
-    expect(guessed).toMatchObject({
-      requiresConfirmation: true,
-      confirmationReason: "newest_episode_unknown",
-    });
+  it("holds 'the newest episode' unless it lands on the latest aired episode", async () => {
+    const unknown = { latestAired: null };
+    expect(
+      await propose({ animeId: WATCHING, episodesDelta: 1, newestEpisode: unknown }),
+    ).toMatchObject({ requiresConfirmation: true, confirmationReason: "newest_episode_unknown" });
+
+    // On ep 7; ep 9 is the newest, so one more (8) isn't it, but 9 is.
+    const latest = { latestAired: 9 };
+    expect(
+      await propose({ animeId: WATCHING, episodesDelta: 1, newestEpisode: latest }),
+    ).toMatchObject({ requiresConfirmation: true, confirmationReason: "newest_episode_unknown" });
+    expect(
+      await propose({ animeId: WATCHING, episodesWatched: 9, newestEpisode: latest }),
+    ).toMatchObject({ change: { episodesWatched: 9 }, requiresConfirmation: false });
+
     // Status changes don't depend on which episode is newest.
     expect(
-      await propose({ animeId: WATCHING, status: "on_hold", newestEpisodeUnknown: true }),
+      await propose({ animeId: WATCHING, status: "on_hold", newestEpisode: unknown }),
     ).toMatchObject({ requiresConfirmation: false });
   });
 

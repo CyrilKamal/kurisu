@@ -45,6 +45,8 @@ export function createListSync(deps: {
   apiBaseUrl: string;
   log: FastifyBaseLogger;
   retry?: RetryOptions;
+  /** Called after each successful sync, e.g. to refresh airing data. Must not throw. */
+  afterSync?: (userId: string) => void;
 }): ListSync {
   const { db, tokenStore, apiBaseUrl, log } = deps;
   const retry = deps.retry ?? DEFAULT_RETRY;
@@ -117,6 +119,7 @@ export function createListSync(deps: {
       await replaceMirror(userId, items);
       finished = { status: "succeeded", entriesCount: items.length };
       log.info({ userId, trigger, entries: items.length }, "list sync succeeded");
+      deps.afterSync?.(userId);
     } catch (err) {
       const error = classifySyncError(err);
       finished = { status: "failed", error };

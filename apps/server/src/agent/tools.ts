@@ -14,6 +14,7 @@ import {
 } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
+import { airingRows, latestAiredEpisode } from "../anilist/cache.js";
 import { mentionsNewestEpisode } from "./newestEpisode.js";
 import { mentionsNumber } from "./scoreGiven.js";
 
@@ -25,6 +26,11 @@ export interface RunContext {
   writeListStatus: ListWriter;
   /** Anime ids a search or get_entry returned in this run. Only these can be proposed. */
   seen: Set<number>;
+  /**
+   * The latest aired episode of airing shows a search or get_entry returned, from the AniList
+   * cache. Missing when unknown.
+   */
+  latestAired: Map<number, number>;
   /** Anime ids a search marked as a clear match in this run, and why (see SearchCandidate). */
   clear: Map<number, "unique" | "only_in_progress">;
   /** Proposals created in this run. The model can only commit these. */
@@ -174,9 +180,13 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
     if (c.clearBy && ctx.clear.get(c.animeId) !== "unique") ctx.clear.set(c.animeId, c.clearBy);
   }
   if (candidates.length === 0) return { result: { results: [], note: "Not on the user's list." } };
+  await noteLatestAired(
+    ctx,
+    candidates.map((c) => c.animeId),
+  );
   return {
     result: {
-      results: candidates.map((c) => ({ ...entryForModel(c), clear_match: c.clear })),
+      results: candidates.map((c) => ({ ...entryForModel(ctx, c), clear_match: c.clear })),
       ...(times > 1 && { note: "Same results as your earlier identical search." }),
     },
   };
@@ -188,7 +198,8 @@ async function getEntryTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome>
   const entry = await getEntry(ctx.db, ctx.userId, args.data.anime_id);
   if (!entry) return failure("not_on_list", "That anime isn't on the user's list.");
   ctx.seen.add(entry.animeId);
-  return { result: entryForModel(entry) };
+  await noteLatestAired(ctx, [entry.animeId]);
+  return { result: entryForModel(ctx, entry) };
 }
 
 async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
@@ -208,7 +219,9 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
     runId: ctx.runId,
     animeId: a.anime_id,
     clearMatch: isClearFor(ctx.clear.get(a.anime_id), a),
-    newestEpisodeUnknown: mentionsNewestEpisode(ctx.userMessage),
+    ...(mentionsNewestEpisode(ctx.userMessage) && {
+      newestEpisode: { latestAired: ctx.latestAired.get(a.anime_id) ?? null },
+    }),
     noNumberGiven: !mentionsNumber(ctx.userMessage),
     ...(a.status !== undefined && { status: a.status }),
     ...(a.episodes_watched !== undefined && { episodesWatched: a.episodes_watched }),
@@ -303,7 +316,21 @@ function isClearFor(
   );
 }
 
-function entryForModel(entry: ListEntryView) {
+/**
+ * Records the latest aired episode of the airing shows among these entries, from the AniList
+ * cache (refreshed by list syncs and the daily brief). The agent never calls AniList itself.
+ */
+async function noteLatestAired(ctx: RunContext, animeIds: number[]): Promise<void> {
+  const now = new Date();
+  for (const row of (await airingRows(ctx.db, animeIds)).values()) {
+    if (row.status === "FINISHED") continue;
+    const latest = latestAiredEpisode(row, now);
+    if (latest !== null) ctx.latestAired.set(row.malId, latest);
+  }
+}
+
+function entryForModel(ctx: RunContext, entry: ListEntryView) {
+  const latest = ctx.latestAired.get(entry.animeId);
   return {
     anime_id: entry.animeId,
     title: entry.title,
@@ -313,6 +340,7 @@ function entryForModel(entry: ListEntryView) {
     episodes_watched: entry.episodesWatched,
     total_episodes: entry.numEpisodes ?? "unknown",
     ...(entry.airingStatus ? { airing_status: entry.airingStatus } : {}),
+    ...(latest !== undefined ? { latest_aired_episode: latest } : {}),
     ...(entry.score > 0 ? { score: entry.score } : {}),
     ...(entry.isRewatching ? { rewatching: true } : {}),
   };

@@ -8,6 +8,7 @@ import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import {
   agentRuns,
   agentRunSteps,
+  anilistMedia,
   anime,
   listEntries,
   proposals,
@@ -351,6 +352,87 @@ describe("runAgent", () => {
     ]);
 
     expect((await run("??")).outcome).toBe("clarification");
+  });
+});
+
+describe("the newest episode", () => {
+  // On ep 7 of the watching show; AniList says ep 10 airs in two days, so ep 9 is the newest.
+  async function seedAiring(overrides: Partial<typeof anilistMedia.$inferInsert> = {}) {
+    await h.db.insert(anilistMedia).values({
+      malId: WATCHING,
+      anilistId: 501,
+      status: "RELEASING",
+      episodes: 12,
+      nextEpisode: 10,
+      nextAiringAt: new Date(Date.now() + 2 * 24 * 3600_000),
+      fetchedAt: new Date(),
+      ...overrides,
+    });
+  }
+
+  function newestScript(change: Record<string, unknown>, seen: Record<string, unknown>[]) {
+    return [
+      {
+        toolCalls: [{ name: "search_my_list", arguments: { queries: ["fixture watching show"] } }],
+      },
+      (req) => {
+        const results = lastToolResult(req).results as Record<string, unknown>[];
+        seen.push(...results);
+        return {
+          toolCalls: [{ name: "propose_update", arguments: { anime_id: WATCHING, ...change } }],
+        };
+      },
+      (req) => ({
+        toolCalls: [
+          { name: "commit_update", arguments: { proposal_id: lastToolResult(req).proposal_id } },
+        ],
+      }),
+      { text: "Done." },
+    ] satisfies ScriptStep[];
+  }
+
+  it("shows the latest aired episode and writes it", async () => {
+    await seedAiring();
+    const seen: Record<string, unknown>[] = [];
+    models.script(LITE.ref, newestScript({ episodes_watched: 9 }, seen));
+
+    const result = await run("watched the newest episode of fixture watching show");
+
+    expect(seen[0]).toMatchObject({ anime_id: WATCHING, latest_aired_episode: 9 });
+    expect(result.outcome).toBe("committed");
+    expect(h.fakeMal.patchRequests).toEqual([
+      { animeId: WATCHING, form: { num_watched_episodes: "9" } },
+    ]);
+  });
+
+  it("holds any other episode, and holds when the newest episode is unknown", async () => {
+    await seedAiring();
+    models.script(LITE.ref, newestScript({ episodes_delta: 1 }, []));
+    const oneMore = await run("watched the newest episode of fixture watching show");
+    expect(oneMore.pending[0]?.confirmationReason).toBe("newest_episode_unknown");
+
+    await h.db.delete(anilistMedia);
+    const seen: Record<string, unknown>[] = [];
+    models.script(LITE.ref, newestScript({ episodes_watched: 9 }, seen));
+    const unknown = await run("caught up on fixture watching show");
+    expect(seen[0]).not.toHaveProperty("latest_aired_episode");
+    expect(unknown.pending[0]?.confirmationReason).toBe("newest_episode_unknown");
+    expect(h.fakeMal.patchRequests).toEqual([]);
+  });
+
+  it("leaves it out for finished shows and stale data", async () => {
+    await seedAiring({ status: "FINISHED", nextEpisode: null, nextAiringAt: null });
+    const finished: Record<string, unknown>[] = [];
+    models.script(LITE.ref, newestScript({ episodes_watched: 8 }, finished));
+    await run("watched ep 8 of fixture watching show");
+    expect(finished[0]).not.toHaveProperty("latest_aired_episode");
+
+    await h.db.delete(anilistMedia);
+    await seedAiring({ fetchedAt: new Date(Date.now() - 8 * 24 * 3600_000) });
+    const stale: Record<string, unknown>[] = [];
+    models.script(LITE.ref, newestScript({ episodes_watched: 8 }, stale));
+    await run("watched ep 8 of fixture watching show");
+    expect(stale[0]).not.toHaveProperty("latest_aired_episode");
   });
 });
 

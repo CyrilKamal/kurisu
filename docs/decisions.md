@@ -680,3 +680,47 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 **Consequences:**
 - Moving the time later on a day with nothing new can produce one brief later that day.
 - The page always says whether the brief ran and when the next one is due.
+
+## 2026-10-05 — Shows AniList splits are joined end to end in MAL's numbering (Milestone 3)
+**Decision:**
+- When several AniList entries share one MAL id, they're joined in start-date order. Steel Ball Run is the example: a finished 1-episode "1st STAGE", then an airing "2nd & 3rd STAGE" numbered from 1 again.
+- The latest part is the one used. Its episode numbers are shifted by the earlier parts' episode counts, which is how MAL counts one entry straight through. AniList's 2nd-stage ep 2 is MAL's ep 3.
+- Streaming links are merged across parts.
+- It's only done when the join is unambiguous:
+  - every part is a series (TV, TV short or ONA) with a known start date, and no two parts start on the same date;
+  - every earlier part is finished with a known episode count.
+
+  Otherwise the show is logged ("several AniList entries share this MAL id…") and skipped.
+- `anilist_media.episode_offset` stores the shift, so the brief can convert AniList's aired episode numbers.
+
+**Alternatives:**
+- Skipping split shows (Steel Ball Run would never be in the brief).
+- Using the airing part's own numbering (off by one on MAL).
+- Keeping whichever entry came first, which was the old behavior and picked the finished 1st stage.
+
+**Why:** Your choice. MAL keeps such shows as one entry, so straight-through numbering is the only way the brief's "ep 3" and a "watched it" reply match MAL's count. The guards stop a stray movie or recap that maps to the same MAL id from shifting the numbers.
+**Consequences:**
+- If MAL ever numbers a split show differently, its episode numbers would be off. Nothing checks this, because MAL's API has no per-episode data. With the brief and "the newest episode", that could mean a wrong write.
+- A show whose parts can't be joined safely is left out of the brief, as unmapped shows already are.
+
+## 2026-10-05 — "The newest episode" comes from AniList's schedule; prompt v7 (Milestone 3)
+**Decision:** This resolves the hold added in "A tie stays a tie; arc-named seasons; 'the newest episode' is held".
+- **Search results.** `search_my_list` and `get_entry` show `latest_aired_episode` for shows AniList lists as airing or about to air. It's worked out from the `anilist_media` cache, never by calling AniList during a chat.
+- **When it's written.** A "newest episode" message ("watched the newest ep", "the ep that dropped", "caught up on X") is written only when the change lands exactly on that episode. Any other episode, or an unknown latest episode, is held as before (`newest_episode_unknown`).
+- **Keeping the cache fresh.** The cache is refreshed by the daily brief, and now also in the background after each list sync (login or re-sync) for Watching, airing and upcoming shows, at most one refresh per user at a time.
+- **Prompt v7.** It maps "the newest episode" to `latest_aired_episode` and asks when it's missing. It's registered; v6 stays the app's prompt until a Flash-Lite run of both batches shows v7 keeps zero wrong writes.
+- **Evals.** `eval/snapshots/airing.json` freezes AniList's newest episode per airing show (`pnpm eval:airing`, run once on 2026-10-05; it refuses to overwrite). The harness seeds it with each snapshot, and `eval:lookup` and `eval:validate` use it.
+
+**Alternatives:**
+- Calling AniList live from the agent.
+- A separate `get_airing` tool.
+- Letting the model use the episode without the code check.
+
+**Why:**
+- A cache read keeps chat fast and the eval offline and repeatable.
+- Checking that the write equals the latest episode keeps "the newest episode" from becoming a wrong write when the model guesses (+1 instead of the actual newest).
+
+**Consequences:**
+- The answer can be up to a refresh old. The next-episode time in the cache moves "newest" forward on its own once that episode airs.
+- Shows without AniList data still get a Confirm card.
+- Frozen data for the user's 2 "newest episode" cases: Steel Ball Run ep 3, TYBW Kashin-tan ep 8.

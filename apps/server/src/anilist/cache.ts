@@ -1,8 +1,8 @@
-import { and, gte, inArray, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, or, sql } from "drizzle-orm";
 import type { FastifyBaseLogger } from "fastify";
 
 import type { Db } from "../db/client.js";
-import { anilistMedia, anime } from "../db/schema.js";
+import { anilistMedia, anime, listEntries } from "../db/schema.js";
 import type { AniListClient } from "./client.js";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -52,7 +52,8 @@ export async function refreshAiring(
   const due = ids.filter((id) => !freshIds.has(id));
   if (due.length === 0) return { fetched: 0, unmapped: [] };
 
-  const found = new Map((await anilist.mediaByMalIds(due)).map((m) => [m.malId, m]));
+  const lookup = await anilist.mediaByMalIds(due);
+  const found = new Map(lookup.media.map((m) => [m.malId, m]));
   const rows: AiringRow[] = due.map((malId) => {
     const media = found.get(malId);
     return {
@@ -63,6 +64,7 @@ export async function refreshAiring(
       nextEpisode: media?.nextEpisode?.episode ?? null,
       nextAiringAt: media?.nextEpisode?.airingAt ?? null,
       streamingLinks: media?.streamingLinks ?? [],
+      episodeOffset: media?.episodeOffset ?? 0,
       fetchedAt: now,
     };
   });
@@ -78,18 +80,25 @@ export async function refreshAiring(
         nextEpisode: sql`excluded.next_episode`,
         nextAiringAt: sql`excluded.next_airing_at`,
         streamingLinks: sql`excluded.streaming_links`,
+        episodeOffset: sql`excluded.episode_offset`,
         fetchedAt: sql`excluded.fetched_at`,
       },
     });
 
   const unmapped = due.filter((id) => !found.has(id));
   if (unmapped.length > 0) {
+    const unjoinable = new Set(lookup.unjoinable);
     const titles = await db
       .select({ malId: anime.malId, title: anime.title })
       .from(anime)
       .where(inArray(anime.malId, unmapped));
     for (const { malId, title } of titles) {
-      log.warn({ malId, title }, "no AniList entry for this MAL id; skipping it");
+      log.warn(
+        { malId, title },
+        unjoinable.has(malId)
+          ? "several AniList entries share this MAL id and their episode numbering is unclear; skipping it"
+          : "no AniList entry for this MAL id; skipping it",
+      );
     }
   }
   return { fetched: due.length, unmapped };
@@ -125,4 +134,25 @@ export function latestAiredEpisode(
   if (row.status === "FINISHED") return row.episodes;
   if (row.status === "NOT_YET_RELEASED") return 0;
   return null;
+}
+
+/**
+ * The user's entries worth keeping airing data for: Watching shows, and anything MAL says is
+ * airing or about to. "The newest episode" and the brief only ever ask about these.
+ */
+export async function airingCandidateIds(db: Db, userId: string): Promise<number[]> {
+  const rows = await db
+    .select({ malId: anime.malId })
+    .from(listEntries)
+    .innerJoin(anime, eq(anime.malId, listEntries.animeId))
+    .where(
+      and(
+        eq(listEntries.userId, userId),
+        or(
+          eq(listEntries.status, "watching"),
+          inArray(anime.airingStatus, ["currently_airing", "not_yet_aired"]),
+        ),
+      ),
+    );
+  return rows.map((row) => row.malId);
 }

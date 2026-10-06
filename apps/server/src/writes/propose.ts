@@ -33,10 +33,11 @@ export interface ProposeInput {
    */
   clearMatch: boolean;
   /**
-   * The user said "the newest episode" without a number (decided by the caller from their
-   * message). Progress is then a guess, so it's held for them to confirm.
+   * Set when the user said "the newest episode" without a number (decided by the caller from
+   * their message), with the show's latest aired episode if AniList's schedule says. Progress
+   * is held for them to confirm unless it lands exactly on that episode.
    */
-  newestEpisodeUnknown?: boolean;
+  newestEpisode?: { latestAired: number | null };
   /**
    * The user's message has no number in it (decided by the caller), so a score in this change
    * wasn't given by them. It's held for them to confirm.
@@ -117,7 +118,9 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
       ? "progress_backwards"
       : isProgressBeforeAiring(entry, change)
         ? "not_yet_aired"
-        : input.newestEpisodeUnknown && isProgress(entry, change)
+        : input.newestEpisode &&
+            isProgress(entry, change) &&
+            change.episodesWatched !== input.newestEpisode.latestAired
           ? "newest_episode_unknown"
           : input.noNumberGiven && change.score !== undefined
             ? "score_not_given"

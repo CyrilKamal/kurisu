@@ -64,6 +64,13 @@
       "when": 1791240491926,
       "tag": "0008_brief_settings_and_briefs",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791257076444,
+      "tag": "0009_anilist_episode_offset",
+      "breakpoints": true
     }
   ]
 }
