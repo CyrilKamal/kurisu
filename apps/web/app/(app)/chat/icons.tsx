@@ -22,6 +22,12 @@ export function MenuIcon() {
 }
 
 export function NewChatIcon() {
+  return (
+    <Icon path="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z" />
+  );
+}
+
+export function RenameIcon() {
   return <Icon path="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />;
 }
 

@@ -167,6 +167,12 @@ export const conversationsResponseSchema = z.object({
   conversations: z.array(conversationViewSchema),
 });
 
+/** The longest name a chat can be given. */
+export const CHAT_TITLE_MAX = 100;
+
+/** PATCH /chat/conversations/:id: the renamed chat. */
+export const conversationResponseSchema = z.object({ conversation: conversationViewSchema });
+
 /**
  * GET /chat/conversations/:id, and POST /chat/messages (the chat it went to, and the new user and
  * assistant messages).

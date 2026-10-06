@@ -14,8 +14,10 @@ import {
   loadChange,
   loadChanges,
   loadThread,
+  renameConversation,
   type ChatDeps,
 } from "./service.js";
+import { CHAT_TITLE_MAX } from "./titles.js";
 
 const messageBody = z.object({
   text: z.string().trim().min(1).max(1000),
@@ -23,6 +25,12 @@ const messageBody = z.object({
   conversationId: z.uuid().optional(),
 });
 const idParams = z.object({ id: z.uuid() });
+const renameBody = z.object({
+  title: z
+    .string()
+    .transform((title) => title.replace(/\s+/g, " ").trim())
+    .pipe(z.string().min(1).max(CHAT_TITLE_MAX)),
+});
 
 /** Per-user limits that keep a chatty session inside the free model quota. */
 const MESSAGES_PER_MINUTE = 10;
@@ -52,6 +60,22 @@ export function registerChatRoutes(
     const conversation = params.success ? await findConversation(db, userId, params.data.id) : null;
     if (!conversation) return reply.code(404).send({ error: "not_found" });
     return { conversation, messages: await loadThread(db, userId, conversation.id) };
+  });
+
+  app.patch("/chat/conversations/:id", guards, async (request, reply) => {
+    const params = idParams.safeParse(request.params);
+    if (!params.success) return reply.code(404).send({ error: "not_found" });
+    const body = renameBody.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: "invalid_title" });
+
+    const conversation = await renameConversation(
+      db,
+      userOf(request),
+      params.data.id,
+      body.data.title,
+    );
+    if (!conversation) return reply.code(404).send({ error: "not_found" });
+    return { conversation };
   });
 
   app.delete("/chat/conversations/:id", guards, async (request, reply) => {

@@ -14,9 +14,9 @@ export function postApi<T>(
   return sendApi("POST", path, schema, body);
 }
 
-/** Like postApi, for PUT and DELETE. */
+/** Like postApi, for PUT, PATCH and DELETE. */
 export async function sendApi<T>(
-  method: "POST" | "PUT" | "DELETE",
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
   schema: z.ZodType<T> | null,
   body?: unknown,

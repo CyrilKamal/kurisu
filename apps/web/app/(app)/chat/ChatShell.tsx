@@ -1,6 +1,10 @@
 "use client";
 
-import { conversationsResponseSchema, type ConversationView } from "@kurisu/shared";
+import {
+  conversationResponseSchema,
+  conversationsResponseSchema,
+  type ConversationView,
+} from "@kurisu/shared";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -9,6 +13,8 @@ import { getApi, sendApi } from "@/lib/clientApi";
 import { ChatSidebar } from "./ChatSidebar";
 
 interface ChatShellContext {
+  /** The user's chats, kept current as they're renamed or deleted. */
+  chats: ConversationView[];
   /** Fetches the list of chats again, after a message starts a chat or moves one to the top. */
   refreshChats: () => Promise<void>;
   /** Opens the list of chats on a phone, where it's a drawer. */
@@ -54,7 +60,10 @@ export function ChatShell({
   const openChats = useCallback(() => {
     setDrawerOpen(true);
   }, []);
-  const context = useMemo(() => ({ refreshChats, openChats }), [refreshChats, openChats]);
+  const context = useMemo(
+    () => ({ chats, refreshChats, openChats }),
+    [chats, refreshChats, openChats],
+  );
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -66,6 +75,23 @@ export function ChatShell({
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [drawerOpen]);
+
+  async function renameChat(chat: ConversationView, title: string) {
+    const name = title.replace(/\s+/g, " ").trim();
+    if (!name || name === chat.title) return;
+    setNotice(null);
+    setChats((current) => current.map((c) => (c.id === chat.id ? { ...c, title: name } : c)));
+    const result = await sendApi(
+      "PATCH",
+      `/chat/conversations/${chat.id}`,
+      conversationResponseSchema,
+      { title: name },
+    );
+    if (!result.ok) {
+      setNotice("Couldn't rename that chat. Please try again.");
+      await refreshChats();
+    }
+  }
 
   async function deleteChat(chat: ConversationView) {
     const question = `Delete "${chat.title}"? Changes it made to your list stay in History, where you can still undo them.`;
@@ -86,6 +112,7 @@ export function ChatShell({
       chats={chats}
       activeId={activeId}
       notice={notice}
+      onRename={renameChat}
       onDelete={deleteChat}
       {...(onNavigate && { onNavigate })}
     />
