@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import type { AiringFreeze } from "../../eval/src/airing.js";
 import { loadCases } from "../../eval/src/cases.js";
 import { loadSnapshot, type Snapshot } from "../../eval/src/snapshot.js";
 
@@ -70,12 +71,12 @@ const snapshot: Snapshot = {
 
 let dir: string;
 
-function load(files: Record<string, string>) {
+function load(files: Record<string, string>, airing: AiringFreeze | null = null) {
   dir = mkdtempSync(path.join(tmpdir(), "kurisu-cases-"));
   for (const [name, content] of Object.entries(files)) {
     writeFileSync(path.join(dir, name), content);
   }
-  return loadCases(`${dir}${path.sep}`, () => snapshot);
+  return loadCases(`${dir}${path.sep}`, () => snapshot, airing);
 }
 
 afterEach(() => {
@@ -234,6 +235,34 @@ describe("loadCases", () => {
     expect(result.errors).toEqual([]);
     expect(result.warnings.map((w) => [w.caseId, w.message])).toEqual([
       ["early-progress", expect.stringMatching(/hasn't aired yet.*clarify: true/)],
+    ]);
+  });
+
+  it("checks 'the newest episode' cases against the frozen airing data", () => {
+    const airing: AiringFreeze = {
+      description: "test",
+      source: "anilist",
+      frozenAt: "2026-10-06T00:00:00.000Z",
+      shows: [{ malId: 1, anilistId: 101, status: "RELEASING", latestAired: 9 }],
+    };
+    const files = {
+      "a.yaml": `${header}
+  - id: newest-right
+    message: watched the newest ep of kusuriya
+    expect: { writes: [{ anime: "Kusuriya no Hitorigoto", episodes_watched: 9 }] }
+  - id: newest-wrong
+    message: watched the newest ep of kusuriya
+    expect: { writes: [{ anime: "Kusuriya no Hitorigoto", episodes_watched: 7 }] }
+`,
+    };
+
+    expect(load(files, airing).warnings.map((w) => [w.caseId, w.message])).toEqual([
+      ["newest-wrong", expect.stringMatching(/frozen airing data says is ep 9/)],
+    ]);
+    // Without airing data for the show, both are held, so both warn.
+    expect(load(files, null).warnings.map((w) => w.caseId)).toEqual([
+      "newest-right",
+      "newest-wrong",
     ]);
   });
 

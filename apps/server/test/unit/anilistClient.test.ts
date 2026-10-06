@@ -76,41 +76,139 @@ describe("mediaByMalIds", () => {
       }),
     ];
 
-    const [media] = await client.mediaByMalIds([1]);
+    const { media } = await client.mediaByMalIds([1]);
 
-    expect(media).toEqual({
-      anilistId: 101,
-      malId: 1,
-      status: "RELEASING",
-      episodes: 12,
-      nextEpisode: { episode: 8, airingAt: new Date("2026-10-06T15:00:00Z") },
-      streamingLinks: [{ siteId: 5, site: "Crunchyroll", url: "https://cr.example/a" }],
-    });
+    expect(media).toEqual([
+      {
+        anilistId: 101,
+        malId: 1,
+        status: "RELEASING",
+        episodes: 12,
+        nextEpisode: { episode: 8, airingAt: new Date("2026-10-06T15:00:00Z") },
+        streamingLinks: [{ siteId: 5, site: "Crunchyroll", url: "https://cr.example/a" }],
+        episodeOffset: 0,
+      },
+    ]);
   });
 
-  it("leaves out MAL ids AniList doesn't know, and keeps the first of duplicate entries", async () => {
-    fake.media = [airingMedia(101, 1), airingMedia(102, 1), airingMedia(201, 2)];
+  it("leaves out MAL ids AniList doesn't know", async () => {
+    fake.media = [airingMedia(101, 1), airingMedia(201, 2)];
 
-    const media = await client.mediaByMalIds([1, 2, 3]);
+    const { media, unjoinable } = await client.mediaByMalIds([1, 2, 3]);
 
     expect(media.map((m) => [m.malId, m.anilistId])).toEqual([
       [1, 101],
       [2, 201],
     ]);
+    expect(unjoinable).toEqual([]);
+  });
+
+  it("joins a show AniList splits into parts end to end, in MAL's episode numbers", async () => {
+    // Steel Ball Run: MAL has one entry; AniList has a finished 1-episode "1st STAGE" and an
+    // airing "2nd & 3rd STAGE" numbered from 1 again.
+    fake.media = [
+      airingMedia(210482, 61469, {
+        format: "ONA",
+        episodes: 11,
+        startDate: { year: 2026, month: 9, day: 25 },
+        nextAiringEpisode: { episode: 3, airingAt: seconds("2026-10-09T12:00:00Z") },
+        externalLinks: [
+          {
+            siteId: 10,
+            site: "Netflix",
+            url: "https://nf.example/2",
+            type: "STREAMING",
+            isDisabled: false,
+          },
+        ],
+      }),
+      airingMedia(190327, 61469, {
+        format: "ONA",
+        status: "FINISHED",
+        episodes: 1,
+        startDate: { year: 2026, month: 3, day: 19 },
+        externalLinks: [
+          {
+            siteId: 10,
+            site: "Netflix",
+            url: "https://nf.example/1",
+            type: "STREAMING",
+            isDisabled: false,
+          },
+          {
+            siteId: 5,
+            site: "Crunchyroll",
+            url: "https://cr.example/1",
+            type: "STREAMING",
+            isDisabled: false,
+          },
+        ],
+      }),
+    ];
+
+    const { media } = await client.mediaByMalIds([61469]);
+
+    expect(media).toEqual([
+      {
+        anilistId: 210482,
+        malId: 61469,
+        status: "RELEASING",
+        episodes: 12,
+        nextEpisode: { episode: 4, airingAt: new Date("2026-10-09T12:00:00Z") },
+        streamingLinks: [
+          { siteId: 10, site: "Netflix", url: "https://nf.example/2" },
+          { siteId: 5, site: "Crunchyroll", url: "https://cr.example/1" },
+        ],
+        episodeOffset: 1,
+      },
+    ]);
+  });
+
+  it("won't join parts when the numbering would be a guess", async () => {
+    const part = (id: number, overrides: Parameters<typeof airingMedia>[2]) =>
+      airingMedia(id, id < 200 ? 1 : id < 300 ? 2 : id < 400 ? 3 : 4, overrides);
+    fake.media = [
+      // 1: an earlier part still airing.
+      part(101, { startDate: { year: 2026, month: 1, day: 1 } }),
+      part(102, { startDate: { year: 2026, month: 7, day: 1 } }),
+      // 2: an earlier part with no episode count.
+      part(201, {
+        status: "FINISHED",
+        episodes: null,
+        startDate: { year: 2026, month: 1, day: 1 },
+      }),
+      part(202, { startDate: { year: 2026, month: 7, day: 1 } }),
+      // 3: a movie or special mapped to the same MAL id.
+      part(301, {
+        format: "MOVIE",
+        status: "FINISHED",
+        episodes: 1,
+        startDate: { year: 2026, month: 1, day: 1 },
+      }),
+      part(302, { startDate: { year: 2026, month: 7, day: 1 } }),
+      // 4: two parts with no start date to order them by.
+      part(401, { status: "FINISHED", startDate: null }),
+      part(402, {}),
+    ];
+
+    const { media, unjoinable } = await client.mediaByMalIds([1, 2, 3, 4]);
+
+    expect(media).toEqual([]);
+    expect(unjoinable.sort()).toEqual([1, 2, 3, 4]);
   });
 
   it("asks for at most 50 ids per request and drops repeated ids", async () => {
     const ids = Array.from({ length: 120 }, (_, i) => i + 1);
     fake.media = ids.map((id) => airingMedia(1000 + id, id));
 
-    const media = await client.mediaByMalIds([...ids, 1, 2, 3]);
+    const { media } = await client.mediaByMalIds([...ids, 1, 2, 3]);
 
     expect(media).toHaveLength(120);
     expect(fake.requests.map((r) => r.variables.ids?.length)).toEqual([50, 50, 20]);
   });
 
   it("sends no request for an empty list", async () => {
-    expect(await client.mediaByMalIds([])).toEqual([]);
+    expect(await client.mediaByMalIds([])).toEqual({ media: [], unjoinable: [] });
     expect(fake.requests).toHaveLength(0);
   });
 });
@@ -159,7 +257,7 @@ describe("errors and retries", () => {
     fake.media = [airingMedia(101, 1)];
     fake.failNext(429, 1, { "retry-after": "1" });
 
-    expect(await client.mediaByMalIds([1])).toHaveLength(1);
+    expect((await client.mediaByMalIds([1])).media).toHaveLength(1);
     expect(fake.requests).toHaveLength(2);
   });
 

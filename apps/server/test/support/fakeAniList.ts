@@ -5,8 +5,10 @@ import type { AddressInfo } from "node:net";
 export interface FakeAniListMedia {
   id: number;
   idMal: number | null;
+  format: string | null;
   status: string | null;
   episodes: number | null;
+  startDate: { year: number | null; month: number | null; day: number | null } | null;
   nextAiringEpisode: { episode: number; airingAt: number } | null;
   externalLinks: {
     siteId: number | null;
@@ -127,8 +129,10 @@ export function airingMedia(
   return {
     id,
     idMal,
+    format: "TV",
     status: "RELEASING",
     episodes: 12,
+    startDate: { year: 2026, month: 7, day: 1 },
     nextAiringEpisode: null,
     externalLinks: [
       {

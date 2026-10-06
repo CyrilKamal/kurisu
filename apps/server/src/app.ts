@@ -2,6 +2,7 @@ import fastifyCookie from "@fastify/cookie";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { CURRENT_PROMPT } from "./agent/prompts/index.js";
+import { airingCandidateIds, refreshAiring } from "./anilist/cache.js";
 import { createAniListClient } from "./anilist/client.js";
 import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
@@ -51,11 +52,44 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
 
   const cipher = createTokenCipher(config.tokenEncryptionKey);
   const tokenStore = createTokenStore({ db, cipher, oauth: config.mal });
+  // After each list sync, refresh AniList airing data for the shows Chat may ask about ("the
+  // newest episode"), in the background so the sync doesn't wait on AniList.
+  const syncAniList = createAniListClient({
+    apiUrl: config.anilist.apiUrl,
+    retry: options.anilist?.retry ?? { retries: 1, baseDelayMs: 500, maxDelayMs: 2_000 },
+    ...(options.anilist?.minIntervalMs !== undefined && {
+      minIntervalMs: options.anilist.minIntervalMs,
+    }),
+  });
+  // One refresh per user at a time; a sync while one runs doesn't queue another.
+  const airingRefreshes = new Map<string, Promise<void>>();
+  app.addHook("onClose", async () => {
+    await Promise.allSettled(airingRefreshes.values());
+  });
+  const refreshAiringAfterSync = (userId: string) => {
+    if (airingRefreshes.has(userId)) return;
+    const task: Promise<void> = (async () => {
+      await refreshAiring(
+        { db, anilist: syncAniList, log: app.log },
+        await airingCandidateIds(db, userId),
+      );
+    })()
+      .catch((err: unknown) => {
+        app.log.warn(
+          { err: { name: (err as Error).name } },
+          "could not refresh airing data after sync",
+        );
+      })
+      .finally(() => airingRefreshes.delete(userId));
+    airingRefreshes.set(userId, task);
+  };
+
   const listSync = createListSync({
     db,
     tokenStore,
     apiBaseUrl: config.mal.apiBaseUrl,
     log: app.log,
+    afterSync: refreshAiringAfterSync,
     ...(options.malRetry ? { retry: options.malRetry } : {}),
   });
   app.addHook("onReady", async () => {

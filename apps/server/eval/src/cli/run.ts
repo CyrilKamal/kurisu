@@ -30,6 +30,7 @@ import {
 } from "../../../src/llm/modelConfig.js";
 import type { ListChange } from "../../../src/writes/normalize.js";
 import { loadCases, type ResolvedCase } from "../cases.js";
+import { loadAiring } from "../airing.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
 import { aggregate, scoreCase, type CaseRun, type Metrics } from "../score.js";
 import { throttle } from "../throttle.js";
@@ -77,6 +78,8 @@ if (rpm !== null && !(rpm > 0)) {
 }
 const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm);
 
+/** Frozen AniList airing data, so "the newest episode" has a fixed answer. */
+const airing = loadAiring();
 const loaded = loadCases();
 if (loaded.errors.length > 0) {
   for (const e of loaded.errors)
@@ -161,7 +164,7 @@ async function runCase(
     snapshots.set(resolved.snapshot, snapshot);
   }
   const { db } = database;
-  const userId = await loadSnapshotIntoDb(db, snapshot);
+  const userId = await loadSnapshotIntoDb(db, snapshot, airing);
   const { writer } = createFakeWriter(db);
 
   const waitedBefore = models.waitedMs;

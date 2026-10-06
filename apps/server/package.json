@@ -18,6 +18,7 @@
     "eval:validate": "tsx eval/src/cli/validate.ts",
     "eval:snapshot": "tsx eval/src/cli/exportSnapshot.ts",
     "eval:lookup": "tsx eval/src/cli/lookup.ts",
+    "eval:airing": "tsx eval/src/cli/exportAiring.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",
     "eval": "tsx eval/src/cli/run.ts"

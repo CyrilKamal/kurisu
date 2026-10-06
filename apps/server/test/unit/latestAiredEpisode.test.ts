@@ -15,6 +15,7 @@ function row(overrides: Partial<AiringRow>): AiringRow {
     nextEpisode: null,
     nextAiringAt: null,
     streamingLinks: [],
+    episodeOffset: 0,
     fetchedAt: hoursAgo(1),
     ...overrides,
   };

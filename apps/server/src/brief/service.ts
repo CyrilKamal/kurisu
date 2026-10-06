@@ -263,7 +263,10 @@ async function gatherItems(
     watching,
     aired: aired.flatMap((a) => {
       const malId = malIdByAniList.get(a.anilistId);
-      return malId === undefined ? [] : [{ malId, episode: a.episode, airedAt: a.airedAt }];
+      if (malId === undefined) return [];
+      // AniList numbers each part of a split show from 1; MAL counts straight through.
+      const offset = rows.get(malId)?.episodeOffset ?? 0;
+      return [{ malId, episode: a.episode + offset, airedAt: a.airedAt }];
     }),
     links: new Map([...rows.values()].map((row) => [row.malId, row.streamingLinks])),
     services: settings?.services ?? [],

@@ -14,6 +14,7 @@ import {
   type BriefDeps,
 } from "../../src/brief/service.js";
 import {
+  anilistMedia,
   briefs,
   briefSettings,
   chatMessages,
@@ -470,6 +471,53 @@ describe("daily briefs", () => {
     expect(pushService.received).toHaveLength(0);
     const [row] = await h.db.select().from(briefs);
     expect(row?.status).toBe("empty");
+  });
+});
+
+describe("airing data", () => {
+  it("is refreshed in the background after a list sync, for Watching and airing shows", async () => {
+    // beforeEach logged in, which synced the list.
+    const deadline = Date.now() + 5_000;
+    let ids: number[] = [];
+    while (Date.now() < deadline) {
+      ids = (await h.db.select({ malId: anilistMedia.malId }).from(anilistMedia)).map(
+        (r) => r.malId,
+      );
+      if (ids.length >= 3) break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    // Both Watching shows, plus the Plan to Watch sequel MAL says hasn't aired yet.
+    expect(ids.sort()).toEqual([900001, 900005, 900007]);
+  });
+});
+
+describe("split shows", () => {
+  it("lists a split show's episodes in MAL's numbering", async () => {
+    // Let the background refresh from login finish, then start from an empty cache.
+    const deadline = Date.now() + 5_000;
+    while (Date.now() < deadline && (await h.db.select().from(anilistMedia)).length < 3) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    await h.db.delete(anilistMedia);
+
+    // AniList splits the second show: a finished 1-episode first part, then a second part
+    // numbered from 1 again. MAL counts straight through, so its ep 1 is MAL's ep 2.
+    anilist.media = anilist.media.filter((m) => m.idMal !== 900007);
+    anilist.media.push(
+      airingMedia(601, 900007, {
+        format: "ONA",
+        status: "FINISHED",
+        episodes: 1,
+        startDate: { year: 2026, month: 3, day: 19 },
+      }),
+      airingMedia(602, 900007, { format: "ONA", startDate: { year: 2026, month: 9, day: 25 } }),
+    );
+    anilist.airings = [{ mediaId: 602, episode: 1, airingAt: hoursAgo(3) }];
+    models.script(BRIEF.ref, [{ text: "New episodes are out." }]);
+
+    await send("POST", "/brief/test");
+
+    expect(decryptedPushes().map((push) => push.title)).toEqual(["Fixture Second Show ep 2"]);
   });
 });
 

@@ -1,0 +1,1 @@
+ALTER TABLE "anilist_media" ADD COLUMN "episode_offset" integer DEFAULT 0 NOT NULL;

@@ -12,7 +12,13 @@ export interface StreamingLink {
   url: string;
 }
 
+/**
+ * One MAL entry's AniList data. Episode numbers are MAL's: when AniList splits a show MAL keeps
+ * as one entry (Steel Ball Run's "1st STAGE" and "2nd & 3rd STAGE"), the parts are joined end to
+ * end and this describes the latest part, with its episodes shifted by `episodeOffset`.
+ */
 export interface AniListMedia {
+  /** The AniList entry that's airing now (the latest part of a split show). */
   anilistId: number;
   malId: number;
   /** AniList values like RELEASING, FINISHED, NOT_YET_RELEASED. */
@@ -20,6 +26,17 @@ export interface AniListMedia {
   episodes: number | null;
   nextEpisode: { episode: number; airingAt: Date } | null;
   streamingLinks: StreamingLink[];
+  /** Add to AniList's episode numbers for `anilistId` to get MAL's. 0 unless the show is split. */
+  episodeOffset: number;
+}
+
+export interface MediaLookup {
+  media: AniListMedia[];
+  /**
+   * MAL ids whose AniList parts can't be joined safely (an earlier part still airing, an unknown
+   * episode count or start date, or a part that isn't a series), so episode numbers are unknown.
+   */
+  unjoinable: number[];
 }
 
 export interface AiredEpisode {
@@ -29,8 +46,8 @@ export interface AiredEpisode {
 }
 
 export interface AniListClient {
-  /** AniList entries for these MAL ids. Ids AniList doesn't know are simply missing. */
-  mediaByMalIds(malIds: number[]): Promise<AniListMedia[]>;
+  /** AniList data for these MAL ids. Ids AniList doesn't know are simply missing. */
+  mediaByMalIds(malIds: number[]): Promise<MediaLookup>;
   /** Episodes of these shows that aired after `from`, up to and including `to`. */
   airedBetween(anilistIds: number[], from: Date, to: Date): Promise<AiredEpisode[]>;
 }
@@ -69,8 +86,10 @@ const MEDIA_QUERY = `query ($ids: [Int], $page: Int) {
     media(idMal_in: $ids, type: ANIME) {
       id
       idMal
+      format
       status
       episodes
+      startDate { year month day }
       nextAiringEpisode { episode airingAt }
       externalLinks { siteId site url type isDisabled }
     }
@@ -97,7 +116,15 @@ const mediaPageSchema = z.object({
       z.object({
         id: z.number().int().positive(),
         idMal: z.number().int().positive().nullish(),
+        format: z.string().nullish(),
         status: z.string().nullish(),
+        startDate: z
+          .object({
+            year: z.number().int().nullish(),
+            month: z.number().int().nullish(),
+            day: z.number().int().nullish(),
+          })
+          .nullish(),
         episodes: z.number().int().nonnegative().nullish(),
         nextAiringEpisode: z
           .object({ episode: z.number().int().positive(), airingAt: z.number().int() })
@@ -183,29 +210,18 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
         items: data.Page.media,
         hasNextPage: data.Page.pageInfo.hasNextPage === true,
       }));
-      const byMalId = new Map<number, AniListMedia>();
+      const parts = new Map<number, RawMedia[]>();
       for (const m of media) {
-        // AniList can hold more than one entry with the same MAL id; the first one wins.
-        if (!m.idMal || byMalId.has(m.idMal)) continue;
-        byMalId.set(m.idMal, {
-          anilistId: m.id,
-          malId: m.idMal,
-          status: m.status ?? null,
-          episodes: m.episodes ?? null,
-          nextEpisode: m.nextAiringEpisode
-            ? {
-                episode: m.nextAiringEpisode.episode,
-                airingAt: new Date(m.nextAiringEpisode.airingAt * 1000),
-              }
-            : null,
-          streamingLinks: (m.externalLinks ?? []).flatMap((link) =>
-            link.type === "STREAMING" && !link.isDisabled && link.siteId && link.url
-              ? [{ siteId: link.siteId, site: link.site, url: link.url }]
-              : [],
-          ),
-        });
+        if (!m.idMal) continue;
+        parts.set(m.idMal, [...(parts.get(m.idMal) ?? []), m]);
       }
-      return [...byMalId.values()];
+      const result: MediaLookup = { media: [], unjoinable: [] };
+      for (const [malId, entries] of parts) {
+        const joined = joinParts(malId, entries);
+        if (joined) result.media.push(joined);
+        else result.unjoinable.push(malId);
+      }
+      return result;
     },
 
     async airedBetween(anilistIds, from, to) {
@@ -222,6 +238,70 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
       }));
     },
   };
+}
+
+type RawMedia = z.infer<typeof mediaPageSchema>["Page"]["media"][number];
+
+/** Formats whose episodes MAL counts as one series. Specials and movies aren't joined. */
+const SERIES_FORMATS = ["TV", "TV_SHORT", "ONA"];
+
+/**
+ * One MAL entry from its AniList parts. A single part is used as is. Several parts are joined
+ * end to end in start-date order, MAL's way of numbering a show it keeps as one entry, but only
+ * when that's unambiguous: every part a series with a known start date, and every part before
+ * the latest one finished with a known episode count. Otherwise null.
+ */
+export function joinParts(malId: number, parts: RawMedia[]): AniListMedia | null {
+  const only = parts.length === 1 ? parts[0] : undefined;
+  if (only) return toMedia(malId, only, 0, streamingLinks([only]));
+
+  if (parts.some((p) => !SERIES_FORMATS.includes(p.format ?? "") || !p.startDate?.year)) {
+    return null;
+  }
+  const sorted = [...parts].sort((a, b) => startKey(a) - startKey(b));
+  if (new Set(sorted.map(startKey)).size !== sorted.length) return null;
+  const latest = sorted.at(-1);
+  const earlier = sorted.slice(0, -1);
+  if (!latest || earlier.some((p) => p.status !== "FINISHED" || p.episodes == null)) return null;
+  const offset = earlier.reduce((sum, p) => sum + (p.episodes ?? 0), 0);
+  return toMedia(malId, latest, offset, streamingLinks([latest, ...earlier]));
+}
+
+function toMedia(malId: number, m: RawMedia, offset: number, links: StreamingLink[]): AniListMedia {
+  return {
+    anilistId: m.id,
+    malId,
+    status: m.status ?? null,
+    episodes: m.episodes == null ? null : m.episodes + offset,
+    nextEpisode: m.nextAiringEpisode
+      ? {
+          episode: m.nextAiringEpisode.episode + offset,
+          airingAt: new Date(m.nextAiringEpisode.airingAt * 1000),
+        }
+      : null,
+    streamingLinks: links,
+    episodeOffset: offset,
+  };
+}
+
+/** Enabled official streaming links of these parts, one per service. */
+function streamingLinks(parts: RawMedia[]): StreamingLink[] {
+  const bySite = new Map<number, StreamingLink>();
+  for (const part of parts) {
+    for (const link of part.externalLinks ?? []) {
+      if (link.type !== "STREAMING" || link.isDisabled || !link.siteId || !link.url) continue;
+      if (!bySite.has(link.siteId)) {
+        bySite.set(link.siteId, { siteId: link.siteId, site: link.site, url: link.url });
+      }
+    }
+  }
+  return [...bySite.values()];
+}
+
+function startKey(m: RawMedia): number {
+  return (
+    (m.startDate?.year ?? 0) * 10_000 + (m.startDate?.month ?? 0) * 100 + (m.startDate?.day ?? 0)
+  );
 }
 
 /** One GraphQL request, retried on 429, 5xx and network errors. Returns `data`. */

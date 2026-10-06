@@ -24,6 +24,8 @@ Target: about 150 cases.
 
 To write cases against it, start the file with `snapshot: varied-list`, and look shows up with `pnpm eval:lookup <words> --snapshot varied-list`. It's made by hand, so it's never re-exported.
 
+`snapshots/airing.json` freezes AniList's airing data for the snapshots' Watching and airing shows (the newest aired episode of each), so "the newest episode" has the same answer on every run. The harness loads it with each snapshot. It was exported once with `pnpm eval:airing` and is never re-exported: the command refuses to overwrite it.
+
 ## Shorthand (fastest)
 
 One case per line: the message exactly as you'd type it, `=>`, then what should happen. These examples use the made-up `examples` snapshot:
@@ -121,7 +123,7 @@ You don't need to spell these out. The validator and the agent apply the same ru
 - `is_rewatching: true` only applies to a show that's completed. The validator rejects it otherwise.
 - A write that changes nothing gets a warning, since it's usually a typo in the case.
 - Progress on a show the snapshot says hasn't aired yet (more episodes, or completing it) is held for you to confirm instead of written, so the validator warns about cases that expect it. Status changes, like dropping it, are written as usual. An unaired show also doesn't count as "in progress" when the agent picks between seasons, but a show you're rewatching does.
-- Progress from a message that means "the newest episode" without a number ("watched the newest ep", "the ep that dropped", "caught up on X") is held for you to confirm, since the app can't look up which episode is newest until Milestone 3. The validator warns about cases that expect it written.
+- A message that means "the newest episode" without a number ("watched the newest ep", "the ep that dropped", "caught up on X") is written as the newest aired episode from the frozen airing data (below). If that data has no newest episode for the show, or the write is a different episode, the change is held for you to confirm. The validator warns about cases that expect such a write. `pnpm eval:lookup` shows the frozen newest episode as "newest aired ep N".
 - A score from a message with no number in it ("that was so good") is held for you to confirm, since you didn't give one. The validator warns about cases that expect it written.
 
 Example: `episodes_watched: 12` on a 12-episode show you're watching is expected as episodes 12 + `completed`.
