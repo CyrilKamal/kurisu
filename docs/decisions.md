@@ -980,3 +980,9 @@ Requested during Milestone 4, outside its scope.
 - `POST /chat/messages` takes an optional `conversationId`; without one it starts a new chat.
 - `GET /chat/conversations` and `GET /chat/conversations/:id` replace `GET /chat`, and `DELETE /chat/conversations/:id` deletes one.
 - Renaming a chat isn't built yet.
+
+## 2026-10-06 — Renaming chats (Milestone 4)
+**Decision:** Each chat in the sidebar has a rename button that turns its name into a text box: Enter or leaving the box saves, Escape cancels. `PATCH /chat/conversations/:id` takes `{ title }`, kept on one line and between 1 and 100 characters. This follows up "Renaming a chat isn't built yet" in the multiple-chats entry.
+**Alternatives:** A menu per chat with Rename and Delete; renaming from the chat's header.
+**Why:** You asked for it. Two small buttons on each row are one tap on a phone, where a menu would be two.
+**Consequences:** A renamed chat keeps its name; a new message doesn't change it.

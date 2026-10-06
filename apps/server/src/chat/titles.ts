@@ -9,5 +9,8 @@ export function titleFrom(text: string): string {
   return `${(space > MAX_TITLE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }
 
+/** The longest name a user can give a chat; mirrored in @kurisu/shared. */
+export const CHAT_TITLE_MAX = 100;
+
 /** What a chat with no title and no message of the user's is called. */
 export const UNTITLED_CHAT = "New chat";

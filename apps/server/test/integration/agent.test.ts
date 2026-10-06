@@ -107,6 +107,16 @@ function get(url: string) {
   return h.app.inject({ method: "GET", url, cookies: { [SESSION_COOKIE]: cookie } });
 }
 
+function patch(url: string, body: Record<string, unknown>) {
+  return h.app.inject({
+    method: "PATCH",
+    url,
+    headers: { origin: TEST_WEB_ORIGIN },
+    cookies: { [SESSION_COOKIE]: cookie },
+    payload: body,
+  });
+}
+
 function del(url: string) {
   return h.app.inject({
     method: "DELETE",
@@ -897,6 +907,36 @@ describe("chats", () => {
     ]);
   });
 
+  it("renames a chat, on one line and within the limit", async () => {
+    models.script(LITE.ref, [{ text: "Hi!" }]);
+    const chat = await say("hi there");
+    const url = `/chat/conversations/${chat.conversation.id}`;
+
+    const res = await patch(url, { title: "  Frieren\n  catch-up " });
+
+    expect(res.statusCode).toBe(200);
+    expect(contract.conversationResponseSchema.parse(res.json()).conversation).toMatchObject({
+      id: chat.conversation.id,
+      title: "Frieren catch-up",
+    });
+    const list = contract.conversationsResponseSchema.parse(
+      (await get("/chat/conversations")).json(),
+    );
+    expect(list.conversations.map((c) => c.title)).toEqual(["Frieren catch-up"]);
+
+    const invalid = [
+      await patch(url, { title: "   " }),
+      await patch(url, { title: "x".repeat(101) }),
+      await patch(url, {}),
+    ];
+    expect(invalid.map((r) => [r.statusCode, r.json<{ error: string }>().error])).toEqual([
+      [400, "invalid_title"],
+      [400, "invalid_title"],
+      [400, "invalid_title"],
+    ]);
+    expect((await patch(url, { title: "x".repeat(100) })).statusCode).toBe(200);
+  });
+
   it("deletes a chat and cancels the changes it held, keeping the ones it made", async () => {
     models.script(LITE.ref, updateScript("fixture watching show", { episodes_watched: 8 }));
     const chat = await say("watched ep 8 of fixture watching show");
@@ -934,12 +974,15 @@ describe("chats", () => {
 
     const shown = await get(`/chat/conversations/${chat.id}`);
     const continued = await post("/chat/messages", { text: "hi", conversationId: chat.id });
+    const renamed = await patch(`/chat/conversations/${chat.id}`, { title: "mine now" });
     const deleted = await del(`/chat/conversations/${chat.id}`);
     const listed = contract.conversationsResponseSchema.parse(
       (await get("/chat/conversations")).json(),
     );
 
-    expect([shown.statusCode, continued.statusCode, deleted.statusCode]).toEqual([404, 404, 404]);
+    expect([shown, continued, renamed, deleted].map((r) => r.statusCode)).toEqual([
+      404, 404, 404, 404,
+    ]);
     expect(listed.conversations).toEqual([]);
     expect(models.requests).toHaveLength(0);
     expect(await h.db.select().from(conversations)).toHaveLength(1);

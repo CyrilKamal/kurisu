@@ -345,6 +345,21 @@ export async function findConversation(
  * cancelled, since nothing else shows them; changes it made stay in the change log, where they
  * can still be undone. Returns false if the user has no such chat.
  */
+/** Renames one of the user's chats. Returns null if they have no such chat. */
+export async function renameConversation(
+  db: Db,
+  userId: string,
+  id: string,
+  title: string,
+): Promise<ConversationView | null> {
+  const renamed = await db
+    .update(conversations)
+    .set({ title })
+    .where(and(eq(conversations.id, id), eq(conversations.userId, userId)))
+    .returning({ id: conversations.id });
+  return renamed.length > 0 ? findConversation(db, userId, id) : null;
+}
+
 export async function deleteConversation(db: Db, userId: string, id: string): Promise<boolean> {
   return db.transaction(async (tx) => {
     const runs = tx

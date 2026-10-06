@@ -44,7 +44,11 @@ export function ChatView({
   initialMessages: ChatMessageView[];
 }) {
   const router = useRouter();
-  const { refreshChats, openChats } = useChatShell();
+  const { chats, refreshChats, openChats } = useChatShell();
+  // The sidebar's copy has any new name the chat was given.
+  const title = conversation
+    ? (chats.find((c) => c.id === conversation.id)?.title ?? conversation.title)
+    : "New chat";
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -104,9 +108,7 @@ export function ChatView({
         >
           <MenuIcon />
         </button>
-        <h1 className="min-w-0 flex-1 truncate py-1 text-lg font-semibold">
-          {conversation?.title ?? "New chat"}
-        </h1>
+        <h1 className="min-w-0 flex-1 truncate py-1 text-lg font-semibold">{title}</h1>
         <Link
           href="/chat/new"
           aria-label="New chat"
