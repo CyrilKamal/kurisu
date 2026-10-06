@@ -1087,3 +1087,12 @@ Requested during Milestone 4, outside its scope.
 - The pool exists only after a list sync, so press Re-sync once.
 - The recommendation eval needs the pool frozen too (next PR).
 - New picks rest on AniList's community data, which their facts show ("AniList score 8.4", "fans of X also like it").
+
+## 2026-10-06 — The kind of show asked for is never loosened; recommend.v3 (Milestone 4)
+**Decision:**
+- **The type you ask for is a hard requirement:** "a movie" means movies only. Prompt `recommend.v3` may loosen the time or mood when nothing fits, never the kind of show. "A show" or "a series" maps to TV and web series, as "a movie" maps to movies.
+- **A pool still being built is said so:** until your discovery pool has been built once, `find_candidates` notes that new shows are still being gathered, and the reply tells you to ask again in a minute.
+
+**Alternatives:** Letting the model loosen any constraint, as v1 and v2 did.
+**Why:** Your first try, "what movie should I watch tn", came 17 seconds after your re-sync, while your first pool was still building (it took about 45 s). With no movie on your list, v2 "loosened the least important constraint" and recommended two specials and an episode. As you put it, movies when asked for movies, shows when asked for shows.
+**Consequences:** A movie request with no movie that fits gets an honest "nothing fits" instead of something else.

@@ -4,7 +4,7 @@ import { z } from "zod";
 import type { Prompt } from "../agent/runAgent.js";
 import { runToolLoop, type ToolOutcome } from "../agent/toolLoop.js";
 import type { Db } from "../db/client.js";
-import { agentRuns, recommendations } from "../db/schema.js";
+import { agentRuns, discoveryRuns, recommendations } from "../db/schema.js";
 import type { ModelClient } from "../llm/modelClient.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import type { LlmMessage, ToolCall, ToolSpec } from "../llm/types.js";
@@ -290,6 +290,12 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
     constraints,
   );
   const shown = ranked.slice(0, CANDIDATES_SHOWN);
+  // Right after the first sync, the pool of new shows may still be building.
+  const [built] = await ctx.db
+    .select({ at: discoveryRuns.refreshedAt })
+    .from(discoveryRuns)
+    .where(eq(discoveryRuns.userId, ctx.userId));
+  const searchedNew = !constraints.from || constraints.from.includes("new");
   for (const candidate of shown) ctx.offered.set(candidate.animeId, { candidate, constraints });
 
   return {
@@ -308,9 +314,13 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
       ...(unknown.length > 0 && {
         note: `Ignored unknown genres: ${unknown.join(", ")}. Known genres: ${ctx.genres.join(", ")}.`,
       }),
-      ...(ranked.length === 0 && {
-        note: "Nothing fits all of that, on their list or among shows new to them.",
-      }),
+      ...(searchedNew && !built
+        ? {
+            note: "New shows for them are still being gathered (about a minute after a sync); only their own list was searched.",
+          }
+        : ranked.length === 0 && {
+            note: "Nothing fits all of that, on their list or among shows new to them.",
+          }),
     },
   };
 }

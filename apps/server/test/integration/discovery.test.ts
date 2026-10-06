@@ -123,6 +123,29 @@ describe("discovery after a sync", () => {
 });
 
 describe("recommending shows new to the user", () => {
+  it("says new shows are still being gathered before the first build finishes", async () => {
+    await h.db.delete(discoveryRuns);
+    let note: unknown;
+    models.script(AGENT.ref, [{ toolCalls: [{ name: "recommend_shows", arguments: {} }] }]);
+    models.script(RECOMMEND.ref, [
+      { toolCalls: [{ name: "find_candidates", arguments: { media_types: ["movie"] } }] },
+      (req) => {
+        note = lastToolResult(req).note;
+        return { text: "New shows are still on their way; ask me again in a minute." };
+      },
+    ]);
+
+    await h.app.inject({
+      method: "POST",
+      url: "/chat/messages",
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+      payload: { text: "a movie tonight" },
+    });
+
+    expect(note).toMatch(/still being gathered/);
+  });
+
   it("offers new shows, never ones on the list or sequels to unseen shows, as cards", async () => {
     let offered: { anime_id: number; list: string; facts: string[] }[] = [];
     models.script(AGENT.ref, [{ toolCalls: [{ name: "recommend_shows", arguments: {} }] }]);
