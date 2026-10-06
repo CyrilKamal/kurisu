@@ -10,7 +10,7 @@ A personal agent that runs your anime and manga life through conversation: you t
 
 - Natural-language progress updates that write to MAL correctly, with no manual list editing.
 - A daily morning brief of new episodes for shows on your list, delivered by push notification.
-- Recommendations drawn from your own backlog, not generic popularity.
+- Recommendations drawn from your own backlog first, then from shows new to you that fit your taste, not generic popularity.
 - Measurable reliability: a tool-call eval set with tracked accuracy.
 
 **Non-goals (v1)**
@@ -28,7 +28,7 @@ Three flows cover v1; progress sync is the core and ships first.
 
 **2. Morning brief.** Each day at a user-set time, a push notification lists new episodes for shows marked Watching, with the next episode number and where it streams. Tapping it opens the chat, so the user can reply "watched it" in one step.
 
-**3. What to watch.** The user asks for something with constraints ("40 minutes, something chill"). The agent picks from Plan to Watch and in-progress shows, weighing runtime, airing status and the user's recent ratings and drops, and explains each pick in one line.
+**3. What to watch.** The user asks for something with constraints ("40 minutes, something chill"). The agent picks from Plan to Watch and in-progress shows, and from shows new to the user that fans of their favorites like or that top the genres they rate highest (found on AniList). It weighs runtime, airing status and the user's recent ratings and drops, puts their own list first when it fits about as well, and explains each pick in one line. A new show can be added to Plan to Watch from its card, with the user's confirmation.
 
 The app has two screens: **Chat** for talking to the agent, and **List** showing the mirrored MAL list with a change log, so every agent write is visible and reversible.
 
@@ -52,7 +52,7 @@ The agent is a tool-calling loop where reads are free and every write goes throu
 | `propose_update` | Stage a status, episode, chapter or score change; returns a proposal ID | Writes a pending row locally |
 | `commit_update` | Apply a proposal to MAL and the mirror | Writes to MAL |
 | `get_airing_today` | New episodes for Watching shows, from AniList schedules | None |
-| `recommend` | Rank backlog candidates against constraints and taste memory | None |
+| `recommend` | Rank backlog candidates and shows new to the user against constraints and taste memory | None |
 
 **Safe writes.** `commit_update` only accepts a proposal ID, never raw arguments. Low-confidence matches return to the user for confirmation before commit. Adding a show that isn't on the list always waits for the user's confirmation, however clear the match. Each proposal has an idempotency key, so a retried commit never double-counts episodes. Every commit is logged with the prior value for undo.
 

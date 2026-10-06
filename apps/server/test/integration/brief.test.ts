@@ -29,7 +29,13 @@ import { createPushSender, generateVapidKeys } from "../../src/push/send.js";
 import { fixtureList } from "../fixtures/animeList.js";
 import { airingMedia, FakeAniList } from "../support/fakeAniList.js";
 import { FakePushService, type FakeBrowser } from "../support/fakePushService.js";
-import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
+import {
+  backgroundSettled,
+  login,
+  resetDatabase,
+  startHarness,
+  type Harness,
+} from "../support/harness.js";
 import { ScriptedModels, type ScriptStep } from "../support/scriptedModels.js";
 import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
 
@@ -152,6 +158,7 @@ beforeEach(async () => {
   const result = await login(h);
   if (!result.sessionCookie) throw new Error("login failed");
   cookie = result.sessionCookie;
+  await backgroundSettled(h);
   const [user] = await h.db.select({ id: users.id }).from(users);
   if (!user) throw new Error("no user");
   userId = user.id;

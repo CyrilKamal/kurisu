@@ -1,13 +1,15 @@
 import { and, eq, sql } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
-import { anime, listEntries, tasteGenres } from "../db/schema.js";
+import { anilistCatalog, anime, discovery, listEntries, tasteGenres } from "../db/schema.js";
 import { NOT_YET_AIRED } from "../mal/client.js";
 
 /** MAL's media types, for "a movie" or "something short like an OVA". */
 export const MEDIA_TYPES = ["tv", "movie", "ova", "ona", "special", "tv_special", "music"] as const;
 
-export type Pool = "plan_to_watch" | "in_progress";
+/** The user's Plan to Watch, their shows in progress, or shows new to them (from AniList). */
+export type Pool = "plan_to_watch" | "in_progress" | "new";
+export const POOLS = ["plan_to_watch", "in_progress", "new"] as const;
 
 /** What the user asked for, as the recommendation agent read it from their message. */
 export interface Constraints {
@@ -20,16 +22,17 @@ export interface Constraints {
   /** None of these genres. */
   genresNone?: string[];
   mediaTypes?: string[];
-  /** Where to look; both by default. "Continue something" is in_progress only. */
+  /** Where to look; all three by default. "Continue something" is in_progress only. */
   from?: Pool[];
 }
 
-/** A list entry with the details the ranking needs. */
+/** A list entry, or a show new to the user, with the details the ranking needs. */
 export interface CandidateRow {
   animeId: number;
   title: string;
   titleEn: string | null;
-  status: "watching" | "completed" | "on_hold" | "dropped" | "plan_to_watch";
+  /** Null for a show that isn't on the user's list. */
+  status: "watching" | "completed" | "on_hold" | "dropped" | "plan_to_watch" | null;
   isRewatching: boolean;
   episodesWatched: number;
   numEpisodes: number | null;
@@ -38,6 +41,17 @@ export interface CandidateRow {
   malMean: number | null;
   mediaType: string | null;
   airingStatus: string | null;
+  /** For a new show: how strongly AniList points at it for this user (see discovery.ts). */
+  strength?: number;
+  /** For a new show: the user's favorites whose fans like it. */
+  because?: string[];
+  /** For a new show: AniList's score, on MAL's 10-point scale. */
+  anilistScore?: number | null;
+  /**
+   * For a new show: false if it follows a show the user hasn't completed (a sequel to something
+   * they haven't seen), so it isn't recommended.
+   */
+  prequelsDone?: boolean;
 }
 
 export interface Candidate extends CandidateRow {
@@ -58,9 +72,13 @@ export interface TasteSignals {
   dropCategories: Map<string, number>;
 }
 
-/** Which pool an entry is in: Plan to Watch, or in progress (watching, on hold, rewatching). */
+/**
+ * Which pool a show is in: Plan to Watch, in progress (watching, on hold, rewatching), or new to
+ * the user. Never completed, dropped, unaired, or a sequel to a show they haven't completed.
+ */
 export function poolOf(row: CandidateRow): Pool | null {
   if (row.airingStatus === NOT_YET_AIRED) return null;
+  if (row.status === null) return row.prequelsDone === false ? null : "new";
   if (row.status === "plan_to_watch") return "plan_to_watch";
   if (row.status === "watching" || row.status === "on_hold") return "in_progress";
   if (row.status === "completed" && row.isRewatching) return "in_progress";
@@ -69,12 +87,21 @@ export function poolOf(row: CandidateRow): Pool | null {
 
 /** A show this long is "long" for someone who drops shows for being too long. */
 const LONG_SHOW_EPISODES = 26;
+/**
+ * Shows the user put on their list come first (their choice): a new show needs a clearly better
+ * fit to their taste to rank above one of theirs, since new shows tend to be well rated.
+ */
+const LIST_BOOST = 1;
+/** A new show's pull from AniList (its discovery strength) counts this much, up to a cap. */
+const DISCOVERY_WEIGHT = 0.25;
+const MAX_DISCOVERY_STRENGTH = 2;
 
 /**
- * Filters the user's entries to the ones that meet every constraint and ranks them: taste fit
- * (their genre affinities), MAL's score, a nudge for shows already under way or airing, and
- * penalties for genres they drop and, if they've dropped shows for being too long, long shows.
- * Pure, so the ranking is unit-tested apart from the database.
+ * Filters the user's entries and the shows new to them to the ones that meet every constraint and
+ * ranks them: taste fit (their genre affinities), the community score, a boost for their own
+ * list, a nudge for shows already under way or airing, how strongly AniList points at a new show,
+ * and penalties for genres they drop and, if they've dropped shows for being too long, long
+ * shows. Pure, so the ranking is unit-tested apart from the database.
  */
 export function rankCandidates(
   rows: CandidateRow[],
@@ -84,9 +111,7 @@ export function rankCandidates(
   const wanted = lowerSet(constraints.genresAny);
   const unwanted = lowerSet(constraints.genresNone);
   const types = lowerSet(constraints.mediaTypes);
-  const pools = new Set(
-    constraints.from?.length ? constraints.from : ["plan_to_watch", "in_progress"],
-  );
+  const pools = new Set<Pool>(constraints.from?.length ? constraints.from : POOLS);
   const tooLongDrops = taste.dropCategories.get("too_long") ?? 0;
 
   const candidates: Candidate[] = [];
@@ -124,12 +149,24 @@ export function rankCandidates(
       facts.push(`you rate ${best.genre} above your average`);
     }
     const dropped = known.reduce((sum, g) => sum + g.dropped, 0);
-    const quality = row.malMean === null ? 0 : (row.malMean - 7.5) * 0.5;
+    const community = row.malMean ?? row.anilistScore ?? null;
+    const quality = community === null ? 0 : (community - 7.5) * 0.5;
     if (row.malMean !== null) facts.push(`MAL score ${row.malMean.toFixed(2)}`);
+    else if (row.anilistScore != null) facts.push(`AniList score ${row.anilistScore.toFixed(1)}`);
 
-    let progressBoost = 0;
+    let progressBoost = pool === "new" ? 0 : LIST_BOOST;
+    if (pool === "new") {
+      progressBoost += DISCOVERY_WEIGHT * Math.min(row.strength ?? 0, MAX_DISCOVERY_STRENGTH);
+      facts.push("new to you: not on your list");
+      const because = row.because ?? [];
+      if (because.length > 0) {
+        facts.push(`fans of ${because.slice(0, 2).join(" and ")} also like it`);
+      }
+    } else if (pool === "plan_to_watch") {
+      facts.push("on your Plan to Watch");
+    }
     if (pool === "in_progress") {
-      progressBoost = row.status === "watching" && row.episodesWatched > 0 ? 0.6 : 0.3;
+      progressBoost += row.status === "watching" && row.episodesWatched > 0 ? 0.6 : 0.3;
       facts.push(
         row.numEpisodes
           ? `you're on ep ${String(row.episodesWatched)} of ${String(row.numEpisodes)}`
@@ -191,6 +228,48 @@ export async function candidateRows(db: Db, userId: string): Promise<CandidateRo
         sql`(${listEntries.status} in ('plan_to_watch', 'watching', 'on_hold') or ${listEntries.isRewatching})`,
       ),
     );
+}
+
+/**
+ * Shows new to the user from their discovery pool: anything already on their list (in any
+ * status) is left out, and so is a sequel to a show they haven't completed.
+ */
+export async function discoveryRows(db: Db, userId: string): Promise<CandidateRow[]> {
+  const rows = await db
+    .select({
+      animeId: anilistCatalog.malId,
+      title: anilistCatalog.title,
+      titleEn: anilistCatalog.titleEn,
+      numEpisodes: anilistCatalog.numEpisodes,
+      episodeMinutes: anilistCatalog.episodeMinutes,
+      genres: anilistCatalog.genres,
+      anilistScore: anilistCatalog.score,
+      mediaType: anilistCatalog.mediaType,
+      airingStatus: anilistCatalog.airingStatus,
+      strength: discovery.strength,
+      because: discovery.because,
+      prequelsDone: sql<boolean>`NOT EXISTS (
+        SELECT 1 FROM unnest(${anilistCatalog.prequelMalIds}) AS p(id)
+        WHERE NOT EXISTS (
+          SELECT 1 FROM list_entries done
+          WHERE done.user_id = ${userId} AND done.anime_id = p.id AND done.status = 'completed'
+        )
+      )`,
+    })
+    .from(discovery)
+    .innerJoin(anilistCatalog, eq(anilistCatalog.malId, discovery.malId))
+    .leftJoin(
+      listEntries,
+      and(eq(listEntries.userId, userId), eq(listEntries.animeId, discovery.malId)),
+    )
+    .where(and(eq(discovery.userId, userId), sql`${listEntries.animeId} IS NULL`));
+  return rows.map((r) => ({
+    ...r,
+    status: null,
+    isRewatching: false,
+    episodesWatched: 0,
+    malMean: null,
+  }));
 }
 
 /** Taste memory as ranking signals. */

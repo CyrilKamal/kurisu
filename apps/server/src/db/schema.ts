@@ -548,3 +548,70 @@ export const agentRunSteps = pgTable(
   },
   (table) => [uniqueIndex("agent_run_steps_run_seq_idx").on(table.runId, table.seq)],
 );
+
+/**
+ * Shows from AniList's catalog that recommendations can reach beyond the user's list, in MAL's
+ * words. Shared by all users; written by each user's discovery refresh (recommend/discovery.ts).
+ */
+export const anilistCatalog = pgTable("anilist_catalog", {
+  malId: integer("mal_id").primaryKey(),
+  anilistId: integer("anilist_id").notNull(),
+  title: text("title").notNull(),
+  titleEn: text("title_en"),
+  titleJa: text("title_ja"),
+  synonyms: text("synonyms")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  // MAL's words: tv, movie, ova...; finished_airing, currently_airing.
+  mediaType: text("media_type"),
+  airingStatus: text("airing_status"),
+  numEpisodes: integer("num_episodes"),
+  episodeMinutes: integer("episode_minutes"),
+  // MAL's genre, theme and demographic names, from AniList's genres and main tags.
+  genres: text("genres")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  // AniList's average score, on MAL's 10-point scale.
+  score: real("score"),
+  popularity: integer("popularity"),
+  coverUrl: text("cover_url"),
+  startDate: text("start_date"),
+  // The entries this one follows (AniList PREQUEL relations), by MAL id.
+  prequelMalIds: integer("prequel_mal_ids")
+    .array()
+    .notNull()
+    .default(sql`'{}'::integer[]`),
+  fetchedAt: timestamptz("fetched_at").notNull().defaultNow(),
+});
+
+/** Each user's pool of shows new to them, found on AniList from their taste. */
+export const discovery = pgTable(
+  "discovery",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    malId: integer("mal_id").notNull(),
+    // How strongly AniList points at it for this user, summed over where it was found.
+    strength: real("strength").notNull(),
+    // Titles of the user's favorites whose fans like it, strongest first.
+    because: text("because")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.malId] })],
+);
+
+/** When each user's discovery pool was last built, so it's rebuilt at most daily. */
+export const discoveryRuns = pgTable("discovery_runs", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  refreshedAt: timestamptz("refreshed_at").notNull(),
+  shows: integer("shows").notNull(),
+  // A short error code when the last attempt failed; the earlier pool stays.
+  error: text("error"),
+});

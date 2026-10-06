@@ -99,12 +99,12 @@ export interface ShowCardView {
   episodesWatched: number;
 }
 
-/** A recommended show, as a card under the reply. */
+/** A recommended show, as a card under the reply. `status` is null for a show new to the user. */
 export interface PickView {
   animeId: number;
   title: string;
   pictureUrl: string | null;
-  status: string;
+  status: string | null;
   episodesWatched: number;
   numEpisodes: number | null;
   episodeMinutes: number | null;
@@ -566,12 +566,14 @@ async function loadPicks(
       episodesWatched: listEntries.numEpisodesWatched,
     })
     .from(anime)
-    .innerJoin(
+    .leftJoin(
       listEntries,
       and(eq(listEntries.animeId, anime.malId), eq(listEntries.userId, userId)),
     )
     .where(inArray(anime.malId, ids));
-  const byId = new Map(shows.map((s) => [s.animeId, s]));
+  const byId = new Map(
+    shows.map((s) => [s.animeId, { ...s, episodesWatched: s.episodesWatched ?? 0 }]),
+  );
   return new Map(
     rows.flatMap((r) =>
       r.messageId

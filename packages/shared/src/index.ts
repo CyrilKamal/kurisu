@@ -151,12 +151,12 @@ export const pendingProposalViewSchema = z.object({
 });
 export type PendingProposalView = z.infer<typeof pendingProposalViewSchema>;
 
-/** A recommended show, shown as a card under the reply. */
+/** A recommended show, shown as a card under the reply. `status` is null for a show new to the user. */
 export const pickViewSchema = z.object({
   animeId: z.number().int().positive(),
   title: z.string(),
   pictureUrl: z.string().nullable(),
-  status: listStatusSchema,
+  status: listStatusSchema.nullable(),
   episodesWatched: z.number().int().nonnegative(),
   numEpisodes: z.number().int().positive().nullable(),
   episodeMinutes: z.number().int().positive().nullable(),
