@@ -1,0 +1,353 @@
+# Replies to the morning brief. Wordings and labels are the user's (2026-10-06); each brief is
+# written once (&anchor) and reused (*anchor).
+snapshot: my-list
+cases:
+  # Case 1: a stacked weekend. Wistoria S2 9/12, Yomi no Tsugai (Daemons) 17/24, Clevatess II 1/13.
+  - id: brief-weekend-done
+    message: "done"
+    tags: [brief-reply, multi]
+    history: &weekend
+      - role: assistant
+        content: |
+          Three shows have new episodes.
+
+          - Tsue to Tsurugi no Wistoria Season 2 eps 10–11
+          - Yomi no Tsugai ep 18
+          - Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou ep 2
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes: &weekend-all
+        - anime: "Tsue to Tsurugi no Wistoria Season 2"
+          episodes_watched: 11
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 18
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          episodes_watched: 2
+
+  - id: brief-weekend-watched-them-all
+    message: "watched them all"
+    tags: [brief-reply, multi]
+    history: *weekend
+    expect: { writes: *weekend-all }
+
+  - id: brief-weekend-finished
+    message: "finished"
+    tags: [brief-reply, multi]
+    history: *weekend
+    expect: { writes: *weekend-all }
+
+  - id: brief-weekend-caught-up-now
+    message: "caught up now"
+    tags: [brief-reply, multi]
+    history: *weekend
+    expect: { writes: *weekend-all }
+
+  - id: brief-weekend-saw-them
+    message: "saw them"
+    tags: [brief-reply, multi]
+    history: *weekend
+    expect: { writes: *weekend-all }
+
+  - id: brief-weekend-watched-it
+    message: "watched it"
+    tags: [brief-reply, multi]
+    history: *weekend
+    expect: { writes: *weekend-all }
+
+  - id: brief-weekend-wistoria-and-daemons
+    message: "watched wistoria eps and daemons"
+    tags: [brief-reply, multi, nickname]
+    history: *weekend
+    expect:
+      writes:
+        - anime: "Tsue to Tsurugi no Wistoria Season 2"
+          episodes_watched: 11
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 18
+
+  - id: brief-weekend-daemons-and-clevatess
+    message: "watched daemons and clevatess"
+    tags: [brief-reply, multi, nickname]
+    history: *weekend
+    expect:
+      writes:
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 18
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          episodes_watched: 2
+
+  - id: brief-weekend-a-wistoria-ep-and-the-other-two
+    message: "watched a wistoria ep and the other two"
+    tags: [brief-reply, multi, relative]
+    history: *weekend
+    expect:
+      writes: &weekend-one-wistoria
+        - anime: "Tsue to Tsurugi no Wistoria Season 2"
+          episodes_watched: 10
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 18
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          episodes_watched: 2
+
+  - id: brief-weekend-a-wistoria-ep-and-the-others
+    message: "watched a wistoria ep and the others"
+    tags: [brief-reply, multi, relative]
+    history: *weekend
+    expect: { writes: *weekend-one-wistoria }
+
+  - id: brief-weekend-wistoria
+    message: "watched wistoria"
+    tags: [brief-reply]
+    history: *weekend
+    expect:
+      writes:
+        - anime: "Tsue to Tsurugi no Wistoria Season 2"
+          episodes_watched: 11
+
+  - id: brief-weekend-the-2nd-ep
+    message: "watched the 2nd ep"
+    tags: [brief-reply]
+    notes: "A trick: the episode numbered 2 (Clevatess), not the second show in the list."
+    history: *weekend
+    expect:
+      writes:
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          episodes_watched: 2
+
+  - id: brief-weekend-didnt-watch-any-yet
+    message: "didnt watch any yet"
+    tags: [brief-reply, no-action]
+    history: *weekend
+    expect: { writes: [] }
+
+  - id: brief-weekend-havent-seen-them
+    message: "havent seen them"
+    tags: [brief-reply, no-action]
+    history: *weekend
+    expect: { writes: [] }
+
+  - id: brief-weekend-wistoria-and-drop-clevatess
+    message: "watched the wistoria eps but didnt like clevatess dropping"
+    tags: [brief-reply, multi]
+    history: *weekend
+    expect:
+      writes:
+        - anime: "Tsue to Tsurugi no Wistoria Season 2"
+          episodes_watched: 11
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          status: dropped
+
+  # Case 2: one show with two new episodes. Yomi no Tsugai 17/24.
+  - id: brief-two-eps-watched-the-eps
+    message: "Watched the eps"
+    tags: [brief-reply]
+    history: &two-eps
+      - role: assistant
+        content: |
+          Yomi no Tsugai has 2 new episodes.
+
+          - Yomi no Tsugai eps 18–19
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes: &two-eps-all
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 19
+
+  - id: brief-two-eps-just-saw-it
+    message: "just saw it"
+    tags: [brief-reply]
+    history: *two-eps
+    expect: { writes: *two-eps-all }
+
+  - id: brief-two-eps-caught-up-on-them
+    message: "caught up on them"
+    tags: [brief-reply]
+    history: *two-eps
+    expect: { writes: *two-eps-all }
+
+  - id: brief-two-eps-watched-it
+    message: "watched it"
+    tags: [brief-reply]
+    history: *two-eps
+    expect: { writes: *two-eps-all }
+
+  # Case 3: a premiere. Kusuriya no Hitorigoto 0/24, Yomi no Tsugai 17/24.
+  - id: brief-premiere-the-first-ep
+    message: "watched the first ep"
+    tags: [brief-reply]
+    history: &premiere
+      - role: assistant
+        content: |
+          Two shows have new episodes, including a premiere.
+
+          - Kusuriya no Hitorigoto ep 1 (premiere)
+          - Yomi no Tsugai ep 18
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes: &premiere-only
+        - anime: "Kusuriya no Hitorigoto"
+          episodes_watched: 1
+
+  - id: brief-premiere-watched-it
+    message: "watched it"
+    tags: [brief-reply, multi]
+    history: *premiere
+    expect:
+      writes:
+        - anime: "Kusuriya no Hitorigoto"
+          episodes_watched: 1
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 18
+
+  - id: brief-premiere-watched-the-premiere
+    message: "watched the premiere"
+    tags: [brief-reply]
+    history: *premiere
+    expect: { writes: *premiere-only }
+
+  # Case 4: a finale. Wistoria S2 9/12; ep 12 is its last.
+  - id: brief-finale-only-one-ep
+    message: "only watched one ep"
+    tags: [brief-reply, relative]
+    notes: "One episode, so the show isn't finished."
+    history: &finale
+      - role: assistant
+        content: |
+          Wistoria wraps up.
+
+          - Tsue to Tsurugi no Wistoria Season 2 eps 10–12 (finale)
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes:
+        - anime: "Tsue to Tsurugi no Wistoria Season 2"
+          episodes_watched: 10
+
+  - id: brief-finale-watched-them
+    message: "watched them"
+    tags: [brief-reply]
+    history: *finale
+    expect:
+      writes: &finale-done
+        - anime: "Tsue to Tsurugi no Wistoria Season 2"
+          episodes_watched: 12
+
+  - id: brief-finale-finished-it
+    message: "finished it"
+    tags: [brief-reply]
+    history: *finale
+    expect: { writes: *finale-done }
+
+  - id: brief-finale-finished-the-show
+    message: "finished the show"
+    tags: [brief-reply]
+    history: *finale
+    expect: { writes: *finale-done }
+
+  # Case 5: behind. Clevatess II 1/13 (the brief lists ep 5), Yomi no Tsugai 17/24.
+  - id: brief-behind-3-clevatess-and-daemons
+    message: "watched 3 clevatess and daemons"
+    tags: [brief-reply, multi, relative, nickname]
+    notes: "3 more episodes of Clevatess (the user's call), so ep 4."
+    history: &behind
+      - role: assistant
+        content: |
+          Two shows have new episodes.
+
+          - Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou ep 5. You're on ep 1.
+          - Yomi no Tsugai ep 18
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes:
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          episodes_watched: 4
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 18
+
+  - id: brief-behind-caught-up-on-clevatess
+    message: "caught up on clevatess"
+    tags: [brief-reply]
+    history: *behind
+    expect:
+      writes:
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          episodes_watched: 5
+
+  - id: brief-behind-watched-it
+    message: "watched it"
+    tags: [brief-reply, multi]
+    history: *behind
+    expect:
+      writes: &behind-all
+        - anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+          episodes_watched: 5
+        - anime: "Yomi no Tsugai"
+          episodes_watched: 18
+
+  - id: brief-behind-finished-them
+    message: "finished them"
+    tags: [brief-reply, multi]
+    history: *behind
+    expect: { writes: *behind-all }
+
+  # Case 10: Steel Ball Run, in MAL's numbering. 0/?.
+  - id: brief-sbr-watched-it
+    message: "watched it"
+    tags: [brief-reply]
+    history: &sbr
+      - role: assistant
+        content: |
+          Steel Ball Run has a new episode.
+
+          - Steel Ball Run: JoJo no Kimyou na Bouken ep 3 on Netflix
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes: &sbr-3
+        - anime: "Steel Ball Run: JoJo no Kimyou na Bouken"
+          episodes_watched: 3
+
+  - id: brief-sbr-watched-ep-3
+    message: "watched ep 3"
+    tags: [brief-reply]
+    history: *sbr
+    expect: { writes: *sbr-3 }
+
+  # Case 11: two airing shows. Bleach TYBW Kashin-tan 0/10, One Piece 0/?.
+  - id: brief-airing-watched-both-eps
+    message: "watched both eps"
+    tags: [brief-reply, multi]
+    history: &airing
+      - role: assistant
+        content: |
+          Two shows have new episodes.
+
+          - Bleach: Sennen Kessen-hen - Kashin-tan ep 8
+          - One Piece ep 1180
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes: &airing-both
+        - anime: "Bleach: Sennen Kessen-hen - Kashin-tan"
+          episodes_watched: 8
+        - anime: "One Piece"
+          episodes_watched: 1180
+
+  - id: brief-airing-watched-ep-8
+    message: "watched ep 8"
+    tags: [brief-reply]
+    history: *airing
+    expect:
+      writes:
+        - anime: "Bleach: Sennen Kessen-hen - Kashin-tan"
+          episodes_watched: 8
+
+  - id: brief-airing-caught-up
+    message: "caught up"
+    tags: [brief-reply, multi]
+    history: *airing
+    expect: { writes: *airing-both }
