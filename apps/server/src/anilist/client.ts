@@ -52,11 +52,38 @@ export interface AiredEpisode {
   airedAt: Date;
 }
 
+/** A show from AniList's catalog, found by title. */
+export interface CatalogShow {
+  anilistId: number;
+  /** Null when AniList doesn't know the MAL entry; such shows can't be added. */
+  malId: number | null;
+  /** Romaji, as MAL titles are. */
+  title: string;
+  titleEn: string | null;
+  titleJa: string | null;
+  synonyms: string[];
+  /** AniList values like TV, MOVIE, ONA. */
+  format: string | null;
+  /** AniList values like FINISHED, RELEASING, NOT_YET_RELEASED. */
+  status: string | null;
+  episodes: number | null;
+  /** Minutes per episode. */
+  duration: number | null;
+  coverUrl: string | null;
+  /** "2023-09-29", or partial ("2027-10") when AniList isn't sure. */
+  startDate: string | null;
+}
+
 export interface AniListClient {
   /** AniList data for these MAL ids. Ids AniList doesn't know are simply missing. */
   mediaByMalIds(malIds: number[], malFacts?: ReadonlyMap<number, MalFacts>): Promise<MediaLookup>;
   /** Episodes of these shows that aired after `from`, up to and including `to`. */
   airedBetween(anilistIds: number[], from: Date, to: Date): Promise<AiredEpisode[]>;
+  /**
+   * Shows matching each title, best match first, in one request. Adult titles are left out.
+   * Results of all queries come back together, without repeats.
+   */
+  searchAnime(queries: string[]): Promise<CatalogShow[]>;
 }
 
 /** A non-2xx response from AniList. */
@@ -113,6 +140,49 @@ const AIRED_QUERY = `query ($ids: [Int], $after: Int, $before: Int, $page: Int) 
     }
   }
 }`;
+
+/** Results per title in a search. */
+const SEARCH_PER_QUERY = 8;
+/** Titles per search request. */
+export const MAX_SEARCH_QUERIES = 3;
+
+const SEARCH_FIELDS = `id idMal title { romaji english native } synonyms format status episodes
+  duration isAdult coverImage { large } startDate { year month day }`;
+
+/** One aliased page per title ($q0, $q1, ...), so a search is a single request. */
+function searchQuery(count: number): string {
+  const indexes = Array.from({ length: count }, (_, i) => String(i));
+  const pages = indexes.map(
+    (i) =>
+      `q${i}: Page(perPage: ${String(SEARCH_PER_QUERY)}) { media(search: $q${i}, type: ANIME, isAdult: false, sort: [SEARCH_MATCH]) { ${SEARCH_FIELDS} } }`,
+  );
+  return `query (${indexes.map((i) => `$q${i}: String`).join(", ")}) { ${pages.join(" ")} }`;
+}
+
+const searchMediaSchema = z.object({
+  id: z.number().int().positive(),
+  idMal: z.number().int().positive().nullish(),
+  title: z.object({
+    romaji: z.string().nullish(),
+    english: z.string().nullish(),
+    native: z.string().nullish(),
+  }),
+  synonyms: z.array(z.string()).nullish(),
+  format: z.string().nullish(),
+  status: z.string().nullish(),
+  episodes: z.number().int().nonnegative().nullish(),
+  duration: z.number().int().nonnegative().nullish(),
+  isAdult: z.boolean().nullish(),
+  coverImage: z.object({ large: z.string().nullish() }).nullish(),
+  startDate: z
+    .object({
+      year: z.number().int().nullish(),
+      month: z.number().int().nullish(),
+      day: z.number().int().nullish(),
+    })
+    .nullish(),
+});
+const searchPagesSchema = z.record(z.string(), z.object({ media: z.array(searchMediaSchema) }));
 
 const pageInfoSchema = z.object({ hasNextPage: z.boolean().nullish() });
 
@@ -244,6 +314,62 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
         airedAt: new Date(a.airingAt * 1000),
       }));
     },
+
+    async searchAnime(queries) {
+      const titles = [...new Set(queries.map((q) => q.trim()).filter(Boolean))].slice(
+        0,
+        MAX_SEARCH_QUERIES,
+      );
+      if (titles.length === 0) return [];
+      const variables = Object.fromEntries(titles.map((t, i) => [`q${String(i)}`, t]));
+      const pages = await query(searchQuery(titles.length), variables, searchPagesSchema);
+      const seen = new Set<number>();
+      const shows: CatalogShow[] = [];
+      for (let i = 0; i < titles.length; i++) {
+        for (const m of pages[`q${String(i)}`]?.media ?? []) {
+          // The query already asks for isAdult: false; checked again in case AniList ignores it.
+          if (m.isAdult === true || seen.has(m.id)) continue;
+          seen.add(m.id);
+          shows.push(toCatalogShow(m));
+        }
+      }
+      return shows;
+    },
+  };
+}
+
+/** "2023-09-29", "2027-10" or "2027", as MAL writes dates; null without a year. */
+function partialDate(
+  d: { year?: number | null; month?: number | null; day?: number | null } | null | undefined,
+): string | null {
+  if (!d?.year) return null;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  if (!d.month) return String(d.year);
+  return d.day
+    ? `${String(d.year)}-${pad(d.month)}-${pad(d.day)}`
+    : `${String(d.year)}-${pad(d.month)}`;
+}
+
+function positiveOrNull(value: number | null | undefined): number | null {
+  return value != null && value > 0 ? value : null;
+}
+
+function toCatalogShow(m: z.infer<typeof searchMediaSchema>): CatalogShow {
+  const startDate = partialDate(m.startDate);
+  return {
+    anilistId: m.id,
+    malId: m.idMal ?? null,
+    title: m.title.romaji ?? m.title.english ?? m.title.native ?? `AniList ${String(m.id)}`,
+    titleEn: m.title.english ?? null,
+    titleJa: m.title.native ?? null,
+    synonyms: m.synonyms ?? [],
+    format: m.format ?? null,
+    status: m.status ?? null,
+    // AniList sends 0 or null when it doesn't know.
+    episodes: positiveOrNull(m.episodes),
+    duration: positiveOrNull(m.duration),
+    coverUrl: m.coverImage?.large ?? null,
+    startDate,
   };
 }
 

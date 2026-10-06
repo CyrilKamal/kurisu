@@ -12,7 +12,10 @@ import { isProgress, isProgressBeforeAiring } from "../../src/writes/propose.js"
 import { parseShorthand } from "./shorthand.js";
 import { briefAllows, type BriefRule } from "../../src/agent/briefReply.js";
 import { frozenLatestAired, loadAiring, type AiringFreeze } from "./airing.js";
+import { normalizeName } from "../../src/list/seasons.js";
+import { addChange } from "../../src/writes/propose.js";
 import { briefReplyFor } from "./brief.js";
+import { loadCatalog, type CatalogFreeze } from "./catalog.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 
 export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
@@ -36,6 +39,17 @@ const expectedWriteSchema = z
     { message: "a write needs at least one of status, episodes_watched, score, is_rewatching" },
   );
 
+/** A show the agent should propose adding (held for the user's tap), with what the user said. */
+const expectedAddSchema = z
+  .object({
+    /** The show's title, English title or a synonym in the frozen catalog, or its MAL id. */
+    anime: z.union([z.string().min(1), z.number().int().positive()]),
+    status: z.enum(MAL_LIST_STATUSES).optional(),
+    episodes_watched: z.number().int().nonnegative().optional(),
+    score: z.number().int().min(0).max(10).optional(),
+  })
+  .strict();
+
 export const evalCaseSchema = z
   .object({
     id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, "use lowercase letters, digits and dashes"),
@@ -52,6 +66,11 @@ export const evalCaseSchema = z
         writes: z.array(expectedWriteSchema).default([]),
         /** True if the agent should ask (a question or a held proposal) before writing. */
         clarify: z.boolean().default(false),
+        /**
+         * Shows not on the list the agent should propose adding. Every add waits for the user, so
+         * these count as asking. Titles resolve against the frozen catalog (snapshots/catalog.json).
+         */
+        adds: z.array(expectedAddSchema).default([]),
       })
       .strict(),
   })
@@ -72,6 +91,8 @@ export interface ResolvedCase {
   case: EvalCase;
   /** Expected change per anime id, after applying the same rules as propose_update. */
   expectedChanges: Map<number, ListChange>;
+  /** Expected held add per anime id, normalized the same way. */
+  expectedAdds: Map<number, ListChange>;
 }
 
 export interface Problem {
@@ -93,6 +114,7 @@ export function loadCases(
   casesDir: string = CASES_DIR,
   snapshotLoader: (name: string) => Snapshot = loadSnapshot,
   airing: AiringFreeze | null = loadAiring(),
+  catalog: CatalogFreeze | null = loadCatalog(),
 ): LoadResult {
   const files = readdirSync(casesDir)
     .filter((f) => /\.(ya?ml|txt)$/.test(f))
@@ -156,14 +178,75 @@ export function loadCases(
       seenIds.set(evalCase.id, file);
 
       const resolved = resolveCase(evalCase, index, airing);
-      result.errors.push(...resolved.errors.map((message) => ({ ...where, message })));
+      const adds = resolveAdds(evalCase, index, catalog);
+      const errors = [...resolved.errors, ...adds.errors];
+      result.errors.push(...errors.map((message) => ({ ...where, message })));
       result.warnings.push(...resolved.warnings.map((message) => ({ ...where, message })));
-      if (resolved.errors.length === 0) {
-        result.cases.push({ file, snapshot, case: evalCase, expectedChanges: resolved.changes });
+      if (errors.length === 0) {
+        result.cases.push({
+          file,
+          snapshot,
+          case: evalCase,
+          expectedChanges: resolved.changes,
+          expectedAdds: adds.changes,
+        });
       }
     }
   }
   return result;
+}
+
+/**
+ * The adds a case expects, by MAL id: each show found in the frozen catalog (or given by MAL id)
+ * and not already on the snapshot's list, with the change the add would make.
+ */
+function resolveAdds(
+  evalCase: EvalCase,
+  index: TitleIndex,
+  catalog: CatalogFreeze | null,
+): { changes: Map<number, ListChange>; errors: string[] } {
+  const changes = new Map<number, ListChange>();
+  const errors: string[] = [];
+  const shows = (catalog?.searches ?? []).flatMap((s) => s.shows);
+  for (const add of evalCase.expect.adds) {
+    const label = JSON.stringify(add.anime);
+    const matches =
+      typeof add.anime === "number"
+        ? shows.filter((s) => s.malId === add.anime)
+        : shows.filter((s) =>
+            [s.title, s.titleEn, ...s.synonyms].some(
+              (n) => n !== null && normalizeName(n) === normalizeName(add.anime as string),
+            ),
+          );
+    const ids = [...new Set(matches.map((s) => s.malId))];
+    const malId = typeof add.anime === "number" ? add.anime : ids[0];
+    if (typeof add.anime === "string" && ids.length > 1) {
+      errors.push(`${label} matches several shows in the catalog. Use the MAL id instead.`);
+      continue;
+    }
+    if (malId === undefined || malId === null) {
+      errors.push(
+        `${label} isn't in the frozen catalog. Run pnpm eval:catalog "${String(add.anime)}" to add it.`,
+      );
+      continue;
+    }
+    if (index.resolve(malId).ok) {
+      errors.push(`${label} is already on the snapshot's list: that's an update, not an add.`);
+      continue;
+    }
+    const show = matches[0] ?? shows.find((s) => s.malId === malId);
+    const change = addChange(show?.episodes ?? null, {
+      ...(add.status !== undefined && { status: add.status }),
+      ...(add.episodes_watched !== undefined && { episodesWatched: add.episodes_watched }),
+      ...(add.score !== undefined && { score: add.score }),
+    });
+    if (!change.ok) {
+      errors.push(`${label}: ${describeNormalizeError(change.error, show?.episodes ?? null)}`);
+      continue;
+    }
+    changes.set(malId, change.change);
+  }
+  return { changes, errors };
 }
 
 function resolveCase(

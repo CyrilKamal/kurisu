@@ -1,5 +1,5 @@
 import type { anime, listEntries } from "../db/schema.js";
-import type { MalAnimeListItem } from "../mal/client.js";
+import type { MalAnimeListItem, MalAnimeNode } from "../mal/client.js";
 
 export type AnimeRow = typeof anime.$inferInsert;
 export type ListEntryRow = typeof listEntries.$inferInsert;
@@ -11,28 +11,8 @@ export function toMirrorRows(
   syncedAt: Date,
 ): { anime: AnimeRow; entry: ListEntryRow } {
   const { node, list_status: listStatus } = item;
-  const alt = node.alternative_titles;
   return {
-    anime: {
-      malId: node.id,
-      title: node.title,
-      titleEn: nonEmptyOrNull(alt?.en),
-      titleJa: nonEmptyOrNull(alt?.ja),
-      synonyms: (alt?.synonyms ?? []).map((s) => s.trim()).filter((s) => s.length > 0),
-      mainPictureUrl: httpsUrlOrNull(node.main_picture?.medium ?? node.main_picture?.large),
-      mediaType: node.media_type ?? null,
-      // MAL reports 0 when the episode count isn't known yet.
-      numEpisodes: node.num_episodes === 0 ? null : (node.num_episodes ?? null),
-      airingStatus: node.status ?? null,
-      startDate: node.start_date ?? null,
-      genres: (node.genres ?? []).map((g) => g.name),
-      episodeMinutes: node.average_episode_duration
-        ? Math.max(1, Math.round(node.average_episode_duration / 60))
-        : null,
-      // MAL leaves the score out (or 0) until enough people rate a show.
-      malMean: node.mean != null && node.mean > 0 ? node.mean : null,
-      updatedAt: syncedAt,
-    },
+    anime: animeRowFrom(node, syncedAt),
     entry: {
       userId,
       animeId: node.id,
@@ -45,6 +25,31 @@ export function toMirrorRows(
       malUpdatedAt: new Date(listStatus.updated_at),
       syncedAt,
     },
+  };
+}
+
+/** Maps what MAL says about a show to its row in the mirror. */
+export function animeRowFrom(node: MalAnimeNode, syncedAt: Date): AnimeRow {
+  const alt = node.alternative_titles;
+  return {
+    malId: node.id,
+    title: node.title,
+    titleEn: nonEmptyOrNull(alt?.en),
+    titleJa: nonEmptyOrNull(alt?.ja),
+    synonyms: (alt?.synonyms ?? []).map((s) => s.trim()).filter((s) => s.length > 0),
+    mainPictureUrl: httpsUrlOrNull(node.main_picture?.medium ?? node.main_picture?.large),
+    mediaType: node.media_type ?? null,
+    // MAL reports 0 when the episode count isn't known yet.
+    numEpisodes: node.num_episodes === 0 ? null : (node.num_episodes ?? null),
+    airingStatus: node.status ?? null,
+    startDate: node.start_date ?? null,
+    genres: (node.genres ?? []).map((g) => g.name),
+    episodeMinutes: node.average_episode_duration
+      ? Math.max(1, Math.round(node.average_episode_duration / 60))
+      : null,
+    // MAL leaves the score out (or 0) until enough people rate a show.
+    malMean: node.mean != null && node.mean > 0 ? node.mean : null,
+    updatedAt: syncedAt,
   };
 }
 

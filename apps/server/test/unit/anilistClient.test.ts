@@ -6,7 +6,8 @@ import {
   createAniListClient,
   type AniListClient,
 } from "../../src/anilist/client.js";
-import { airingMedia, FakeAniList } from "../support/fakeAniList.js";
+import { animeRowFromAniList } from "../../src/anilist/catalog.js";
+import { airingMedia, catalogMedia, FakeAniList } from "../support/fakeAniList.js";
 import { FakeHttpServer } from "../support/fakeHttp.js";
 
 let fake: FakeAniList;
@@ -350,5 +351,78 @@ describe("errors and retries", () => {
 
     expect(fake.requests).toHaveLength(3);
     expect(Date.now() - started).toBeGreaterThanOrEqual(75);
+  });
+});
+
+describe("searchAnime", () => {
+  it("searches every title in one request, leaving out adult titles and repeats", async () => {
+    fake.catalog = [
+      catalogMedia(201, 1001, "Sousou no Frieren", {
+        title: {
+          romaji: "Sousou no Frieren",
+          english: "Frieren: Beyond Journey's End",
+          native: "葬送のフリーレン",
+        },
+        synonyms: ["Frieren at the Funeral", "葬送的芙莉莲"],
+        startDate: { year: 2027, month: 10, day: null },
+      }),
+      catalogMedia(202, null, "Frieren Mini Anime"),
+      catalogMedia(203, 1003, "Frieren After Dark", { isAdult: true }),
+    ];
+
+    const shows = await client.searchAnime(["frieren", "sousou no frieren", "frieren"]);
+
+    expect(fake.requests).toHaveLength(1);
+    expect(fake.requests[0]?.variables).toEqual({ q0: "frieren", q1: "sousou no frieren" });
+    expect(shows.map((s) => [s.anilistId, s.malId])).toEqual([
+      [201, 1001],
+      [202, null],
+    ]);
+    expect(shows[0]).toMatchObject({
+      title: "Sousou no Frieren",
+      titleEn: "Frieren: Beyond Journey's End",
+      format: "TV",
+      episodes: 12,
+      duration: 24,
+      startDate: "2027-10",
+    });
+  });
+
+  it("sends no request without a title", async () => {
+    expect(await client.searchAnime(["  "])).toEqual([]);
+    expect(fake.requests).toHaveLength(0);
+  });
+});
+
+describe("animeRowFromAniList", () => {
+  it("describes the show in MAL's words, keeping Latin-script synonyms", () => {
+    expect(
+      animeRowFromAniList({
+        anilistId: 1,
+        malId: 52991,
+        title: "Sousou no Frieren",
+        titleEn: "Frieren: Beyond Journey's End",
+        titleJa: "葬送のフリーレン",
+        synonyms: ["Frieren at the Funeral", "葬送的芙莉莲", " "],
+        format: "MOVIE",
+        status: "NOT_YET_RELEASED",
+        episodes: 1,
+        duration: 110,
+        coverUrl: "http://insecure.example/x.jpg",
+        startDate: "2027",
+      }),
+    ).toEqual({
+      malId: 52991,
+      title: "Sousou no Frieren",
+      titleEn: "Frieren: Beyond Journey's End",
+      titleJa: "葬送のフリーレン",
+      synonyms: ["Frieren at the Funeral"],
+      mainPictureUrl: null,
+      mediaType: "movie",
+      numEpisodes: 1,
+      airingStatus: "not_yet_aired",
+      startDate: "2027",
+      episodeMinutes: 110,
+    });
   });
 });

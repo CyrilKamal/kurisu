@@ -23,32 +23,33 @@ export const MAL_LIST_STATUSES = [
 /** MAL's anime status (not the list status) for a show that hasn't started airing. */
 export const NOT_YET_AIRED = "not_yet_aired";
 
+/** What MAL says about a show (not about the user's entry for it). */
+const animeNodeSchema = z.object({
+  id: z.number().int().positive(),
+  title: z.string(),
+  main_picture: z.object({ medium: z.string().optional(), large: z.string().optional() }).nullish(),
+  media_type: z.string().nullish(),
+  num_episodes: z.number().int().nonnegative().nullish(),
+  status: z.string().nullish(),
+  // When the show started airing: "2026-03-19", or partial ("2026-03", "2026") if MAL isn't sure.
+  start_date: z.string().nullish(),
+  // Genres, themes and demographics in one list, e.g. "Slice of Life", "Iyashikei", "Shounen".
+  genres: z.array(z.object({ id: z.number().int().optional(), name: z.string() })).nullish(),
+  // Seconds per episode; 0 when MAL doesn't know.
+  average_episode_duration: z.number().nonnegative().nullish(),
+  // MAL's community score.
+  mean: z.number().nullish(),
+  alternative_titles: z
+    .object({
+      synonyms: z.array(z.string()).nullish(),
+      en: z.string().nullish(),
+      ja: z.string().nullish(),
+    })
+    .nullish(),
+});
+
 const animeListItemSchema = z.object({
-  node: z.object({
-    id: z.number().int().positive(),
-    title: z.string(),
-    main_picture: z
-      .object({ medium: z.string().optional(), large: z.string().optional() })
-      .nullish(),
-    media_type: z.string().nullish(),
-    num_episodes: z.number().int().nonnegative().nullish(),
-    status: z.string().nullish(),
-    // When the show started airing: "2026-03-19", or partial ("2026-03", "2026") if MAL isn't sure.
-    start_date: z.string().nullish(),
-    // Genres, themes and demographics in one list, e.g. "Slice of Life", "Iyashikei", "Shounen".
-    genres: z.array(z.object({ id: z.number().int().optional(), name: z.string() })).nullish(),
-    // Seconds per episode; 0 when MAL doesn't know.
-    average_episode_duration: z.number().nonnegative().nullish(),
-    // MAL's community score.
-    mean: z.number().nullish(),
-    alternative_titles: z
-      .object({
-        synonyms: z.array(z.string()).nullish(),
-        en: z.string().nullish(),
-        ja: z.string().nullish(),
-      })
-      .nullish(),
-  }),
+  node: animeNodeSchema,
   list_status: z.object({
     status: z.enum(MAL_LIST_STATUSES),
     score: z.number().int().min(0).max(10),
@@ -66,6 +67,7 @@ const animeListPageSchema = z.object({
 });
 
 export type MalAnimeListItem = z.infer<typeof animeListItemSchema>;
+export type MalAnimeNode = z.infer<typeof animeNodeSchema>;
 
 /** A non-2xx response from the MAL API. Never includes the access token or response body. */
 export class MalApiError extends Error {
@@ -98,8 +100,9 @@ export interface RetryOptions {
 
 export const DEFAULT_RETRY: RetryOptions = { retries: 3, baseDelayMs: 500, maxDelayMs: 30_000 };
 
-const LIST_FIELDS =
-  "list_status,num_episodes,media_type,status,start_date,main_picture,alternative_titles,genres,average_episode_duration,mean";
+const ANIME_FIELDS =
+  "num_episodes,media_type,status,start_date,main_picture,alternative_titles,genres,average_episode_duration,mean";
+const LIST_FIELDS = `list_status,${ANIME_FIELDS}`;
 const LIST_PAGE_SIZE = 1000; // MAL's maximum for this endpoint
 
 export async function fetchMe(apiBaseUrl: string, accessToken: string): Promise<MalUser> {
@@ -148,19 +151,34 @@ export async function fetchAnimeListPage(
   return { items: parsed.data.data, next };
 }
 
+/** One show's details from MAL, as the list sync stores them. */
+export async function fetchAnime(
+  apiBaseUrl: string,
+  animeId: number,
+  accessToken: string,
+  retry: RetryOptions = DEFAULT_RETRY,
+): Promise<MalAnimeNode> {
+  const url = new URL(`${apiBaseUrl}/anime/${String(animeId)}`);
+  url.search = new URLSearchParams({ fields: `id,title,${ANIME_FIELDS}` }).toString();
+  const parsed = animeNodeSchema.safeParse(await getJson(url, accessToken, retry));
+  if (!parsed.success) throw new MalResponseError(url.pathname, "unexpected anime shape");
+  return parsed.data;
+}
+
 function getJson(url: URL, accessToken: string, retry: RetryOptions): Promise<unknown> {
   return malRequestJson(url, accessToken, retry);
 }
 
 /**
  * One authenticated MAL API request with retries on 429, 5xx and network errors. Only use it
- * for idempotent requests: GETs, and PATCHes that carry absolute values.
+ * for idempotent requests: GETs, PATCHes that carry absolute values, and DELETEs. An empty
+ * response body (MAL's answer to a DELETE) comes back as null.
  */
 export async function malRequestJson(
   url: URL,
   accessToken: string,
   retry: RetryOptions,
-  init: { method?: "GET" | "PATCH"; form?: URLSearchParams } = {},
+  init: { method?: "GET" | "PATCH" | "DELETE"; form?: URLSearchParams } = {},
 ): Promise<unknown> {
   const path = url.pathname;
   for (let attempt = 0; ; attempt++) {
@@ -184,7 +202,10 @@ export async function malRequestJson(
       throw err;
     }
 
-    if (res.ok) return res.json();
+    if (res.ok) {
+      const text = await res.text();
+      return text.trim() ? (JSON.parse(text) as unknown) : null;
+    }
 
     const retryable = res.status === 429 || res.status >= 500;
     if (retryable && attempt < retry.retries) {

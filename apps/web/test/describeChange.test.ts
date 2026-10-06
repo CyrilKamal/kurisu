@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { confirmationReasonLabel, describeChange, writeErrorMessage } from "../lib/describeChange";
+import {
+  addButtonLabel,
+  confirmationReasonLabel,
+  describeChange,
+  describeWrite,
+  writeErrorMessage,
+} from "../lib/describeChange";
 
 describe("describeChange", () => {
   it("describes progress, status, score and rewatch changes", () => {
@@ -20,6 +26,26 @@ describe("describeChange", () => {
 
   it("copes with missing prior values", () => {
     expect(describeChange({}, { status: "dropped" })).toBe("? → Dropped");
+  });
+});
+
+describe("adds and removals", () => {
+  it("says what an add put on the list, and labels its button the same way", () => {
+    expect(describeWrite("add", {}, { status: "plan_to_watch" })).toBe("Added to Plan to Watch");
+    expect(addButtonLabel({ status: "plan_to_watch" })).toBe("Add to Plan to Watch");
+    expect(addButtonLabel({ status: "watching", episodesWatched: 3 })).toBe(
+      "Add as Watching, ep 3",
+    );
+    expect(addButtonLabel({ status: "completed", episodesWatched: 12, score: 8 })).toBe(
+      "Add as Completed, 8/10",
+    );
+  });
+
+  it("describes a removal and leaves updates to describeChange", () => {
+    expect(describeWrite("remove", { status: "plan_to_watch" }, {})).toBe("Removed from your list");
+    expect(describeWrite("update", { episodesWatched: 7 }, { episodesWatched: 8 })).toBe(
+      "ep 7 → 8",
+    );
   });
 });
 

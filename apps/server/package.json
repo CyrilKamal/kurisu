@@ -19,6 +19,7 @@
     "eval:snapshot": "tsx eval/src/cli/exportSnapshot.ts",
     "eval:lookup": "tsx eval/src/cli/lookup.ts",
     "eval:airing": "tsx eval/src/cli/exportAiring.ts",
+    "eval:catalog": "tsx eval/src/cli/exportCatalog.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",
     "eval": "tsx eval/src/cli/run.ts"

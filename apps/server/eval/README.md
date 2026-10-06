@@ -133,9 +133,37 @@ To test a reply like "watched it", end the history with a brief written exactly 
 
 The harness reads the brief back out of that last message, as the app does from its own records. The agent holds any progress these rules don't allow (for example, "the 2nd ep" written to the second show in the list), and the validator warns about cases that expect a held write.
 
+### Adding shows that aren't on the list (optional)
+
+Some messages are about a show that isn't on the snapshot's list: "add X to my plan to watch", "watched ep 3 of X", "finished X, 8/10". The agent finds X with `search_anime` and proposes adding it. Every add waits for you to tap Add, so it's never a write: list it under `adds`. Each add counts as asking, so `clarify: true` is implied.
+
+```yaml
+  - id: add-frieren-ptw
+    message: "add frieren to my plan to watch"
+    tags: [add]
+    expect:
+      adds:
+        - anime: "Sousou no Frieren"
+  - id: add-finished-with-score
+    message: "finished dandadan, 8/10"
+    tags: [add]
+    expect:
+      adds:
+        - anime: "Dandadan"
+          status: completed
+          score: 8
+```
+
+- **Which titles work:** the evals can't search AniList live. The titles your add cases use come from a frozen copy of AniList's answers in `snapshots/catalog.json`. Freeze a search once, before writing the cases that use it: `pnpm eval:catalog "frieren" "dandadan"`. It prints each show it found with its MAL id. A title already frozen keeps its first answer.
+- **`anime`** is a title, English title or synonym from that frozen search, or the MAL id it printed. The validator rejects a title that isn't frozen, one that matches several shows, and a show that's already on the snapshot's list (that's an update).
+- **The same rules apply as for writes:** a bare add means Plan to Watch, `episodes_watched` on its own means Watching, and `completed` fills in the episode count.
+- **When several shows fit** ("add frieren" with two seasons frozen), expect a question instead: `clarify: true` and no `adds`.
+- **A show missing from the frozen catalog** is found nowhere, so the agent should say it isn't on the list. Expect no writes and no `clarify`.
+
 ### What counts as correct
 
 - **Writes**: a case passes only if the agent writes exactly the listed changes, no more and no less. Any write to an anime you didn't list counts as a wrong write.
+- **Adds**: the adds the agent holds for you must be exactly the listed `adds`, no more and no less. They're never counted as writes.
 - **`clarify: true`**: the agent should ask first, either with a question or with a change held for you to confirm, instead of writing. A case can list writes and set `clarify: true` together. For example, "finished X and dropped the isekai one" writes X and asks about the other.
 - **No writes and no `clarify`**: the agent should do nothing, for example when the message isn't an update. Tag these `no-action`.
 
@@ -180,11 +208,17 @@ These categories come from the design doc. Aim for a spread, and use them as tag
 - [ ] `relative`: relative progress ("watched two more")
 - [ ] `sequel`: sequel seasons that are separate MAL entries
 - [ ] `ambiguous`: deliberately ambiguous inputs where the right answer is a question
+- [ ] `add`: shows that aren't on the list (see "Adding shows" above). For example:
+  - [ ] "add X" and its variants ("put X on my ptw", "add X to my list")
+  - [ ] "watched ep 3 of X" or "finished X, 8/10" for a show that isn't on the list
+  - [ ] a vague name that fits several shows, where the right answer is a question
+  - [ ] "add X" for a show that's already on the list: no add; the agent should say where it is
+  - [ ] a show it shouldn't add: mentioned in passing, or a plan ("might watch X")
 
 Tips:
 - Write messages the way you actually type: lowercase, typos and all.
 - Each case starts fresh from the snapshot; cases never depend on each other.
-- Titles that aren't on your list aren't supported in this milestone. The agent should say so and write nothing, so those are `no-action` cases.
+- A title that isn't on your list, and isn't one the case asks to add, should get "it isn't on your list" and nothing else: a `no-action` case.
 
 `cases/examples.yaml` shows the format against a separate made-up list (`snapshots/examples.json`).
 

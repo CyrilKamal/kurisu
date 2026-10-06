@@ -31,6 +31,7 @@ import {
 import type { ListChange } from "../../../src/writes/normalize.js";
 import { loadCases, type ResolvedCase } from "../cases.js";
 import { loadAiring } from "../airing.js";
+import { frozenCatalogSearch, loadCatalog } from "../catalog.js";
 import { briefFromHistory } from "../brief.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
 import { aggregate, scoreCase, type CaseRun, type Metrics } from "../score.js";
@@ -81,6 +82,8 @@ const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm)
 
 /** Frozen AniList airing data, so "the newest episode" has a fixed answer. */
 const airing = loadAiring();
+/** Frozen AniList title searches, for search_anime (prompts that offer it). */
+const catalog = frozenCatalogSearch(loadCatalog());
 const loaded = loadCases();
 if (loaded.errors.length > 0) {
   for (const e of loaded.errors)
@@ -171,7 +174,7 @@ async function runCase(
   const brief = briefFromHistory(resolved.case.history, new TitleIndex(snapshot));
   const waitedBefore = models.waitedMs;
   const result = await runAgent(
-    { db, models, writeListStatus: writer, prompt: PROMPT },
+    { db, models, writeListStatus: writer, prompt: PROMPT, catalog },
     {
       userId,
       conversationId: null,
@@ -186,6 +189,9 @@ async function runCase(
   for (const change of result.committed) {
     actual.set(change.animeId, { ...actual.get(change.animeId), ...change.after });
   }
+  const actualAdds = new Map(
+    result.pending.filter((p) => p.kind === "add").map((p) => [p.animeId, p.change] as const),
+  );
   const steps = await db
     .select({
       kind: agentRunSteps.kind,
@@ -202,9 +208,12 @@ async function runCase(
     caseId: resolved.case.id,
     tags: resolved.case.tags,
     message: resolved.case.message,
-    expectClarify: resolved.case.expect.clarify,
+    // Every add waits for the user, so an expected add is an expected ask.
+    expectClarify: resolved.case.expect.clarify || resolved.expectedAdds.size > 0,
     expected: resolved.expectedChanges,
     actual,
+    expectedAdds: resolved.expectedAdds,
+    actualAdds,
     asked: result.asked || result.pending.length > 0,
     reply: result.reply,
     error: result.error,
@@ -248,6 +257,11 @@ function printReport(metrics: Metrics, runs: (CaseRun & { toolCalls: string[] })
         ? `; at ${roles.agent.ref} paid prices ≈ $${(agentPrice / runs.length).toFixed(6)} per case`
         : ""),
   );
+  if (metrics.totalAdds > 0 || runs.some((r) => (r.expectedAdds?.size ?? 0) > 0)) {
+    console.log(
+      `Held adds                ${String(metrics.totalAdds - metrics.wrongAdds)}/${String(metrics.totalAdds)} right (never written without a tap)`,
+    );
+  }
   console.log(`Errors                   ${String(metrics.errors)}`);
   console.log(
     `Tokens                   ${String(metrics.inputTokens)} in / ${String(metrics.outputTokens)} out`,
@@ -274,9 +288,13 @@ function printReport(metrics: Metrics, runs: (CaseRun & { toolCalls: string[] })
           ? "nothing"
           : [...m].map(([id, c]) => `${String(id)} ${JSON.stringify(c)}`).join("; ");
       console.log(`\n✗ ${f.caseId}: "${f.message}"`);
-      console.log(`  expected: ${fmt(f.expected)}${f.expectClarify ? " + ask" : ""}`);
+      const adds = (m: Map<number, ListChange> | undefined) =>
+        m && m.size > 0 ? ` + add ${fmt(m)}` : "";
       console.log(
-        `  actual:   ${fmt(f.actual)}${f.asked ? " + asked" : ""}${f.error ? ` [error: ${f.error}]` : ""}`,
+        `  expected: ${fmt(f.expected)}${adds(f.expectedAdds)}${f.expectClarify ? " + ask" : ""}`,
+      );
+      console.log(
+        `  actual:   ${fmt(f.actual)}${adds(f.actualAdds)}${f.asked ? " + asked" : ""}${f.error ? ` [error: ${f.error}]` : ""}`,
       );
       console.log(`  reply:    ${JSON.stringify(f.reply.slice(0, 200))}`);
       for (const call of f.toolCalls) console.log(`  tool:     ${call.slice(0, 200)}`);

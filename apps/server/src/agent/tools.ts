@@ -3,7 +3,9 @@ import { z } from "zod";
 
 import type { Db } from "../db/client.js";
 import { anime } from "../db/schema.js";
-import { getEntry, searchMyList, type ListEntryView } from "../list/search.js";
+import { rememberShows } from "../anilist/catalog.js";
+import type { CatalogShow } from "../anilist/client.js";
+import { getEntry, searchCatalog, searchMyList, type ListEntryView } from "../list/search.js";
 import type { ToolCall, ToolSpec } from "../llm/types.js";
 import { MAL_LIST_STATUSES } from "../mal/client.js";
 import {
@@ -21,13 +23,21 @@ import { mentionsNewestEpisode } from "./newestEpisode.js";
 import { mentionsNumber } from "./scoreGiven.js";
 import type { ToolOutcome } from "./toolLoop.js";
 
+/** Searches all anime by title (AniList in the app, a frozen catalog in evals). */
+export type CatalogSearch = (queries: string[]) => Promise<CatalogShow[]>;
+
 /** Per-run state the tools share. Grounding rules live here, not in the prompt. */
 export interface RunContext {
   db: Db;
   userId: string;
   runId: string;
   writeListStatus: ListWriter;
-  /** Anime ids a search or get_entry returned in this run. Only these can be proposed. */
+  /** For search_anime; null when the prompt doesn't offer it. */
+  catalog: CatalogSearch | null;
+  /**
+   * Anime ids a search or get_entry returned in this run. Only these can be proposed. A show not
+   * on the list (from search_anime) becomes an add, which always waits for the user.
+   */
   seen: Set<number>;
   /**
    * The latest aired episode of airing shows a search or get_entry returned, from the AniList
@@ -84,6 +94,22 @@ export const TOOL_SPECS: ToolSpec[] = [
           type: "array",
           items: { type: "string" },
           description: 'Title variants to look for, e.g. ["jjk", "Jujutsu Kaisen"]',
+        },
+      },
+      required: ["queries"],
+    },
+  },
+  {
+    name: "search_anime",
+    description:
+      "Search all anime, not just the user's list, by title: for a show they want to add, or say they watched, that isn't on their list. Pass the user's words plus official titles you know. Returns up to 5 shows; on_your_list is set for shows they already have; clear_match says whether the words clearly identify that show.",
+    parameters: {
+      type: "object",
+      properties: {
+        queries: {
+          type: "array",
+          items: { type: "string" },
+          description: 'Title variants to look for, e.g. ["frieren", "Sousou no Frieren"]',
         },
       },
       required: ["queries"],
@@ -159,12 +185,26 @@ const proposeArgs = z
   .strict();
 const commitArgs = z.object({ proposal_id: z.uuid() });
 
+/** Tools only offered to prompts that list them (see Prompt.tools in runAgent.ts). */
+export const OPTIONAL_TOOLS = ["search_anime"] as const;
+export type OptionalTool = (typeof OPTIONAL_TOOLS)[number];
+
+/** The tools a prompt gets: the base set plus the optional ones it asks for. */
+export function toolSpecsFor(extra: readonly OptionalTool[] = []): ToolSpec[] {
+  return TOOL_SPECS.filter(
+    (t) =>
+      !(OPTIONAL_TOOLS as readonly string[]).includes(t.name) || extra.some((e) => e === t.name),
+  );
+}
+
 export type { ToolOutcome } from "./toolLoop.js";
 
 export async function executeTool(ctx: RunContext, call: ToolCall): Promise<ToolOutcome> {
   switch (call.name) {
     case "search_my_list":
       return searchTool(ctx, call.arguments);
+    case "search_anime":
+      return searchAnimeTool(ctx, call.arguments);
     case "get_entry":
       return getEntryTool(ctx, call.arguments);
     case "propose_update":
@@ -231,6 +271,76 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   };
 }
 
+/** Most search_anime results the model sees. */
+const CATALOG_RESULTS = 5;
+
+async function searchAnimeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
+  if (!ctx.catalog) return failure("unknown_tool", "There is no tool named search_anime.");
+  const args = searchArgs.safeParse(raw);
+  if (!args.success || args.data.length === 0) {
+    return failure("invalid_arguments", "Pass queries: a list of title variants.");
+  }
+  const queries = args.data.slice(0, 3);
+  const key = `anime:${queries
+    .map((q) => q.trim().toLowerCase())
+    .sort()
+    .join("|")}`;
+  const times = (ctx.searches.get(key) ?? 0) + 1;
+  ctx.searches.set(key, times);
+  if (times >= MAX_SAME_SEARCH) {
+    ctx.stop = "repeated_search";
+    return failure(
+      "repeated_search",
+      "This exact search already ran twice. Reply to the user now.",
+    );
+  }
+
+  let found: CatalogShow[];
+  try {
+    found = await ctx.catalog(queries);
+  } catch {
+    return failure(
+      "search_unavailable",
+      "Searching beyond the user's list isn't working right now. Tell them, and don't add anything.",
+    );
+  }
+  // Rows for these shows, so they can be shown and proposed. Shows without a MAL id can't be.
+  const shows = await rememberShows(ctx.db, found);
+  const candidates = await searchCatalog(
+    ctx.db,
+    ctx.userId,
+    shows.map((show) => show.malId),
+    queries,
+    {
+      limit: CATALOG_RESULTS,
+      userText: ctx.userMessage,
+      contested: ctx.contested,
+      answering: ctx.answering,
+    },
+  );
+  for (const c of candidates) {
+    ctx.seen.add(c.animeId);
+    if (c.clearBy && ctx.clear.get(c.animeId) !== "unique") ctx.clear.set(c.animeId, c.clearBy);
+  }
+  if (candidates.length === 0) return { result: { results: [], note: "No anime by that name." } };
+  return {
+    result: {
+      results: candidates.map((c) => ({
+        anime_id: c.animeId,
+        title: c.title,
+        ...(c.titleEn && c.titleEn !== c.title && { title_english: c.titleEn }),
+        media_type: c.mediaType,
+        num_episodes: c.numEpisodes,
+        airing: c.airingStatus,
+        on_your_list:
+          c.status === null ? null : { status: c.status, episodes_watched: c.episodesWatched },
+        clear_match: c.clear,
+      })),
+      note: "Proposing a show that isn't on their list adds it. Every add waits for the user to confirm it.",
+    },
+  };
+}
+
 async function getEntryTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   const args = getEntryArgs.safeParse(raw);
   if (!args.success) return failure("invalid_arguments", "Pass anime_id as an integer.");
@@ -261,7 +371,7 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
   if (!ctx.seen.has(a.anime_id)) {
     return failure(
       "unknown_anime",
-      "Search for the show first; only use anime_id values returned by search_my_list or get_entry.",
+      "Search for the show first; only use anime_id values returned by search_my_list, search_anime or get_entry.",
     );
   }
   const result = await proposeUpdate(ctx.db, {
@@ -294,7 +404,10 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
         change: changeForModel(p.change),
         requires_confirmation: true,
         ...(p.confirmationReason ? { reason: p.confirmationReason } : {}),
-        next: "The user will see a Confirm button for this change. Don't commit it; tell them it needs their confirmation.",
+        next:
+          p.kind === "add"
+            ? "This adds the show to their list, so the user will see an Add button for it. Don't commit it; tell them to tap Add."
+            : "The user will see a Confirm button for this change. Don't commit it; tell them it needs their confirmation.",
       },
     };
   }
@@ -446,8 +559,8 @@ async function explain(ctx: RunContext, error: ProposeError, id: number): Promis
     }
     case "no_change":
       return "The list already has these values; nothing to change.";
-    case "not_on_list":
-      return "That anime isn't on the user's list.";
+    case "unknown_anime":
+      return "That show wasn't found; search for it first.";
     case "both_episode_forms":
       return "Use either episodes_watched or episodes_delta, not both.";
     case "no_change_requested":

@@ -10,6 +10,10 @@ export interface CaseRun {
   expected: Map<number, ListChange>;
   /** Committed change per anime id: the final values of the fields that changed. */
   actual: Map<number, ListChange>;
+  /** Adds the case expects, held for the user (absent means none). */
+  expectedAdds?: Map<number, ListChange>;
+  /** Adds the agent held for the user. */
+  actualAdds?: Map<number, ListChange>;
   /** The agent asked a question or held a change for confirmation. */
   asked: boolean;
   reply: string;
@@ -28,13 +32,27 @@ export interface CaseScore {
   totalWrites: number;
   /** Expected writes that didn't happen (or happened with wrong values). */
   missedWrites: number;
+  /** Held adds that weren't expected, or would add the wrong values. Never written. */
+  wrongAdds: number;
+  /** Held adds (one per anime). */
+  totalAdds: number;
 }
 
 /**
  * A case is correct when the committed writes are exactly the expected ones (same anime, same
- * field values, nothing extra) and, if a question was expected, the agent asked.
+ * field values, nothing extra), the held adds likewise, and, if a question was expected, the
+ * agent asked.
  */
 export function scoreCase(run: CaseRun): CaseScore {
+  const expectedAdds = run.expectedAdds ?? new Map<number, ListChange>();
+  const actualAdds = run.actualAdds ?? new Map<number, ListChange>();
+  let wrongAdds = 0;
+  for (const [animeId, change] of actualAdds) {
+    if (!sameChange(expectedAdds.get(animeId), change)) wrongAdds++;
+  }
+  const addsRight =
+    wrongAdds === 0 &&
+    [...expectedAdds].every(([animeId, change]) => sameChange(actualAdds.get(animeId), change));
   let wrongWrites = 0;
   for (const [animeId, change] of run.actual) {
     if (!sameChange(run.expected.get(animeId), change)) wrongWrites++;
@@ -45,10 +63,12 @@ export function scoreCase(run: CaseRun): CaseScore {
   }
   const writesRight = wrongWrites === 0 && missedWrites === 0;
   return {
-    correct: writesRight && run.error === null && (!run.expectClarify || run.asked),
+    correct: writesRight && addsRight && run.error === null && (!run.expectClarify || run.asked),
     wrongWrites,
     totalWrites: run.actual.size,
     missedWrites,
+    wrongAdds,
+    totalAdds: actualAdds.size,
   };
 }
 
@@ -66,6 +86,9 @@ export interface Metrics {
   wrongWriteRate: number;
   wrongWrites: number;
   totalWrites: number;
+  /** Held adds that weren't expected or had the wrong values, of all held adds. */
+  wrongAdds: number;
+  totalAdds: number;
   /** Of the cases where the agent asked, the share where asking was expected. */
   clarificationPrecision: number | null;
   /** Of the cases where asking was expected, the share where it asked. */
@@ -96,6 +119,8 @@ export function aggregate(runs: CaseRun[]): Metrics {
     wrongWriteRate: ratio(wrongWrites, totalWrites) ?? 0,
     wrongWrites,
     totalWrites,
+    wrongAdds: scores.reduce((n, s) => n + s.wrongAdds, 0),
+    totalAdds: scores.reduce((n, s) => n + s.totalAdds, 0),
     clarificationPrecision: ratio(asked.filter((r) => r.expectClarify).length, asked.length),
     clarificationRecall: ratio(expectedAsk.filter((r) => r.asked).length, expectedAsk.length),
     medianLatencyMs:

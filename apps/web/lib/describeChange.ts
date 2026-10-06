@@ -1,4 +1,4 @@
-import type { ListChange } from "@kurisu/shared";
+import type { ListChange, WriteKind } from "@kurisu/shared";
 
 import { STATUS_LABELS } from "./format";
 
@@ -24,6 +24,33 @@ export function describeChange(before: ListChange, after: ListChange): string {
   return parts.join(" · ");
 }
 
+/** What a write did: an add or a removal in words, an update as describeChange says it. */
+export function describeWrite(kind: WriteKind, before: ListChange, after: ListChange): string {
+  if (kind === "remove") return "Removed from your list";
+  if (kind === "add") return `Added ${addedAs(after)}`;
+  return describeChange(before, after);
+}
+
+/** The button that confirms an add: "Add to Plan to Watch", "Add as Watching, ep 3". */
+export function addButtonLabel(change: ListChange): string {
+  return `Add ${addedAs(change)}`;
+}
+
+/** "to Plan to Watch", "as Watching, ep 3", "as Completed, 8/10". */
+function addedAs(change: ListChange): string {
+  const status = change.status ?? "plan_to_watch";
+  if (status === "plan_to_watch" && !change.score) return "to Plan to Watch";
+  const details = [
+    status === "watching" || status === "on_hold" || status === "dropped"
+      ? change.episodesWatched
+        ? `ep ${String(change.episodesWatched)}`
+        : null
+      : null,
+    change.score ? `${String(change.score)}/10` : null,
+  ].filter((part) => part !== null);
+  return [`as ${STATUS_LABELS[status]}`, ...details].join(", ");
+}
+
 function scoreLabel(score: number | undefined): string {
   return score === undefined || score === 0 ? "–" : String(score);
 }
@@ -45,6 +72,8 @@ export function confirmationReasonLabel(reason: string | null): string {
       return "Your brief didn't list this episode, so check it.";
     case "not_named":
       return "You didn't mention this show, so check it.";
+    case "adds_to_list":
+      return "This isn't on your list yet. Adding a show always waits for you.";
     default:
       return "Needs your confirmation.";
   }

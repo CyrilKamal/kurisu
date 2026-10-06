@@ -29,12 +29,46 @@ function run(
 }
 
 describe("scoreCase", () => {
+  it("needs the held adds to match too, and never counts them as writes", () => {
+    const plan = { status: "plan_to_watch" as const };
+    const right = run({
+      expectClarify: true,
+      asked: true,
+      expectedAdds: new Map([[9, plan]]),
+      actualAdds: new Map([[9, plan]]),
+    });
+    expect(scoreCase(right)).toMatchObject({
+      correct: true,
+      totalWrites: 0,
+      wrongAdds: 0,
+      totalAdds: 1,
+    });
+
+    const wrongShow = run({
+      expectClarify: true,
+      asked: true,
+      expectedAdds: new Map([[9, plan]]),
+      actualAdds: new Map([[8, plan]]),
+    });
+    expect(scoreCase(wrongShow)).toMatchObject({ correct: false, wrongWrites: 0, wrongAdds: 1 });
+
+    const missing = run({ expectClarify: true, asked: true, expectedAdds: new Map([[9, plan]]) });
+    expect(scoreCase(missing).correct).toBe(false);
+  });
+
   it("is correct only when writes match exactly", () => {
     expect(
       scoreCase(
         run({ expected: [[1, { episodesWatched: 8 }]], actual: [[1, { episodesWatched: 8 }]] }),
       ),
-    ).toEqual({ correct: true, wrongWrites: 0, totalWrites: 1, missedWrites: 0 });
+    ).toEqual({
+      correct: true,
+      wrongWrites: 0,
+      totalWrites: 1,
+      missedWrites: 0,
+      wrongAdds: 0,
+      totalAdds: 0,
+    });
 
     // Wrong value: one wrong write and one missed.
     expect(

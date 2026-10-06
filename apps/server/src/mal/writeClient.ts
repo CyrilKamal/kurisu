@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 import type { ListChange } from "../writes/normalize.js";
-import { DEFAULT_RETRY, malRequestJson, MAL_LIST_STATUSES, type RetryOptions } from "./client.js";
+import {
+  DEFAULT_RETRY,
+  MalApiError,
+  malRequestJson,
+  MAL_LIST_STATUSES,
+  type RetryOptions,
+} from "./client.js";
 
 /**
  * The only code that writes to a MAL list. CLAUDE.md: nothing writes to MAL except
@@ -60,4 +66,27 @@ export async function patchListStatus(
     isRewatching: parsed.is_rewatching,
     updatedAt: new Date(parsed.updated_at),
   };
+}
+
+/**
+ * DELETE /anime/{id}/my_list_status: takes the show off the user's list. MAL answers 404 when
+ * it isn't on the list, which is the outcome wanted, so a retried delete is harmless.
+ */
+export async function deleteListStatus(
+  apiBaseUrl: string,
+  accessToken: string,
+  animeId: number,
+  retry: RetryOptions = DEFAULT_RETRY,
+): Promise<void> {
+  try {
+    await malRequestJson(
+      new URL(`${apiBaseUrl}/anime/${String(animeId)}/my_list_status`),
+      accessToken,
+      retry,
+      { method: "DELETE" },
+    );
+  } catch (err) {
+    if (err instanceof MalApiError && err.status === 404) return;
+    throw err;
+  }
 }

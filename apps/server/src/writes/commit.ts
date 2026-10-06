@@ -6,7 +6,7 @@ import type { Db } from "../db/client.js";
 import { changes, dropReasons, listEntries, proposals } from "../db/schema.js";
 import { DEFAULT_RETRY, MalApiError, type RetryOptions } from "../mal/client.js";
 import { MalOAuthError } from "../mal/oauth.js";
-import { patchListStatus, type MalListStatus } from "../mal/writeClient.js";
+import { deleteListStatus, patchListStatus, type MalListStatus } from "../mal/writeClient.js";
 import type { ListChange, ListState } from "./normalize.js";
 import type { Proposal } from "./propose.js";
 
@@ -18,6 +18,8 @@ import type { Proposal } from "./propose.js";
  * - Values are absolute, so even a re-sent PATCH can't double-count progress.
  * - If the mirror moved since the proposal was made, the commit is refused as stale.
  * - Every commit lands in the change log with prior values, so it can be undone.
+ * - An add only commits once the user confirms it (see propose.ts), and only if the show still
+ *   isn't on the list. A remove only undoes an add.
  */
 
 /** Writes one list entry to MAL and returns MAL's resulting state. */
@@ -37,6 +39,34 @@ export function createMalListWriter(deps: {
     withMalAccessToken(deps.tokenStore, userId, (token) =>
       patchListStatus(deps.apiBaseUrl, token, animeId, change, deps.retry ?? DEFAULT_RETRY),
     );
+}
+
+/** Takes a show off the user's MAL list. */
+export type ListRemover = (userId: string, animeId: number) => Promise<void>;
+
+export function createMalListRemover(deps: {
+  tokenStore: TokenStore;
+  apiBaseUrl: string;
+  retry?: RetryOptions;
+}): ListRemover {
+  return (userId, animeId) =>
+    withMalAccessToken(deps.tokenStore, userId, (token) =>
+      deleteListStatus(deps.apiBaseUrl, token, animeId, deps.retry ?? DEFAULT_RETRY),
+    );
+}
+
+/**
+ * Fills in MAL's own details for a show just added to the list, replacing what search found on
+ * AniList. Best effort: if it fails, the next list sync fills them in.
+ */
+export type AnimeRefresher = (userId: string, animeId: number) => Promise<void>;
+
+export interface WriteDeps {
+  db: Db;
+  writeListStatus: ListWriter;
+  /** Needed to undo an add. */
+  removeListStatus?: ListRemover;
+  refreshAnime?: AnimeRefresher;
 }
 
 export type Change = typeof changes.$inferSelect;
@@ -64,7 +94,7 @@ const STUCK_AFTER_MS = 2 * 60 * 1000;
 const FIELDS = ["status", "episodesWatched", "score", "isRewatching"] as const;
 
 export async function commitProposal(
-  deps: { db: Db; writeListStatus: ListWriter },
+  deps: WriteDeps,
   userId: string,
   proposalId: string,
   options: { confirmed?: boolean } = {},
@@ -104,11 +134,17 @@ export async function commitProposal(
       })
       .from(listEntries)
       .where(and(eq(listEntries.userId, userId), eq(listEntries.animeId, proposal.animeId)));
-    const refusal: CommitErrorCode | null = !entry
-      ? "not_on_list"
-      : changedSince(proposal, entry)
-        ? "stale"
-        : null;
+    // An add needs the show still off the list; an update or remove needs the entry as it was.
+    const refusal: CommitErrorCode | null =
+      proposal.kind === "add"
+        ? entry
+          ? "stale"
+          : null
+        : !entry
+          ? "not_on_list"
+          : changedSince(proposal, entry)
+            ? "stale"
+            : null;
     if (refusal) {
       await tx
         .update(proposals)
@@ -140,9 +176,14 @@ export async function commitProposal(
   }
   const proposal = claim.proposal;
 
-  let result: MalListStatus;
+  let result: MalListStatus | null = null;
   try {
-    result = await deps.writeListStatus(userId, proposal.animeId, proposal.change);
+    if (proposal.kind === "remove") {
+      if (!deps.removeListStatus) throw new Error("no list remover configured");
+      await deps.removeListStatus(userId, proposal.animeId);
+    } else {
+      result = await deps.writeListStatus(userId, proposal.animeId, proposal.change);
+    }
   } catch (err) {
     const error = classify(err);
     await db
@@ -154,28 +195,44 @@ export async function commitProposal(
 
   const change = await db.transaction(async (tx) => {
     const now = new Date();
+    const where = and(eq(listEntries.userId, userId), eq(listEntries.animeId, proposal.animeId));
     // Sync after write: the mirror takes MAL's own view of the entry.
-    await tx
-      .update(listEntries)
-      .set({
+    let before: ListChange;
+    let after: ListChange;
+    if (result === null) {
+      await tx.delete(listEntries).where(where);
+      before = proposal.before ?? {};
+      after = {};
+    } else {
+      const state = {
         status: result.status,
         score: result.score,
         numEpisodesWatched: result.episodesWatched,
         isRewatching: result.isRewatching,
         malUpdatedAt: result.updatedAt,
         syncedAt: now,
-      })
-      .where(and(eq(listEntries.userId, userId), eq(listEntries.animeId, proposal.animeId)));
+      };
+      if (proposal.kind === "add") {
+        await tx
+          .insert(listEntries)
+          .values({ userId, animeId: proposal.animeId, ...state })
+          .onConflictDoUpdate({ target: [listEntries.userId, listEntries.animeId], set: state });
+      } else {
+        await tx.update(listEntries).set(state).where(where);
+      }
+      const keys = FIELDS.filter((field) => proposal.change[field] !== undefined);
+      before = proposal.before ? pick(proposal.before, keys) : {};
+      after = pick(stateOf(result), keys);
+    }
 
-    const keys = FIELDS.filter((field) => proposal.change[field] !== undefined);
-    const after: ListChange = pick(stateOf(result), keys);
     const [row] = await tx
       .insert(changes)
       .values({
         userId,
         animeId: proposal.animeId,
         proposalId: proposal.id,
-        before: pick(proposal.before, keys),
+        kind: proposal.kind,
+        before,
         after,
         committedAt: now,
       })
@@ -194,7 +251,7 @@ export async function commitProposal(
       // Undoing a drop takes back the reason given for it.
       await tx.delete(dropReasons).where(eq(dropReasons.changeId, proposal.undoOfChangeId));
     }
-    if (proposal.dropReason && proposal.dropSaid && result.status === "dropped") {
+    if (proposal.dropReason && proposal.dropSaid && result?.status === "dropped") {
       await tx.insert(dropReasons).values({
         userId,
         animeId: proposal.animeId,
@@ -206,13 +263,24 @@ export async function commitProposal(
     return row;
   });
 
+  if (proposal.kind === "add" && deps.refreshAnime) {
+    // The list sync fills the details in later if this fails.
+    await deps.refreshAnime(userId, proposal.animeId).catch(() => undefined);
+  }
   return { status: "committed", change, alreadyCommitted: false };
 }
 
-/** True if any field this proposal changes no longer holds the value it was proposed against. */
+/**
+ * True if any field this proposal changes no longer holds the value it was proposed against. A
+ * remove checks every field: the entry must be just as it was.
+ */
 function changedSince(proposal: Proposal, current: ListState): boolean {
+  const before = proposal.before;
+  if (!before) return false;
   return FIELDS.some(
-    (field) => proposal.change[field] !== undefined && current[field] !== proposal.before[field],
+    (field) =>
+      (proposal.kind === "remove" || proposal.change[field] !== undefined) &&
+      current[field] !== before[field],
   );
 }
 

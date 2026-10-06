@@ -48,12 +48,13 @@ The agent is a tool-calling loop where reads are free and every write goes throu
 | --- | --- | --- |
 | `search_my_list` | Fuzzy-match a title or nickname against the user's mirrored list | None |
 | `get_entry` | Current status, progress and score for one title | None |
+| `search_anime` | Find a show that isn't on the user's list, by title, on AniList | None |
 | `propose_update` | Stage a status, episode, chapter or score change; returns a proposal ID | Writes a pending row locally |
 | `commit_update` | Apply a proposal to MAL and the mirror | Writes to MAL |
 | `get_airing_today` | New episodes for Watching shows, from AniList schedules | None |
 | `recommend` | Rank backlog candidates against constraints and taste memory | None |
 
-**Safe writes.** `commit_update` only accepts a proposal ID, never raw arguments. Low-confidence matches return to the user for confirmation before commit. Each proposal has an idempotency key, so a retried commit never double-counts episodes. Every commit is logged with the prior value for undo.
+**Safe writes.** `commit_update` only accepts a proposal ID, never raw arguments. Low-confidence matches return to the user for confirmation before commit. Adding a show that isn't on the list always waits for the user's confirmation, however clear the match. Each proposal has an idempotency key, so a retried commit never double-counts episodes. Every commit is logged with the prior value for undo.
 
 **Memory.** Three layers: the list mirror (authoritative progress state, in Postgres), taste memory (structured drop reasons and rating patterns, updated after each session), and short conversation context. The model reads state through tools rather than holding the whole list in its prompt.
 

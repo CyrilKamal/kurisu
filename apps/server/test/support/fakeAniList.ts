@@ -19,6 +19,21 @@ export interface FakeAniListMedia {
   }[];
 }
 
+/** A show for title searches, in the shape AniList's search returns. */
+export interface FakeCatalogMedia {
+  id: number;
+  idMal: number | null;
+  title: { romaji: string; english: string | null; native: string | null };
+  synonyms: string[];
+  format: string;
+  status: string;
+  episodes: number | null;
+  duration: number | null;
+  isAdult: boolean;
+  coverImage: { large: string | null };
+  startDate: { year: number | null; month: number | null; day: number | null };
+}
+
 export interface FakeAiring {
   mediaId: number;
   episode: number;
@@ -28,18 +43,23 @@ export interface FakeAiring {
 
 interface GraphQlBody {
   query: string;
-  variables: { ids?: number[]; page?: number; after?: number; before?: number };
+  variables: { ids?: number[]; page?: number; after?: number; before?: number } & Record<
+    string,
+    unknown
+  >;
 }
 
 const PER_PAGE = 50;
 
 /**
- * A small stand-in for AniList's GraphQL API. It answers the two queries the app sends (media by
- * MAL ids, airing schedules in a time window) from in-memory data, pages like AniList, and can
- * fail the next requests on demand.
+ * A small stand-in for AniList's GraphQL API. It answers the queries the app sends (media by MAL
+ * ids, airing schedules in a time window, title searches) from in-memory data, pages like
+ * AniList, and can fail the next requests on demand.
  */
 export class FakeAniList {
   media: FakeAniListMedia[] = [];
+  /** Shows a title search can find: any whose title or synonym contains the search words. */
+  catalog: FakeCatalogMedia[] = [];
   airings: FakeAiring[] = [];
   readonly requests: GraphQlBody[] = [];
   private readonly failures: { status: number; headers?: Record<string, string> }[] = [];
@@ -82,6 +102,7 @@ export class FakeAniList {
 
   reset(): void {
     this.media = [];
+    this.catalog = [];
     this.airings = [];
     this.requests.length = 0;
     this.failures.length = 0;
@@ -97,6 +118,22 @@ export class FakeAniList {
 
   private answer(body: GraphQlBody): unknown {
     const { ids = [], page = 1 } = body.variables;
+    if (body.query.includes("search:")) {
+      // One aliased page per title: q0, q1, ...
+      const pages: Record<string, { media: FakeCatalogMedia[] }> = {};
+      for (const [name, value] of Object.entries(body.variables)) {
+        if (!/^q\d+$/.test(name) || typeof value !== "string") continue;
+        const words = value.toLowerCase();
+        pages[name] = {
+          media: this.catalog.filter((m) =>
+            [m.title.romaji, m.title.english, ...m.synonyms].some((t) =>
+              t?.toLowerCase().includes(words),
+            ),
+          ),
+        };
+      }
+      return pages;
+    }
     if (body.query.includes("airingSchedules")) {
       const after = body.variables.after ?? -Infinity;
       const before = body.variables.before ?? Infinity;
@@ -143,6 +180,31 @@ export function airingMedia(
         isDisabled: false,
       },
     ],
+    ...overrides,
+  };
+}
+
+/** A finished TV show for title searches, for tests that don't care about details. */
+export function catalogMedia(
+  id: number,
+  idMal: number | null,
+  romaji: string,
+  overrides: Partial<FakeCatalogMedia> = {},
+): FakeCatalogMedia {
+  return {
+    id,
+    idMal,
+    title: { romaji, english: null, native: null },
+    synonyms: [],
+    format: "TV",
+    status: "FINISHED",
+    episodes: 12,
+    duration: 24,
+    isAdult: false,
+    coverImage: {
+      large: `https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/${String(id)}.jpg`,
+    },
+    startDate: { year: 2024, month: 4, day: 6 },
     ...overrides,
   };
 }
