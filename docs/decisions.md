@@ -1021,3 +1021,15 @@ Requested during Milestone 4, outside its scope.
 - Adding takes two steps: the message, then a tap.
 - Shows found but never added leave provisional rows in `anime`, which is harmless.
 - AniList being down means Chat can't find new shows, and says so.
+
+## 2026-10-06 — Prompt v12 becomes the app's prompt (Milestone 4)
+**Decision:** v12 (v11 plus `search_anime` and the rules for adding shows) is the app's prompt.
+**Alternatives:** Keeping v11 and offering adds later.
+**Why:** On Flash-Lite over all 130 of your cases (none of them about adding yet), v12 keeps 0 wrong writes and scores better than v11's last run. Clarification precision is the same. Every miss asks or holds instead of writing: Mushoku Tensei, TYBW s4, the example multi-sequel, and one brief reply ("watched ep 8" got "which show?"; v11 got it in its run).
+
+| Prompt | Accuracy | Brief replies | Wrong writes | Clarification precision |
+|---|---|---|---|---|
+| v11 | 124/130 | 35/35 | 0/123 | 71.4% |
+| v12 | 126/130 | 34/35 | 0/125 | 71.4% |
+
+**Consequences:** Adding shows works in Chat now. Your add cases come next, after the frozen catalog is built from their titles.

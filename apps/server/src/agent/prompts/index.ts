@@ -27,7 +27,7 @@ export const PROMPTS = {
 } as const;
 
 /** The prompt the app uses. */
-export const CURRENT_PROMPT = PROGRESS_SYNC_V11;
+export const CURRENT_PROMPT = PROGRESS_SYNC_V12;
 
 /** The recommendation agent's prompt. */
 export const RECOMMEND_PROMPT = RECOMMEND_V1;
