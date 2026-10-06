@@ -423,7 +423,7 @@ export const agentOutcome = pgEnum("agent_outcome", [
 ]);
 export const agentStepKind = pgEnum("agent_step_kind", ["model_call", "tool_call"]);
 
-/** A chat thread. The Chat screen shows the user's latest one. */
+/** A chat thread. Chat lists them by latest message and opens the most recent one. */
 export const conversations = pgTable(
   "conversations",
   {
@@ -431,6 +431,9 @@ export const conversations = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    // From the first message, or the brief's date. Older chats have none and show their first
+    // message instead.
+    title: text("title"),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
   (table) => [index("conversations_user_created_idx").on(table.userId, table.createdAt.desc())],

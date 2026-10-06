@@ -3,7 +3,7 @@ import type { FastifyBaseLogger } from "fastify";
 
 import { airingRows, refreshAiring } from "../anilist/cache.js";
 import type { AniListClient } from "../anilist/client.js";
-import { currentConversation } from "../chat/service.js";
+import { createConversation } from "../chat/service.js";
 import type { Db } from "../db/client.js";
 import {
   anime,
@@ -16,7 +16,14 @@ import {
 import type { ModelClient } from "../llm/modelClient.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import type { PushResult, PushSender } from "../push/send.js";
-import { buildBriefItems, chatText, episodeCount, pushText, type BriefItem } from "./build.js";
+import {
+  briefTitle,
+  buildBriefItems,
+  chatText,
+  episodeCount,
+  pushText,
+  type BriefItem,
+} from "./build.js";
 import { writeSummary } from "./summary.js";
 import { briefTiming, localClock } from "./timing.js";
 
@@ -104,8 +111,13 @@ export async function runBrief(
         "brief summary fell back to the template",
       );
     }
+    const localDate =
+      request.kind === "daily"
+        ? request.localDate
+        : localClock(now, await userTimeZone(db, userId)).date;
     await db.transaction(async (tx) => {
-      const conversationId = await currentConversation(tx, userId);
+      // Each brief starts its own chat, so a reply to it never lands in an unrelated thread.
+      const conversationId = await createConversation(tx, userId, briefTitle(localDate));
       const [message] = await tx
         .insert(chatMessages)
         .values({ conversationId, role: "assistant", content: chatText(summary.text, items) })
@@ -148,7 +160,7 @@ async function deliver(
 ): Promise<BriefOutcome> {
   const push = await deps.push.sendToUser(userId, {
     ...pushText(items),
-    url: "/chat",
+    url: await briefPath(deps.db, briefId),
     tag: "brief",
   });
   const allFailed = push.sent === 0 && push.failed > 0;
@@ -340,6 +352,25 @@ async function update(
     .update(briefs)
     .set({ ...values, updatedAt: new Date() })
     .where(eq(briefs.id, briefId));
+}
+
+/** Where tapping a brief's notification goes: its chat, or the latest one if it was deleted. */
+async function briefPath(db: Db, briefId: string): Promise<string> {
+  const [row] = await db
+    .select({ conversationId: chatMessages.conversationId })
+    .from(briefs)
+    .innerJoin(chatMessages, eq(briefs.chatMessageId, chatMessages.id))
+    .where(eq(briefs.id, briefId));
+  return row ? `/chat/${row.conversationId}` : "/chat";
+}
+
+/** The time zone from the user's brief settings, UTC if they have none. */
+async function userTimeZone(db: Db, userId: string): Promise<string> {
+  const [row] = await db
+    .select({ timeZone: briefSettings.timeZone })
+    .from(briefSettings)
+    .where(eq(briefSettings.userId, userId));
+  return row?.timeZone ?? "UTC";
 }
 
 async function loadItems(db: Db, briefId: string): Promise<BriefItem[] | null> {

@@ -154,8 +154,27 @@ export const chatMessageViewSchema = z.object({
 });
 export type ChatMessageView = z.infer<typeof chatMessageViewSchema>;
 
-/** GET /chat, and POST /chat/messages (the new user and assistant messages). */
-export const chatThreadResponseSchema = z.object({ messages: z.array(chatMessageViewSchema) });
+/** A chat, as listed in the sidebar. */
+export const conversationViewSchema = z.object({
+  id: z.uuid(),
+  title: z.string(),
+  lastMessageAt: z.iso.datetime(),
+});
+export type ConversationView = z.infer<typeof conversationViewSchema>;
+
+/** GET /chat/conversations: most recently active first. */
+export const conversationsResponseSchema = z.object({
+  conversations: z.array(conversationViewSchema),
+});
+
+/**
+ * GET /chat/conversations/:id, and POST /chat/messages (the chat it went to, and the new user and
+ * assistant messages).
+ */
+export const chatThreadResponseSchema = z.object({
+  conversation: conversationViewSchema,
+  messages: z.array(chatMessageViewSchema),
+});
 
 /** GET /changes: newest first. */
 export const changesResponseSchema = z.object({ changes: z.array(changeViewSchema) });

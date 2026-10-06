@@ -1,9 +1,10 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
 
 import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
 import { runAgent, type AgentDeps, type Prompt, type RunResult } from "../agent/runAgent.js";
 import type { Db, Executor } from "../db/client.js";
 import {
+  agentRuns,
   anime,
   briefs,
   changes,
@@ -17,6 +18,7 @@ import type { ModelRef } from "../llm/modelConfig.js";
 import { runRecommender, type RecommendResult } from "../recommend/agent.js";
 import type { CommitErrorCode } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
+import { titleFrom, UNTITLED_CHAT } from "./titles.js";
 
 export interface ChatDeps extends AgentDeps {
   roles: { agent: ModelRef; escalation: ModelRef | null; recommend: ModelRef };
@@ -47,6 +49,21 @@ export interface PendingView {
   reason: string | null;
 }
 
+/** A chat, as listed in the sidebar. */
+export interface ConversationView {
+  id: string;
+  title: string;
+  lastMessageAt: string;
+}
+
+/** The chat doesn't exist, or isn't the user's. */
+export class ConversationNotFoundError extends Error {
+  constructor() {
+    super("conversation not found");
+    this.name = "ConversationNotFoundError";
+  }
+}
+
 export interface ChatMessageView {
   id: string;
   role: "user" | "assistant";
@@ -70,38 +87,50 @@ export interface PickView {
 }
 
 /**
- * Handles one user message: runs the agent on the configured model and, if that run ended
- * without writing anything because it had to ask, hold a change, or failed, retries once on the
- * escalation model. The escalated answer replaces the first only if it succeeds.
+ * Handles one user message in a chat, or in a new chat titled after it when `conversationId` is
+ * null. Runs the agent on the configured model and, if that run ended without writing anything
+ * because it had to ask, hold a change, or failed, retries once on the escalation model. The
+ * escalated answer replaces the first only if it succeeds. Throws ConversationNotFoundError for a
+ * chat that isn't the user's.
  */
 export async function handleChatMessage(
   deps: ChatDeps,
   userId: string,
   text: string,
+  existingConversationId: string | null,
 ): Promise<{
+  conversationId: string;
   userMessageId: string;
   assistantMessageId: string;
   run: RunResult;
   recommendation: RecommendResult | null;
 }> {
   const { db } = deps;
-  const conversationId = await currentConversation(db, userId);
-  const recent = (
-    await db
-      .select({ id: chatMessages.id, role: chatMessages.role, content: chatMessages.content })
-      .from(chatMessages)
-      .where(eq(chatMessages.conversationId, conversationId))
-      .orderBy(desc(chatMessages.createdAt))
-      .limit(HISTORY_MESSAGES)
-  ).reverse();
+  if (existingConversationId && !(await findConversation(db, userId, existingConversationId))) {
+    throw new ConversationNotFoundError();
+  }
+  const recent = existingConversationId
+    ? (
+        await db
+          .select({ id: chatMessages.id, role: chatMessages.role, content: chatMessages.content })
+          .from(chatMessages)
+          .where(eq(chatMessages.conversationId, existingConversationId))
+          .orderBy(desc(chatMessages.createdAt))
+          .limit(HISTORY_MESSAGES)
+      ).reverse()
+    : [];
   const history = recent.map(({ role, content }) => ({ role, content }));
   const brief = await briefRepliedTo(db, recent.at(-1));
 
-  const [userMessage] = await db
-    .insert(chatMessages)
-    .values({ conversationId, role: "user", content: text })
-    .returning({ id: chatMessages.id });
-  if (!userMessage) throw new Error("chat message insert returned no row");
+  const { conversationId, userMessageId } = await db.transaction(async (tx) => {
+    const id = existingConversationId ?? (await createConversation(tx, userId, titleFrom(text)));
+    const [message] = await tx
+      .insert(chatMessages)
+      .values({ conversationId: id, role: "user", content: text })
+      .returning({ id: chatMessages.id });
+    if (!message) throw new Error("chat message insert returned no row");
+    return { conversationId: id, userMessageId: message.id };
+  });
 
   const input = { userId, conversationId, history, message: text, ...(brief && { brief }) };
   let run = await runAgent(deps, { ...input, model: deps.roles.agent });
@@ -166,7 +195,8 @@ export async function handleChatMessage(
   }
 
   return {
-    userMessageId: userMessage.id,
+    conversationId,
+    userMessageId,
     assistantMessageId: assistantMessage.id,
     run,
     recommendation,
@@ -247,45 +277,121 @@ async function briefRepliedTo(
   return row.items.map((item) => ({ malId: item.malId, episodes: item.episodes }));
 }
 
-/** The user's latest conversation, created if they have none. */
-export async function currentConversation(db: Executor, userId: string): Promise<string> {
-  const [latest] = await db
-    .select({ id: conversations.id })
-    .from(conversations)
-    .where(eq(conversations.userId, userId))
-    .orderBy(desc(conversations.createdAt))
-    .limit(1);
-  if (latest) return latest.id;
+/** Starts a chat. */
+export async function createConversation(
+  db: Executor,
+  userId: string,
+  title: string,
+): Promise<string> {
   const [created] = await db
     .insert(conversations)
-    .values({ userId })
+    .values({ userId, title })
     .returning({ id: conversations.id });
   if (!created) throw new Error("conversation insert returned no row");
   return created.id;
 }
 
-/** The latest conversation's messages, oldest first, each with the changes it made. */
+/**
+ * The user's chats, most recently active first. A chat from before titles existed is called
+ * after the user's first message in it.
+ */
+export async function listConversations(
+  db: Db,
+  userId: string,
+  options: { id?: string; limit?: number } = {},
+): Promise<ConversationView[]> {
+  const lastMessageAt = sql<Date>`coalesce(${max(chatMessages.createdAt)}, ${conversations.createdAt})`;
+  const rows = await db
+    .select({
+      id: conversations.id,
+      title: conversations.title,
+      firstMessage: sql<string | null>`(
+        select m.content from chat_messages m
+        where m.conversation_id = ${conversations.id} and m.role = 'user'
+        order by m.created_at limit 1
+      )`,
+      lastMessageAt: lastMessageAt.mapWith(conversations.createdAt),
+    })
+    .from(conversations)
+    .leftJoin(chatMessages, eq(chatMessages.conversationId, conversations.id))
+    .where(
+      and(
+        eq(conversations.userId, userId),
+        ...(options.id ? [eq(conversations.id, options.id)] : []),
+      ),
+    )
+    .groupBy(conversations.id)
+    .orderBy(desc(lastMessageAt), desc(conversations.id))
+    .limit(options.limit ?? 100);
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title ?? (row.firstMessage ? titleFrom(row.firstMessage) : UNTITLED_CHAT),
+    lastMessageAt: row.lastMessageAt.toISOString(),
+  }));
+}
+
+/** The user's chat with this id, or null if they have none. */
+export async function findConversation(
+  db: Db,
+  userId: string,
+  id: string,
+): Promise<ConversationView | null> {
+  const [conversation] = await listConversations(db, userId, { id, limit: 1 });
+  return conversation ?? null;
+}
+
+/**
+ * Deletes one of the user's chats and its messages. Changes it held for confirmation are
+ * cancelled, since nothing else shows them; changes it made stay in the change log, where they
+ * can still be undone. Returns false if the user has no such chat.
+ */
+export async function deleteConversation(db: Db, userId: string, id: string): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const runs = tx
+      .select({ id: agentRuns.id })
+      .from(agentRuns)
+      .where(and(eq(agentRuns.conversationId, id), eq(agentRuns.userId, userId)));
+    await tx
+      .update(proposals)
+      .set({ status: "cancelled", updatedAt: new Date() })
+      .where(
+        and(
+          eq(proposals.userId, userId),
+          inArray(proposals.runId, runs),
+          eq(proposals.status, "pending"),
+        ),
+      );
+    const deleted = await tx
+      .delete(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.userId, userId)))
+      .returning({ id: conversations.id });
+    return deleted.length > 0;
+  });
+}
+
+/** One of the user's chats: its messages, oldest first, each with the changes it made. */
 export async function loadThread(
   db: Db,
   userId: string,
+  conversationId: string,
   limit = 50,
   onlyIds?: string[],
 ): Promise<ChatMessageView[]> {
-  const [conversation] = await db
-    .select({ id: conversations.id })
-    .from(conversations)
-    .where(eq(conversations.userId, userId))
-    .orderBy(desc(conversations.createdAt))
-    .limit(1);
-  if (!conversation) return [];
-
   const rows = (
     await db
-      .select()
+      .select({
+        id: chatMessages.id,
+        role: chatMessages.role,
+        content: chatMessages.content,
+        runId: chatMessages.runId,
+        createdAt: chatMessages.createdAt,
+      })
       .from(chatMessages)
+      .innerJoin(conversations, eq(chatMessages.conversationId, conversations.id))
       .where(
         and(
-          eq(chatMessages.conversationId, conversation.id),
+          eq(chatMessages.conversationId, conversationId),
+          eq(conversations.userId, userId),
           ...(onlyIds ? [inArray(chatMessages.id, onlyIds)] : []),
         ),
       )
