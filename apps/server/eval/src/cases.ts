@@ -11,6 +11,7 @@ import { normalizeChange, type ListChange } from "../../src/writes/normalize.js"
 import { isProgress, isProgressBeforeAiring } from "../../src/writes/propose.js";
 import { parseShorthand } from "./shorthand.js";
 import { frozenLatestAired, loadAiring, type AiringFreeze } from "./airing.js";
+import { briefReplyEpisodes } from "./brief.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 
 export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
@@ -172,6 +173,7 @@ function resolveCase(
   const changes = new Map<number, ListChange>();
   const errors: string[] = [];
   const warnings: string[] = [];
+  const briefReply = briefReplyEpisodes(evalCase.message, evalCase.history, index);
 
   for (const write of evalCase.expect.writes) {
     const label = JSON.stringify(write.anime);
@@ -214,6 +216,14 @@ function resolveCase(
     if (isProgressBeforeAiring(entry, normalized.change)) {
       warnings.push(
         `${label}: the snapshot says this show hasn't aired yet, so the agent holds progress on it for confirmation instead of writing it. Expect clarify: true and no write for it, unless you're testing that rule.`,
+      );
+    } else if (
+      briefReply &&
+      normalized.change.episodesWatched !== (briefReply.get(entry.id) ?? null)
+    ) {
+      const listed = briefReply.get(entry.id);
+      warnings.push(
+        `${label}: the message replies "watched it" to the brief in its history, which ${listed === undefined ? "doesn't list this show" : `listed up to ep ${String(listed)} for it`}. Any other write is held for confirmation.`,
       );
     } else if (mentionsNewestEpisode(evalCase.message) && isProgress(entry, normalized.change)) {
       const latest = frozenLatestAired(airing, entry.id);

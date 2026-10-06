@@ -48,6 +48,8 @@ describe("toMirrorRows", () => {
             medium: "https://cdn.myanimelist.net/m.jpg",
             large: "https://cdn.myanimelist.net/l.jpg",
           },
+          // When the show started airing, not when the user started it.
+          start_date: "2026-07-03",
         },
         list_status: { start_date: "2026-09", score: 8 },
       }),
@@ -65,6 +67,7 @@ describe("toMirrorRows", () => {
       mediaType: "tv",
       numEpisodes: 12,
       airingStatus: "currently_airing",
+      startDate: "2026-07-03",
       updatedAt: syncedAt,
     });
     expect(entry).toMatchObject({

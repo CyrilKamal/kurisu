@@ -31,10 +31,11 @@ import {
 import type { ListChange } from "../../../src/writes/normalize.js";
 import { loadCases, type ResolvedCase } from "../cases.js";
 import { loadAiring } from "../airing.js";
+import { briefFromHistory } from "../brief.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
 import { aggregate, scoreCase, type CaseRun, type Metrics } from "../score.js";
 import { throttle } from "../throttle.js";
-import { loadSnapshot, type Snapshot } from "../snapshot.js";
+import { loadSnapshot, TitleIndex, type Snapshot } from "../snapshot.js";
 
 const RESULTS_DIR = fileURLToPath(new URL("../../results/", import.meta.url));
 /** Calls per minute on Gemini unless --rpm says otherwise; well inside the paid tier's limit. */
@@ -167,6 +168,7 @@ async function runCase(
   const userId = await loadSnapshotIntoDb(db, snapshot, airing);
   const { writer } = createFakeWriter(db);
 
+  const brief = briefFromHistory(resolved.case.history, new TitleIndex(snapshot));
   const waitedBefore = models.waitedMs;
   const result = await runAgent(
     { db, models, writeListStatus: writer, prompt: PROMPT },
@@ -176,6 +178,7 @@ async function runCase(
       history: resolved.case.history,
       message: resolved.case.message,
       model: ref,
+      ...(brief && { brief }),
     },
   );
 

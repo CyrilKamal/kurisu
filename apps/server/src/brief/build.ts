@@ -124,9 +124,31 @@ export function itemLine(item: BriefItem): string {
   ].join("");
 }
 
-/** The brief as a chat message: the summary line, then one line per show. */
+/** The last line of every brief in chat: how to reply. */
+export const BRIEF_REPLY_HINT = `Reply "watched it" once you've caught up on all of these.`;
+
+/** The brief as a chat message: the summary line, one line per show, then the reply hint. */
 export function chatText(summary: string, items: BriefItem[]): string {
-  return [summary, "", ...items.map(itemLine)].join("\n");
+  return [summary, "", ...items.map(itemLine), "", BRIEF_REPLY_HINT].join("\n");
+}
+
+/** One "- Title ep 12 …" or "- Title eps 11–12 …" line, as itemLine writes it. */
+const ITEM_LINE = /^- (.+?) eps? (\d+(?:–\d+)?(?:, \d+(?:–\d+)?)*)(?: \(|\.| on |$)/;
+
+/**
+ * Reads a brief's chat text back into each show's title and the last episode it listed. The app
+ * itself knows a brief's items from the briefs table; the eval uses this for briefs written into a
+ * case's history. Empty when the text isn't a brief.
+ */
+export function parseBriefText(text: string): { title: string; lastEpisode: number }[] {
+  const lines = text.split("\n");
+  if (!lines.includes(BRIEF_REPLY_HINT)) return [];
+  return lines.flatMap((line) => {
+    const match = ITEM_LINE.exec(line);
+    if (!match?.[1] || !match[2]) return [];
+    const last = match[2].split(/[,–]\s*/).at(-1);
+    return last ? [{ title: match[1], lastEpisode: Number(last) }] : [];
+  });
 }
 
 const PUSH_BODY_SHOWS = 4;

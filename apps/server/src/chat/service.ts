@@ -3,7 +3,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
 import { runAgent, type AgentDeps, type RunResult } from "../agent/runAgent.js";
 import type { Db, Executor } from "../db/client.js";
-import { anime, changes, chatMessages, conversations, proposals } from "../db/schema.js";
+import { anime, briefs, changes, chatMessages, conversations, proposals } from "../db/schema.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import type { CommitErrorCode } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
@@ -56,14 +56,16 @@ export async function handleChatMessage(
 ): Promise<{ userMessageId: string; assistantMessageId: string; run: RunResult }> {
   const { db } = deps;
   const conversationId = await currentConversation(db, userId);
-  const history = (
+  const recent = (
     await db
-      .select({ role: chatMessages.role, content: chatMessages.content })
+      .select({ id: chatMessages.id, role: chatMessages.role, content: chatMessages.content })
       .from(chatMessages)
       .where(eq(chatMessages.conversationId, conversationId))
       .orderBy(desc(chatMessages.createdAt))
       .limit(HISTORY_MESSAGES)
   ).reverse();
+  const history = recent.map(({ role, content }) => ({ role, content }));
+  const brief = await briefRepliedTo(db, recent.at(-1));
 
   const [userMessage] = await db
     .insert(chatMessages)
@@ -71,7 +73,7 @@ export async function handleChatMessage(
     .returning({ id: chatMessages.id });
   if (!userMessage) throw new Error("chat message insert returned no row");
 
-  const input = { userId, conversationId, history, message: text };
+  const input = { userId, conversationId, history, message: text, ...(brief && { brief }) };
   let run = await runAgent(deps, { ...input, model: deps.roles.agent });
 
   const escalation = deps.roles.escalation;
@@ -162,6 +164,27 @@ function errorReply(error: string | null): string {
     default:
       return "Sorry, I got stuck on that one. Could you rephrase it?";
   }
+}
+
+/**
+ * The morning brief a message replies to, if the conversation's last message is one: each show
+ * and the last episode it listed.
+ */
+async function briefRepliedTo(
+  db: Db,
+  last: { id: string; role: "user" | "assistant" } | undefined,
+): Promise<{ malId: number; lastEpisode: number }[] | null> {
+  if (last?.role !== "assistant") return null;
+  const [row] = await db
+    .select({ items: briefs.items })
+    .from(briefs)
+    .where(eq(briefs.chatMessageId, last.id))
+    .limit(1);
+  if (!row?.items?.length) return null;
+  return row.items.flatMap((item) => {
+    const lastEpisode = item.episodes.at(-1);
+    return lastEpisode === undefined ? [] : [{ malId: item.malId, lastEpisode }];
+  });
 }
 
 /** The user's latest conversation, created if they have none. */

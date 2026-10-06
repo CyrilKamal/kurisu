@@ -25,6 +25,11 @@ export interface RunInput {
   message: string;
   model: ModelRef;
   escalatedFromRunId?: string;
+  /**
+   * The morning brief this message replies to (the last history turn), as each show and the last
+   * episode it listed. Lets "watched it" be checked against what the brief actually said.
+   */
+  brief?: { malId: number; lastEpisode: number }[];
 }
 
 export interface RunResult {
@@ -55,6 +60,8 @@ export interface AgentDeps {
 }
 
 const DEFAULT_MAX_TURNS = 6;
+/** A reply to a brief can touch every show in it: search, propose and commit each. */
+const BRIEF_REPLY_MAX_TURNS = 10;
 const MAX_LOGGED_RESULT_CHARS = 4000;
 
 /**
@@ -83,6 +90,9 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     writeListStatus: deps.writeListStatus,
     seen: new Set(),
     latestAired: new Map(),
+    briefEpisodes: input.brief
+      ? new Map(input.brief.map((item) => [item.malId, item.lastEpisode]))
+      : null,
     clear: new Map(),
     proposalIds: new Set(),
     committed: [],
@@ -91,7 +101,9 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     toldWaiting: new Set(),
     userMessage: input.message,
     contested: new Set(),
+    // A brief isn't a question, even when a show's title ends in "?".
     answering:
+      !input.brief &&
       input.history.at(-1)?.role === "assistant" &&
       input.history.at(-1)?.content.includes("?") === true,
     searches: new Map(),
@@ -116,7 +128,8 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     await db.insert(agentRunSteps).values({ ...step, runId: run.id, seq: seq++ });
   };
 
-  for (let turn = 0; turn < (deps.maxTurns ?? DEFAULT_MAX_TURNS); turn++) {
+  const maxTurns = deps.maxTurns ?? (input.brief ? BRIEF_REPLY_MAX_TURNS : DEFAULT_MAX_TURNS);
+  for (let turn = 0; turn < maxTurns; turn++) {
     let response;
     const callStarted = performance.now();
     try {

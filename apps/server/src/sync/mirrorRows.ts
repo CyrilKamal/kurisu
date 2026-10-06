@@ -24,6 +24,7 @@ export function toMirrorRows(
       // MAL reports 0 when the episode count isn't known yet.
       numEpisodes: node.num_episodes === 0 ? null : (node.num_episodes ?? null),
       airingStatus: node.status ?? null,
+      startDate: node.start_date ?? null,
       updatedAt: syncedAt,
     },
     entry: {

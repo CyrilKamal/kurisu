@@ -105,6 +105,9 @@ export const anime = pgTable("anime", {
   numEpisodes: integer("num_episodes"),
   // MAL values like currently_airing, finished_airing, not_yet_aired.
   airingStatus: text("airing_status"),
+  // When MAL says the show started airing, "2026-03-19" or partial ("2026-03"). Used to check how
+  // AniList's parts of a split show line up with this entry (see anilist/client.ts joinParts).
+  startDate: text("start_date"),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
 
@@ -305,7 +308,8 @@ export const proposals = pgTable(
     // Only the fields that change, with their new values.
     change: jsonb("change").$type<ListChange>().notNull(),
     requiresConfirmation: boolean("requires_confirmation").notNull().default(false),
-    // Why confirmation is needed: ambiguous_match, progress_backwards or not_yet_aired.
+    // Why confirmation is needed: ambiguous_match, progress_backwards, not_yet_aired,
+    // newest_episode_unknown, score_not_given or not_in_brief.
     confirmationReason: text("confirmation_reason"),
     status: proposalStatus("status").notNull().default("pending"),
     // A short error code when a commit failed.

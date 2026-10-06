@@ -52,7 +52,15 @@ export async function refreshAiring(
   const due = ids.filter((id) => !freshIds.has(id));
   if (due.length === 0) return { fetched: 0, unmapped: [] };
 
-  const lookup = await anilist.mediaByMalIds(due);
+  // MAL's own start date and episode count, to line up shows AniList splits into parts.
+  const facts = await db
+    .select({ malId: anime.malId, startDate: anime.startDate, numEpisodes: anime.numEpisodes })
+    .from(anime)
+    .where(inArray(anime.malId, due));
+  const lookup = await anilist.mediaByMalIds(
+    due,
+    new Map(facts.map(({ malId, ...rest }) => [malId, rest])),
+  );
   const found = new Map(lookup.media.map((m) => [m.malId, m]));
   const rows: AiringRow[] = due.map((malId) => {
     const media = found.get(malId);
@@ -96,7 +104,7 @@ export async function refreshAiring(
       log.warn(
         { malId, title },
         unjoinable.has(malId)
-          ? "several AniList entries share this MAL id and their episode numbering is unclear; skipping it"
+          ? "several AniList entries share this MAL id and they don't line up with MAL's start date or episode count; skipping it"
           : "no AniList entry for this MAL id; skipping it",
       );
     }
