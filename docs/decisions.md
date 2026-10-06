@@ -665,3 +665,18 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 - A negated reply the rule doesn't recognize after a failed commit gets the templated failure message, which is still accurate.
 - One without a failed commit still gets "nothing changed".
 - The negation window is kept tight, so "Not a problem, I've updated it" still counts as a claim.
+
+## 2026-10-05 — A new brief time applies today; the settings page shows where the brief stands (Milestone 3)
+**Decision:** This refines "The morning brief: pg-boss, once per local date, delivered into Chat".
+- Saving a new brief time or time zone, or turning the brief on, clears today's daily brief if it sent nothing (`empty` or `skipped_late`), so the new time applies today.
+- If today's brief went out (`sent`), the new time starts tomorrow, so a day still never gets two briefs.
+- `GET` and `PUT /brief/settings` also return:
+  - `next`: today, tomorrow, or null when the brief is off.
+  - `lastDaily`: date, status and episode count of the most recent daily brief.
+- The settings page shows them, e.g. "Next brief: today at 4:50 PM" and "Last brief (today): nothing new had aired, so nothing was sent."
+
+**Alternatives:** Keeping the strict once per day with no feedback; letting every time change send another brief.
+**Why:** In the live test, today's brief ran at 4:25 PM and found nothing new, so it sent no notification. Every later test time that day was then ignored, and it looked like the job never fired. Nothing on the page said the brief had run, or when the next one would.
+**Consequences:**
+- Moving the time later on a day with nothing new can produce one brief later that day.
+- The page always says whether the brief ran and when the next one is due.

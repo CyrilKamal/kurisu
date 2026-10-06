@@ -5,7 +5,13 @@ import { z } from "zod";
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
 import type { Config } from "../config.js";
 import { briefSettings } from "../db/schema.js";
-import { AniListUnavailableError, runBrief, type BriefDeps } from "./service.js";
+import {
+  AniListUnavailableError,
+  briefSchedule,
+  rearmToday,
+  runBrief,
+  type BriefDeps,
+} from "./service.js";
 import { STREAMING_SERVICE_IDS } from "./services.js";
 import { isValidTimeZone } from "./timing.js";
 
@@ -26,12 +32,7 @@ const settingsBody = z.object({
 });
 
 /** What the settings page shows before the user has saved anything. */
-const DEFAULT_SETTINGS = {
-  enabled: false,
-  time: "08:00",
-  timeZone: "UTC",
-  services: [] as string[],
-};
+const DEFAULT_SETTINGS = { enabled: false, localTime: "08:00", timeZone: "UTC", services: [] };
 
 /** A test brief calls AniList and the model, so once a minute is plenty. */
 const TEST_COOLDOWN_MS = 60_000;
@@ -50,32 +51,38 @@ export function registerBriefRoutes(
     return request.user.id;
   };
 
-  app.get("/brief/settings", read, async (request) => {
-    const [row] = await db
-      .select()
-      .from(briefSettings)
-      .where(eq(briefSettings.userId, userOf(request)));
-    return row
-      ? {
-          enabled: row.enabled,
-          time: row.localTime,
-          timeZone: row.timeZone,
-          services: row.services,
-        }
-      : DEFAULT_SETTINGS;
-  });
+  /** The settings as the page shows them, with when the next brief goes out. */
+  async function settingsView(userId: string) {
+    const [row] = await db.select().from(briefSettings).where(eq(briefSettings.userId, userId));
+    const settings = row ?? DEFAULT_SETTINGS;
+    return {
+      enabled: settings.enabled,
+      time: settings.localTime,
+      timeZone: settings.timeZone,
+      services: settings.services,
+      ...(await briefSchedule(db, userId, settings)),
+    };
+  }
+
+  app.get("/brief/settings", read, (request) => settingsView(userOf(request)));
 
   app.put("/brief/settings", write, async (request, reply) => {
     const userId = userOf(request);
     const body = settingsBody.safeParse(request.body);
     if (!body.success) return reply.code(400).send(fail("invalid_settings"));
     const { enabled, time, timeZone, services } = body.data;
+    const [before] = await db.select().from(briefSettings).where(eq(briefSettings.userId, userId));
     const values = { enabled, localTime: time, timeZone, services, updatedAt: new Date() };
     await db
       .insert(briefSettings)
       .values({ userId, ...values })
       .onConflictDoUpdate({ target: briefSettings.userId, set: values });
-    return { enabled, time, timeZone, services };
+
+    // A new time (or turning the brief on) applies today, unless today's brief already went out.
+    const rescheduled =
+      !before?.enabled || before.localTime !== time || before.timeZone !== timeZone;
+    if (enabled && rescheduled) await rearmToday(db, userId, timeZone);
+    return settingsView(userId);
   });
 
   app.post("/brief/test", write, async (request, reply) => {

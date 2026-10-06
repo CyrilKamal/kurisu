@@ -1,40 +1,41 @@
 "use client";
 
 import {
-  briefSettingsSchema,
+  briefSettingsResponseSchema,
   briefTestResponseSchema,
   STREAMING_SERVICES,
-  type BriefSettings,
+  type BriefSettingsResponse,
 } from "@kurisu/shared";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import { postApi, sendApi } from "@/lib/clientApi";
 
 import { Button } from "./Notifications";
 
 /** Brief time and streaming services, plus "send me one now". */
-export function BriefSettingsForm({ initial }: { initial: BriefSettings }) {
+export function BriefSettingsForm({ initial }: { initial: BriefSettingsResponse }) {
   const [settings, setSettings] = useState(initial);
+  // What was last saved, which the status line describes (not unsaved edits).
+  const [saved, setSaved] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  // The browser knows the user's time zone; the brief time is local to it.
-  const [timeZone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const timeZone = useBrowserTimeZone();
 
   async function save() {
     setBusy(true);
     setMessage(null);
-    const result = await sendApi("PUT", "/brief/settings", briefSettingsSchema, {
-      ...settings,
-      timeZone,
+    const { enabled, time, services } = settings;
+    const result = await sendApi("PUT", "/brief/settings", briefSettingsResponseSchema, {
+      enabled,
+      time,
+      services,
+      timeZone: timeZone ?? settings.timeZone,
     });
     setBusy(false);
     if (result.ok && result.data) {
       setSettings(result.data);
-      setMessage(
-        result.data.enabled
-          ? `Saved. Your brief comes at ${result.data.time}.`
-          : "Saved. The brief is off.",
-      );
+      setSaved(result.data);
+      setMessage("Saved.");
     } else {
       setMessage("Couldn't save. Check the time and try again.");
     }
@@ -114,6 +115,8 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettings }) {
           </div>
         </fieldset>
 
+        {timeZone && <ScheduleStatus saved={saved} />}
+
         <div className="flex flex-wrap gap-2">
           <Button onClick={save} disabled={busy} primary>
             Save
@@ -132,6 +135,75 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettings }) {
       </div>
     </section>
   );
+}
+
+const noSubscription = () => () => undefined;
+
+/**
+ * The browser's time zone; the brief time is local to it. Null while rendering on the server,
+ * which may be in another zone.
+ */
+function useBrowserTimeZone(): string | null {
+  return useSyncExternalStore(
+    noSubscription,
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    () => null,
+  );
+}
+
+/** "Next brief: today at 4:50 PM" and what happened to the last one. */
+function ScheduleStatus({ saved }: { saved: BriefSettingsResponse }) {
+  const next =
+    saved.next === null
+      ? "The brief is off."
+      : `Next brief: ${saved.next} at ${formatTime(saved.time)}.`;
+  const last = saved.lastDaily;
+  return (
+    <div className="rounded-md bg-zinc-50 px-3 py-2 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+      <p>{next}</p>
+      {last && (
+        <p className="mt-1 text-zinc-500">
+          Last brief ({formatDate(last.localDate)}): {lastBriefText(last)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function lastBriefText(last: NonNullable<BriefSettingsResponse["lastDaily"]>): string {
+  switch (last.status) {
+    case "sent":
+      return `sent ${String(last.episodes)} new episode${last.episodes === 1 ? "" : "s"}.`;
+    case "empty":
+      return "nothing new had aired, so nothing was sent.";
+    case "skipped_late":
+      return "skipped, because its time had passed long before (the server was off, or the time was set later).";
+    case "failed":
+      return "couldn't be sent yet. It will retry.";
+    case "building":
+    case "ready":
+      return "being sent.";
+  }
+}
+
+/** "16:50" in the browser's format, e.g. "4:50 PM". */
+function formatTime(time: string): string {
+  const [hours, minutes] = time.split(":").map(Number);
+  return new Date(2000, 0, 1, hours, minutes).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** "2026-10-05" as "today", or e.g. "Mon, Oct 5". */
+function formatDate(localDate: string): string {
+  const today = new Intl.DateTimeFormat("en-CA").format(new Date());
+  if (localDate === today) return "today";
+  return new Date(`${localDate}T12:00:00`).toLocaleDateString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function sendNowError(error: string): string {

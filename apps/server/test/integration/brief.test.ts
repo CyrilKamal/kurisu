@@ -6,7 +6,13 @@ import { inject } from "vitest";
 import { createAniListClient } from "../../src/anilist/client.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import { createBriefScheduler } from "../../src/brief/scheduler.js";
-import { BriefPushError, dueBriefs, runBrief, type BriefDeps } from "../../src/brief/service.js";
+import {
+  BriefPushError,
+  briefSchedule,
+  dueBriefs,
+  runBrief,
+  type BriefDeps,
+} from "../../src/brief/service.js";
 import {
   briefs,
   briefSettings,
@@ -193,6 +199,8 @@ describe("settings", () => {
       time: "08:00",
       timeZone: "UTC",
       services: [],
+      next: null,
+      lastDaily: null,
     });
 
     const saved = await send("PUT", "/brief/settings", {
@@ -201,7 +209,7 @@ describe("settings", () => {
       timeZone: "Asia/Tokyo",
       services: ["netflix", "crunchyroll", "netflix"],
     });
-    expect(saved.json()).toEqual({
+    expect(saved.json()).toMatchObject({
       enabled: true,
       time: "07:45",
       timeZone: "Asia/Tokyo",
@@ -220,6 +228,85 @@ describe("settings", () => {
       expect(res.statusCode, JSON.stringify(bad)).toBe(400);
       expect(res.json()).toEqual({ error: "invalid_settings" });
     }
+  });
+});
+
+describe("changing the brief time", () => {
+  const todayUtc = () => new Date().toISOString().slice(0, 10);
+  const settings = (time: string) => ({
+    enabled: true,
+    time,
+    timeZone: "UTC",
+    services: ["crunchyroll"],
+  });
+
+  it("applies today when today's brief sent nothing", async () => {
+    for (const [status, time] of [
+      ["empty", "09:00"],
+      ["skipped_late", "10:00"],
+    ] as const) {
+      await h.db.insert(briefs).values({ userId, kind: "daily", localDate: todayUtc(), status });
+      await send("PUT", "/brief/settings", settings(time));
+      expect(await h.db.select().from(briefs), status).toEqual([]);
+    }
+  });
+
+  it("waits for tomorrow when today's brief went out, or the time didn't change", async () => {
+    await h.db
+      .insert(briefs)
+      .values({ userId, kind: "daily", localDate: todayUtc(), status: "sent" });
+    await send("PUT", "/brief/settings", settings("09:00"));
+    expect(await h.db.select().from(briefs)).toHaveLength(1);
+
+    await h.db.update(briefs).set({ status: "empty" });
+    await send("PUT", "/brief/settings", { ...settings("09:00"), services: ["netflix"] });
+    expect(await h.db.select().from(briefs)).toHaveLength(1);
+  });
+
+  it("says when the next brief goes out and how the last one went", async () => {
+    const on = { enabled: true, localTime: "08:00", timeZone: "UTC" };
+    const at = (iso: string) => new Date(iso);
+
+    expect(await briefSchedule(h.db, userId, on, at("2026-10-06T07:00:00Z"))).toEqual({
+      next: "today",
+      lastDaily: null,
+    });
+    // Due now: it goes out at the next tick.
+    expect((await briefSchedule(h.db, userId, on, at("2026-10-06T08:02:00Z"))).next).toBe("today");
+    // Too late for today.
+    expect((await briefSchedule(h.db, userId, on, at("2026-10-06T13:00:00Z"))).next).toBe(
+      "tomorrow",
+    );
+    const off = { ...on, enabled: false };
+    expect((await briefSchedule(h.db, userId, off, at("2026-10-06T07:00:00Z"))).next).toBeNull();
+
+    await h.db.insert(briefs).values({
+      userId,
+      kind: "daily",
+      localDate: "2026-10-06",
+      status: "sent",
+      items: [
+        {
+          malId: 1,
+          title: "A",
+          episodes: [3, 4],
+          premiere: false,
+          finale: false,
+          episodesWatched: 2,
+          services: [],
+        },
+      ],
+    });
+    expect(await briefSchedule(h.db, userId, on, at("2026-10-06T08:10:00Z"))).toMatchObject({
+      next: "tomorrow",
+      lastDaily: { localDate: "2026-10-06", status: "sent", episodes: 2 },
+    });
+  });
+
+  it("returns the schedule from the settings routes", async () => {
+    const view = (await send("GET", "/brief/settings")).json<{ next: string | null }>();
+    expect(view).toMatchObject({ enabled: true, time: "08:00", lastDaily: null });
+    expect(["today", "tomorrow"]).toContain(view.next);
   });
 });
 

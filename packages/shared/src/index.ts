@@ -226,6 +226,22 @@ export const briefSettingsSchema = z.object({
 });
 export type BriefSettings = z.infer<typeof briefSettingsSchema>;
 
+/** GET and PUT /brief/settings respond with the settings plus where the daily brief stands. */
+export const briefSettingsResponseSchema = briefSettingsSchema.extend({
+  /** When the next daily brief goes out; null when the brief is off. */
+  next: z.enum(["today", "tomorrow"]).nullable(),
+  /** The most recent daily brief. */
+  lastDaily: z
+    .object({
+      localDate: z.string(),
+      status: z.enum(["building", "ready", "sent", "empty", "skipped_late", "failed"]),
+      episodes: z.number().int().nonnegative(),
+      at: z.iso.datetime({ offset: true }),
+    })
+    .nullable(),
+});
+export type BriefSettingsResponse = z.infer<typeof briefSettingsResponseSchema>;
+
 /** POST /brief/test: a brief of the last 24 hours, sent now. "empty" means nothing aired. */
 export const briefTestResponseSchema = z.object({
   status: z.enum(["sent", "empty"]),

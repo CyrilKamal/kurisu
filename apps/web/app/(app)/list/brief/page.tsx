@@ -1,4 +1,4 @@
-import { briefSettingsSchema, pushPublicKeyResponseSchema } from "@kurisu/shared";
+import { briefSettingsResponseSchema, pushPublicKeyResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Morning brief · kurisu" };
 /** When the morning brief arrives, which services it names, and this device's notifications. */
 export default async function BriefPage() {
   const [settings, push] = await Promise.all([
-    apiGet("/brief/settings", briefSettingsSchema),
+    apiGet("/brief/settings", briefSettingsResponseSchema),
     apiGet("/push/public-key", pushPublicKeyResponseSchema),
   ]);
   if (!settings || !push) redirect("/");
