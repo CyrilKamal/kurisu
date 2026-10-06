@@ -16,12 +16,16 @@ import {
 } from "../db/schema.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import { runRecommender, type RecommendResult } from "../recommend/agent.js";
-import type { CommitErrorCode } from "../writes/commit.js";
+import type { AnimeRefresher, CommitErrorCode, ListRemover } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 import { mentionedShows } from "./mentions.js";
 import { titleFrom, UNTITLED_CHAT } from "./titles.js";
 
 export interface ChatDeps extends AgentDeps {
+  /** For undoing an add, from the change cards. */
+  removeListStatus?: ListRemover;
+  /** Fills in MAL's details for a show once it's added. */
+  refreshAnime?: AnimeRefresher;
   roles: { agent: ModelRef; escalation: ModelRef | null; recommend: ModelRef };
   /** The recommendation agent's prompt. */
   recommendPrompt: Prompt;
@@ -34,6 +38,7 @@ export interface ChangeView {
   id: string;
   animeId: number;
   title: string;
+  kind: "update" | "add" | "remove";
   before: ListChange;
   after: ListChange;
   committedAt: string;
@@ -45,9 +50,12 @@ export interface PendingView {
   id: string;
   animeId: number;
   title: string;
+  kind: "update" | "add";
   before: ListChange;
   change: ListChange;
   reason: string | null;
+  /** The show, for an add's card. */
+  show: ShowCardView | null;
 }
 
 /** A chat, as listed in the sidebar. */
@@ -153,8 +161,11 @@ export async function handleChatMessage(
   let run = await runAgent(deps, { ...input, model: deps.roles.agent });
 
   const escalation = deps.roles.escalation;
+  // A held add waits for the user by design; a stronger model can't do better.
+  const onlyAddsHeld = run.pending.length > 0 && run.pending.every((p) => p.kind === "add");
   const worthEscalating =
     !run.handedOff &&
+    !onlyAddsHeld &&
     run.committed.length === 0 &&
     ["clarification", "needs_confirmation", "error"].includes(run.outcome) &&
     run.error !== "model_auth";
@@ -461,11 +472,10 @@ export async function loadThread(
     userId,
     rows.map((r) => r.id),
   );
-  const showCards = await loadShowCards(
-    db,
-    userId,
-    rows.flatMap((r) => r.showIds),
-  );
+  const showCards = await loadShowCards(db, userId, [
+    ...rows.flatMap((r) => r.showIds),
+    ...cards.filter((c) => c.proposal.kind === "add").map((c) => c.proposal.animeId),
+  ]);
 
   return rows.map((row) => {
     const mine = cards.filter((c) => c.proposal.runId === row.runId);
@@ -477,14 +487,19 @@ export async function loadThread(
       changes: mine.flatMap((c) => (c.change ? [toChangeView(c.change, c.title, false)] : [])),
       pending: mine
         .filter((c) => c.proposal.status === "pending" && c.proposal.requiresConfirmation)
-        .map((c) => ({
-          id: c.proposal.id,
-          animeId: c.proposal.animeId,
-          title: c.title,
-          before: pickChanged(c.proposal.before, c.proposal.change),
-          change: c.proposal.change,
-          reason: c.proposal.confirmationReason,
-        })),
+        .map((c) => {
+          const add = c.proposal.kind === "add";
+          return {
+            id: c.proposal.id,
+            animeId: c.proposal.animeId,
+            title: c.title,
+            kind: add ? ("add" as const) : ("update" as const),
+            before: c.proposal.before ? pickChanged(c.proposal.before, c.proposal.change) : {},
+            change: c.proposal.change,
+            reason: c.proposal.confirmationReason,
+            show: add ? (showCards.get(c.proposal.animeId) ?? null) : null,
+          };
+        }),
       picks: picksByMessage.get(row.id) ?? [],
       shows: row.showIds.flatMap((id) => {
         const card = showCards.get(id);
@@ -606,6 +621,7 @@ function toChangeView(
     id: change.id,
     animeId: change.animeId,
     title,
+    kind: change.kind,
     before: change.before,
     after: change.after,
     committedAt: change.committedAt.toISOString(),

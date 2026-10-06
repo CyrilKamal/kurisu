@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { AiringFreeze } from "../../eval/src/airing.js";
 import { loadCases } from "../../eval/src/cases.js";
+import type { CatalogFreeze } from "../../eval/src/catalog.js";
 import { loadSnapshot, type Snapshot } from "../../eval/src/snapshot.js";
 
 const snapshot: Snapshot = {
@@ -71,19 +72,105 @@ const snapshot: Snapshot = {
 
 let dir: string;
 
-function load(files: Record<string, string>, airing: AiringFreeze | null = null) {
+function load(
+  files: Record<string, string>,
+  airing: AiringFreeze | null = null,
+  catalog: CatalogFreeze | null = null,
+) {
   dir = mkdtempSync(path.join(tmpdir(), "kurisu-cases-"));
   for (const [name, content] of Object.entries(files)) {
     writeFileSync(path.join(dir, name), content);
   }
-  return loadCases(`${dir}${path.sep}`, () => snapshot, airing);
+  return loadCases(`${dir}${path.sep}`, () => snapshot, airing, catalog);
 }
+
+const catalogShow = (malId: number, title: string, episodes: number | null = 12) => ({
+  anilistId: malId + 50_000,
+  malId,
+  title,
+  titleEn: null,
+  titleJa: null,
+  synonyms: [],
+  format: "TV",
+  status: "FINISHED",
+  episodes,
+  duration: 24,
+  coverUrl: null,
+  startDate: "2024",
+});
+
+const catalog: CatalogFreeze = {
+  description: "test",
+  source: "anilist",
+  searches: [
+    {
+      query: "new",
+      frozenAt: "2026-10-06T00:00:00.000Z",
+      shows: [
+        catalogShow(101, "Brand New Show"),
+        catalogShow(102, "Twin Title"),
+        catalogShow(103, "Twin Title"),
+        // The same show as the snapshot's entry 1.
+        catalogShow(1, "Kusuriya no Hitorigoto"),
+      ],
+    },
+  ],
+};
 
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
 const header = "snapshot: test\ncases:\n";
+
+describe("expected adds", () => {
+  it("resolve against the frozen catalog, normalized like the app's adds", () => {
+    const result = load(
+      {
+        "adds.yaml": `${header}  - id: add-ptw
+    message: add brand new show
+    expect: { adds: [{ anime: Brand New Show }] }
+  - id: add-finished
+    message: finished brand new show, 8/10
+    expect: { adds: [{ anime: 101, status: completed, score: 8 }] }
+`,
+      },
+      null,
+      catalog,
+    );
+
+    expect(result.errors).toEqual([]);
+    expect(result.cases.map((c) => [c.case.id, [...c.expectedAdds]])).toEqual([
+      ["add-ptw", [[101, { status: "plan_to_watch" }]]],
+      ["add-finished", [[101, { status: "completed", episodesWatched: 12, score: 8 }]]],
+    ]);
+  });
+
+  it("must be in the catalog, unambiguous, and not already on the list", () => {
+    const result = load(
+      {
+        "adds.yaml": `${header}  - id: unknown
+    message: add one piece
+    expect: { adds: [{ anime: One Piece }] }
+  - id: twins
+    message: add twin title
+    expect: { adds: [{ anime: Twin Title }] }
+  - id: on-list
+    message: add the apothecary diaries
+    expect: { adds: [{ anime: Kusuriya no Hitorigoto }] }
+`,
+      },
+      null,
+      catalog,
+    );
+
+    expect(result.errors.map((e) => [e.caseId, e.message])).toEqual([
+      ["unknown", expect.stringMatching(/isn't in the frozen catalog.*pnpm eval:catalog/)],
+      ["twins", expect.stringMatching(/several shows/)],
+      ["on-list", expect.stringMatching(/already on the snapshot's list/)],
+    ]);
+  });
+});
 
 describe("loadCases", () => {
   it("resolves any title form and normalizes the expected change", () => {

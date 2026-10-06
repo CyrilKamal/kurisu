@@ -3,7 +3,14 @@
 import type { ChangeView, PendingProposalView } from "@kurisu/shared";
 import { useState } from "react";
 
-import { confirmationReasonLabel, describeChange } from "@/lib/describeChange";
+import {
+  addButtonLabel,
+  confirmationReasonLabel,
+  describeChange,
+  describeWrite,
+} from "@/lib/describeChange";
+
+import { Cover, showDetails } from "./chat/ShowCard";
 
 /** A write the agent made (or an undo), with an Undo button. */
 export function ChangeCard({
@@ -20,7 +27,7 @@ export function ChangeCard({
         <p className="truncate font-medium">{change.title}</p>
         <p className="text-zinc-500">
           {change.isUndo ? "Undo: " : ""}
-          {describeChange(change.before, change.after)}
+          {describeWrite(change.kind, change.before, change.after)}
         </p>
       </div>
       {change.undone ? (
@@ -61,12 +68,32 @@ export function PendingCard({
       setBusy(false);
     });
   };
+  const add = proposal.kind === "add";
   return (
     <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950">
-      <p className="font-medium">{proposal.title}</p>
-      <p className="text-zinc-600 dark:text-zinc-300">
-        {describeChange(proposal.before, proposal.change)}
-      </p>
+      {add && proposal.show ? (
+        <div className="flex items-start gap-3">
+          <Cover url={proposal.show.pictureUrl} />
+          <div className="min-w-0">
+            <a
+              href={`https://myanimelist.net/anime/${String(proposal.animeId)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="line-clamp-2 font-medium leading-snug hover:underline"
+            >
+              {proposal.title}
+            </a>
+            <p className="text-xs text-zinc-600 dark:text-zinc-300">{showDetails(proposal.show)}</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <p className="font-medium">{proposal.title}</p>
+          <p className="text-zinc-600 dark:text-zinc-300">
+            {describeChange(proposal.before, proposal.change)}
+          </p>
+        </>
+      )}
       <p className="mt-1 text-xs text-amber-900 dark:text-amber-200">
         {confirmationReasonLabel(proposal.reason)}
       </p>
@@ -79,7 +106,7 @@ export function PendingCard({
           }}
           className="h-8 rounded-md bg-blue-700 px-3 text-xs font-medium text-white hover:bg-blue-800 disabled:opacity-60"
         >
-          Confirm
+          {add ? addButtonLabel(proposal.change) : "Confirm"}
         </button>
         <button
           type="button"

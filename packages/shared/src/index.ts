@@ -104,10 +104,28 @@ export const listChangeSchema = z
 export type ListChange = z.infer<typeof listChangeSchema>;
 
 /** A committed write to MAL, from the change log. */
+/** A show a reply names, as a card. `status` is null when it isn't on the user's list. */
+export const showCardSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  numEpisodes: z.number().int().positive().nullable(),
+  episodeMinutes: z.number().int().positive().nullable(),
+  status: listStatusSchema.nullable(),
+  episodesWatched: z.number().int().nonnegative(),
+});
+export type ShowCard = z.infer<typeof showCardSchema>;
+
+/** update: a change to an entry. add: a show put on the list. remove: one taken off (an undone add). */
+export const WRITE_KINDS = ["update", "add", "remove"] as const;
+export type WriteKind = (typeof WRITE_KINDS)[number];
+
 export const changeViewSchema = z.object({
   id: z.uuid(),
   animeId: z.number().int().positive(),
   title: z.string(),
+  kind: z.enum(WRITE_KINDS),
   before: listChangeSchema,
   after: listChangeSchema,
   committedAt: z.iso.datetime(),
@@ -123,9 +141,13 @@ export const pendingProposalViewSchema = z.object({
   id: z.uuid(),
   animeId: z.number().int().positive(),
   title: z.string(),
+  /** An add puts the show on the list; it always waits for the user. */
+  kind: z.enum(["update", "add"]),
   before: listChangeSchema,
   change: listChangeSchema,
   reason: z.string().nullable(),
+  /** The show, for an add's card. */
+  show: showCardSchema.nullable(),
 });
 export type PendingProposalView = z.infer<typeof pendingProposalViewSchema>;
 
@@ -142,19 +164,6 @@ export const pickViewSchema = z.object({
   why: z.string(),
 });
 export type PickView = z.infer<typeof pickViewSchema>;
-
-/** A show a reply names, as a card. `status` is null when it isn't on the user's list. */
-export const showCardSchema = z.object({
-  animeId: z.number().int().positive(),
-  title: z.string(),
-  pictureUrl: z.string().nullable(),
-  mediaType: z.string().nullable(),
-  numEpisodes: z.number().int().positive().nullable(),
-  episodeMinutes: z.number().int().positive().nullable(),
-  status: listStatusSchema.nullable(),
-  episodesWatched: z.number().int().nonnegative(),
-});
-export type ShowCard = z.infer<typeof showCardSchema>;
 
 export const chatMessageViewSchema = z.object({
   id: z.uuid(),

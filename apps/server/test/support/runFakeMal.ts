@@ -29,6 +29,47 @@ const fake = await FakeMal.start(
   PORT,
 );
 fake.list = fixtureList();
+// Shows that aren't on the list, by their real MAL ids, so adding one found by searching the real
+// AniList works here too. Public show details only.
+fake.catalog = [
+  {
+    id: 52991,
+    title: "Sousou no Frieren",
+    alternative_titles: {
+      synonyms: [],
+      en: "Frieren: Beyond Journey's End",
+      ja: "葬送のフリーレン",
+    },
+    media_type: "tv",
+    num_episodes: 28,
+    status: "finished_airing",
+    genres: [
+      { id: 2, name: "Adventure" },
+      { id: 8, name: "Drama" },
+      { id: 10, name: "Fantasy" },
+    ],
+    average_episode_duration: 1440,
+    mean: 9.3,
+  },
+  {
+    id: 59978,
+    title: "Sousou no Frieren 2nd Season",
+    alternative_titles: {
+      synonyms: [],
+      en: "Frieren: Beyond Journey's End Season 2",
+      ja: "葬送のフリーレン 第2期",
+    },
+    media_type: "tv",
+    num_episodes: 10,
+    status: "finished_airing",
+    genres: [
+      { id: 2, name: "Adventure" },
+      { id: 10, name: "Fantasy" },
+    ],
+    average_episode_duration: 1440,
+    mean: 9.1,
+  },
+];
 
 console.log(`Fake MAL listening on ${fake.baseUrl}`);
 console.log(`  MAL_AUTH_BASE_URL=${fake.authBaseUrl}`);

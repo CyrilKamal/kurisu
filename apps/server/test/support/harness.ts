@@ -43,7 +43,7 @@ export interface Harness {
 }
 
 export async function startHarness(
-  options: Pick<BuildAppOptions, "models" | "roles" | "pushOrigins" | "anilist"> & {
+  options: Pick<BuildAppOptions, "models" | "roles" | "pushOrigins" | "anilist" | "prompt"> & {
     /** Extra environment variables, e.g. VAPID keys. */
     env?: Record<string, string>;
   } = {},

@@ -40,6 +40,11 @@ export const proposalStatus = pgEnum("proposal_status", [
   "cancelled",
 ]);
 export const proposalSource = pgEnum("proposal_source", ["agent", "undo"]);
+/**
+ * update: changes an entry on the list. add: puts a show on the list (always confirmed by the
+ * user first). remove: takes one off, only to undo an add.
+ */
+export const writeKind = pgEnum("write_kind", ["update", "add", "remove"]);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -355,12 +360,14 @@ export const proposals = pgTable(
       .notNull()
       .references(() => anime.malId),
     source: proposalSource("source").notNull(),
+    kind: writeKind("kind").notNull().default("update"),
     // The agent run that proposed it; null for undo proposals.
     runId: uuid("run_id").references((): AnyPgColumn => agentRuns.id),
     // Proposing the same change twice (e.g. a repeated tool call) returns the same proposal.
     idempotencyKey: text("idempotency_key").notNull(),
     // The entry's four list fields when proposed. Commit refuses if the mirror has moved since.
-    before: jsonb("before").$type<ListState>().notNull(),
+    // Null for an add: the show wasn't on the list.
+    before: jsonb("before").$type<ListState>(),
     // Only the fields that change, with their new values.
     change: jsonb("change").$type<ListChange>().notNull(),
     requiresConfirmation: boolean("requires_confirmation").notNull().default(false),
@@ -369,7 +376,7 @@ export const proposals = pgTable(
     dropReason: text("drop_reason"),
     dropSaid: text("drop_said"),
     // Why confirmation is needed: ambiguous_match, progress_backwards, not_yet_aired,
-    // newest_episode_unknown, score_not_given or not_in_brief.
+    // newest_episode_unknown, score_not_given, not_in_brief, not_named, or adds_to_list (every add).
     confirmationReason: text("confirmation_reason"),
     status: proposalStatus("status").notNull().default("pending"),
     // A short error code when a commit failed.
@@ -400,9 +407,10 @@ export const changes = pgTable(
       .notNull()
       .unique()
       .references((): AnyPgColumn => proposals.id),
-    // Prior values of exactly the fields that changed.
+    kind: writeKind("kind").notNull().default("update"),
+    // Prior values of exactly the fields that changed; empty for an add.
     before: jsonb("before").$type<ListChange>().notNull(),
-    // New values of those fields, as MAL confirmed them.
+    // New values of those fields, as MAL confirmed them; empty for a remove.
     after: jsonb("after").$type<ListChange>().notNull(),
     committedAt: timestamptz("committed_at").notNull().defaultNow(),
     // Set when this change was undone, pointing at the change that undid it.

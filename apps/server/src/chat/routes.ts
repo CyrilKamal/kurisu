@@ -41,7 +41,12 @@ export function registerChatRoutes(
 ): void {
   const { config, db } = deps;
   const guards = { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] };
-  const writeDeps = { db, writeListStatus: deps.writeListStatus };
+  const writeDeps = {
+    db,
+    writeListStatus: deps.writeListStatus,
+    ...(deps.removeListStatus && { removeListStatus: deps.removeListStatus }),
+    ...(deps.refreshAnime && { refreshAnime: deps.refreshAnime }),
+  };
   const recent = new Map<string, number[]>();
   const busy = new Set<string>();
 

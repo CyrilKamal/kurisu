@@ -72,6 +72,13 @@ export class FakeMal {
   readonly patchRequests: { animeId: number; form: Record<string, string> }[] = [];
   /** Status codes to return for the next PATCHes, in order (e.g. [503]). */
   patchFailures: number[] = [];
+  /**
+   * Shows MAL knows that aren't on the list. A PATCH for one puts it on the list, as on MAL, and
+   * GET /anime/{id} describes it (or any show on the list).
+   */
+  catalog: FakeListItem["node"][] = [];
+  /** Every list-status DELETE received. */
+  readonly deleteRequests: number[] = [];
 
   private readonly codes = new Map<string, IssuedCode>();
   private readonly accessTokens = new Map<string, number>(); // token -> expiry (ms epoch)
@@ -130,6 +137,8 @@ export class FakeMal {
     this.animeListRequests.length = 0;
     this.patchRequests.length = 0;
     this.patchFailures = [];
+    this.catalog = [];
+    this.deleteRequests.length = 0;
   }
 
   stop(): Promise<void> {
@@ -164,6 +173,20 @@ export class FakeMal {
       this.patchListStatus(Number(patch[1]), new URLSearchParams(await readBody(req)), req, res);
       return;
     }
+    if (req.method === "DELETE" && patch?.[1]) {
+      this.deleteListStatus(Number(patch[1]), req, res);
+      return;
+    }
+    const details = /^\/v2\/anime\/(\d+)$/.exec(url.pathname);
+    if (req.method === "GET" && details?.[1]) {
+      const id = Number(details[1]);
+      const node =
+        this.list.find((i) => i.node.id === id)?.node ?? this.catalog.find((n) => n.id === id);
+      if (!this.isAuthorized(req)) json(res, 401, { error: "invalid_token" });
+      else if (!node) json(res, 404, { error: "not_found" });
+      else json(res, 200, node);
+      return;
+    }
     if (req.method === "GET" && url.pathname === "/v2/users/@me/animelist") {
       this.animeList(url, req, res);
       return;
@@ -188,10 +211,25 @@ export class FakeMal {
       json(res, 401, { error: "invalid_token" });
       return;
     }
-    const item = this.list.find((i) => i.node.id === animeId);
+    let item = this.list.find((i) => i.node.id === animeId);
     if (!item) {
-      json(res, 404, { error: "not_found" });
-      return;
+      // Updating a show that isn't on the list adds it, as on MAL.
+      const node = this.catalog.find((n) => n.id === animeId);
+      if (!node) {
+        json(res, 404, { error: "not_found" });
+        return;
+      }
+      item = {
+        node,
+        list_status: {
+          status: "plan_to_watch",
+          score: 0,
+          num_episodes_watched: 0,
+          is_rewatching: false,
+          updated_at: new Date().toISOString(),
+        },
+      };
+      this.list.push(item);
     }
     const ls = item.list_status;
     const status = form.get("status");
@@ -210,6 +248,22 @@ export class FakeMal {
       is_rewatching: ls.is_rewatching,
       updated_at: ls.updated_at,
     });
+  }
+
+  /** MAL's list-status delete: 200 with an empty body, or 404 when it isn't on the list. */
+  private deleteListStatus(animeId: number, req: IncomingMessage, res: ServerResponse): void {
+    this.deleteRequests.push(animeId);
+    if (!this.isAuthorized(req)) {
+      json(res, 401, { error: "invalid_token" });
+      return;
+    }
+    const index = this.list.findIndex((i) => i.node.id === animeId);
+    if (index === -1) {
+      json(res, 404, { error: "not_found" });
+      return;
+    }
+    this.list.splice(index, 1);
+    res.writeHead(200).end();
   }
 
   private animeList(url: URL, req: IncomingMessage, res: ServerResponse): void {

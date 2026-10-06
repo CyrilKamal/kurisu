@@ -9,6 +9,7 @@ import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
 import { registerBriefRoutes } from "./brief/routes.js";
 import { createBriefScheduler } from "./brief/scheduler.js";
+import type { Prompt } from "./agent/runAgent.js";
 import { registerChatRoutes } from "./chat/routes.js";
 import type { Config } from "./config.js";
 import { createTokenCipher } from "./crypto/tokenCipher.js";
@@ -20,7 +21,8 @@ import type { RetryOptions } from "./mal/client.js";
 import { registerPushRoutes } from "./push/routes.js";
 import { createPushSender } from "./push/send.js";
 import { createListSync } from "./sync/listSync.js";
-import { createMalListWriter } from "./writes/commit.js";
+import { createAnimeRefresher } from "./sync/animeDetails.js";
+import { createMalListRemover, createMalListWriter } from "./writes/commit.js";
 
 export interface BuildAppOptions {
   /** Where log lines go; defaults to stdout. Tests pass a stream to inspect what gets logged. */
@@ -34,6 +36,8 @@ export interface BuildAppOptions {
   anilist?: { minIntervalMs?: number; retry?: RetryOptions };
   /** Extra push-service origins to accept; tests point subscriptions at a local fake. */
   pushOrigins?: string[];
+  /** Chat's prompt, when tests try one that isn't the app's yet. */
+  prompt?: Prompt;
 }
 
 /** Builds the HTTP app without listening, so tests can drive it with `app.inject`. */
@@ -112,11 +116,15 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       ollamaBaseUrl: config.llm.ollamaBaseUrl,
       ollama: modelsFile.ollama,
     });
-  const writeListStatus = createMalListWriter({
+  const malWrites = {
     tokenStore,
     apiBaseUrl: config.mal.apiBaseUrl,
     ...(options.malRetry ? { retry: options.malRetry } : {}),
-  });
+  };
+  const writeListStatus = createMalListWriter(malWrites);
+  // Chat's searches of all anime get their own AniList client, so they never queue behind a
+  // background airing refresh.
+  const chatAniList = createAniListClient({ apiUrl: config.anilist.apiUrl, ...options.anilist });
 
   const push = createPushSender({
     db,
@@ -158,7 +166,10 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     db,
     models,
     writeListStatus,
-    prompt: CURRENT_PROMPT,
+    removeListStatus: createMalListRemover(malWrites),
+    refreshAnime: createAnimeRefresher({ db, ...malWrites }),
+    catalog: (queries) => chatAniList.searchAnime(queries),
+    prompt: options.prompt ?? CURRENT_PROMPT,
     recommendPrompt: RECOMMEND_PROMPT,
     roles: {
       agent: options.roles?.agent ?? configuredRoles.agent,

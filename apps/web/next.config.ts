@@ -22,8 +22,11 @@ const nextConfig: NextConfig = {
     ]);
   },
   images: {
-    // Cover art comes from MAL's CDN.
-    remotePatterns: [new URL("https://cdn.myanimelist.net/**")],
+    // Cover art comes from MAL's CDN, and from AniList's for shows found outside your list.
+    remotePatterns: [
+      new URL("https://cdn.myanimelist.net/**"),
+      new URL("https://s4.anilist.co/file/anilistcdn/**"),
+    ],
   },
 };
 

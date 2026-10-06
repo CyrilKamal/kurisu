@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
 import { changes, listEntries, proposals } from "../db/schema.js";
-import { commitProposal, type CommitResult, type ListWriter } from "./commit.js";
+import { commitProposal, type CommitResult, type WriteDeps } from "./commit.js";
 import type { ListChange, ListState } from "./normalize.js";
 
 export type UndoResult =
@@ -15,10 +15,11 @@ const FIELDS = ["status", "episodesWatched", "score", "isRewatching"] as const;
 /**
  * Reverts one committed change by proposing its prior values and committing that proposal
  * through the same single write path. Refuses if the entry changed since (undoing would
- * silently clobber the newer change).
+ * silently clobber the newer change). Undoing an add takes the show off the list again, and
+ * undoing that puts it back as it was.
  */
 export async function undoChange(
-  deps: { db: Db; writeListStatus: ListWriter },
+  deps: WriteDeps,
   userId: string,
   changeId: string,
 ): Promise<UndoResult> {
@@ -41,11 +42,27 @@ export async function undoChange(
     })
     .from(listEntries)
     .where(and(eq(listEntries.userId, userId), eq(listEntries.animeId, change.animeId)));
-  if (!entry) return { status: "failed", error: "not_on_list" };
 
-  const keys = FIELDS.filter((field) => change.after[field] !== undefined);
-  if (keys.some((field) => entry[field] !== change.after[field])) {
-    return { status: "changed_since" };
+  let undo: { kind: "update" | "add" | "remove"; before: ListState | null; change: ListChange };
+  if (change.kind === "remove") {
+    if (entry) return { status: "changed_since" };
+    undo = { kind: "add", before: null, change: change.before };
+  } else {
+    if (!entry) return { status: "failed", error: "not_on_list" };
+    // After an add, everything it didn't set is at MAL's defaults; any later change blocks
+    // removing the show, since that would lose it.
+    const expected: ListChange =
+      change.kind === "add"
+        ? { episodesWatched: 0, score: 0, isRewatching: false, ...change.after }
+        : change.after;
+    const keys = FIELDS.filter((field) => expected[field] !== undefined);
+    if (keys.some((field) => entry[field] !== expected[field])) {
+      return { status: "changed_since" };
+    }
+    undo =
+      change.kind === "add"
+        ? { kind: "remove", before: entry, change: {} }
+        : { kind: "update", before: entry, change: change.before };
   }
 
   // One undo proposal per change, however many times Undo is pressed.
@@ -56,9 +73,10 @@ export async function undoChange(
       userId,
       animeId: change.animeId,
       source: "undo",
+      kind: undo.kind,
       idempotencyKey,
-      before: entry satisfies ListState,
-      change: change.before satisfies ListChange,
+      before: undo.before,
+      change: undo.change,
       undoOfChangeId: change.id,
     })
     .onConflictDoNothing({ target: [proposals.userId, proposals.idempotencyKey] });

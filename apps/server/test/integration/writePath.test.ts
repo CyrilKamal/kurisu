@@ -242,7 +242,7 @@ describe("the confirmation gate", () => {
 describe("refusals and failures", () => {
   it("rejects proposals that can't be right", async () => {
     const attempts: Partial<ProposeInput>[] = [
-      { animeId: 123456, episodesWatched: 1 }, // not on the list
+      { animeId: 123456, episodesWatched: 1 }, // not a show the mirror knows
       { animeId: WATCHING, episodesWatched: 13 }, // the show has 12
       { animeId: WATCHING, episodesWatched: 7 }, // already at 7
       { animeId: WATCHING, episodesWatched: 8, episodesDelta: 1 },
@@ -260,7 +260,7 @@ describe("refusals and failures", () => {
       errors.push(result.ok ? "ok" : result.error);
     }
     expect(errors).toEqual([
-      "not_on_list",
+      "unknown_anime",
       "episodes_exceed_total",
       "no_change",
       "both_episode_forms",

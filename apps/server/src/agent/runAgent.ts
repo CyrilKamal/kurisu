@@ -9,11 +9,19 @@ import type { Change, CommitErrorCode, ListWriter } from "../writes/commit.js";
 import type { Proposal } from "../writes/propose.js";
 import { namedShows } from "./briefReply.js";
 import { runToolLoop } from "./toolLoop.js";
-import { executeTool, TOOL_SPECS, type RunContext } from "./tools.js";
+import {
+  executeTool,
+  toolSpecsFor,
+  type CatalogSearch,
+  type OptionalTool,
+  type RunContext,
+} from "./tools.js";
 
 export interface Prompt {
   version: string;
   system: string;
+  /** Tools beyond the base set this prompt was written for (see OPTIONAL_TOOLS). */
+  tools?: readonly OptionalTool[];
 }
 
 export type AgentOutcome =
@@ -60,6 +68,8 @@ export interface AgentDeps {
   db: Db;
   models: ModelClient;
   writeListStatus: ListWriter;
+  /** Search of all anime, for prompts that offer search_anime. */
+  catalog?: CatalogSearch;
   prompt: Prompt;
   /** Model turns before giving up. Each turn is one model call plus its tool calls. */
   maxTurns?: number;
@@ -94,6 +104,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     userId: input.userId,
     runId: run.id,
     writeListStatus: deps.writeListStatus,
+    catalog: deps.prompt.tools?.includes("search_anime") ? (deps.catalog ?? null) : null,
     seen: new Set(),
     latestAired: new Map(),
     briefEpisodes: input.brief
@@ -132,7 +143,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     models: deps.models,
     model: input.model,
     system: deps.prompt.system,
-    tools: TOOL_SPECS,
+    tools: toolSpecsFor(deps.prompt.tools),
     messages,
     maxTurns: deps.maxTurns ?? (input.brief ? BRIEF_REPLY_MAX_TURNS : DEFAULT_MAX_TURNS),
     execute: (call) => executeTool(ctx, call),

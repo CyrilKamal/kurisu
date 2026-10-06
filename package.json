@@ -22,6 +22,7 @@
     "eval:snapshot": "pnpm --filter @kurisu/server eval:snapshot",
     "eval:lookup": "pnpm --filter @kurisu/server eval:lookup",
     "eval:airing": "pnpm --filter @kurisu/server eval:airing",
+    "eval:catalog": "pnpm --filter @kurisu/server eval:catalog",
     "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",
     "eval": "pnpm --filter @kurisu/server eval"
   },

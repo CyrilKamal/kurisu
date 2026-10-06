@@ -34,7 +34,15 @@ export interface ListEntryView {
   airingStatus: string | null;
 }
 
-export interface SearchCandidate extends ListEntryView {
+/**
+ * A search result. `S` is the list status: always set for a search of the list, null for a show
+ * found outside it (see searchCatalog).
+ */
+export interface SearchCandidate<S extends ListStatus | null = ListStatus> extends Omit<
+  ListEntryView,
+  "status"
+> {
+  status: S;
   /** 0–1: best trigram similarity between any query and any of the show's names. */
   matchScore: number;
   /** The name that matched best (title, English, Japanese or a synonym). */
@@ -54,14 +62,30 @@ export interface SearchCandidate extends ListEntryView {
 
 export type ClearBy = "unique" | "only_in_progress";
 
+/** An entry on the list or found outside it; the clear-match helpers work on either. */
+type AnyEntry = ScoredEntry<ListStatus | null>;
+
 /** An entry with its score against each query, as the clear-match rule needs it. */
-export interface ScoredEntry extends Omit<SearchCandidate, "clear" | "clearBy"> {
+export interface ScoredEntry<S extends ListStatus | null = ListStatus> extends Omit<
+  SearchCandidate<S>,
+  "clear" | "clearBy"
+> {
   /** Every name the show has: title, English, Japanese and synonyms. */
   names: string[];
   /** Best score per query, in query order. */
   scores: number[];
   /** Whether one of the show's names is exactly the query, per query. */
   exact: boolean[];
+}
+
+interface SearchOptions {
+  limit?: number;
+  /** The user's message, so titles the model supplied can be told from the user's words. */
+  userText?: string;
+  /** Entries some search left tied, kept across the searches of one agent run. */
+  contested?: Set<number>;
+  /** The user is answering the agent's question, so naming an entry exactly picks it. */
+  answering?: boolean;
 }
 
 /**
@@ -73,20 +97,53 @@ export async function searchMyList(
   db: Db,
   userId: string,
   queries: string[],
-  options: {
-    limit?: number;
-    /** The user's message, so titles the model supplied can be told from the user's words. */
-    userText?: string;
-    /** Entries some search left tied, kept across the searches of one agent run. */
-    contested?: Set<number>;
-    /** The user is answering the agent's question, so naming an entry exactly picks it. */
-    answering?: boolean;
-  } = {},
+  options: SearchOptions = {},
 ): Promise<SearchCandidate[]> {
-  const limit = options.limit ?? 5;
-  const cleaned = [...new Set(queries.map(normalizeName).filter((q) => q))];
+  const cleaned = cleanQueries(queries);
   if (cleaned.length === 0) return [];
-  // Drizzle spreads a JS array into separate parameters, so build the Postgres array explicitly.
+  const pool = (await scoredPool(db, userId, null, cleaned)).filter(
+    (e): e is ScoredEntry => e.status !== null,
+  );
+  return clearFirst(markClear(pool, cleaned, options), options.limit);
+}
+
+/**
+ * The same search over shows found outside the list (their `anime` rows must exist), with the
+ * same clear-match rule. A show the user has on their list comes back with its list status.
+ */
+export async function searchCatalog(
+  db: Db,
+  userId: string,
+  animeIds: number[],
+  queries: string[],
+  options: SearchOptions = {},
+): Promise<SearchCandidate<ListStatus | null>[]> {
+  const cleaned = cleanQueries(queries);
+  if (cleaned.length === 0 || animeIds.length === 0) return [];
+  const pool = await scoredPool(db, userId, animeIds, cleaned);
+  return clearFirst(markClear(pool, cleaned, options), options.limit);
+}
+
+function cleanQueries(queries: string[]): string[] {
+  return [...new Set(queries.map(normalizeName).filter((q) => q))];
+}
+
+/** Clear matches first, so the model always sees them, then the best of the rest. */
+function clearFirst<C extends { clear: boolean }>(marked: C[], limit = 5): C[] {
+  return [...marked.filter((c) => c.clear), ...marked.filter((c) => !c.clear)].slice(0, limit);
+}
+
+/**
+ * Scores the shows on the user's list (animeIds null), or these shows wherever they are, against
+ * each query.
+ */
+async function scoredPool(
+  db: Db,
+  userId: string,
+  animeIds: number[] | null,
+  cleaned: string[],
+): Promise<ScoredEntry<ListStatus | null>[]> {
+  // Drizzle spreads a JS array into separate parameters, so build the Postgres arrays explicitly.
   const queryArray = sql`ARRAY[${sql.join(
     cleaned.map((q) => sql`${q}`),
     sql`, `,
@@ -99,6 +156,18 @@ export async function searchMyList(
                  GREATEST(similarity(lower(n.name), q.q), word_similarity(q.q, lower(n.name))))
     END::float8`;
   const names = sql`array_remove(ARRAY[a.title, a.title_en, a.title_ja] || a.synonyms, NULL)`;
+  const from =
+    animeIds === null
+      ? sql`FROM ${listEntries} le JOIN ${anime} a ON a.mal_id = le.anime_id`
+      : sql`FROM ${anime} a
+            LEFT JOIN ${listEntries} le ON le.anime_id = a.mal_id AND le.user_id = ${userId}`;
+  const scope =
+    animeIds === null
+      ? sql`le.user_id = ${userId}`
+      : sql`a.mal_id IN (${sql.join(
+          animeIds.map((id) => sql`${id}`),
+          sql`, `,
+        )})`;
 
   const rows = await db.execute<{
     anime_id: number;
@@ -106,10 +175,10 @@ export async function searchMyList(
     title_en: string | null;
     media_type: string | null;
     num_episodes: number | null;
-    status: ListStatus;
-    episodes_watched: number;
-    score: number;
-    is_rewatching: boolean;
+    status: ListStatus | null;
+    episodes_watched: number | null;
+    score: number | null;
+    is_rewatching: boolean | null;
     airing_status: string | null;
     names: string[];
     scores: number[];
@@ -121,8 +190,7 @@ export async function searchMyList(
            le.status, le.num_episodes_watched AS episodes_watched, le.score, le.is_rewatching,
            a.airing_status, ${names} AS names, per.scores, per.exact,
            best.score AS match_score, best.name AS matched_name
-    FROM ${listEntries} le
-    JOIN ${anime} a ON a.mal_id = le.anime_id
+    ${from}
     CROSS JOIN LATERAL (
       SELECT n.name, ${score} AS score
       FROM unnest(${names}) AS n(name)
@@ -140,21 +208,21 @@ export async function searchMyList(
         GROUP BY q.qi
       ) s
     ) per
-    WHERE le.user_id = ${userId} AND best.score >= ${MIN_MATCH}
+    WHERE ${scope} AND best.score >= ${MIN_MATCH}
     ORDER BY best.score DESC, a.mal_id
     LIMIT ${POOL_SIZE}
   `);
 
-  const pool = rows.rows.map((row): ScoredEntry => ({
+  return rows.rows.map((row) => ({
     animeId: row.anime_id,
     title: row.title,
     titleEn: row.title_en,
     mediaType: row.media_type,
     numEpisodes: row.num_episodes,
     status: row.status,
-    episodesWatched: row.episodes_watched,
-    score: row.score,
-    isRewatching: row.is_rewatching,
+    episodesWatched: row.episodes_watched ?? 0,
+    score: row.score ?? 0,
+    isRewatching: row.is_rewatching ?? false,
     airingStatus: row.airing_status,
     matchScore: Math.round(row.match_score * 1000) / 1000,
     matchedName: row.matched_name,
@@ -162,9 +230,6 @@ export async function searchMyList(
     scores: row.scores.map(Number),
     exact: row.exact,
   }));
-  const marked = markClear(pool, cleaned, options);
-  // Clear matches first, so the model always sees them, then the best of the rest.
-  return [...marked.filter((c) => c.clear), ...marked.filter((c) => !c.clear)].slice(0, limit);
 }
 
 /**
@@ -193,11 +258,11 @@ export async function searchMyList(
  * a search with none of the user's words in it is all guesses, so only an entry's exact name
  * makes it clear there.
  */
-export function markClear(
-  pool: ScoredEntry[],
+export function markClear<S extends ListStatus | null>(
+  pool: ScoredEntry<S>[],
   queries: string[],
   context: { userText?: string; contested?: Set<number>; answering?: boolean } = {},
-): SearchCandidate[] {
+): SearchCandidate<S>[] {
   const said = context.userText === undefined ? null : ` ${normalizeName(context.userText)} `;
   const isUsersWords = (query: string) => said?.includes(` ${query} `) ?? false;
 
@@ -267,8 +332,8 @@ export function markClear(
 }
 
 /** The entries tied for best on one query (within CLEAR_MARGIN), if the best is strong enough. */
-function contendersFor(pool: ScoredEntry[], qi: number): ScoredEntry[] {
-  const scoreOf = (e: ScoredEntry) => e.scores[qi] ?? 0;
+function contendersFor(pool: AnyEntry[], qi: number): AnyEntry[] {
+  const scoreOf = (e: AnyEntry) => e.scores[qi] ?? 0;
   const ranked = pool
     .filter((e) => scoreOf(e) >= MIN_MATCH)
     .sort((a, b) => scoreOf(b) - scoreOf(a));
@@ -278,7 +343,7 @@ function contendersFor(pool: ScoredEntry[], qi: number): ScoredEntry[] {
 }
 
 function clearForQuery(
-  pool: ScoredEntry[],
+  pool: AnyEntry[],
   qi: number,
   query: string,
   /** The user named this entry exactly in answer to "which one?": siblings don't matter. */
@@ -338,10 +403,10 @@ function clearForQuery(
  * If none or several fit, or that season comes in parts ("Final Season" and "Final Season Part
  * 2"), the user has to say which, so there's no answer.
  */
-function unnumberedSeason(entries: ScoredEntry[], wanted: SeasonRef): ScoredEntry | null {
+function unnumberedSeason(entries: AnyEntry[], wanted: SeasonRef): AnyEntry | null {
   const n = wanted.season;
   if (n === null || n < 2 || wanted.part !== null) return null;
-  const seasonsOf = (e: ScoredEntry) =>
+  const seasonsOf = (e: AnyEntry) =>
     e.names.map((name) => seasonRef(name).season).filter((s): s is number => s !== null);
   const lower = entries.filter((e) => seasonsOf(e).some((s) => s < n));
   // Only the season right after the last numbered one can be inferred: "season 4" can't be
@@ -355,13 +420,13 @@ function unnumberedSeason(entries: ScoredEntry[], wanted: SeasonRef): ScoredEntr
       e.animeId > newestLower &&
       (e.mediaType === "tv" || e.mediaType === "ona"),
   );
-  const isLaterPart = (e: ScoredEntry) => e.names.some((name) => (seasonRef(name).part ?? 1) > 1);
+  const isLaterPart = (e: AnyEntry) => e.names.some((name) => (seasonRef(name).part ?? 1) > 1);
   if (later.some(isLaterPart)) return null;
   return later.length === 1 ? (later[0] ?? null) : null;
 }
 
 /** Whether any of the entries has a number of the kind the query asks for in its names. */
-function numbersItsSeasons(entries: ScoredEntry[], wanted: SeasonRef): boolean {
+function numbersItsSeasons(entries: AnyEntry[], wanted: SeasonRef): boolean {
   return entries.some((e) =>
     e.names.some((n) => {
       const ref = seasonRef(n);
@@ -377,7 +442,7 @@ function numbersItsSeasons(entries: ScoredEntry[], wanted: SeasonRef): boolean {
  * Whether the entries look like seasons of one franchise: each has a name starting with the
  * same words ("Mushoku Tensei", "Nanatsu no Taizai"). Unrelated shows rarely do.
  */
-function sameFranchise(entries: ScoredEntry[]): boolean {
+function sameFranchise(entries: AnyEntry[]): boolean {
   const [first, ...rest] = entries;
   if (!first) return false;
   for (const name of first.names) {
@@ -404,8 +469,8 @@ function sameFranchise(entries: ScoredEntry[]): boolean {
  * first two words or more ("My Hero Academia Final Season" and "My Hero Academia Season 7").
  * Shows that only share a first word ("Tokyo Ghoul", "Tokyo Revengers") don't count.
  */
-function seasonsOfOneShow(a: ScoredEntry, b: ScoredEntry): boolean {
-  const titles = (e: ScoredEntry) =>
+function seasonsOfOneShow(a: AnyEntry, b: AnyEntry): boolean {
+  const titles = (e: AnyEntry) =>
     [e.title, e.titleEn].filter((t): t is string => !!t).map(normalizeName);
   for (const x of titles(a)) {
     for (const y of titles(b)) {

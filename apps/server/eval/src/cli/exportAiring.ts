@@ -24,7 +24,7 @@ if (existsSync(AIRING_FILE) && !values.force) {
 // Shows "the newest episode" can be about: anything watching, airing, or about to air.
 const malIds = new Set<number>();
 for (const file of readdirSync(SNAPSHOTS_DIR)) {
-  if (!file.endsWith(".json") || file === "airing.json") continue;
+  if (!file.endsWith(".json") || file === "airing.json" || file === "catalog.json") continue;
   const snapshot = loadSnapshot(file.replace(/\.json$/, ""));
   if (snapshot.source === "synthetic") continue;
   for (const entry of snapshot.entries) {

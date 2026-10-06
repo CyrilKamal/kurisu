@@ -997,3 +997,39 @@ Requested during Milestone 4, outside its scope.
 **Alternatives:** A tool the model calls to attach cards: it needs a prompt change and the model has to remember to call it. Cards for every show the run looked up, named or not: they'd show shows the reply didn't talk about.
 **Why:** You asked for cards when the agent asks or talks about a show, with a tap to answer. Matching names in code works with today's prompt and can't attach a show the run never saw.
 **Consequences:** A reply that shortens a title ("Frieren S2") gets no card for it. Shows found outside your list (adding shows, next) get cards the same way.
+
+## 2026-10-06 — Adding shows to the list, always confirmed (Milestone 4)
+**Decision:**
+- **What Chat can add:** shows that aren't on your list. "add X" means Plan to Watch. "watched ep 3 of X" or "finished X, 8/10" adds it with that progress and score (your choice).
+- **Every add waits for your tap, enforced in code:** `propose.ts` makes any proposal for a show not on the list an add, with `requires_confirmation` set and reason `adds_to_list`. The model can't skip it, whatever it calls. That includes anything the agent decides is an add (your rule).
+- **The confirm card for an add is a show card:** cover, title and episodes, with a button worded as the action ("Add to Plan to Watch", "Add as Completed, 8/10").
+- **Finding the show:** a new tool, `search_anime`, searches AniList by title in one request, leaving out adult titles. It reuses the list search's clear-match rule, so a vague name gets a question with cards. Results become provisional `anime` rows from AniList, never overwriting MAL's rows. Right after an add commits, MAL's own details replace the provisional row (sync after a write).
+- **New write kinds:** `proposals.kind` and `changes.kind` are update, add or remove. An add has no "before".
+  - Committing an add is refused if the show reached the list meanwhile.
+  - Undoing an add removes the show from MAL (a new `deleteListStatus`, still only reachable through `commit.ts`). It's refused once the entry has changed, since removing it would lose that.
+  - Undoing the removal puts the show back.
+- **Prompt:** the tool is offered only to prompts that list it in `tools` (v12 on), so older prompts' evals stay comparable.
+- **Eval:** cases can expect `adds`, resolved against a frozen copy of AniList's title searches (`pnpm eval:catalog`).
+
+**Alternatives:**
+- MAL's own search: live MAL reads, with limits MAL doesn't publish.
+- Auto-committing clear adds like updates: rejected by your "always ask when adding".
+- A confirm button that calls the server without the agent.
+
+**Why:** You asked to add shows from Chat, carefully. Enforcing the hold in the write path keeps the rule true whatever the model does, and the change log keeps every add undoable.
+**Consequences:**
+- Adding takes two steps: the message, then a tap.
+- Shows found but never added leave provisional rows in `anime`, which is harmless.
+- AniList being down means Chat can't find new shows, and says so.
+
+## 2026-10-06 — Prompt v12 becomes the app's prompt (Milestone 4)
+**Decision:** v12 (v11 plus `search_anime` and the rules for adding shows) is the app's prompt.
+**Alternatives:** Keeping v11 and offering adds later.
+**Why:** On Flash-Lite over all 130 of your cases (none of them about adding yet), v12 keeps 0 wrong writes and scores better than v11's last run. Clarification precision is the same. Every miss asks or holds instead of writing: Mushoku Tensei, TYBW s4, the example multi-sequel, and one brief reply ("watched ep 8" got "which show?"; v11 got it in its run).
+
+| Prompt | Accuracy | Brief replies | Wrong writes | Clarification precision |
+|---|---|---|---|---|
+| v11 | 124/130 | 35/35 | 0/123 | 71.4% |
+| v12 | 126/130 | 34/35 | 0/125 | 71.4% |
+
+**Consequences:** Adding shows works in Chat now. Your add cases come next, after the frozen catalog is built from their titles.
