@@ -1,12 +1,13 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
-import { agentRuns, agentRunSteps } from "../db/schema.js";
+import { agentRuns, agentRunSteps, anime } from "../db/schema.js";
 import type { ModelClient } from "../llm/modelClient.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import { ModelProviderError, type LlmMessage } from "../llm/types.js";
 import type { Change, CommitErrorCode, ListWriter } from "../writes/commit.js";
 import type { Proposal } from "../writes/propose.js";
+import { namedShows } from "./briefReply.js";
 import { executeTool, TOOL_SPECS, type RunContext } from "./tools.js";
 
 export interface Prompt {
@@ -93,6 +94,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     briefEpisodes: input.brief
       ? new Map(input.brief.map((item) => [item.malId, item.episodes]))
       : null,
+    briefNamed: input.brief ? await briefShowsNamed(db, input.brief, input.message) : new Set(),
     clear: new Map(),
     proposalIds: new Set(),
     committed: [],
@@ -256,4 +258,36 @@ function truncate(value: unknown, serialized: string): unknown {
   return serialized.length <= MAX_LOGGED_RESULT_CHARS
     ? value
     : { truncated: true, preview: serialized.slice(0, MAX_LOGGED_RESULT_CHARS) };
+}
+
+/** Which of the brief's shows the message names, by any of their titles or nicknames. */
+async function briefShowsNamed(
+  db: Db,
+  brief: { malId: number }[],
+  message: string,
+): Promise<Set<number>> {
+  const rows = await db
+    .select({
+      malId: anime.malId,
+      title: anime.title,
+      titleEn: anime.titleEn,
+      titleJa: anime.titleJa,
+      synonyms: anime.synonyms,
+    })
+    .from(anime)
+    .where(
+      inArray(
+        anime.malId,
+        brief.map((item) => item.malId),
+      ),
+    );
+  return namedShows(
+    message,
+    rows.map((row) => ({
+      malId: row.malId,
+      names: [row.title, row.titleEn, row.titleJa, ...row.synonyms].filter(
+        (name): name is string => !!name,
+      ),
+    })),
+  );
 }

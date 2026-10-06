@@ -5,6 +5,8 @@ import {
   briefRule,
   mentionsWholeBrief,
   namedEpisode,
+  namedShows,
+  onlyNamedShows,
 } from "../../src/agent/briefReply.js";
 
 describe("mentionsWholeBrief", () => {
@@ -117,5 +119,42 @@ describe("briefAllows", () => {
   it("lets a count reach past episodes the brief didn't list, if they're before its last", () => {
     // Behind: on ep 1, the brief listed only ep 5; "3 more" is ep 4.
     expect(briefAllows({ kind: "upTo" }, [5], 1, 4)).toBe(true);
+  });
+});
+
+describe("namedShows", () => {
+  const brief = [
+    {
+      malId: 59983,
+      names: ["Tsue to Tsurugi no Wistoria Season 2", "Wistoria: Wand and Sword Season 2"],
+    },
+    {
+      malId: 62001,
+      names: ["Yomi no Tsugai", "Daemons of the Shadow Realm", "Tsugai of the Underworld"],
+    },
+    {
+      malId: 62513,
+      names: ["Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou", "Clevatess Season 2"],
+    },
+    { malId: 61469, names: ["Steel Ball Run: JoJo no Kimyou na Bouken", "SBR"] },
+  ];
+  const named = (message: string) => [...namedShows(message, brief)].sort();
+
+  it("finds the shows a reply names, by any title or nickname", () => {
+    expect(named("watched daemons and clevatess")).toEqual([62001, 62513]);
+    expect(named("watched wistoria eps and daemons")).toEqual([59983, 62001]);
+    expect(named("watched 3 clevatess and daemons")).toEqual([62001, 62513]);
+    expect(named("caught up on sbr")).toEqual([61469]);
+    expect(named("watched it")).toEqual([]);
+    expect(named("only watched one ep")).toEqual([]);
+  });
+
+  it("applies only when a reply names shows instead of the whole brief or the others", () => {
+    expect(onlyNamedShows("watched daemons and clevatess", { kind: "last" })).toBe(true);
+    expect(onlyNamedShows("watched 3 clevatess and daemons", { kind: "upTo" })).toBe(true);
+    expect(onlyNamedShows("watched it", { kind: "last" })).toBe(false);
+    expect(onlyNamedShows("watched a wistoria ep and the other two", { kind: "upTo" })).toBe(false);
+    expect(onlyNamedShows("watched a wistoria ep and the others", { kind: "upTo" })).toBe(false);
+    expect(onlyNamedShows("watched the 2nd ep", { kind: "exact", episode: 2 })).toBe(false);
   });
 });

@@ -15,7 +15,7 @@ import {
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
 import { airingRows, latestAiredEpisode } from "../anilist/cache.js";
-import { briefRule, mentionsWholeBrief } from "./briefReply.js";
+import { briefRule, mentionsWholeBrief, onlyNamedShows } from "./briefReply.js";
 import { mentionsNewestEpisode } from "./newestEpisode.js";
 import { mentionsNumber } from "./scoreGiven.js";
 
@@ -37,6 +37,8 @@ export interface RunContext {
    * listed for it, ascending. Null otherwise.
    */
   briefEpisodes: Map<number, number[]> | null;
+  /** The brief's shows the reply names by title or nickname (see agent/briefReply.ts namedShows). */
+  briefNamed: Set<number>;
   /** Anime ids a search marked as a clear match in this run, and why (see SearchCandidate). */
   clear: Map<number, "unique" | "only_in_progress">;
   /** Proposals created in this run. The model can only commit these. */
@@ -123,14 +125,18 @@ const searchArgs = z
   .object({ queries: z.array(z.string()).optional(), query: z.string().optional() })
   .transform((a) => [...(a.queries ?? []), ...(a.query ? [a.query] : [])]);
 const getEntryArgs = z.object({ anime_id: animeId });
-const proposeArgs = z.object({
-  anime_id: animeId,
-  status: z.enum(MAL_LIST_STATUSES).optional(),
-  episodes_watched: z.coerce.number().int().nonnegative().optional(),
-  episodes_delta: z.coerce.number().int().optional(),
-  score: z.coerce.number().int().min(0).max(10).optional(),
-  is_rewatching: z.boolean().optional(),
-});
+// Strict: a misspelled field ("Episodes_watched") is an error the model can fix, not a field
+// silently dropped from the change.
+const proposeArgs = z
+  .object({
+    anime_id: animeId,
+    status: z.enum(MAL_LIST_STATUSES).optional(),
+    episodes_watched: z.coerce.number().int().nonnegative().optional(),
+    episodes_delta: z.coerce.number().int().optional(),
+    score: z.coerce.number().int().min(0).max(10).optional(),
+    is_rewatching: z.boolean().optional(),
+  })
+  .strict();
 const commitArgs = z.object({ proposal_id: z.uuid() });
 
 export interface ToolOutcome {
@@ -211,7 +217,15 @@ async function getEntryTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome>
 async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   const args = proposeArgs.safeParse(raw);
   if (!args.success) {
-    return failure("invalid_arguments", "Check anime_id and the fields; see the tool schema.");
+    const unknown = args.error.issues.flatMap((issue) =>
+      issue.code === "unrecognized_keys" ? issue.keys : [],
+    );
+    return failure(
+      "invalid_arguments",
+      unknown.length > 0
+        ? `Unknown field ${unknown.join(", ")}. Use only anime_id, status, episodes_watched, episodes_delta, score and is_rewatching, spelled exactly so.`
+        : "Check anime_id and the fields; see the tool schema.",
+    );
   }
   const a = args.data;
   if (!ctx.seen.has(a.anime_id)) {
@@ -329,7 +343,15 @@ function isClearFor(
 function briefOrNewest(ctx: RunContext, animeId: number) {
   if (ctx.briefEpisodes) {
     const listed = ctx.briefEpisodes.get(animeId);
-    if (listed) return { briefReply: { listed, rule: briefRule(ctx.userMessage) } };
+    if (listed) {
+      const rule = briefRule(ctx.userMessage);
+      // "watched daemons and clevatess" only covers those two, whichever shows the model picks.
+      const unnamed =
+        onlyNamedShows(ctx.userMessage, rule) &&
+        ctx.briefNamed.size > 0 &&
+        !ctx.briefNamed.has(animeId);
+      return { briefReply: { listed, rule: unnamed ? ({ kind: "unnamed" } as const) : rule } };
+    }
     if (mentionsWholeBrief(ctx.userMessage)) {
       return { briefReply: { listed: [], rule: { kind: "last" } as const } };
     }

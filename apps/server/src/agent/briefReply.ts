@@ -13,7 +13,12 @@ import { mentionsNumber } from "./scoreGiven.js";
  * - "haven't seen them", "didn't watch any yet": no progress at all.
  */
 export type BriefRule =
-  { kind: "last" } | { kind: "exact"; episode: number } | { kind: "upTo" } | { kind: "none" };
+  | { kind: "last" }
+  | { kind: "exact"; episode: number }
+  | { kind: "upTo" }
+  | { kind: "none" }
+  /** The reply names other shows from the brief, not this one. */
+  | { kind: "unnamed" };
 
 const WHOLE_BRIEF = new RegExp(
   [
@@ -94,6 +99,7 @@ export function briefAllows(
   if (next === undefined || last === undefined) return false;
   switch (rule.kind) {
     case "none":
+    case "unnamed":
       return false;
     case "last":
       return next === last;
@@ -102,4 +108,61 @@ export function briefAllows(
     case "upTo":
       return next > current && next <= last;
   }
+}
+
+/** "the other two", "the others", "the rest", "both", "all", "each": shows the reply doesn't name. */
+const OTHER_SHOWS = /\b(?:others?|the rest|both|all|each|everything)\b/i;
+
+/** Words that don't name a show, in replies or in titles. */
+const NOT_A_NAME = new Set(
+  (
+    "watched watch watching saw seen see the and but ep eps episode episodes of it them its " +
+    "an one two three four five six seven eight nine ten only just finished finish done caught " +
+    "up on more yet any havent haven didnt didn did not like dropping drop dropped show shows " +
+    "new first second third premiere finale was were also then still too lol now ok okay with " +
+    "season part movie final"
+  ).split(" "),
+);
+
+function nameWords(text: string): string[] {
+  return text
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .split(" ")
+    .filter((word) => word.length >= 3 && !NOT_A_NAME.has(word));
+}
+
+/**
+ * Which of the brief's shows the reply names, by any of their titles or nicknames ("daemons" names
+ * Yomi no Tsugai, whose English title is "Daemons of the Shadow Realm").
+ */
+export function namedShows(
+  message: string,
+  shows: { malId: number; names: string[] }[],
+): Set<number> {
+  const said = nameWords(message);
+  const named = new Set<number>();
+  for (const show of shows) {
+    const words = show.names.flatMap(nameWords);
+    const match = said.some((s) =>
+      words.some(
+        (w) => s === w || (s.length >= 4 && w.startsWith(s)) || (w.length >= 4 && s.startsWith(w)),
+      ),
+    );
+    if (match) named.add(show.malId);
+  }
+  return named;
+}
+
+/**
+ * Whether only the shows a reply names may get progress: it names shows ("watched daemons and
+ * clevatess") rather than the whole brief, an episode number, or "the others".
+ */
+export function onlyNamedShows(message: string, rule: BriefRule): boolean {
+  return (
+    (rule.kind === "last" || rule.kind === "upTo") &&
+    !mentionsWholeBrief(message) &&
+    !OTHER_SHOWS.test(message)
+  );
 }

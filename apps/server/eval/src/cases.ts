@@ -10,7 +10,7 @@ import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import { normalizeChange, type ListChange } from "../../src/writes/normalize.js";
 import { isProgress, isProgressBeforeAiring } from "../../src/writes/propose.js";
 import { parseShorthand } from "./shorthand.js";
-import { briefAllows } from "../../src/agent/briefReply.js";
+import { briefAllows, type BriefRule } from "../../src/agent/briefReply.js";
 import { frozenLatestAired, loadAiring, type AiringFreeze } from "./airing.js";
 import { briefReplyFor } from "./brief.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
@@ -221,7 +221,12 @@ function resolveCase(
     } else if (briefCovers(briefReply, entry.id)) {
       // The same rules the agent's tools apply to a reply to the brief (agent/briefReply.ts).
       const listed = briefReply?.listed.get(entry.id) ?? [];
-      const rule = listed.length > 0 && briefReply ? briefReply.rule : ({ kind: "last" } as const);
+      const rule: BriefRule =
+        listed.length === 0 || !briefReply
+          ? { kind: "last" }
+          : briefReply.unnamed.has(entry.id)
+            ? { kind: "unnamed" }
+            : briefReply.rule;
       if (
         isProgress(entry, normalized.change) &&
         !briefAllows(rule, listed, entry.episodesWatched, normalized.change.episodesWatched)
