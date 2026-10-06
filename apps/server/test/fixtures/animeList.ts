@@ -9,6 +9,7 @@ export function fixtureList(): FakeListItem[] {
   return [
     item(900001, "Fixture Watching Show", "watching", {
       alt: { synonyms: ["FWS"], en: "The Watching Show", ja: "" },
+      details: { genres: ["Action", "Fantasy"], minutes: 24, mean: 8.1 },
       num_episodes: 12,
       num_episodes_watched: 7,
       updated_at: "2026-09-28T10:00:00+00:00",
@@ -16,6 +17,7 @@ export function fixtureList(): FakeListItem[] {
     }),
     item(900002, "Fixture Completed Film", "completed", {
       media_type: "movie",
+      details: { genres: ["Drama"], minutes: 110, mean: 8.9 },
       num_episodes: 1,
       num_episodes_watched: 1,
       score: 9,
@@ -24,24 +26,28 @@ export function fixtureList(): FakeListItem[] {
       finish_date: "2026-08-15",
     }),
     item(900003, "Fixture Paused Show", "on_hold", {
+      details: { genres: ["Comedy", "Slice of Life"], minutes: 24, mean: 7.4 },
       num_episodes: 24,
       num_episodes_watched: 10,
       score: 6,
       updated_at: "2026-07-01T08:00:00+00:00",
     }),
     item(900004, "Fixture Dropped Show", "dropped", {
+      details: { genres: ["Action", "Horror"], minutes: 23, mean: 6.2 },
       num_episodes: 13,
       num_episodes_watched: 2,
       score: 3,
       updated_at: "2026-06-10T20:00:00+00:00",
     }),
     item(900005, "Fixture Unannounced Sequel", "plan_to_watch", {
+      details: { genres: ["Fantasy"], minutes: 0, mean: 0 },
       num_episodes: 0, // MAL reports 0 when the count isn't known yet
       airing: "not_yet_aired",
       picture: false,
       updated_at: "2026-05-05T05:05:00+00:00",
     }),
     item(900006, "Fixture Rewatch Show", "completed", {
+      details: { genres: ["Comedy", "Slice of Life"], minutes: 24, mean: 8.6 },
       num_episodes: 26,
       num_episodes_watched: 26,
       score: 10,
@@ -64,6 +70,8 @@ function item(
     airing?: string;
     picture?: boolean;
     alt?: { synonyms: string[]; en: string; ja: string };
+    /** Genres, minutes per episode and MAL mean; 0 means MAL doesn't know. */
+    details?: { genres: string[]; minutes: number; mean: number };
     updated_at: string;
     start_date?: string;
     finish_date?: string;
@@ -85,6 +93,13 @@ function item(
       num_episodes: opts.num_episodes,
       status: opts.airing ?? "finished_airing",
       ...(opts.alt ? { alternative_titles: opts.alt } : {}),
+      ...(opts.details
+        ? {
+            genres: opts.details.genres.map((name, i) => ({ id: i + 1, name })),
+            average_episode_duration: opts.details.minutes * 60,
+            mean: opts.details.mean,
+          }
+        : {}),
     },
     list_status: {
       status,

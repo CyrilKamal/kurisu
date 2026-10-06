@@ -12,6 +12,7 @@ import {
   type CommitErrorCode,
   type ListWriter,
 } from "../writes/commit.js";
+import { DROP_CATEGORIES, MAX_DROP_SAID } from "../taste/dropReasons.js";
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
 import { airingRows, latestAiredEpisode } from "../anilist/cache.js";
@@ -104,6 +105,12 @@ export const TOOL_SPECS: ToolSpec[] = [
         episodes_delta: { type: "integer", description: "Episodes watched since last time" },
         score: { type: "integer", description: "1-10" },
         is_rewatching: { type: "boolean" },
+        drop_reason: {
+          type: "string",
+          enum: [...DROP_CATEGORIES],
+          description:
+            "Only with status dropped, and only when the user says why they're dropping it.",
+        },
       },
       required: ["anime_id"],
     },
@@ -135,6 +142,7 @@ const proposeArgs = z
     episodes_delta: z.coerce.number().int().optional(),
     score: z.coerce.number().int().min(0).max(10).optional(),
     is_rewatching: z.boolean().optional(),
+    drop_reason: z.enum(DROP_CATEGORIES).optional(),
   })
   .strict();
 const commitArgs = z.object({ proposal_id: z.uuid() });
@@ -228,6 +236,9 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
     );
   }
   const a = args.data;
+  if (a.drop_reason !== undefined && a.status !== "dropped") {
+    return failure("invalid_arguments", "drop_reason only goes with status dropped.");
+  }
   if (!ctx.seen.has(a.anime_id)) {
     return failure(
       "unknown_anime",
@@ -246,6 +257,10 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
     ...(a.episodes_delta !== undefined && { episodesDelta: a.episodes_delta }),
     ...(a.score !== undefined && { score: a.score }),
     ...(a.is_rewatching !== undefined && { isRewatching: a.is_rewatching }),
+    // The category is the model's; the words are always the user's own message.
+    ...(a.drop_reason !== undefined && {
+      dropReason: { category: a.drop_reason, said: ctx.userMessage.slice(0, MAX_DROP_SAID) },
+    }),
   });
   if (!result.ok) return failure(result.error, await explain(ctx, result.error, a.anime_id));
 

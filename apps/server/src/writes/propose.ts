@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 
 import { briefAllows, type BriefRule } from "../agent/briefReply.js";
+import type { DropCategory } from "../taste/dropReasons.js";
 import type { Db } from "../db/client.js";
 import { anime, listEntries, proposals } from "../db/schema.js";
 import { NOT_YET_AIRED } from "../mal/client.js";
@@ -45,6 +46,8 @@ export interface ProposeInput {
    * message follows. Progress the rule doesn't allow is held (see agent/briefReply.ts).
    */
   briefReply?: { listed: number[]; rule: BriefRule };
+  /** Why the user is dropping the show, when they said (see taste/dropReasons.ts). */
+  dropReason?: { category: DropCategory; said: string };
   /**
    * The user's message has no number in it (decided by the caller), so a score in this change
    * wasn't given by them. It's held for them to confirm.
@@ -157,6 +160,9 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
       change,
       requiresConfirmation: confirmationReason !== null,
       confirmationReason,
+      ...(input.dropReason && change.status === "dropped"
+        ? { dropReason: input.dropReason.category, dropSaid: input.dropReason.said }
+        : {}),
     })
     .onConflictDoNothing({ target: [proposals.userId, proposals.idempotencyKey] });
 

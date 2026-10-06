@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { CURRENT_PROMPT } from "./agent/prompts/index.js";
 import { airingCandidateIds, refreshAiring } from "./anilist/cache.js";
+import { refreshTaste } from "./taste/profile.js";
 import { createAniListClient } from "./anilist/client.js";
 import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
@@ -69,6 +70,8 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   const refreshAiringAfterSync = (userId: string) => {
     if (airingRefreshes.has(userId)) return;
     const task: Promise<void> = (async () => {
+      // Rating patterns come straight from the fresh mirror; airing data needs AniList.
+      await refreshTaste(db, userId);
       await refreshAiring(
         { db, anilist: syncAniList, log: app.log },
         await airingCandidateIds(db, userId),
@@ -77,7 +80,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       .catch((err: unknown) => {
         app.log.warn(
           { err: { name: (err as Error).name } },
-          "could not refresh airing data after sync",
+          "could not refresh taste or airing data after sync",
         );
       })
       .finally(() => airingRefreshes.delete(userId));

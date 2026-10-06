@@ -7,6 +7,7 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -108,6 +109,15 @@ export const anime = pgTable("anime", {
   // When MAL says the show started airing, "2026-03-19" or partial ("2026-03"). Used to check how
   // AniList's parts of a split show line up with this entry (see anilist/client.ts joinParts).
   startDate: text("start_date"),
+  // Genres, themes and demographics, e.g. "Slice of Life", "Iyashikei", "Shounen".
+  genres: text("genres")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  // Minutes per episode; null when MAL doesn't know.
+  episodeMinutes: integer("episode_minutes"),
+  // MAL's community score.
+  malMean: real("mal_mean"),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
 
@@ -265,6 +275,52 @@ export const briefs = pgTable(
   ],
 );
 
+/**
+ * Rating patterns: per user and genre, how they score it and how often they drop it. Recomputed
+ * from the mirror after each sync and before each recommendation (see taste/profile.ts).
+ */
+export const tasteGenres = pgTable(
+  "taste_genres",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    genre: text("genre").notNull(),
+    // Shows in this genre the user scored, and their average score.
+    scored: integer("scored").notNull(),
+    meanScore: real("mean_score"),
+    dropped: integer("dropped").notNull(),
+    // How much better (or worse) than the user's overall average they score this genre, pulled
+    // toward 0 when few shows back it.
+    affinity: real("affinity").notNull(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.genre] })],
+);
+
+/** Why the user dropped a show, in their own words, from the change that dropped it. */
+export const dropReasons = pgTable(
+  "drop_reasons",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    animeId: integer("anime_id")
+      .notNull()
+      .references(() => anime.malId),
+    // pacing, story, characters, art_animation, too_long, lost_interest or other.
+    category: text("category").notNull(),
+    // The user's message that gave the reason.
+    said: text("said").notNull(),
+    changeId: uuid("change_id")
+      .unique()
+      .references((): AnyPgColumn => changes.id, { onDelete: "set null" }),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("drop_reasons_user_idx").on(table.userId, table.createdAt.desc())],
+);
+
 /** One row per sync attempt, for the "last synced" display, cooldowns and debugging. */
 export const syncRuns = pgTable(
   "sync_runs",
@@ -308,6 +364,10 @@ export const proposals = pgTable(
     // Only the fields that change, with their new values.
     change: jsonb("change").$type<ListChange>().notNull(),
     requiresConfirmation: boolean("requires_confirmation").notNull().default(false),
+    // Why the user dropped the show, when they said: a category (see taste/dropReasons.ts) and
+    // their own message. Saved to drop_reasons when the drop commits.
+    dropReason: text("drop_reason"),
+    dropSaid: text("drop_said"),
     // Why confirmation is needed: ambiguous_match, progress_backwards, not_yet_aired,
     // newest_episode_unknown, score_not_given or not_in_brief.
     confirmationReason: text("confirmation_reason"),

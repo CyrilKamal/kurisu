@@ -33,6 +33,9 @@ export interface FakeListItem {
     num_episodes: number;
     status: string;
     start_date?: string;
+    genres?: { id: number; name: string }[];
+    average_episode_duration?: number;
+    mean?: number;
   };
   list_status: {
     status: "watching" | "completed" | "on_hold" | "dropped" | "plan_to_watch";

@@ -50,6 +50,12 @@ describe("toMirrorRows", () => {
           },
           // When the show started airing, not when the user started it.
           start_date: "2026-07-03",
+          genres: [
+            { id: 36, name: "Slice of Life" },
+            { id: 63, name: "Iyashikei" },
+          ],
+          average_episode_duration: 1430,
+          mean: 8.21,
         },
         list_status: { start_date: "2026-09", score: 8 },
       }),
@@ -68,6 +74,9 @@ describe("toMirrorRows", () => {
       numEpisodes: 12,
       airingStatus: "currently_airing",
       startDate: "2026-07-03",
+      genres: ["Slice of Life", "Iyashikei"],
+      episodeMinutes: 24,
+      malMean: 8.21,
       updatedAt: syncedAt,
     });
     expect(entry).toMatchObject({
@@ -96,6 +105,20 @@ describe("toMirrorRows", () => {
     );
 
     expect(anime).toMatchObject({ titleEn: "The Show", titleJa: null, synonyms: ["TS", "Show!"] });
+  });
+
+  it("treats missing details, a 0-second duration and a 0 score as unknown", () => {
+    const { anime } = toMirrorRows(
+      malItem({ node: { average_episode_duration: 0, mean: 0 } }),
+      "u",
+      syncedAt,
+    );
+    expect(anime).toMatchObject({ genres: [], episodeMinutes: null, malMean: null });
+    // A short (under a minute) still counts as one minute.
+    expect(
+      toMirrorRows(malItem({ node: { average_episode_duration: 20 } }), "u", syncedAt).anime
+        .episodeMinutes,
+    ).toBe(1);
   });
 
   it("treats MAL's 0 episodes as unknown", () => {

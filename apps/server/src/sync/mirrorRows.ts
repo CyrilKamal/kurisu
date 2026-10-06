@@ -25,6 +25,12 @@ export function toMirrorRows(
       numEpisodes: node.num_episodes === 0 ? null : (node.num_episodes ?? null),
       airingStatus: node.status ?? null,
       startDate: node.start_date ?? null,
+      genres: (node.genres ?? []).map((g) => g.name),
+      episodeMinutes: node.average_episode_duration
+        ? Math.max(1, Math.round(node.average_episode_duration / 60))
+        : null,
+      // MAL leaves the score out (or 0) until enough people rate a show.
+      malMean: node.mean != null && node.mean > 0 ? node.mean : null,
       updatedAt: syncedAt,
     },
     entry: {

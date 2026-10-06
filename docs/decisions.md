@@ -868,3 +868,45 @@ Both are now structural checks, so no prompt can repeat them.
 - Phone push is still untested.
 - The icons are placeholders.
 - Case 9 (a message between the brief and the reply) isn't covered.
+
+## 2026-10-06 — Show details from MAL and rating patterns by genre (Milestone 4)
+**Decision:**
+- **Show details.** List sync also asks MAL for each show's `genres`, `average_episode_duration` and `mean`. They're stored as `anime.genres`, `anime.episode_minutes` and `anime.mal_mean`. A 0 duration or score means MAL doesn't know yet, so it's stored as null.
+- **Rating patterns.** `taste_genres` holds, per user and genre:
+  - how many of its shows you scored, and your mean score for them;
+  - how many you dropped;
+  - an affinity: your genre mean minus your overall mean, times scored / (scored + 5).
+- **Refreshing.** It's recomputed in SQL from the mirror after each list sync (in the background, beside the airing refresh) and before each recommendation.
+
+**Alternatives:**
+- AniList's genres and tags.
+- Raw per-genre averages with no shrinkage.
+- Computing patterns on the fly with no stored table.
+
+**Why:**
+- MAL is the list of record, and its genre list already mixes in themes such as Iyashikei, which are useful for moods.
+- Shrinkage keeps one 10/10 in a rare genre from dominating the patterns.
+- A stored table is what the design means by taste memory, and what the Taste page shows.
+
+**Consequences:**
+- The new fields fill in on the next sync.
+- Genres from sources that aren't MAL aren't used.
+
+## 2026-10-06 — Drop reasons: a category plus your own words, only when you give one (Milestone 4)
+**Decision:**
+- `propose_update` takes an optional `drop_reason` category (pacing, story, characters, art_animation, too_long, lost_interest, other). It's only allowed with status dropped.
+- The words stored are always your message, never the model's paraphrase.
+- The reason is saved to `drop_reasons` when the drop commits, linked to its change. Undoing the drop removes it.
+- A drop with no reason records nothing, and the agent never asks (your choice).
+
+**Alternatives:**
+- Asking why after every drop.
+- Storing the model's summary.
+- Free-form reasons with no category.
+
+**Why:**
+- You prefer fewer questions.
+- Your own words can't be an invented reason.
+- A category is something the recommender can act on, such as avoiding slow shows.
+
+**Consequences:** The 4 existing drops have no reasons. Reasons accumulate as you drop shows and say why.
