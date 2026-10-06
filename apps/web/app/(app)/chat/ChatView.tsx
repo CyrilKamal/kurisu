@@ -4,16 +4,26 @@ import {
   changeResponseSchema,
   chatThreadResponseSchema,
   type ChatMessageView,
+  type ConversationView,
 } from "@kurisu/shared";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { getApi, postApi } from "@/lib/clientApi";
 import { writeErrorMessage } from "@/lib/describeChange";
 
 import { ChangeCard, PendingCard } from "../ChangeCards";
+import { useChatShell } from "./ChatShell";
+import { MenuIcon, NewChatIcon } from "./icons";
 import { PickCard } from "./PickCard";
 
-const EXAMPLES = ["watched ep 3 of Frieren", "two more episodes of JJK", "dropping the isekai one"];
+const EXAMPLES = [
+  "watched ep 3 of Frieren",
+  "two more episodes of JJK",
+  "dropping the isekai one",
+  "40 minutes, something chill",
+];
 
 function sendErrorMessage(status: number, error: string): string {
   if (status === 0) return "Network error. Check your connection and try again.";
@@ -21,10 +31,20 @@ function sendErrorMessage(status: number, error: string): string {
     return "That's a lot of messages. Wait a minute and try again.";
   if (error === "busy") return "Still working on your last message.";
   if (status === 401) return "Your session expired. Reload to log in again.";
+  if (status === 404) return "This chat was deleted. Start a new one to keep going.";
   return "Something went wrong. Please try again.";
 }
 
-export function ChatView({ initialMessages }: { initialMessages: ChatMessageView[] }) {
+/** One chat: its messages and the box to write the next. A null conversation is a new chat. */
+export function ChatView({
+  conversation,
+  initialMessages,
+}: {
+  conversation: ConversationView | null;
+  initialMessages: ChatMessageView[];
+}) {
+  const router = useRouter();
+  const { refreshChats, openChats } = useChatShell();
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -36,7 +56,8 @@ export function ChatView({ initialMessages }: { initialMessages: ChatMessageView
   }, [messages, sending]);
 
   async function reload() {
-    const result = await getApi("/chat", chatThreadResponseSchema);
+    if (!conversation) return;
+    const result = await getApi(`/chat/conversations/${conversation.id}`, chatThreadResponseSchema);
     if (result.ok) setMessages(result.data.messages);
   }
 
@@ -46,11 +67,19 @@ export function ChatView({ initialMessages }: { initialMessages: ChatMessageView
     setSending(true);
     setNotice(null);
     setDraft("");
-    const result = await postApi("/chat/messages", chatThreadResponseSchema, { text: trimmed });
+    const result = await postApi("/chat/messages", chatThreadResponseSchema, {
+      text: trimmed,
+      ...(conversation && { conversationId: conversation.id }),
+    });
     setSending(false);
     if (result.ok && result.data) {
-      const added = result.data.messages;
+      const { conversation: chat, messages: added } = result.data;
       setMessages((current) => [...current, ...added]);
+      void refreshChats();
+      // The first message created the chat: move to its address, unless the user went elsewhere.
+      if (!conversation && window.location.pathname === "/chat/new") {
+        router.replace(`/chat/${chat.id}`, { scroll: false });
+      }
     } else if (!result.ok) {
       setDraft(trimmed);
       setNotice(sendErrorMessage(result.status, result.error));
@@ -65,15 +94,36 @@ export function ChatView({ initialMessages }: { initialMessages: ChatMessageView
   }
 
   return (
-    <main className="mx-auto flex h-dvh max-w-2xl flex-col px-4 pb-14">
-      <header className="border-b border-zinc-200 py-3 dark:border-zinc-800">
-        <h1 className="text-lg font-semibold">Chat</h1>
+    <main className="mx-auto flex h-full max-w-2xl flex-col px-4">
+      <header className="flex items-center gap-1 border-b border-zinc-200 py-2 dark:border-zinc-800">
+        <button
+          type="button"
+          onClick={openChats}
+          aria-label="Show chats"
+          className="-ml-2 rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 md:hidden dark:text-zinc-400 dark:hover:bg-zinc-900"
+        >
+          <MenuIcon />
+        </button>
+        <h1 className="min-w-0 flex-1 truncate py-1 text-lg font-semibold">
+          {conversation?.title ?? "New chat"}
+        </h1>
+        <Link
+          href="/chat/new"
+          aria-label="New chat"
+          title="New chat"
+          className="-mr-2 rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 md:hidden dark:text-zinc-400 dark:hover:bg-zinc-900"
+        >
+          <NewChatIcon />
+        </Link>
       </header>
 
       <div className="flex-1 overflow-y-auto py-4" aria-live="polite">
         {messages.length === 0 && !sending ? (
           <div className="mt-8 text-center text-sm text-zinc-500">
-            <p>Tell me what you watched and I&apos;ll update your MyAnimeList.</p>
+            <p>
+              Tell me what you watched and I&apos;ll update your MyAnimeList, or ask what to watch
+              next.
+            </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {EXAMPLES.map((example) => (
                 <button

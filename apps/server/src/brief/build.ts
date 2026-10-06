@@ -132,6 +132,18 @@ export function chatText(summary: string, items: BriefItem[]): string {
   return [summary, "", ...items.map(itemLine), "", BRIEF_REPLY_HINT].join("\n");
 }
 
+/** The title of a brief's chat, from the user's local date: "Brief, Oct 6". */
+export function briefTitle(localDate: string): string {
+  const date = new Date(`${localDate}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return "Brief";
+  const day = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+  return `Brief, ${day}`;
+}
+
 /** One "- Title ep 12 …" or "- Title eps 11–12 …" line, as itemLine writes it. */
 const ITEM_LINE = /^- (.+?) eps? (\d+(?:–\d+)?(?:, \d+(?:–\d+)?)*)(?: \(|\.| on |$)/;
 

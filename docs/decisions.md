@@ -959,3 +959,24 @@ Both are now structural checks, so no prompt can repeat them.
 **Consequences:**
 - The remaining misses all ask or hold: MHA More, the Mushoku Tensei follow-up, TYBW s4, the Cowboy Bebop rewatch, and "final mha season".
 - The search change only applies when your message replies to a brief.
+
+## 2026-10-06 — Multiple chats with a history sidebar (Milestone 4)
+Requested during Milestone 4, outside its scope.
+
+**Decision:**
+- **Chats.** A chat starts with its first message. Its title is that message, cut at a word near 60 characters, with no model call.
+- **Sidebar.** It sits beside the chat on wide screens and is a drawer on phones. It lists chats by latest message under Today, Yesterday, Previous 7 days and Older, with New chat and delete. `/chat` opens the most recent chat.
+- **Briefs.** Each brief starts its own chat, titled "Brief, Oct 6", and the notification opens it. This replaces "saved as an assistant message in the user's current conversation" from the Milestone 3 brief entry.
+- **Deleting a chat** cancels the changes it held for confirmation. The changes it made stay in the change log and can still be undone there.
+
+**Alternatives:**
+- Titles written by the model: a call per chat, and it could misdescribe.
+- A new chat on every launch, like ChatGPT: it would hide the morning brief and pending confirmations.
+- Posting briefs into the latest chat: a reply could land in an unrelated thread.
+
+**Why:** You asked for new chats and a history sidebar like other AI apps. Separate chats also keep the agent's context on topic, since it only sees the last 6 messages of the chat it's in.
+
+**Consequences:**
+- `POST /chat/messages` takes an optional `conversationId`; without one it starts a new chat.
+- `GET /chat/conversations` and `GET /chat/conversations/:id` replace `GET /chat`, and `DELETE /chat/conversations/:id` deletes one.
+- Renaming a chat isn't built yet.

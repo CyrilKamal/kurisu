@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { PgBoss } from "pg-boss";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { inject } from "vitest";
@@ -18,6 +18,7 @@ import {
   briefs,
   briefSettings,
   chatMessages,
+  conversations,
   proposals,
   pushSubscriptions,
   users,
@@ -176,6 +177,24 @@ function send(method: "GET" | "POST" | "PUT" | "DELETE", url: string, payload?: 
   });
 }
 
+/** The chat the latest brief went to. */
+async function briefChat(): Promise<{ id: string; title: string | null }> {
+  const [row] = await h.db
+    .select({ id: conversations.id, title: conversations.title })
+    .from(briefs)
+    .innerJoin(chatMessages, eq(briefs.chatMessageId, chatMessages.id))
+    .innerJoin(conversations, eq(chatMessages.conversationId, conversations.id))
+    .orderBy(desc(briefs.createdAt))
+    .limit(1);
+  if (!row) throw new Error("no brief chat");
+  return row;
+}
+
+/** Replies in the latest brief's chat. */
+async function reply(text: string) {
+  return send("POST", "/chat/messages", { text, conversationId: (await briefChat()).id });
+}
+
 async function briefMessages(): Promise<string[]> {
   const rows = await h.db
     .select({ content: chatMessages.content })
@@ -328,11 +347,14 @@ describe("POST /brief/test", () => {
       episodes: 3,
       push: { sent: 1, removed: 0, failed: 0 },
     });
+    // The brief starts its own chat, which tapping the notification opens.
+    const chat = await briefChat();
+    expect(chat.title).toMatch(/^Brief, [A-Z][a-z]{2} \d{1,2}$/);
     expect(decryptedPushes()).toEqual([
       {
         title: "3 new episodes",
         body: "Fixture Second Show 1 (premiere) · Fixture Watching Show 8–9",
-        url: "/chat",
+        url: `/chat/${chat.id}`,
         tag: "brief",
       },
     ]);
@@ -404,7 +426,7 @@ describe("POST /brief/test", () => {
     await send("POST", "/brief/test");
     models.script(AGENT.ref, [{ text: "Which show did you watch?" }]);
 
-    await send("POST", "/chat/messages", { text: "watched it" });
+    await reply("watched it");
 
     const agentCall = models.requests.find((r) => r.ref === AGENT.ref);
     const history = agentCall?.request.messages.map((m) => m.content).join("\n") ?? "";
@@ -476,7 +498,7 @@ describe('replying "watched it" to a brief', () => {
       ]),
     );
 
-    await send("POST", "/chat/messages", { text: "watched it" });
+    await reply("watched it");
 
     expect(h.fakeMal.patchRequests.map((p) => [p.animeId, p.form.num_watched_episodes])).toEqual([
       [WATCHING, "9"],
@@ -495,7 +517,7 @@ describe('replying "watched it" to a brief', () => {
       ]),
     );
 
-    await send("POST", "/chat/messages", { text: "watched them all" });
+    await reply("watched them all");
 
     expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([SECOND]);
     expect(await heldReasons()).toEqual({ [WATCHING]: "not_in_brief", [PAUSED]: "not_in_brief" });
@@ -511,7 +533,7 @@ describe('replying "watched it" to a brief', () => {
       ]),
     );
 
-    await send("POST", "/chat/messages", { text: "watched ep 9" });
+    await reply("watched ep 9");
 
     expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
     expect(await heldReasons()).toEqual({ [SECOND]: "not_in_brief" });
@@ -527,7 +549,7 @@ describe('replying "watched it" to a brief', () => {
       ]),
     );
 
-    await send("POST", "/chat/messages", { text: "watched one ep of each" });
+    await reply("watched one ep of each");
 
     expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
     expect(await heldReasons()).toEqual({ [SECOND]: "not_in_brief" });
@@ -537,7 +559,7 @@ describe('replying "watched it" to a brief', () => {
     await sendBrief();
     models.script(AGENT.ref, replyScript([{ anime_id: WATCHING, episodes_watched: 9 }]));
 
-    await send("POST", "/chat/messages", { text: "havent seen them yet" });
+    await reply("havent seen them yet");
 
     expect(h.fakeMal.patchRequests).toEqual([]);
     expect(await heldReasons()).toEqual({ [WATCHING]: "not_in_brief" });
@@ -554,19 +576,29 @@ describe('replying "watched it" to a brief', () => {
       ]),
     );
 
-    await send("POST", "/chat/messages", { text: "watched fws" });
+    await reply("watched fws");
 
     expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
     expect(await heldReasons()).toEqual({ [SECOND]: "not_named" });
   });
 
+  it("doesn't apply in another chat", async () => {
+    await sendBrief();
+    models.script(AGENT.ref, [{ text: "Which show did you watch?" }]);
+
+    await send("POST", "/chat/messages", { text: "watched it" });
+
+    const agentCall = models.requests.find((r) => r.ref === AGENT.ref);
+    expect(agentCall?.request.messages.map((m) => m.content)).toEqual(["watched it"]);
+  });
+
   it("only applies right after the brief", async () => {
     await sendBrief();
     models.script(AGENT.ref, [{ text: "Hi!" }]);
-    await send("POST", "/chat/messages", { text: "hello" });
+    await reply("hello");
     models.script(AGENT.ref, replyScript([{ anime_id: WATCHING, episodes_watched: 8 }]));
 
-    await send("POST", "/chat/messages", { text: "watched it" });
+    await reply("watched it");
 
     expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
   });

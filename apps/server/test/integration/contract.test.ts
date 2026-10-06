@@ -5,7 +5,7 @@ import type { LoginError } from "../../src/auth/routes.js";
 import type { BriefErrorCode } from "../../src/brief/routes.js";
 import { STREAMING_SERVICES } from "../../src/brief/services.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
-import { syncRuns } from "../../src/db/schema.js";
+import { chatMessages, conversations, syncRuns, users } from "../../src/db/schema.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import type { PushErrorCode } from "../../src/push/routes.js";
 import { generateVapidKeys } from "../../src/push/send.js";
@@ -193,6 +193,42 @@ describe("responses match the contract", () => {
       removed: 0,
       failed: 0,
     });
+  });
+
+  it("chat endpoints", async () => {
+    const [user] = await h.db.select().from(users);
+    if (!user) throw new Error("no user");
+    const [chat] = await h.db
+      .insert(conversations)
+      .values({ userId: user.id, title: "watched ep 3" })
+      .returning();
+    if (!chat) throw new Error("no chat");
+    await h.db.insert(chatMessages).values([
+      { conversationId: chat.id, role: "user", content: "watched ep 3" },
+      { conversationId: chat.id, role: "assistant", content: "Which show?" },
+    ]);
+
+    const list = contract.conversationsResponseSchema.parse(
+      (await get("/chat/conversations")).json(),
+    );
+    expect(list.conversations.map((c) => c.id)).toEqual([chat.id]);
+
+    const thread = contract.chatThreadResponseSchema.parse(
+      (await get(`/chat/conversations/${chat.id}`)).json(),
+    );
+    expect(thread.messages).toHaveLength(2);
+
+    const missing = await get(`/chat/conversations/${crypto.randomUUID()}`);
+    expect(missing.statusCode).toBe(404);
+    expect(contract.writeErrorResponseSchema.parse(missing.json()).error).toBe("not_found");
+
+    const deleted = await h.app.inject({
+      method: "DELETE",
+      url: `/chat/conversations/${chat.id}`,
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+    });
+    expect(deleted.statusCode).toBe(204);
   });
 
   it("brief endpoints", async () => {

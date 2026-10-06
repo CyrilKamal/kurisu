@@ -6,14 +6,22 @@ import type { Config } from "../config.js";
 import { commitProposal } from "../writes/commit.js";
 import { cancelProposal, undoChange } from "../writes/undo.js";
 import {
+  ConversationNotFoundError,
+  deleteConversation,
+  findConversation,
   handleChatMessage,
+  listConversations,
   loadChange,
   loadChanges,
   loadThread,
   type ChatDeps,
 } from "./service.js";
 
-const messageBody = z.object({ text: z.string().trim().min(1).max(1000) });
+const messageBody = z.object({
+  text: z.string().trim().min(1).max(1000),
+  // Omitted to start a new chat.
+  conversationId: z.uuid().optional(),
+});
 const idParams = z.object({ id: z.uuid() });
 
 /** Per-user limits that keep a chatty session inside the free model quota. */
@@ -34,9 +42,25 @@ export function registerChatRoutes(
     return request.user.id;
   };
 
-  app.get("/chat", { preHandler: requireUser(db) }, async (request) => ({
-    messages: await loadThread(db, userOf(request)),
+  app.get("/chat/conversations", { preHandler: requireUser(db) }, async (request) => ({
+    conversations: await listConversations(db, userOf(request)),
   }));
+
+  app.get("/chat/conversations/:id", { preHandler: requireUser(db) }, async (request, reply) => {
+    const userId = userOf(request);
+    const params = idParams.safeParse(request.params);
+    const conversation = params.success ? await findConversation(db, userId, params.data.id) : null;
+    if (!conversation) return reply.code(404).send({ error: "not_found" });
+    return { conversation, messages: await loadThread(db, userId, conversation.id) };
+  });
+
+  app.delete("/chat/conversations/:id", guards, async (request, reply) => {
+    const params = idParams.safeParse(request.params);
+    const deleted =
+      params.success && (await deleteConversation(db, userOf(request), params.data.id));
+    if (!deleted) return reply.code(404).send({ error: "not_found" });
+    return reply.code(204).send();
+  });
 
   app.post("/chat/messages", guards, async (request, reply) => {
     const userId = userOf(request);
@@ -53,14 +77,26 @@ export function registerChatRoutes(
 
     busy.add(userId);
     try {
-      const { userMessageId, assistantMessageId } = await handleChatMessage(
+      const { conversationId, userMessageId, assistantMessageId } = await handleChatMessage(
         deps,
         userId,
         body.data.text,
+        body.data.conversationId ?? null,
       );
+      const conversation = await findConversation(db, userId, conversationId);
+      if (!conversation) throw new Error("the chat was deleted while answering");
       return {
-        messages: await loadThread(db, userId, 2, [userMessageId, assistantMessageId]),
+        conversation,
+        messages: await loadThread(db, userId, conversationId, 2, [
+          userMessageId,
+          assistantMessageId,
+        ]),
       };
+    } catch (err) {
+      if (err instanceof ConversationNotFoundError) {
+        return await reply.code(404).send({ error: "not_found" });
+      }
+      throw err;
     } finally {
       busy.delete(userId);
     }

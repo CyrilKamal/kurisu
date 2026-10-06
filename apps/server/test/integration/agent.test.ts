@@ -10,6 +10,8 @@ import {
   agentRunSteps,
   anilistMedia,
   anime,
+  chatMessages,
+  conversations,
   listEntries,
   proposals,
   users,
@@ -104,6 +106,43 @@ function post(url: string, body?: unknown) {
 function get(url: string) {
   return h.app.inject({ method: "GET", url, cookies: { [SESSION_COOKIE]: cookie } });
 }
+
+function del(url: string) {
+  return h.app.inject({
+    method: "DELETE",
+    url,
+    headers: { origin: TEST_WEB_ORIGIN },
+    cookies: { [SESSION_COOKIE]: cookie },
+  });
+}
+
+/** Sends a message to a chat, or starts a new one. */
+async function say(text: string, conversationId?: string) {
+  const res = await post("/chat/messages", { text, ...(conversationId && { conversationId }) });
+  return contract.chatThreadResponseSchema.parse(res.json());
+}
+
+/** Finds a fixture show and stages one more episode of it, which the server holds to confirm. */
+const heldScript = (): ScriptStep[] => [
+  { toolCalls: [{ name: "search_my_list", arguments: { queries: ["fixture"] } }] },
+  (req) => {
+    const results = lastToolResult(req).results as { anime_id: number }[];
+    return {
+      toolCalls: [
+        {
+          name: "propose_update",
+          arguments: { anime_id: results[0]?.anime_id, episodes_delta: 1 },
+        },
+      ],
+    };
+  },
+  (req) => ({
+    toolCalls: [
+      { name: "commit_update", arguments: { proposal_id: lastToolResult(req).proposal_id } },
+    ],
+  }),
+  { text: "Please confirm." },
+];
 
 describe("runAgent", () => {
   it("searches, proposes and commits, and logs every step", async () => {
@@ -579,7 +618,10 @@ describe("chat API", () => {
       ],
     });
 
-    const thread = contract.chatThreadResponseSchema.parse((await get("/chat")).json());
+    expect(body.conversation.title).toBe("watched ep 8 of fixture watching show");
+    const thread = contract.chatThreadResponseSchema.parse(
+      (await get(`/chat/conversations/${body.conversation.id}`)).json(),
+    );
     expect(thread.messages).toHaveLength(2);
     const changes = contract.changesResponseSchema.parse((await get("/changes")).json());
     expect(changes.changes).toHaveLength(1);
@@ -588,8 +630,8 @@ describe("chat API", () => {
   it("gives the model the recent conversation", async () => {
     models.script(LITE.ref, [{ text: "Which season?" }, { text: "Got it." }]);
 
-    await post("/chat/messages", { text: "watched frieren" });
-    await post("/chat/messages", { text: "season 2" });
+    const first = await say("watched frieren");
+    await say("season 2", first.conversation.id);
 
     // (The first reply is a question, so it also escalated; look at the agent model's calls.)
     const liteCalls = models.requests.filter((r) => r.ref === LITE.ref);
@@ -713,26 +755,6 @@ describe("chat API", () => {
   });
 
   it("confirms a held proposal, and cancels another", async () => {
-    const heldScript = (): ScriptStep[] => [
-      { toolCalls: [{ name: "search_my_list", arguments: { queries: ["fixture"] } }] },
-      (req) => {
-        const results = lastToolResult(req).results as { anime_id: number }[];
-        return {
-          toolCalls: [
-            {
-              name: "propose_update",
-              arguments: { anime_id: results[0]?.anime_id, episodes_delta: 1 },
-            },
-          ],
-        };
-      },
-      (req) => ({
-        toolCalls: [
-          { name: "commit_update", arguments: { proposal_id: lastToolResult(req).proposal_id } },
-        ],
-      }),
-      { text: "Please confirm." },
-    ];
     // Escalation holds too, so the held proposal is what the user sees.
     models.script(LITE.ref, heldScript());
     models.script(FLASH.ref, heldScript());
@@ -751,7 +773,9 @@ describe("chat API", () => {
     );
     expect(h.fakeMal.patchRequests).toHaveLength(1);
 
-    const thread = contract.chatThreadResponseSchema.parse((await get("/chat")).json());
+    const thread = contract.chatThreadResponseSchema.parse(
+      (await get(`/chat/conversations/${first.conversation.id}`)).json(),
+    );
     expect(thread.messages[1]?.pending).toEqual([]);
     expect(thread.messages[1]?.changes).toHaveLength(1);
 
@@ -820,6 +844,106 @@ describe("chat API", () => {
 
     expect([anonymous.statusCode, crossSite.statusCode, empty.statusCode]).toEqual([401, 403, 400]);
     expect(models.requests).toHaveLength(0);
+  });
+});
+
+describe("chats", () => {
+  it("starts a new chat for a message without one, and lists chats by latest message", async () => {
+    models.script(LITE.ref, [{ text: "Hi!" }, { text: "Sure." }, { text: "Ok." }]);
+
+    const first = await say("hi there");
+    const second = await say(
+      "  what should I   watch tonight,\n something chill and short since I only have forty minutes",
+    );
+    expect(second.conversation.id).not.toBe(first.conversation.id);
+    // Titles are the first message on one line, cut at a word.
+    expect(second.conversation.title).toBe(
+      "what should I watch tonight, something chill and short…",
+    );
+    await say("and another thing", first.conversation.id);
+
+    const list = contract.conversationsResponseSchema.parse(
+      (await get("/chat/conversations")).json(),
+    );
+    expect(list.conversations.map((c) => c.title)).toEqual([
+      "hi there",
+      "what should I watch tonight, something chill and short…",
+    ]);
+  });
+
+  it("gives the model only the chat's own messages", async () => {
+    models.script(LITE.ref, [{ text: "Which season?" }, { text: "Hello!" }]);
+
+    await say("watched frieren");
+    await say("hello");
+
+    const liteCalls = models.requests.filter((r) => r.ref === LITE.ref);
+    expect(liteCalls.at(-1)?.request.messages.map((m) => m.content)).toEqual(["hello"]);
+  });
+
+  it("names a chat from before titles after its first message", async () => {
+    const [chat] = await h.db.insert(conversations).values({ userId }).returning();
+    if (!chat) throw new Error("no chat");
+    await h.db.insert(chatMessages).values([
+      { conversationId: chat.id, role: "user", content: "watched ep 3 of frieren" },
+      { conversationId: chat.id, role: "assistant", content: "Updated." },
+    ]);
+
+    const list = contract.conversationsResponseSchema.parse(
+      (await get("/chat/conversations")).json(),
+    );
+    expect(list.conversations.map(({ id, title }) => ({ id, title }))).toEqual([
+      { id: chat.id, title: "watched ep 3 of frieren" },
+    ]);
+  });
+
+  it("deletes a chat and cancels the changes it held, keeping the ones it made", async () => {
+    models.script(LITE.ref, updateScript("fixture watching show", { episodes_watched: 8 }));
+    const chat = await say("watched ep 8 of fixture watching show");
+    models.script(LITE.ref, heldScript());
+    models.script(FLASH.ref, heldScript());
+    await say("one more of fixture", chat.conversation.id);
+
+    const res = await del(`/chat/conversations/${chat.conversation.id}`);
+
+    expect(res.statusCode).toBe(204);
+    expect((await get(`/chat/conversations/${chat.conversation.id}`)).statusCode).toBe(404);
+    expect(
+      contract.conversationsResponseSchema.parse((await get("/chat/conversations")).json()),
+    ).toEqual({ conversations: [] });
+    const statuses = (await h.db.select({ status: proposals.status }).from(proposals))
+      .map((p) => p.status)
+      .sort();
+    expect(statuses).toEqual(["cancelled", "cancelled", "committed"]);
+    const changes = contract.changesResponseSchema.parse((await get("/changes")).json());
+    expect(changes.changes).toHaveLength(1);
+    expect((await del(`/chat/conversations/${chat.conversation.id}`)).statusCode).toBe(404);
+  });
+
+  it("won't show, continue or delete another user's chat", async () => {
+    const [other] = await h.db
+      .insert(users)
+      .values({ malUserId: 424242, malUsername: "someone-else" })
+      .returning();
+    if (!other) throw new Error("no user");
+    const [chat] = await h.db.insert(conversations).values({ userId: other.id }).returning();
+    if (!chat) throw new Error("no chat");
+    await h.db
+      .insert(chatMessages)
+      .values({ conversationId: chat.id, role: "user", content: "a secret" });
+
+    const shown = await get(`/chat/conversations/${chat.id}`);
+    const continued = await post("/chat/messages", { text: "hi", conversationId: chat.id });
+    const deleted = await del(`/chat/conversations/${chat.id}`);
+    const listed = contract.conversationsResponseSchema.parse(
+      (await get("/chat/conversations")).json(),
+    );
+
+    expect([shown.statusCode, continued.statusCode, deleted.statusCode]).toEqual([404, 404, 404]);
+    expect(listed.conversations).toEqual([]);
+    expect(models.requests).toHaveLength(0);
+    expect(await h.db.select().from(conversations)).toHaveLength(1);
+    expect((await get("/chat/conversations/not-a-uuid")).statusCode).toBe(404);
   });
 });
 
