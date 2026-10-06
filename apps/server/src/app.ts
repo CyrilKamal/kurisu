@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { CURRENT_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
 import { airingCandidateIds, refreshAiring } from "./anilist/cache.js";
+import { refreshDiscovery } from "./recommend/discovery.js";
 import { refreshTaste } from "./taste/profile.js";
 import { createAniListClient } from "./anilist/client.js";
 import { registerAuthRoutes } from "./auth/routes.js";
@@ -86,6 +87,13 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
           { err: { name: (err as Error).name } },
           "could not refresh taste or airing data after sync",
         );
+      })
+      // Shows new to the user, for recommendations: at most daily, and never in the way of the
+      // airing data above. It records its own failures.
+      .then(() => refreshDiscovery({ db, anilist: syncAniList, log: app.log }, userId))
+      .then(() => undefined)
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh discovery");
       })
       .finally(() => airingRefreshes.delete(userId));
     airingRefreshes.set(userId, task);

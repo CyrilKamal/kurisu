@@ -1060,3 +1060,30 @@ Requested during Milestone 4, outside its scope.
 - v13 is the app's prompt.
 - The remaining misses all ask or hold: bsd ep 5, Mushoku Tensei, TYBW s4, and the Cowboy Bebop rewatch.
 - In that last one the model said "tap Add" for a Confirm card, a wording slip.
+
+## 2026-10-06 — Recommendations beyond your list (Milestone 4)
+**Decision:**
+- **Discovery pool:** recommendations also draw from shows new to you, kept per user (`discovery`) and built in the background after a list sync, at most daily. Show details are shared in `anilist_catalog`. Three sources:
+  - AniList's "fans also liked" lists for your 25 highest-scored completed shows. Each seed's top pick counts 1, the next ½, then ⅓, and so on.
+  - The 50 top-rated shows in the 3 genres you rate highest (enough scored shows, above your average).
+  - The 50 top-rated movies.
+
+  The top-rated lists count less than fans' picks, and only reasonably popular shows go in.
+- **Out of the pool:** adult titles, unaired shows and shows without a MAL entry. At ranking time, anything on your list in any status, and sequels to shows you haven't completed (AniList's prequel links), are left out too.
+- **Translation:** AniList's genres and main tags (rank 60+, not spoilers) are translated to MAL's names, so moods and filters work the same.
+- **Ranking:** one ranking for both. Your list gets a +1 boost (your choice: list first). A new show adds up to +0.5 for how strongly AniList points at it, so it wins only on a clearly better taste fit, or when your list has nothing that fits. `find_candidates` gains `from: new`.
+- **Prompt:** `recommend.v2` says which list a pick comes from, maps "something new / I haven't seen" to `new`, and never claims to add anything.
+- **Cards:** a new pick says "New to you" and has "Add to Plan to Watch", which sends that request through Chat's always-confirmed add.
+
+**Alternatives:**
+- AniList calls during each recommendation (3 s or more per request, rate-limited).
+- MAL's suggestions endpoint (live MAL reads, undocumented limits).
+- Popularity-only picks (generic, not your taste).
+- A smaller list boost: at +0.5, well-rated new shows outranked your list in tests.
+
+**Why:** Asking for "a movie" found nothing, because your Plan to Watch and in-progress shows have no movies. You chose to look beyond the list with the list first. Building the pool ahead of time keeps recommendations fast and repeatable, and the AniList links make picks personal: fans of your favorites.
+
+**Consequences:**
+- The pool exists only after a list sync, so press Re-sync once.
+- The recommendation eval needs the pool frozen too (next PR).
+- New picks rest on AniList's community data, which their facts show ("AniList score 8.4", "fans of X also like it").

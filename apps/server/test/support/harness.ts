@@ -98,7 +98,7 @@ export async function resetDatabase(db: Db): Promise<void> {
   for (let attempt = 0; ; attempt++) {
     try {
       await db.execute(
-        sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs, taste_genres, drop_reasons, recommendations CASCADE`,
+        sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs, taste_genres, drop_reasons, recommendations, anilist_catalog, discovery, discovery_runs CASCADE`,
       );
       return;
     } catch (err) {
@@ -153,4 +153,21 @@ export async function login(
   const sessionCookie = callbackResponse.cookies.find((c) => c.name === SESSION_COOKIE)?.value;
 
   return { authorizeUrl, callbackUrl, stateCookie, callbackResponse, sessionCookie };
+}
+
+/**
+ * Waits for the background refreshes a login's sync starts (taste, airing data, discovery) to
+ * finish, so they can't use up AniList failures a test injects. Discovery runs last and always
+ * records a run, whether it worked or not.
+ */
+export async function backgroundSettled(h: Harness, timeoutMs = 10_000): Promise<void> {
+  const until = Date.now() + timeoutMs;
+  for (;;) {
+    const runs = await h.db.execute<{ n: number }>(
+      sql`SELECT count(*)::int AS n FROM discovery_runs`,
+    );
+    if ((runs.rows[0]?.n ?? 0) > 0) return;
+    if (Date.now() > until) throw new Error("background refreshes didn't finish");
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
 }

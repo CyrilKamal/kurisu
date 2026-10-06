@@ -74,6 +74,36 @@ export interface CatalogShow {
   startDate: string | null;
 }
 
+/** A show with what discovery ranks and filters it by. */
+export interface DiscoveredShow extends CatalogShow {
+  /** AniList's genres. */
+  genres: string[];
+  /** AniList's tags, with how central each is (0–100). */
+  tags: { name: string; rank: number | null; isMediaSpoiler: boolean | null }[];
+  /** AniList's average score, 0–100. */
+  averageScore: number | null;
+  popularity: number | null;
+  isAdult: boolean;
+  /** The entries this one follows, by MAL id. */
+  prequelMalIds: number[];
+}
+
+/** One "fans also liked" link: a show AniList users recommend to fans of a seed show. */
+export interface FanRecommendation {
+  seedMalId: number;
+  anilistId: number;
+  /** 0 for the most recommended show for that seed. */
+  rank: number;
+}
+
+/** A top-rated list to fetch: by AniList genre, tag or format. */
+export interface TopList {
+  key: string;
+  genre?: string;
+  tag?: string;
+  format?: string;
+}
+
 export interface AniListClient {
   /** AniList data for these MAL ids. Ids AniList doesn't know are simply missing. */
   mediaByMalIds(malIds: number[], malFacts?: ReadonlyMap<number, MalFacts>): Promise<MediaLookup>;
@@ -84,6 +114,12 @@ export interface AniListClient {
    * Results of all queries come back together, without repeats.
    */
   searchAnime(queries: string[]): Promise<CatalogShow[]>;
+  /** For each seed show, the shows its fans most recommend, best first. */
+  fansAlsoLiked(seedMalIds: number[]): Promise<FanRecommendation[]>;
+  /** The top-rated, reasonably popular shows of each list, best first, as AniList ids. */
+  topRated(lists: TopList[]): Promise<Map<string, number[]>>;
+  /** Full details of these shows, by AniList id. Ids AniList doesn't know are missing. */
+  showDetails(anilistIds: number[]): Promise<DiscoveredShow[]>;
 }
 
 /** A non-2xx response from AniList. */
@@ -183,6 +219,114 @@ const searchMediaSchema = z.object({
     .nullish(),
 });
 const searchPagesSchema = z.record(z.string(), z.object({ media: z.array(searchMediaSchema) }));
+
+/** Seeds per "fans also liked" request, and recommendations kept per seed. */
+const SEEDS_PER_REQUEST = 10;
+export const RECOMMENDATIONS_PER_SEED = 8;
+/** Shows per top-rated list. */
+export const TOP_LIST_SIZE = 50;
+/** Top-rated lists skip shows fewer people have on their lists than this. */
+const MIN_POPULARITY = 5000;
+
+const FANS_QUERY = `query ($ids: [Int]) {
+  Page(perPage: ${String(SEEDS_PER_REQUEST)}) {
+    media(idMal_in: $ids, type: ANIME) {
+      idMal
+      recommendations(sort: [RATING_DESC], perPage: ${String(RECOMMENDATIONS_PER_SEED)}) {
+        nodes { rating mediaRecommendation { id } }
+      }
+    }
+  }
+}`;
+
+const fansSchema = z.object({
+  Page: z.object({
+    media: z.array(
+      z.object({
+        idMal: z.number().int().positive().nullish(),
+        recommendations: z
+          .object({
+            nodes: z.array(
+              z.object({
+                rating: z.number().int().nullish(),
+                mediaRecommendation: z.object({ id: z.number().int().positive() }).nullish(),
+              }),
+            ),
+          })
+          .nullish(),
+      }),
+    ),
+  }),
+});
+
+/** One aliased page per list, so all the lists are a single request. */
+function topQuery(lists: TopList[]): string {
+  const pages = lists.map((list, i) => {
+    const filters = [
+      list.genre ? `genre_in: [${JSON.stringify(list.genre)}]` : null,
+      list.tag ? `tag_in: [${JSON.stringify(list.tag)}]` : null,
+      list.format ? `format_in: [${list.format}]` : null,
+    ].filter(Boolean);
+    return `l${String(i)}: Page(perPage: ${String(TOP_LIST_SIZE)}) { media(type: ANIME, ${filters.join(", ")}, isAdult: false, status_in: [FINISHED, RELEASING], sort: [SCORE_DESC], popularity_greater: ${String(MIN_POPULARITY)}) { id } }`;
+  });
+  return `query { ${pages.join(" ")} }`;
+}
+
+const topSchema = z.record(
+  z.string(),
+  z.object({ media: z.array(z.object({ id: z.number().int().positive() })) }),
+);
+
+const DETAILS_QUERY = `query ($ids: [Int], $page: Int) {
+  Page(page: $page, perPage: 50) {
+    pageInfo { hasNextPage }
+    media(id_in: $ids, type: ANIME) {
+      ${SEARCH_FIELDS}
+      genres
+      tags { name rank isMediaSpoiler }
+      averageScore
+      popularity
+      relations { edges { relationType node { idMal type } } }
+    }
+  }
+}`;
+
+const detailsSchema = z.object({
+  Page: z.object({
+    pageInfo: z.object({ hasNextPage: z.boolean().nullish() }),
+    media: z.array(
+      searchMediaSchema.extend({
+        genres: z.array(z.string()).nullish(),
+        tags: z
+          .array(
+            z.object({
+              name: z.string(),
+              rank: z.number().int().nullish(),
+              isMediaSpoiler: z.boolean().nullish(),
+            }),
+          )
+          .nullish(),
+        averageScore: z.number().int().nullish(),
+        popularity: z.number().int().nullish(),
+        relations: z
+          .object({
+            edges: z.array(
+              z.object({
+                relationType: z.string().nullish(),
+                node: z
+                  .object({
+                    idMal: z.number().int().positive().nullish(),
+                    type: z.string().nullish(),
+                  })
+                  .nullish(),
+              }),
+            ),
+          })
+          .nullish(),
+      }),
+    ),
+  }),
+});
 
 const pageInfoSchema = z.object({ hasNextPage: z.boolean().nullish() });
 
@@ -334,6 +478,57 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
         }
       }
       return shows;
+    },
+
+    async fansAlsoLiked(seedMalIds) {
+      const out: FanRecommendation[] = [];
+      for (const batch of chunks([...new Set(seedMalIds)], SEEDS_PER_REQUEST)) {
+        const data = await query(FANS_QUERY, { ids: batch }, fansSchema);
+        for (const seed of data.Page.media) {
+          if (!seed.idMal) continue;
+          const nodes = (seed.recommendations?.nodes ?? []).filter(
+            (n) => n.mediaRecommendation && (n.rating ?? 0) > 0,
+          );
+          nodes.forEach((n, rank) => {
+            if (n.mediaRecommendation && seed.idMal) {
+              out.push({ seedMalId: seed.idMal, anilistId: n.mediaRecommendation.id, rank });
+            }
+          });
+        }
+      }
+      return out;
+    },
+
+    async topRated(lists) {
+      if (lists.length === 0) return new Map();
+      const pages = await query(topQuery(lists), {}, topSchema);
+      return new Map(
+        lists.map((list, i) => [list.key, (pages[`l${String(i)}`]?.media ?? []).map((m) => m.id)]),
+      );
+    },
+
+    async showDetails(anilistIds) {
+      const media = await paged(anilistIds, DETAILS_QUERY, {}, detailsSchema, (data) => ({
+        items: data.Page.media,
+        hasNextPage: data.Page.pageInfo.hasNextPage === true,
+      }));
+      return media.map((m) => ({
+        ...toCatalogShow(m),
+        genres: m.genres ?? [],
+        tags: (m.tags ?? []).map((t) => ({
+          name: t.name,
+          rank: t.rank ?? null,
+          isMediaSpoiler: t.isMediaSpoiler ?? null,
+        })),
+        averageScore: m.averageScore ?? null,
+        popularity: m.popularity ?? null,
+        isAdult: m.isAdult === true,
+        prequelMalIds: (m.relations?.edges ?? []).flatMap((e) =>
+          e.relationType === "PREQUEL" && e.node?.type === "ANIME" && e.node.idMal
+            ? [e.node.idMal]
+            : [],
+        ),
+      }));
     },
   };
 }

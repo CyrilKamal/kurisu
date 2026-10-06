@@ -166,7 +166,18 @@ export function ChatView({
                   />
                 ))}
                 {message.picks.map((pick, i) => (
-                  <PickCard key={pick.animeId} pick={pick} rank={i + 1} />
+                  <PickCard
+                    key={pick.animeId}
+                    pick={pick}
+                    rank={i + 1}
+                    // A new show is added through Chat, which asks you to confirm it.
+                    {...(pick.status === null &&
+                      !sending && {
+                        onAdd: () => {
+                          void send(`Add ${pick.title} to my Plan to Watch`);
+                        },
+                      })}
+                  />
                 ))}
                 {message.shows.map((show) => (
                   <ShowCard

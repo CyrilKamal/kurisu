@@ -34,6 +34,15 @@ export interface FakeCatalogMedia {
   startDate: { year: number | null; month: number | null; day: number | null };
 }
 
+/** A show with everything discovery asks for, in AniList's shape. */
+export interface FakeDetailedMedia extends FakeCatalogMedia {
+  genres: string[];
+  tags: { name: string; rank: number; isMediaSpoiler: boolean }[];
+  averageScore: number | null;
+  popularity: number;
+  relations: { edges: { relationType: string; node: { idMal: number | null; type: string } }[] };
+}
+
 export interface FakeAiring {
   mediaId: number;
   episode: number;
@@ -60,6 +69,10 @@ export class FakeAniList {
   media: FakeAniListMedia[] = [];
   /** Shows a title search can find: any whose title or synonym contains the search words. */
   catalog: FakeCatalogMedia[] = [];
+  /** "Fans also liked": per seed MAL id, AniList ids of the shows its fans recommend, best first. */
+  fans = new Map<number, number[]>();
+  /** Shows the top-rated lists and detail lookups know. */
+  detailed: FakeDetailedMedia[] = [];
   airings: FakeAiring[] = [];
   readonly requests: GraphQlBody[] = [];
   private readonly failures: { status: number; headers?: Record<string, string> }[] = [];
@@ -103,6 +116,8 @@ export class FakeAniList {
   reset(): void {
     this.media = [];
     this.catalog = [];
+    this.fans = new Map();
+    this.detailed = [];
     this.airings = [];
     this.requests.length = 0;
     this.failures.length = 0;
@@ -118,6 +133,52 @@ export class FakeAniList {
 
   private answer(body: GraphQlBody): unknown {
     const { ids = [], page = 1 } = body.variables;
+    if (body.query.includes("recommendations(")) {
+      const seeds = ids.filter((id) => this.fans.has(id));
+      return {
+        Page: {
+          media: seeds.map((idMal) => ({
+            idMal,
+            recommendations: {
+              nodes: (this.fans.get(idMal) ?? []).map((id, i) => ({
+                rating: 100 - i,
+                mediaRecommendation: { id },
+              })),
+            },
+          })),
+        },
+      };
+    }
+    if (body.query.includes("popularity_greater")) {
+      // One aliased page per list: "l0: Page(...) { media(type: ANIME, genre_in: [...], ...) ...".
+      const pages: Record<string, { media: { id: number }[] }> = {};
+      for (const match of body.query.matchAll(/(l\d+): Page\([^)]*\) \{ media\(([^)]*)\)/g)) {
+        const [, alias = "", filters = ""] = match;
+        const genre = /genre_in: \["([^"]+)"\]/.exec(filters)?.[1];
+        const tag = /tag_in: \["([^"]+)"\]/.exec(filters)?.[1];
+        const format = /format_in: \[(\w+)\]/.exec(filters)?.[1];
+        pages[alias] = {
+          media: this.detailed
+            .filter(
+              (m) =>
+                !m.isAdult &&
+                ["FINISHED", "RELEASING"].includes(m.status) &&
+                m.popularity > 5000 &&
+                (!genre || m.genres.includes(genre)) &&
+                (!tag || m.tags.some((t) => t.name === tag)) &&
+                (!format || m.format === format),
+            )
+            .sort((a, b) => (b.averageScore ?? 0) - (a.averageScore ?? 0))
+            .map((m) => ({ id: m.id })),
+        };
+      }
+      return pages;
+    }
+    if (body.query.includes("id_in")) {
+      const matches = this.detailed.filter((m) => ids.includes(m.id));
+      const { items, hasNextPage } = paginate(matches, page);
+      return { Page: { pageInfo: { hasNextPage }, media: items } };
+    }
     if (body.query.includes("search:")) {
       // One aliased page per title: q0, q1, ...
       const pages: Record<string, { media: FakeCatalogMedia[] }> = {};
@@ -205,6 +266,24 @@ export function catalogMedia(
       large: `https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/${String(id)}.jpg`,
     },
     startDate: { year: 2024, month: 4, day: 6 },
+    ...overrides,
+  };
+}
+
+/** A finished show with discovery's details, for tests that don't care about the rest. */
+export function detailedMedia(
+  id: number,
+  idMal: number | null,
+  romaji: string,
+  overrides: Partial<FakeDetailedMedia> = {},
+): FakeDetailedMedia {
+  return {
+    ...catalogMedia(id, idMal, romaji),
+    genres: ["Drama"],
+    tags: [],
+    averageScore: 80,
+    popularity: 50_000,
+    relations: { edges: [] },
     ...overrides,
   };
 }

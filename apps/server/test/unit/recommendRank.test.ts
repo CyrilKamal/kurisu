@@ -100,6 +100,39 @@ describe("rankCandidates", () => {
     expect(ranked[0]?.facts).toContain("you rate Slice of Life above your average");
   });
 
+  it("adds shows new to the user, after their own list when the fit is about equal", () => {
+    const fresh = (id: number, extra: Partial<CandidateRow>) =>
+      row(id, { status: null, strength: 1, because: ["Mushishi"], anilistScore: 8.4, ...extra });
+    const mixed = [
+      row(1, { genres: ["Slice of Life"] }),
+      fresh(2, { genres: ["Slice of Life"], malMean: null }),
+      fresh(3, { genres: ["Slice of Life"], malMean: null, prequelsDone: false }),
+    ];
+
+    const ranked = rankCandidates(mixed, noTaste, {});
+    // The sequel to a show they haven't completed is left out.
+    expect(ids(ranked)).toEqual([1, 2]);
+    const newShow = ranked.find((c) => c.animeId === 2);
+    expect(newShow?.pool).toBe("new");
+    expect(newShow?.facts).toEqual(
+      expect.arrayContaining([
+        "new to you: not on your list",
+        "fans of Mushishi also like it",
+        "AniList score 8.4",
+      ]),
+    );
+    expect(ids(rankCandidates(mixed, noTaste, { from: ["new"] }))).toEqual([2]);
+    expect(ids(rankCandidates(mixed, noTaste, { from: ["plan_to_watch"] }))).toEqual([1]);
+
+    // A much better fit still wins over the list's boost.
+    const loved: TasteSignals = {
+      genres: new Map([["Mystery", { affinity: 1.5, dropped: 0 }]]),
+      dropCategories: new Map(),
+    };
+    const mystery = [row(1, { genres: ["Comedy"] }), fresh(2, { genres: ["Mystery"] })];
+    expect(ids(rankCandidates(mystery, loved, {}))).toEqual([2, 1]);
+  });
+
   it("steers away from long shows for someone who drops shows for being too long", () => {
     const long = [row(1, { numEpisodes: 64 }), row(2, { numEpisodes: 12 })];
     const tired: TasteSignals = { genres: new Map(), dropCategories: new Map([["too_long", 2]]) };

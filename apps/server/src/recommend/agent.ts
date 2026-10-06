@@ -11,13 +11,16 @@ import type { LlmMessage, ToolCall, ToolSpec } from "../llm/types.js";
 import { refreshTaste } from "../taste/profile.js";
 import {
   candidateRows,
+  discoveryRows,
   knownGenres,
   MEDIA_TYPES,
+  POOLS,
   rankCandidates,
   tasteSignals,
   type Candidate,
   type Constraints,
 } from "./candidates.js";
+import { rememberDiscovered } from "./discovery.js";
 
 /** Picks per recommendation (the user's choice). */
 export const MAX_PICKS = 3;
@@ -59,7 +62,7 @@ const TOOL_SPECS: ToolSpec[] = [
   {
     name: "find_candidates",
     description:
-      "Search the user's Plan to Watch and in-progress shows that meet the constraints, best fit first, with the facts behind each.",
+      "Search the user's Plan to Watch, their shows in progress, and shows new to them (picked from AniList by their taste) that meet the constraints, best fit first, with the facts behind each.",
     parameters: {
       type: "object",
       properties: {
@@ -81,8 +84,8 @@ const TOOL_SPECS: ToolSpec[] = [
         media_types: { type: "array", items: { type: "string", enum: [...MEDIA_TYPES] } },
         from: {
           type: "array",
-          items: { type: "string", enum: ["plan_to_watch", "in_progress"] },
-          description: "Where to look; both if not set",
+          items: { type: "string", enum: [...POOLS] },
+          description: "Where to look; all three if not set",
         },
       },
     },
@@ -114,7 +117,7 @@ const findArgs = z
     genres_any: z.array(z.string()).optional(),
     genres_none: z.array(z.string()).optional(),
     media_types: z.array(z.enum(MEDIA_TYPES)).optional(),
-    from: z.array(z.enum(["plan_to_watch", "in_progress"])).optional(),
+    from: z.array(z.enum(POOLS)).optional(),
   })
   .strict();
 
@@ -282,7 +285,7 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
   }
 
   const ranked = rankCandidates(
-    await candidateRows(ctx.db, ctx.userId),
+    [...(await candidateRows(ctx.db, ctx.userId)), ...(await discoveryRows(ctx.db, ctx.userId))],
     await tasteSignals(ctx.db, ctx.userId),
     constraints,
   );
@@ -296,6 +299,7 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
         title: c.title,
         ...(c.titleEn && c.titleEn !== c.title ? { english_title: c.titleEn } : {}),
         type: c.mediaType,
+        ...(c.numEpisodes !== null && { episodes: c.numEpisodes }),
         list: c.pool,
         genres: c.genres,
         facts: c.facts,
@@ -304,7 +308,9 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
       ...(unknown.length > 0 && {
         note: `Ignored unknown genres: ${unknown.join(", ")}. Known genres: ${ctx.genres.join(", ")}.`,
       }),
-      ...(ranked.length === 0 && { note: "Nothing on their list fits all of that." }),
+      ...(ranked.length === 0 && {
+        note: "Nothing fits all of that, on their list or among shows new to them.",
+      }),
     },
   };
 }
@@ -334,6 +340,11 @@ async function presentPicksTool(ctx: RecContext, raw: unknown): Promise<ToolOutc
 
   const constraints = Object.fromEntries(
     picks.map((p) => [String(p.animeId), ctx.offered.get(p.animeId)?.constraints ?? {}]),
+  );
+  // A new show needs a row to show as a card (and to be added from it).
+  await rememberDiscovered(
+    ctx.db,
+    picks.filter((p) => ctx.offered.get(p.animeId)?.candidate.pool === "new").map((p) => p.animeId),
   );
   // Presenting again replaces the earlier picks of this run.
   const [row] = await ctx.db
