@@ -835,3 +835,18 @@ Both are now structural checks, so no prompt can repeat them.
 **Consequences:**
 - A reply naming a show by a word that isn't in any of its titles or nicknames holds that show. That's safe, but it's an extra question.
 - A model that misspells a field gets one more turn to fix it.
+
+## 2026-10-06 — Prompt v9 becomes the app's prompt (Milestone 3)
+**Decision:** Prompt v9 (your full brief-reply rules) replaces v8.
+**Alternatives:** Keeping v8.
+**Why:** With the named-show and field-name checks in place, Flash-Lite on all 130 cases made no wrong writes with v9.
+
+| | v9 | v8 |
+|---|---|---|
+| Batches | 85/90 (94.4%), 0/63 wrong writes | 84/90 |
+| Your brief replies | 34/35 (97.1%), 0/57 wrong writes | 30/35 |
+| Wrong writes overall | 0/123 | 1/120 ("the eater one" written as Soul Eater instead of asking) |
+
+**Consequences:**
+- Every v9 miss asked or held instead of writing: "watched both eps" asked which Bleach entry, and the usual flaky batch cases (MHA More, Mushoku Tensei follow-up, TYBW s4, Cowboy Bebop rewatch, Bleach ep 380).
+- Which batch cases miss varies from run to run, by about ±2 cases.
