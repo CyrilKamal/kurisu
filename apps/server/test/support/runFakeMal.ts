@@ -35,7 +35,11 @@ fake.catalog = [
   {
     id: 52991,
     title: "Sousou no Frieren",
-    alternative_titles: { synonyms: [], en: "Frieren: Beyond Journey's End", ja: "葬送のフリーレン" },
+    alternative_titles: {
+      synonyms: [],
+      en: "Frieren: Beyond Journey's End",
+      ja: "葬送のフリーレン",
+    },
     media_type: "tv",
     num_episodes: 28,
     status: "finished_airing",
