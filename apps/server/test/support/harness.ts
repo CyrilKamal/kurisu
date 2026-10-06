@@ -102,7 +102,8 @@ export async function resetDatabase(db: Db): Promise<void> {
       );
       return;
     } catch (err) {
-      const deadlock = (err as { cause?: { code?: string } }).cause?.code === "40P01";
+      const e = err as { code?: string; cause?: { code?: string } };
+      const deadlock = (e.code ?? e.cause?.code) === "40P01";
       if (!deadlock || attempt >= 4) throw err;
       await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
     }
