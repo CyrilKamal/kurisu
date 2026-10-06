@@ -1,7 +1,8 @@
 import type { PickView } from "@kurisu/shared";
-import Image from "next/image";
 
 import { STATUS_LABELS } from "@/lib/format";
+
+import { Cover } from "./ShowCard";
 
 /** A recommended show: cover, where you are in it, how long it takes, and why it fits. */
 export function PickCard({ pick, rank }: { pick: PickView; rank: number }) {
@@ -22,17 +23,7 @@ export function PickCard({ pick, rank }: { pick: PickView; rank: number }) {
 
   return (
     <div className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-      {pick.pictureUrl ? (
-        <Image
-          src={pick.pictureUrl}
-          alt=""
-          width={40}
-          height={56}
-          className="h-14 w-10 shrink-0 rounded bg-zinc-200 object-cover dark:bg-zinc-800"
-        />
-      ) : (
-        <div aria-hidden className="h-14 w-10 shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
-      )}
+      <Cover url={pick.pictureUrl} />
       <div className="min-w-0">
         <a
           href={`https://myanimelist.net/anime/${String(pick.animeId)}`}

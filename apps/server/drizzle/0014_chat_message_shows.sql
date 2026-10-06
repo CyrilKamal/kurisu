@@ -1,0 +1,1 @@
+ALTER TABLE "chat_messages" ADD COLUMN "show_ids" integer[] DEFAULT '{}'::integer[] NOT NULL;

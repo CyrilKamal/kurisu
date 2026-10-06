@@ -18,6 +18,7 @@ import type { ModelRef } from "../llm/modelConfig.js";
 import { runRecommender, type RecommendResult } from "../recommend/agent.js";
 import type { CommitErrorCode } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
+import { mentionedShows } from "./mentions.js";
 import { titleFrom, UNTITLED_CHAT } from "./titles.js";
 
 export interface ChatDeps extends AgentDeps {
@@ -72,6 +73,22 @@ export interface ChatMessageView {
   changes: ChangeView[];
   pending: PendingView[];
   picks: PickView[];
+  /** Shows the reply names that have no other card in it. */
+  shows: ShowCardView[];
+  /** The reply asks a question, so its show cards answer it when tapped. */
+  asksToChoose: boolean;
+}
+
+/** A show a reply names, as a card. `status` is null when it isn't on the user's list. */
+export interface ShowCardView {
+  animeId: number;
+  title: string;
+  pictureUrl: string | null;
+  mediaType: string | null;
+  numEpisodes: number | null;
+  episodeMinutes: number | null;
+  status: string | null;
+  episodesWatched: number;
 }
 
 /** A recommended show, as a card under the reply. */
@@ -177,14 +194,21 @@ export async function handleChatMessage(
     );
   }
 
+  const content = combinedReply(run, recommendation);
+  // Shows the reply names get cards, unless a change, Confirm or pick card already shows them.
+  const carded = new Set([
+    ...run.committed.map((c) => c.animeId),
+    ...run.pending.map((p) => p.animeId),
+    ...(recommendation?.picks.map((p) => p.animeId) ?? []),
+  ]);
+  const showIds = await mentionedShows(
+    db,
+    content,
+    run.lookedUp.filter((id) => !carded.has(id)),
+  );
   const [assistantMessage] = await db
     .insert(chatMessages)
-    .values({
-      conversationId,
-      role: "assistant",
-      content: combinedReply(run, recommendation),
-      runId: run.runId,
-    })
+    .values({ conversationId, role: "assistant", content, runId: run.runId, showIds })
     .returning({ id: chatMessages.id });
   if (!assistantMessage) throw new Error("chat message insert returned no row");
   if (recommendation?.recommendationId) {
@@ -399,6 +423,7 @@ export async function loadThread(
         role: chatMessages.role,
         content: chatMessages.content,
         runId: chatMessages.runId,
+        showIds: chatMessages.showIds,
         createdAt: chatMessages.createdAt,
       })
       .from(chatMessages)
@@ -436,6 +461,11 @@ export async function loadThread(
     userId,
     rows.map((r) => r.id),
   );
+  const showCards = await loadShowCards(
+    db,
+    userId,
+    rows.flatMap((r) => r.showIds),
+  );
 
   return rows.map((row) => {
     const mine = cards.filter((c) => c.proposal.runId === row.runId);
@@ -456,8 +486,43 @@ export async function loadThread(
           reason: c.proposal.confirmationReason,
         })),
       picks: picksByMessage.get(row.id) ?? [],
+      shows: row.showIds.flatMap((id) => {
+        const card = showCards.get(id);
+        return card ? [card] : [];
+      }),
+      asksToChoose: row.role === "assistant" && row.showIds.length > 0 && row.content.includes("?"),
     };
   });
+}
+
+/** Cards for these shows: what MAL says about each, and where the user is in it, if anywhere. */
+async function loadShowCards(
+  db: Db,
+  userId: string,
+  animeIds: number[],
+): Promise<Map<number, ShowCardView>> {
+  const ids = [...new Set(animeIds)];
+  if (ids.length === 0) return new Map();
+  const rows = await db
+    .select({
+      animeId: anime.malId,
+      title: anime.title,
+      pictureUrl: anime.mainPictureUrl,
+      mediaType: anime.mediaType,
+      numEpisodes: anime.numEpisodes,
+      episodeMinutes: anime.episodeMinutes,
+      status: listEntries.status,
+      episodesWatched: listEntries.numEpisodesWatched,
+    })
+    .from(anime)
+    .leftJoin(
+      listEntries,
+      and(eq(listEntries.animeId, anime.malId), eq(listEntries.userId, userId)),
+    )
+    .where(inArray(anime.malId, ids));
+  return new Map(
+    rows.map((r) => [r.animeId, { ...r, episodesWatched: r.episodesWatched ?? 0 }] as const),
+  );
 }
 
 /** Each message's recommended shows, as cards, in the order they were picked. */

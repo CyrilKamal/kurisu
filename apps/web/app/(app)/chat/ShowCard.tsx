@@ -1,0 +1,86 @@
+import type { ShowCard as ShowCardData } from "@kurisu/shared";
+import Image from "next/image";
+
+import { mediaTypeLabel, STATUS_LABELS } from "@/lib/format";
+
+/** A show's cover, or a blank of the same size. */
+export function Cover({ url }: { url: string | null }) {
+  return url ? (
+    <Image
+      src={url}
+      alt=""
+      width={40}
+      height={56}
+      className="h-14 w-10 shrink-0 rounded bg-zinc-200 object-cover dark:bg-zinc-800"
+    />
+  ) : (
+    <div aria-hidden className="h-14 w-10 shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
+  );
+}
+
+/** "Watching · ep 5 of 12 · TV · 12 eps × 24 min", or "Not on your list · Movie · 110 min". */
+export function showDetails(show: ShowCardData): string {
+  const where =
+    show.status === null
+      ? "Not on your list"
+      : show.status === "plan_to_watch"
+        ? STATUS_LABELS.plan_to_watch
+        : `${STATUS_LABELS[show.status]} · ep ${String(show.episodesWatched)}${
+            show.numEpisodes === null ? "" : ` of ${String(show.numEpisodes)}`
+          }`;
+  const length =
+    show.episodeMinutes === null
+      ? null
+      : show.numEpisodes === 1
+        ? `${String(show.episodeMinutes)} min`
+        : show.numEpisodes === null
+          ? `${String(show.episodeMinutes)} min eps`
+          : `${String(show.numEpisodes)} eps × ${String(show.episodeMinutes)} min`;
+  return [where, mediaTypeLabel(show.mediaType), length].filter((p) => p !== null).join(" · ");
+}
+
+const CARD =
+  "flex w-full items-start gap-3 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-left text-sm dark:border-zinc-800 dark:bg-zinc-900";
+
+/**
+ * A show the agent named. When the reply asks the user to choose, the card is a button that
+ * answers with the show's exact title.
+ */
+export function ShowCard({ show, onChoose }: { show: ShowCardData; onChoose?: () => void }) {
+  const body = (title: React.ReactNode) => (
+    <>
+      <Cover url={show.pictureUrl} />
+      <div className="min-w-0">
+        {title}
+        <p className="text-xs text-zinc-500">{showDetails(show)}</p>
+      </div>
+    </>
+  );
+
+  if (onChoose) {
+    return (
+      <button
+        type="button"
+        onClick={onChoose}
+        aria-label={`Choose ${show.title}`}
+        className={`${CARD} hover:border-blue-700 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-zinc-800`}
+      >
+        {body(<p className="line-clamp-2 font-medium leading-snug">{show.title}</p>)}
+      </button>
+    );
+  }
+  return (
+    <div className={CARD}>
+      {body(
+        <a
+          href={`https://myanimelist.net/anime/${String(show.animeId)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="line-clamp-2 font-medium leading-snug hover:underline"
+        >
+          {show.title}
+        </a>,
+      )}
+    </div>
+  );
+}

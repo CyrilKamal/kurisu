@@ -881,6 +881,51 @@ describe("chats", () => {
     ]);
   });
 
+  it("shows cards for the shows a question names, to answer it with", async () => {
+    models.script(LITE.ref, [
+      {
+        toolCalls: [
+          {
+            name: "search_my_list",
+            arguments: { queries: ["Fixture Watching Show", "Fixture Paused Show"] },
+          },
+        ],
+      },
+      { text: "Did you mean Fixture Paused Show or Fixture Watching Show?" },
+    ]);
+
+    const chat = await say("watched another ep of the fixture one");
+
+    const reply = chat.messages[1];
+    expect(reply?.asksToChoose).toBe(true);
+    expect(reply?.shows.map((s) => [s.title, s.status, s.episodesWatched])).toEqual([
+      ["Fixture Paused Show", "on_hold", expect.any(Number)],
+      ["Fixture Watching Show", "watching", 7],
+    ]);
+    // The cards come back with the chat.
+    const thread = contract.chatThreadResponseSchema.parse(
+      (await get(`/chat/conversations/${chat.conversation.id}`)).json(),
+    );
+    expect(thread.messages[1]?.shows).toHaveLength(2);
+  });
+
+  it("doesn't repeat a show that already has a change card", async () => {
+    models.script(
+      LITE.ref,
+      updateScript(
+        "fixture watching show",
+        { episodes_watched: 8 },
+        "Updated Fixture Watching Show to episode 8.",
+      ),
+    );
+
+    const chat = await say("watched ep 8 of fixture watching show");
+
+    expect(chat.messages[1]?.changes).toHaveLength(1);
+    expect(chat.messages[1]?.shows).toEqual([]);
+    expect(chat.messages[1]?.asksToChoose).toBe(false);
+  });
+
   it("gives the model only the chat's own messages", async () => {
     models.script(LITE.ref, [{ text: "Which season?" }, { text: "Hello!" }]);
 
