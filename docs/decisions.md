@@ -788,3 +788,9 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 **Consequences:**
 - A reply naming one show ("watched frieren") still follows the "just watched X = next episode" rule.
 - Brief replies have no eval cases yet.
+
+## 2026-10-06 — Prompt v8 becomes the app's prompt (Milestone 3)
+**Decision:** Prompt v8 (the "watched it after a brief" rule) replaces v7.
+**Alternatives:** Waiting for your brief-reply eval cases before switching.
+**Why:** On the 90 batch cases, Flash-Lite with v8 matched v7 and made no wrong writes: 96.7% (87/90), 0/65 wrong writes, precision 81.8% (v7: 96.7%, 0/64, 82.6%). Without the rule, "watched it" after a brief depends on the model guessing what you mean. The `not_in_brief` check guards the episode numbers either way.
+**Consequences:** Brief replies are still unmeasured until there are eval cases for them. The misses were the same kinds as v7's: the Mushoku Tensei follow-up and "TYBW s4" were held, and "watched bleach episode 380" was refused without asking.
