@@ -30,11 +30,18 @@ export interface AniListMedia {
   episodeOffset: number;
 }
 
+/** What MAL itself says about an entry, to check how AniList's parts of a split show line up. */
+export interface MalFacts {
+  /** "2026-03-19", or partial ("2026-03") when MAL isn't sure. */
+  startDate: string | null;
+  numEpisodes: number | null;
+}
+
 export interface MediaLookup {
   media: AniListMedia[];
   /**
-   * MAL ids whose AniList parts can't be joined safely (an earlier part still airing, an unknown
-   * episode count or start date, or a part that isn't a series), so episode numbers are unknown.
+   * MAL ids whose AniList parts can't be lined up with MAL's entry safely (see joinParts), so their
+   * episode numbers are unknown.
    */
   unjoinable: number[];
 }
@@ -47,7 +54,7 @@ export interface AiredEpisode {
 
 export interface AniListClient {
   /** AniList data for these MAL ids. Ids AniList doesn't know are simply missing. */
-  mediaByMalIds(malIds: number[]): Promise<MediaLookup>;
+  mediaByMalIds(malIds: number[], malFacts?: ReadonlyMap<number, MalFacts>): Promise<MediaLookup>;
   /** Episodes of these shows that aired after `from`, up to and including `to`. */
   airedBetween(anilistIds: number[], from: Date, to: Date): Promise<AiredEpisode[]>;
 }
@@ -205,7 +212,7 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
   }
 
   return {
-    async mediaByMalIds(malIds) {
+    async mediaByMalIds(malIds, malFacts) {
       const media = await paged(malIds, MEDIA_QUERY, {}, mediaPageSchema, (data) => ({
         items: data.Page.media,
         hasNextPage: data.Page.pageInfo.hasNextPage === true,
@@ -217,7 +224,7 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
       }
       const result: MediaLookup = { media: [], unjoinable: [] };
       for (const [malId, entries] of parts) {
-        const joined = joinParts(malId, entries);
+        const joined = joinParts(malId, entries, malFacts?.get(malId));
         if (joined) result.media.push(joined);
         else result.unjoinable.push(malId);
       }
@@ -245,26 +252,60 @@ type RawMedia = z.infer<typeof mediaPageSchema>["Page"]["media"][number];
 /** Formats whose episodes MAL counts as one series. Specials and movies aren't joined. */
 const SERIES_FORMATS = ["TV", "TV_SHORT", "ONA"];
 
+/** AniList and MAL can disagree by a day or so on a premiere date (time zones). */
+const SAME_START_DAYS = 2;
+
 /**
- * One MAL entry from its AniList parts. A single part is used as is. Several parts are joined
- * end to end in start-date order, MAL's way of numbering a show it keeps as one entry, but only
- * when that's unambiguous: every part a series with a known start date, and every part before
- * the latest one finished with a known episode count. Otherwise null.
+ * One MAL entry from its AniList parts. A single part is used as is.
+ *
+ * Several parts (Steel Ball Run's "1st STAGE" and "2nd & 3rd STAGE") are lined up with MAL's
+ * entry by its start date: MAL's entry covers the part that started then and every later one,
+ * numbered straight through, so each earlier covered part's episodes shift the latest part's
+ * numbers. When MAL knows the total, the covered parts must add up to it. Anything ambiguous
+ * returns null: a part that isn't a series or has no full start date, no full MAL start date,
+ * no part (or more than one) starting then, an earlier covered part still airing or without an
+ * episode count, or a total that doesn't add up.
  */
-export function joinParts(malId: number, parts: RawMedia[]): AniListMedia | null {
+export function joinParts(malId: number, parts: RawMedia[], mal?: MalFacts): AniListMedia | null {
   const only = parts.length === 1 ? parts[0] : undefined;
   if (only) return toMedia(malId, only, 0, streamingLinks([only]));
 
-  if (parts.some((p) => !SERIES_FORMATS.includes(p.format ?? "") || !p.startDate?.year)) {
-    return null;
-  }
+  const malStart = fullDate(mal?.startDate ?? null);
+  if (!malStart) return null;
+  if (parts.some((p) => !SERIES_FORMATS.includes(p.format ?? "") || !partStart(p))) return null;
   const sorted = [...parts].sort((a, b) => startKey(a) - startKey(b));
-  if (new Set(sorted.map(startKey)).size !== sorted.length) return null;
-  const latest = sorted.at(-1);
-  const earlier = sorted.slice(0, -1);
+  const starts = sorted.map((p) => partStart(p) ?? 0);
+  const matches = starts.flatMap((start, i) =>
+    Math.abs(start - malStart) <= SAME_START_DAYS * DAY_MS ? [i] : [],
+  );
+  const [first] = matches;
+  if (matches.length !== 1 || first === undefined) return null;
+
+  const covered = sorted.slice(first);
+  const latest = covered.at(-1);
+  const earlier = covered.slice(0, -1);
   if (!latest || earlier.some((p) => p.status !== "FINISHED" || p.episodes == null)) return null;
   const offset = earlier.reduce((sum, p) => sum + (p.episodes ?? 0), 0);
+  if (mal?.numEpisodes != null && latest.episodes != null) {
+    if (offset + latest.episodes !== mal.numEpisodes) return null;
+  }
   return toMedia(malId, latest, offset, streamingLinks([latest, ...earlier]));
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** A part's start date as a UTC timestamp, or null unless year, month and day are known. */
+function partStart(m: RawMedia): number | null {
+  const d = m.startDate;
+  if (!d?.year || !d.month || !d.day) return null;
+  return Date.UTC(d.year, d.month - 1, d.day);
+}
+
+/** MAL's "2026-03-19" as a UTC timestamp; null for partial dates like "2026-03". */
+function fullDate(value: string | null): number | null {
+  const match = value ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null;
+  if (!match) return null;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
 function toMedia(malId: number, m: RawMedia, offset: number, links: StreamingLink[]): AniListMedia {

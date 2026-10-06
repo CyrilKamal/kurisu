@@ -15,6 +15,7 @@ import {
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
 import { airingRows, latestAiredEpisode } from "../anilist/cache.js";
+import { mentionsWholeBrief } from "./briefReply.js";
 import { mentionsNewestEpisode } from "./newestEpisode.js";
 import { mentionsNumber } from "./scoreGiven.js";
 
@@ -31,6 +32,11 @@ export interface RunContext {
    * cache. Missing when unknown.
    */
   latestAired: Map<number, number>;
+  /**
+   * When the message replies to a morning brief: each show the brief listed and the last episode
+   * it listed. Null otherwise.
+   */
+  briefEpisodes: Map<number, number> | null;
   /** Anime ids a search marked as a clear match in this run, and why (see SearchCandidate). */
   clear: Map<number, "unique" | "only_in_progress">;
   /** Proposals created in this run. The model can only commit these. */
@@ -219,9 +225,7 @@ async function proposeTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> 
     runId: ctx.runId,
     animeId: a.anime_id,
     clearMatch: isClearFor(ctx.clear.get(a.anime_id), a),
-    ...(mentionsNewestEpisode(ctx.userMessage) && {
-      newestEpisode: { latestAired: ctx.latestAired.get(a.anime_id) ?? null },
-    }),
+    ...briefOrNewest(ctx, a.anime_id),
     noNumberGiven: !mentionsNumber(ctx.userMessage),
     ...(a.status !== undefined && { status: a.status }),
     ...(a.episodes_watched !== undefined && { episodesWatched: a.episodes_watched }),
@@ -314,6 +318,21 @@ function isClearFor(
   return (
     progress && forwardStatus && change.score === undefined && change.is_rewatching === undefined
   );
+}
+
+/**
+ * What a vague episode reference pins progress to. "Watched it" after a brief means caught up on
+ * everything the brief listed (that wins over "the newest episode", since more may have aired
+ * since). Otherwise "the newest episode" means the latest aired one.
+ */
+function briefOrNewest(ctx: RunContext, animeId: number) {
+  if (ctx.briefEpisodes && mentionsWholeBrief(ctx.userMessage)) {
+    return { briefReply: { lastListed: ctx.briefEpisodes.get(animeId) ?? null } };
+  }
+  if (mentionsNewestEpisode(ctx.userMessage)) {
+    return { newestEpisode: { latestAired: ctx.latestAired.get(animeId) ?? null } };
+  }
+  return {};
 }
 
 /**

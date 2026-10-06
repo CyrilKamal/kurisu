@@ -742,3 +742,49 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
   - The known Mushoku Tensei follow-up was held.
   - "finished episode 8 of fire force" asked which season. It passed on v6 and in Milestone 2's final run, so it looks like run-to-run variation.
 - The Steel Ball Run newest-episode case now writes ep 3.
+
+## 2026-10-06 — Split shows are lined up with MAL's own start date and total (Milestone 3)
+**Decision:** This refines "Shows AniList splits are joined end to end in MAL's numbering", replacing its assumption with a check against MAL's data.
+- List sync now also stores each show's MAL start date (`anime.start_date`, migration 0010).
+- When several AniList parts share a MAL id, MAL's entry is taken to start with the part whose start date is within 2 days of MAL's. It covers that part and every later one, numbered straight through.
+  - If that's the 1st stage, the 2nd stage's episodes shift by the 1st stage's count (Steel Ball Run).
+  - If it's the latest part, MAL's entry is just that part and nothing shifts.
+- When MAL knows the total episodes, the covered parts must add up to it.
+- Anything ambiguous is logged and skipped:
+  - no full MAL start date;
+  - no part starting then, or more than one;
+  - an earlier covered part still airing or without a count;
+  - a total that doesn't add up.
+
+**Alternatives:**
+- Keeping the straight-through assumption.
+- Jikan (an unofficial MAL API) for MAL's per-episode list.
+- Skipping split shows.
+
+**Why:** You asked to fix the guess. MAL's own start date says which parts its entry covers, it comes from the API we already sync, and it adds no new data source.
+**Consequences:**
+- Split shows resolve only after a list sync has stored MAL's start date (any login or re-sync).
+- Until then they're skipped, like unmapped shows.
+
+## 2026-10-06 — "Watched it" after a brief means caught up on everything in it; prompt v8 (Milestone 3)
+**Decision:**
+- **The rule (your decision).** Right after a morning brief, "watched it" (also "watched them all", "saw both", "caught up") means caught up on every show the brief listed, up to the last episode listed for each.
+- **Brief context.** Chat finds the brief the message replies to: the conversation's last message, linked from `briefs.chat_message_id`. It passes the agent each show and its last listed episode. Brief replies get 10 agent turns instead of 6, since each show needs a search, proposal and commit.
+- **The check.** For such a reply, a change is written only when it lands exactly on the brief's last episode for that show. Anything else is held with the new reason `not_in_brief`: one more episode instead of all of them, or a show the brief didn't list. This rule takes precedence over the "newest episode" one, since more may have aired since the brief.
+- **The hint.** Every brief in Chat now ends with: Reply "watched it" once you've caught up on all of these.
+- **Prompt v8** adds the rule. It's registered; v7 stays current until v8 is checked on the batches.
+- **Evals.** The harness reads a brief from a case's history text (`parseBriefText`), and the validator warns about brief-reply cases that expect a held write.
+
+**Alternatives:**
+- Making "watched it" mean only the next episode of each show.
+- Asking which shows every time.
+- A code path that writes brief replies without the agent.
+
+**Why:**
+- Weekends often drop several episodes at once, and "watched it" should cover them in one reply, as the design's one-step reply intends.
+- The code check makes the episode numbers exact whatever the model does.
+- Keeping the agent in the loop handles phrasing variety, and the eval measures it.
+
+**Consequences:**
+- A reply naming one show ("watched frieren") still follows the "just watched X = next episode" rule.
+- Brief replies have no eval cases yet.

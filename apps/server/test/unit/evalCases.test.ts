@@ -266,6 +266,40 @@ describe("loadCases", () => {
     ]);
   });
 
+  it("checks 'watched it' replies against the brief in the history", () => {
+    const brief = [
+      "New episodes are out.",
+      "",
+      "- Kusuriya no Hitorigoto eps 7–8 on Crunchyroll",
+      "",
+      `Reply "watched it" once you've caught up on all of these.`,
+    ];
+    const history = `
+    history:
+      - role: assistant
+        content: |
+${brief.map((line) => (line ? `          ${line}` : "")).join("\n")}`;
+    const result = load({
+      "a.yaml": `${header}
+  - id: caught-up
+    message: watched it${history}
+    expect: { writes: [{ anime: "Kusuriya no Hitorigoto", episodes_watched: 8 }] }
+  - id: one-more
+    message: watched it${history}
+    expect: { writes: [{ anime: "Kusuriya no Hitorigoto", episodes_watched: 7 }] }
+  - id: not-listed
+    message: watched them all${history}
+    expect: { writes: [{ anime: "Upcoming Sequel", status: dropped }] }
+`,
+    });
+
+    expect(result.errors).toEqual([]);
+    expect(result.warnings.map((w) => [w.caseId, w.message])).toEqual([
+      ["one-more", expect.stringMatching(/listed up to ep 8 for it/)],
+      ["not-listed", expect.stringMatching(/doesn't list this show/)],
+    ]);
+  });
+
   it("reports invalid YAML without crashing", () => {
     const result = load({ "a.yaml": "snapshot: test\ncases: [\n" });
     expect(result.errors[0]?.message).toMatch(/not valid YAML/);

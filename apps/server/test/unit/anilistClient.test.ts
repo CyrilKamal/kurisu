@@ -146,7 +146,9 @@ describe("mediaByMalIds", () => {
       }),
     ];
 
-    const { media } = await client.mediaByMalIds([61469]);
+    // MAL's entry started with the 1st stage, so it covers both parts.
+    const mal = new Map([[61469, { startDate: "2026-03-19", numEpisodes: null }]]);
+    const { media } = await client.mediaByMalIds([61469], mal);
 
     expect(media).toEqual([
       {
@@ -162,6 +164,48 @@ describe("mediaByMalIds", () => {
         episodeOffset: 1,
       },
     ]);
+  });
+
+  it("lines the parts up with MAL's start date and total", async () => {
+    fake.media = [
+      airingMedia(210482, 61469, {
+        format: "ONA",
+        episodes: 11,
+        startDate: { year: 2026, month: 9, day: 25 },
+        nextAiringEpisode: { episode: 3, airingAt: seconds("2026-10-09T12:00:00Z") },
+      }),
+      airingMedia(190327, 61469, {
+        format: "ONA",
+        status: "FINISHED",
+        episodes: 1,
+        startDate: { year: 2026, month: 3, day: 19 },
+      }),
+    ];
+    const lookup = async (startDate: string | null, numEpisodes: number | null = null) => {
+      const { media } = await client.mediaByMalIds(
+        [61469],
+        new Map([[61469, { startDate, numEpisodes }]]),
+      );
+      return media[0]
+        ? { offset: media[0].episodeOffset, next: media[0].nextEpisode?.episode }
+        : null;
+    };
+
+    // MAL started with the 1st stage: both parts, numbered straight through.
+    expect(await lookup("2026-03-19")).toEqual({ offset: 1, next: 4 });
+    // A day off (time zones) still lines up.
+    expect(await lookup("2026-03-20")).toEqual({ offset: 1, next: 4 });
+    // The total adds up (1 + 11)...
+    expect(await lookup("2026-03-19", 12)).toEqual({ offset: 1, next: 4 });
+    // ...or doesn't.
+    expect(await lookup("2026-03-19", 13)).toBeNull();
+    // MAL's entry started with the 2nd stage: it's only that part, numbered as AniList does.
+    expect(await lookup("2026-09-25")).toEqual({ offset: 0, next: 3 });
+    // No part started then, MAL's date is partial, or MAL's date isn't known: skipped.
+    expect(await lookup("2026-06-01")).toBeNull();
+    expect(await lookup("2026-03")).toBeNull();
+    expect(await lookup(null)).toBeNull();
+    expect((await client.mediaByMalIds([61469])).unjoinable).toEqual([61469]);
   });
 
   it("won't join parts when the numbering would be a guess", async () => {
@@ -191,7 +235,14 @@ describe("mediaByMalIds", () => {
       part(402, {}),
     ];
 
-    const { media, unjoinable } = await client.mediaByMalIds([1, 2, 3, 4]);
+    // MAL says each started with its first part.
+    const mal = new Map(
+      [1, 2, 3, 4].map((id) => [
+        id,
+        { startDate: id === 4 ? "2026-07-01" : "2026-01-01", numEpisodes: null },
+      ]),
+    );
+    const { media, unjoinable } = await client.mediaByMalIds([1, 2, 3, 4], mal);
 
     expect(media).toEqual([]);
     expect(unjoinable.sort()).toEqual([1, 2, 3, 4]);

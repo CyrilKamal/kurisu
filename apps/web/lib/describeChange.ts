@@ -41,6 +41,8 @@ export function confirmationReasonLabel(reason: string | null): string {
       return "I can't look up the newest episode yet, so check the episode number.";
     case "score_not_given":
       return "You didn't give a score, so check this one.";
+    case "not_in_brief":
+      return "Your brief didn't list this episode, so check it.";
     default:
       return "Needs your confirmation.";
   }

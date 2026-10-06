@@ -18,16 +18,18 @@ import {
   briefs,
   briefSettings,
   chatMessages,
+  proposals,
   pushSubscriptions,
   users,
 } from "../../src/db/schema.js";
 import { parseModelRef } from "../../src/llm/modelConfig.js";
+import type { LlmMessage } from "../../src/llm/types.js";
 import { createPushSender, generateVapidKeys } from "../../src/push/send.js";
 import { fixtureList } from "../fixtures/animeList.js";
 import { airingMedia, FakeAniList } from "../support/fakeAniList.js";
 import { FakePushService, type FakeBrowser } from "../support/fakePushService.js";
 import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
-import { ScriptedModels } from "../support/scriptedModels.js";
+import { ScriptedModels, type ScriptStep } from "../support/scriptedModels.js";
 import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
 
 const AGENT = parseModelRef("ollama:test-agent");
@@ -103,6 +105,8 @@ beforeEach(async () => {
   second.node.title = "Fixture Second Show";
   second.node.alternative_titles = { synonyms: [], en: "", ja: "" };
   second.list_status.num_episodes_watched = 0;
+  // MAL's start date lines AniList's parts up in the split-show test.
+  second.node.start_date = "2026-03-19";
   h.fakeMal.list = [...list, second];
 
   anilist.media = [
@@ -339,6 +343,8 @@ describe("POST /brief/test", () => {
         // Netflix isn't one of the user's services, so the second show says nothing about where.
         "- Fixture Second Show ep 1 (premiere)",
         "- Fixture Watching Show eps 8–9 on Crunchyroll",
+        "",
+        `Reply "watched it" once you've caught up on all of these.`,
       ].join("\n"),
     ]);
     const [row] = await h.db.select().from(briefs);
@@ -404,6 +410,106 @@ describe("POST /brief/test", () => {
     const history = agentCall?.request.messages.map((m) => m.content).join("\n") ?? "";
     expect(history).toContain("- Fixture Watching Show eps 8–9 on Crunchyroll");
     expect(history).toContain("watched it");
+  });
+});
+
+describe('replying "watched it" to a brief', () => {
+  const WATCHING = 900001; // on ep 7; the brief lists eps 8–9
+  const SECOND = 900007; // on ep 0; the brief lists ep 1 (premiere)
+  const PAUSED = 900003; // not in the brief
+
+  /** The agent searches both shows, then proposes and commits the given changes. */
+  function replyScript(changes: { anime_id: number; episodes_watched: number }[]) {
+    const steps: ScriptStep[] = [
+      {
+        toolCalls: [
+          {
+            name: "search_my_list",
+            arguments: {
+              queries: ["Fixture Watching Show", "Fixture Second Show", "Fixture Paused Show"],
+            },
+          },
+        ],
+      },
+      { toolCalls: changes.map((change) => ({ name: "propose_update", arguments: change })) },
+      (req) => {
+        const proposals = req.messages
+          .filter((m): m is Extract<LlmMessage, { role: "tool" }> => m.role === "tool")
+          .slice(-changes.length)
+          .map(
+            (m) => JSON.parse(m.content) as { proposal_id: string; requires_confirmation: boolean },
+          )
+          .filter((p) => !p.requires_confirmation);
+        return {
+          toolCalls: proposals.map((p) => ({
+            name: "commit_update",
+            arguments: { proposal_id: p.proposal_id },
+          })),
+        };
+      },
+      { text: "Done." },
+    ];
+    return steps;
+  }
+
+  async function sendBrief() {
+    models.script(BRIEF.ref, [{ text: "New episodes are out." }]);
+    await send("POST", "/brief/test");
+    h.fakeMal.patchRequests.length = 0;
+  }
+
+  async function heldReasons(): Promise<Record<number, string | null>> {
+    const rows = await h.db
+      .select({ animeId: proposals.animeId, reason: proposals.confirmationReason })
+      .from(proposals)
+      .where(eq(proposals.status, "pending"));
+    return Object.fromEntries(rows.map((r) => [r.animeId, r.reason]));
+  }
+
+  it("writes every show up to the last episode the brief listed", async () => {
+    await sendBrief();
+    models.script(
+      AGENT.ref,
+      replyScript([
+        { anime_id: WATCHING, episodes_watched: 9 },
+        { anime_id: SECOND, episodes_watched: 1 },
+      ]),
+    );
+
+    await send("POST", "/chat/messages", { text: "watched it" });
+
+    expect(h.fakeMal.patchRequests.map((p) => [p.animeId, p.form.num_watched_episodes])).toEqual([
+      [WATCHING, "9"],
+      [SECOND, "1"],
+    ]);
+  });
+
+  it("holds any other episode, and shows the brief didn't list", async () => {
+    await sendBrief();
+    models.script(
+      AGENT.ref,
+      replyScript([
+        { anime_id: WATCHING, episodes_watched: 8 },
+        { anime_id: SECOND, episodes_watched: 1 },
+        { anime_id: PAUSED, episodes_watched: 11 },
+      ]),
+    );
+
+    await send("POST", "/chat/messages", { text: "watched them all" });
+
+    expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([SECOND]);
+    expect(await heldReasons()).toEqual({ [WATCHING]: "not_in_brief", [PAUSED]: "not_in_brief" });
+  });
+
+  it("only applies right after the brief", async () => {
+    await sendBrief();
+    models.script(AGENT.ref, [{ text: "Hi!" }]);
+    await send("POST", "/chat/messages", { text: "hello" });
+    models.script(AGENT.ref, replyScript([{ anime_id: WATCHING, episodes_watched: 8 }]));
+
+    await send("POST", "/chat/messages", { text: "watched it" });
+
+    expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
   });
 });
 
@@ -510,7 +616,12 @@ describe("split shows", () => {
         episodes: 1,
         startDate: { year: 2026, month: 3, day: 19 },
       }),
-      airingMedia(602, 900007, { format: "ONA", startDate: { year: 2026, month: 9, day: 25 } }),
+      // MAL says 12 episodes in all: 1 + 11, and MAL's start date is the first part's.
+      airingMedia(602, 900007, {
+        format: "ONA",
+        episodes: 11,
+        startDate: { year: 2026, month: 9, day: 25 },
+      }),
     );
     anilist.airings = [{ mediaId: 602, episode: 1, airingAt: hoursAgo(3) }];
     models.script(BRIEF.ref, [{ text: "New episodes are out." }]);

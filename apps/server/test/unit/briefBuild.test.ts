@@ -5,6 +5,7 @@ import {
   chatText,
   episodesLabel,
   itemLine,
+  parseBriefText,
   pushText,
   templateSummary,
   type BriefInput,
@@ -132,7 +133,7 @@ describe("text", () => {
 
   it("puts the summary above the lines in chat", () => {
     expect(chatText("Two new ones.", [item({}), item({ title: "Dandadan", episodes: [5] })])).toBe(
-      "Two new ones.\n\n- Frieren ep 12\n- Dandadan ep 5",
+      `Two new ones.\n\n- Frieren ep 12\n- Dandadan ep 5\n\nReply "watched it" once you've caught up on all of these.`,
     );
   });
 
@@ -160,5 +161,41 @@ describe("text", () => {
     expect(templateSummary([item({}), item({ title: "Dandadan", episodes: [5, 6] })])).toBe(
       "3 new episodes from 2 shows you're watching.",
     );
+  });
+});
+
+describe("parseBriefText", () => {
+  const item = (overrides: Partial<BriefItem>): BriefItem => ({
+    malId: 1,
+    title: "Frieren",
+    episodes: [12],
+    premiere: false,
+    finale: false,
+    episodesWatched: 11,
+    services: [],
+    ...overrides,
+  });
+
+  it("reads back each show and the last episode the brief listed", () => {
+    const text = chatText("Lots today.", [
+      item({ services: ["Crunchyroll"] }),
+      item({ title: "Dandadan", episodes: [5, 6], finale: true, services: ["Netflix", "Hulu"] }),
+      item({ title: "Kaiju No. 8: Part 2", episodes: [1, 2, 3, 5], episodesWatched: 0 }),
+      item({ title: "SBR", episodes: [1], premiere: true, episodesWatched: 0 }),
+      item({ title: "Behind", episodes: [9], episodesWatched: 3 }),
+    ]);
+
+    expect(parseBriefText(text)).toEqual([
+      { title: "Frieren", lastEpisode: 12 },
+      { title: "Dandadan", lastEpisode: 6 },
+      { title: "Kaiju No. 8: Part 2", lastEpisode: 5 },
+      { title: "SBR", lastEpisode: 1 },
+      { title: "Behind", lastEpisode: 9 },
+    ]);
+  });
+
+  it("ignores text that isn't a brief", () => {
+    expect(parseBriefText("- Frieren ep 12")).toEqual([]);
+    expect(parseBriefText("Which season of Frieren do you mean?")).toEqual([]);
   });
 });

@@ -39,6 +39,12 @@ export interface ProposeInput {
    */
   newestEpisode?: { latestAired: number | null };
   /**
+   * Set when the message says "watched it" in reply to a morning brief (decided by the caller),
+   * with the last episode the brief listed for this show (null if it wasn't in the brief). The
+   * user means caught up on what the brief listed, so any other progress is held.
+   */
+  briefReply?: { lastListed: number | null };
+  /**
    * The user's message has no number in it (decided by the caller), so a score in this change
    * wasn't given by them. It's held for them to confirm.
    */
@@ -122,9 +128,11 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
             isProgress(entry, change) &&
             change.episodesWatched !== input.newestEpisode.latestAired
           ? "newest_episode_unknown"
-          : input.noNumberGiven && change.score !== undefined
-            ? "score_not_given"
-            : null;
+          : input.briefReply && change.episodesWatched !== input.briefReply.lastListed
+            ? "not_in_brief"
+            : input.noNumberGiven && change.score !== undefined
+              ? "score_not_given"
+              : null;
 
   const idempotencyKey = keyFor(input.runId, input.animeId, change);
   await db

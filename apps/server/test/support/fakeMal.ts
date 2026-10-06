@@ -32,6 +32,7 @@ export interface FakeListItem {
     media_type: string;
     num_episodes: number;
     status: string;
+    start_date?: string;
   };
   list_status: {
     status: "watching" | "completed" | "on_hold" | "dropped" | "plan_to_watch";

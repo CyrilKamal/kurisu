@@ -106,6 +106,33 @@ Add `history` when a message only makes sense after an earlier exchange, like a 
 
 The agent sees the history as the conversation so far. Writes are still judged only on what it commits for the new message.
 
+### Replies to a morning brief (optional)
+
+To test a reply like "watched it", end the history with a brief written exactly the way the app writes one: a summary line, a blank line, one line per show (`- Title ep 12`, `- Title eps 11–12`, optionally followed by ` (premiere)` or ` on Crunchyroll`), a blank line, then the reply hint. Use titles exactly as `pnpm eval:lookup` shows them. Multi-line messages need YAML:
+
+```yaml
+  - id: brief-watched-it
+    message: "watched it"
+    tags: [brief-reply, multi]
+    history:
+      - role: assistant
+        content: |
+          Two shows have new episodes.
+
+          - Kusuriya no Hitorigoto eps 7–8 on Crunchyroll
+          - Upcoming Sequel ep 1 (premiere)
+
+          Reply "watched it" once you've caught up on all of these.
+    expect:
+      writes:
+        - anime: "Kusuriya no Hitorigoto"
+          episodes_watched: 8
+        - anime: "Upcoming Sequel"
+          episodes_watched: 1
+```
+
+The harness reads the brief back out of that last message, as the app does from its own records. For a "watched it" reply, a write that isn't the last episode the brief listed for that show, or for a show the brief didn't list, is held for confirmation; the validator warns about cases that expect one.
+
 ### What counts as correct
 
 - **Writes**: a case passes only if the agent writes exactly the listed changes, no more and no less. Any write to an anime you didn't list counts as a wrong write.
@@ -136,6 +163,7 @@ Label every case the same way for the same wording, or no agent can pass them al
 - **"Just watched X" with no number means the next episode** (one more than the list has).
 - **"Thinking about starting X" means nothing yet:** no write.
 - **"Resuming X" means back to Watching,** with the episode count unchanged.
+- **"Watched it" right after a morning brief means caught up on everything in it:** every show the brief listed, up to the last episode it listed. "Watched them (all)", "saw both" and "caught up" mean the same. A reply naming one show ("watched frieren") follows the rules above.
 
 ## Coverage checklist
 
