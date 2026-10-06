@@ -794,3 +794,25 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 **Alternatives:** Waiting for your brief-reply eval cases before switching.
 **Why:** On the 90 batch cases, Flash-Lite with v8 matched v7 and made no wrong writes: 96.7% (87/90), 0/65 wrong writes, precision 81.8% (v7: 96.7%, 0/64, 82.6%). Without the rule, "watched it" after a brief depends on the model guessing what you mean. The `not_in_brief` check guards the episode numbers either way.
 **Consequences:** Brief replies are still unmeasured until there are eval cases for them. The misses were the same kinds as v7's: the Mushoku Tensei follow-up and "TYBW s4" were held, and "watched bleach episode 380" was refused without asking.
+
+## 2026-10-06 — Your full rules for replying to a brief; prompt v9 (Milestone 3)
+**Decision:** This extends "'Watched it' after a brief means caught up on everything in it; prompt v8" with the rules your 35 brief-reply cases call for. Right after a brief, for the shows it listed:
+
+| Reply | What's written |
+|---|---|
+| Whole brief: "watched it", "watched them all", "done", "finished", "caught up", "saw them", "watched the eps" | Each show up to the last episode the brief listed |
+| A show named without a number ("watched wistoria") | That show up to its last listed episode |
+| A count ("a wistoria ep", "one ep", "3 clevatess") | That many more, never past the last listed episode |
+| An episode number ("ep 8", "the 2nd ep", "the first ep", "the premiere") | That episode, only for the show the brief listed it for |
+| "Haven't seen them", "didn't watch any yet" | Nothing |
+
+- `agent/briefReply.ts` decides which rule a message follows. `propose_update` holds any progress the rule doesn't allow (`not_in_brief`).
+- "Watched it" still can't touch a show the brief didn't list.
+- Prompt v9 spells the rules out for the model. The validator applies the same rules.
+- You chose that "watched 3 clevatess" means 3 more episodes.
+
+**Alternatives:** Only checking "watched it"-style replies (v8's check); asking whenever a reply names a show.
+**Why:** Your priority is no wrong writes. The check stops the likely mistakes even when the model gets one wrong: "the 2nd ep" written to the second show in the list, "ep 8" applied to One Piece, a count running past the brief, or progress on "haven't seen them".
+**Consequences:**
+- A count only allows episodes up to the brief's last one. "Watched 5 more" when the brief lists fewer is held.
+- A mixed reply that negates watching ("watched wistoria but haven't seen daemons") holds everything, which is safe but asks more.

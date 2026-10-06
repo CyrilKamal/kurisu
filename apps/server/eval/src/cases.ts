@@ -10,8 +10,9 @@ import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import { normalizeChange, type ListChange } from "../../src/writes/normalize.js";
 import { isProgress, isProgressBeforeAiring } from "../../src/writes/propose.js";
 import { parseShorthand } from "./shorthand.js";
+import { briefAllows } from "../../src/agent/briefReply.js";
 import { frozenLatestAired, loadAiring, type AiringFreeze } from "./airing.js";
-import { briefReplyEpisodes } from "./brief.js";
+import { briefReplyFor } from "./brief.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 
 export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
@@ -173,7 +174,7 @@ function resolveCase(
   const changes = new Map<number, ListChange>();
   const errors: string[] = [];
   const warnings: string[] = [];
-  const briefReply = briefReplyEpisodes(evalCase.message, evalCase.history, index);
+  const briefReply = briefReplyFor(evalCase.message, evalCase.history, index);
 
   for (const write of evalCase.expect.writes) {
     const label = JSON.stringify(write.anime);
@@ -217,14 +218,18 @@ function resolveCase(
       warnings.push(
         `${label}: the snapshot says this show hasn't aired yet, so the agent holds progress on it for confirmation instead of writing it. Expect clarify: true and no write for it, unless you're testing that rule.`,
       );
-    } else if (
-      briefReply &&
-      normalized.change.episodesWatched !== (briefReply.get(entry.id) ?? null)
-    ) {
-      const listed = briefReply.get(entry.id);
-      warnings.push(
-        `${label}: the message replies "watched it" to the brief in its history, which ${listed === undefined ? "doesn't list this show" : `listed up to ep ${String(listed)} for it`}. Any other write is held for confirmation.`,
-      );
+    } else if (briefCovers(briefReply, entry.id)) {
+      // The same rules the agent's tools apply to a reply to the brief (agent/briefReply.ts).
+      const listed = briefReply?.listed.get(entry.id) ?? [];
+      const rule = listed.length > 0 && briefReply ? briefReply.rule : ({ kind: "last" } as const);
+      if (
+        isProgress(entry, normalized.change) &&
+        !briefAllows(rule, listed, entry.episodesWatched, normalized.change.episodesWatched)
+      ) {
+        warnings.push(
+          `${label}: the message replies to the brief in its history, which ${listed.length === 0 ? "doesn't list this show" : `listed ${listed.length === 1 ? "ep" : "eps"} ${listed.join(", ")} for it`}. By the brief-reply rules (${rule.kind}), this write is held for confirmation.`,
+        );
+      }
     } else if (mentionsNewestEpisode(evalCase.message) && isProgress(entry, normalized.change)) {
       const latest = frozenLatestAired(airing, entry.id);
       if (latest === null) {
@@ -251,6 +256,14 @@ function resolveCase(
     }
   }
   return { changes, errors, warnings };
+}
+
+/**
+ * Whether the brief-reply rules decide this show's progress: the brief listed it, or the message
+ * claims the whole brief ("watched it" can't touch a show the brief didn't list).
+ */
+function briefCovers(reply: ReturnType<typeof briefReplyFor>, animeId: number): boolean {
+  return reply !== null && (reply.listed.has(animeId) || reply.whole);
 }
 
 function describeNormalizeError(error: string, total: number | null): string {

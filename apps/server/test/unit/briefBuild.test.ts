@@ -176,7 +176,7 @@ describe("parseBriefText", () => {
     ...overrides,
   });
 
-  it("reads back each show and the last episode the brief listed", () => {
+  it("reads back each show and the episodes the brief listed", () => {
     const text = chatText("Lots today.", [
       item({ services: ["Crunchyroll"] }),
       item({ title: "Dandadan", episodes: [5, 6], finale: true, services: ["Netflix", "Hulu"] }),
@@ -186,11 +186,11 @@ describe("parseBriefText", () => {
     ]);
 
     expect(parseBriefText(text)).toEqual([
-      { title: "Frieren", lastEpisode: 12 },
-      { title: "Dandadan", lastEpisode: 6 },
-      { title: "Kaiju No. 8: Part 2", lastEpisode: 5 },
-      { title: "SBR", lastEpisode: 1 },
-      { title: "Behind", lastEpisode: 9 },
+      { title: "Frieren", episodes: [12] },
+      { title: "Dandadan", episodes: [5, 6] },
+      { title: "Kaiju No. 8: Part 2", episodes: [1, 2, 3, 5] },
+      { title: "SBR", episodes: [1] },
+      { title: "Behind", episodes: [9] },
     ]);
   });
 

@@ -136,18 +136,22 @@ export function chatText(summary: string, items: BriefItem[]): string {
 const ITEM_LINE = /^- (.+?) eps? (\d+(?:–\d+)?(?:, \d+(?:–\d+)?)*)(?: \(|\.| on |$)/;
 
 /**
- * Reads a brief's chat text back into each show's title and the last episode it listed. The app
- * itself knows a brief's items from the briefs table; the eval uses this for briefs written into a
- * case's history. Empty when the text isn't a brief.
+ * Reads a brief's chat text back into each show's title and the episodes it listed, ascending.
+ * The app itself knows a brief's items from the briefs table; the eval uses this for briefs
+ * written into a case's history. Empty when the text isn't a brief.
  */
-export function parseBriefText(text: string): { title: string; lastEpisode: number }[] {
+export function parseBriefText(text: string): { title: string; episodes: number[] }[] {
   const lines = text.split("\n");
   if (!lines.includes(BRIEF_REPLY_HINT)) return [];
   return lines.flatMap((line) => {
     const match = ITEM_LINE.exec(line);
     if (!match?.[1] || !match[2]) return [];
-    const last = match[2].split(/[,–]\s*/).at(-1);
-    return last ? [{ title: match[1], lastEpisode: Number(last) }] : [];
+    const episodes = match[2].split(/,\s*/).flatMap((range) => {
+      const [from, to] = range.split("–").map(Number);
+      if (from === undefined) return [];
+      return Array.from({ length: (to ?? from) - from + 1 }, (_, i) => from + i);
+    });
+    return [{ title: match[1], episodes }];
   });
 }
 

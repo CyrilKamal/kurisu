@@ -168,12 +168,12 @@ function errorReply(error: string | null): string {
 
 /**
  * The morning brief a message replies to, if the conversation's last message is one: each show
- * and the last episode it listed.
+ * and the episodes it listed.
  */
 async function briefRepliedTo(
   db: Db,
   last: { id: string; role: "user" | "assistant" } | undefined,
-): Promise<{ malId: number; lastEpisode: number }[] | null> {
+): Promise<{ malId: number; episodes: number[] }[] | null> {
   if (last?.role !== "assistant") return null;
   const [row] = await db
     .select({ items: briefs.items })
@@ -181,10 +181,7 @@ async function briefRepliedTo(
     .where(eq(briefs.chatMessageId, last.id))
     .limit(1);
   if (!row?.items?.length) return null;
-  return row.items.flatMap((item) => {
-    const lastEpisode = item.episodes.at(-1);
-    return lastEpisode === undefined ? [] : [{ malId: item.malId, lastEpisode }];
-  });
+  return row.items.map((item) => ({ malId: item.malId, episodes: item.episodes }));
 }
 
 /** The user's latest conversation, created if they have none. */

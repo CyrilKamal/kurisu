@@ -5,6 +5,7 @@ import { PROGRESS_SYNC_V5 } from "./progressSync.v5.js";
 import { PROGRESS_SYNC_V6 } from "./progressSync.v6.js";
 import { PROGRESS_SYNC_V7 } from "./progressSync.v7.js";
 import { PROGRESS_SYNC_V8 } from "./progressSync.v8.js";
+import { PROGRESS_SYNC_V9 } from "./progressSync.v9.js";
 
 /** Every prompt version, so the eval can compare them (pnpm eval --prompt progress-sync@1). */
 export const PROMPTS = {
@@ -15,6 +16,7 @@ export const PROMPTS = {
   [PROGRESS_SYNC_V6.version]: PROGRESS_SYNC_V6,
   [PROGRESS_SYNC_V7.version]: PROGRESS_SYNC_V7,
   [PROGRESS_SYNC_V8.version]: PROGRESS_SYNC_V8,
+  [PROGRESS_SYNC_V9.version]: PROGRESS_SYNC_V9,
 } as const;
 
 /** The prompt the app uses. */
