@@ -816,3 +816,22 @@ Batch 1 is within a case of v4. Its new misses are "bleach episode 380", which e
 **Consequences:**
 - A count only allows episodes up to the brief's last one. "Watched 5 more" when the brief lists fewer is held.
 - A mixed reply that negates watching ("watched wistoria but haven't seen daemons") holds everything, which is safe but asks more.
+
+## 2026-10-06 — A reply to a brief can only change the shows it names; misspelled fields are rejected (Milestone 3)
+**Decision:**
+- **Named shows only.** When a reply to a brief names shows ("watched daemons and clevatess"), only those shows can get progress. Any other show from the brief is held, with the new reason `not_named` ("You didn't mention this show, so check it").
+  - A show is named when a word in the reply matches one of its titles, its English title or a nickname, as a whole word or a prefix. "Daemons" matches Yomi no Tsugai through "Daemons of the Shadow Realm".
+  - Exempt: whole-brief replies, "the other two" / "the others" / "both" / "all", and episode numbers ("the 2nd ep").
+  - The validator applies the same rule.
+- **Misspelled fields.** `propose_update` rejects unknown fields and names them for the model ("Unknown field Episodes_watched…"), instead of silently dropping them.
+
+**Alternatives:** Relying on the prompt; asking whenever a reply names shows; leaving extra fields ignored.
+**Why:** In the Flash-Lite runs on all 130 cases, each prompt made one wrong write the earlier checks missed:
+- v9 wrote Wistoria for "watched daemons and clevatess", after searching only the brief's titles.
+- v8 wrote only a status for "started omp 3", because it misspelled `episodes_watched`.
+
+Both are now structural checks, so no prompt can repeat them.
+
+**Consequences:**
+- A reply naming a show by a word that isn't in any of its titles or nicknames holds that show. That's safe, but it's an extra question.
+- A model that misspells a field gets one more turn to fix it.

@@ -1,4 +1,10 @@
-import { briefRule, mentionsWholeBrief, type BriefRule } from "../../src/agent/briefReply.js";
+import {
+  briefRule,
+  mentionsWholeBrief,
+  namedShows,
+  onlyNamedShows,
+  type BriefRule,
+} from "../../src/agent/briefReply.js";
 import { parseBriefText } from "../../src/brief/build.js";
 import type { TitleIndex } from "./snapshot.js";
 
@@ -29,12 +35,33 @@ export function briefReplyFor(
   message: string,
   history: { role: "user" | "assistant"; content: string }[],
   index: TitleIndex,
-): { listed: Map<number, number[]>; rule: BriefRule; whole: boolean } | null {
+): {
+  listed: Map<number, number[]>;
+  rule: BriefRule;
+  whole: boolean;
+  /** Shows the rule doesn't cover because the reply names others ("watched daemons and clevatess"). */
+  unnamed: Set<number>;
+} | null {
   const brief = briefFromHistory(history, index);
   if (!brief) return null;
+  const rule = briefRule(message);
+  const shows = brief.flatMap((item) => {
+    const found = index.resolve(String(item.malId));
+    if (!found.ok) return [];
+    const e = found.entry;
+    const names = [e.title, e.titleEn, e.titleJa, ...e.synonyms].filter((n): n is string => !!n);
+    return [{ malId: item.malId, names }];
+  });
+  const named = namedShows(message, shows);
+  const unnamed = new Set(
+    onlyNamedShows(message, rule) && named.size > 0
+      ? brief.map((item) => item.malId).filter((id) => !named.has(id))
+      : [],
+  );
   return {
     listed: new Map(brief.map((item) => [item.malId, item.episodes])),
-    rule: briefRule(message),
+    rule,
     whole: mentionsWholeBrief(message),
+    unnamed,
   };
 }

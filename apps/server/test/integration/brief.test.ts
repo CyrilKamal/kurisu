@@ -543,6 +543,23 @@ describe('replying "watched it" to a brief', () => {
     expect(await heldReasons()).toEqual({ [WATCHING]: "not_in_brief" });
   });
 
+  it("only writes the shows a reply names, whichever ones the model picks", async () => {
+    await sendBrief();
+    // "FWS" is a nickname of the watching show; the model wrongly adds the second show too.
+    models.script(
+      AGENT.ref,
+      replyScript([
+        { anime_id: WATCHING, episodes_watched: 9 },
+        { anime_id: SECOND, episodes_watched: 1 },
+      ]),
+    );
+
+    await send("POST", "/chat/messages", { text: "watched fws" });
+
+    expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
+    expect(await heldReasons()).toEqual({ [SECOND]: "not_named" });
+  });
+
   it("only applies right after the brief", async () => {
     await sendBrief();
     models.script(AGENT.ref, [{ text: "Hi!" }]);

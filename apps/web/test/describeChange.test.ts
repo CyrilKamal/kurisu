@@ -30,6 +30,7 @@ describe("messages", () => {
     expect(confirmationReasonLabel("newest_episode_unknown")).toMatch(/newest episode/);
     expect(confirmationReasonLabel("score_not_given")).toMatch(/didn't give a score/);
     expect(confirmationReasonLabel("not_in_brief")).toMatch(/brief didn't list/);
+    expect(confirmationReasonLabel("not_named")).toMatch(/didn't mention this show/);
     expect(confirmationReasonLabel(null)).toMatch(/confirmation/);
     expect(writeErrorMessage("changed_since")).toMatch(/overwrite the newer change/);
     expect(writeErrorMessage("something_new")).toMatch(/Something went wrong/);

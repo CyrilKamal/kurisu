@@ -137,7 +137,9 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
                 entry.episodesWatched,
                 change.episodesWatched,
               )
-            ? "not_in_brief"
+            ? input.briefReply.rule.kind === "unnamed"
+              ? "not_named"
+              : "not_in_brief"
             : input.noNumberGiven && change.score !== undefined
               ? "score_not_given"
               : null;

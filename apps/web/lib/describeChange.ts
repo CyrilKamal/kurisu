@@ -43,6 +43,8 @@ export function confirmationReasonLabel(reason: string | null): string {
       return "You didn't give a score, so check this one.";
     case "not_in_brief":
       return "Your brief didn't list this episode, so check it.";
+    case "not_named":
+      return "You didn't mention this show, so check it.";
     default:
       return "Needs your confirmation.";
   }

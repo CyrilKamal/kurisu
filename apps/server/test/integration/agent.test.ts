@@ -342,6 +342,34 @@ describe("runAgent", () => {
     expect(await run("anything")).toMatchObject({ outcome: "error", error: "model_rate_limited" });
   });
 
+  it("rejects a misspelled field instead of dropping it", async () => {
+    let feedback: Record<string, unknown> = {};
+    models.script(LITE.ref, [
+      {
+        toolCalls: [{ name: "search_my_list", arguments: { queries: ["fixture watching show"] } }],
+      },
+      {
+        toolCalls: [
+          {
+            name: "propose_update",
+            arguments: { anime_id: WATCHING, status: "watching", Episodes_watched: 8 },
+          },
+        ],
+      },
+      (req) => {
+        feedback = lastToolResult(req);
+        return { text: "Sorry, try again." };
+      },
+    ]);
+
+    const result = await run("watched ep 8 of fixture watching show");
+
+    expect(feedback.error).toBe("invalid_arguments");
+    expect(String(feedback.message)).toContain("Unknown field Episodes_watched");
+    expect(result.committed).toEqual([]);
+    expect(h.fakeMal.patchRequests).toEqual([]);
+  });
+
   it("returns invalid arguments to the model and keeps going", async () => {
     models.script(LITE.ref, [
       { toolCalls: [{ name: "get_entry", arguments: { anime_id: "not-a-number" } }] },
