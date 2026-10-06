@@ -16,7 +16,7 @@ tags: nickname
 Just watched episode 891 of OP => One Piece: ep 891
 Just started Suicide Squad => Suicide Squad Isekai: ep 1
 Just watched five episodes of TOG => ask  // two Season 2 entries are both in Watching
-Watched the newest episode of SBR => ask  #latest-episode
+Watched the newest episode of SBR => Steel Ball Run: JoJo no Kimyou na Bouken: ep 3  #latest-episode
 Started DanMachi 4th Season, Is It Wrong That I Want to Meet You in a Dungeon 4th Season => Is It Wrong to Try to Pick Up Girls in a Dungeon? IV: ep 1
 Started Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka IV: Shin Shou - Meikyuu-hen => Is It Wrong to Try to Pick Up Girls in a Dungeon? IV: ep 1
 Finally picked up Gangster => Gangsta.: ep 1  // misspelled on purpose
@@ -65,7 +65,7 @@ user: Watched some of TOG s2
 bot: How many episodes did you watch?
 5 => ask  #history // "5" still doesn't say which of the two Season 2 entries
 
-Watched the newest ep that dropped for TYBW s4 => ask  #latest-episode
+Watched the newest ep that dropped for TYBW s4 => Bleach: Sennen Kessen-hen - Kashin-tan: ep 8  #latest-episode
 
 tags: no-action
 What do you think I should pick up from my to watch list? => none
