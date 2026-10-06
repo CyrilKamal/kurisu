@@ -19,6 +19,7 @@ import { airingRows, latestAiredEpisode } from "../anilist/cache.js";
 import { briefRule, mentionsWholeBrief, onlyNamedShows } from "./briefReply.js";
 import { mentionsNewestEpisode } from "./newestEpisode.js";
 import { mentionsNumber } from "./scoreGiven.js";
+import type { ToolOutcome } from "./toolLoop.js";
 
 /** Per-run state the tools share. Grounding rules live here, not in the prompt. */
 export interface RunContext {
@@ -40,6 +41,11 @@ export interface RunContext {
   briefEpisodes: Map<number, number[]> | null;
   /** The brief's shows the reply names by title or nickname (see agent/briefReply.ts namedShows). */
   briefNamed: Set<number>;
+  /**
+   * The titles the brief listed. In a reply to it, they count as the user's words for search:
+   * the user is answering a message that named those shows.
+   */
+  briefTitles: string[];
   /** Anime ids a search marked as a clear match in this run, and why (see SearchCandidate). */
   clear: Map<number, "unique" | "only_in_progress">;
   /** Proposals created in this run. The model can only commit these. */
@@ -60,7 +66,7 @@ export interface RunContext {
   /** How often each exact search has run, to catch a model searching in circles. */
   searches: Map<string, number>;
   /** Set when the model keeps repeating itself; the run ends there. */
-  stop: "repeated_commit" | "repeated_search" | null;
+  stop: "repeated_commit" | "repeated_search" | "handoff" | null;
 }
 
 /** A model that runs the same search this many times is going in circles. */
@@ -124,6 +130,12 @@ export const TOOL_SPECS: ToolSpec[] = [
       required: ["proposal_id"],
     },
   },
+  {
+    name: "recommend_shows",
+    description:
+      "The user wants a recommendation (what to watch next). Call this after any updates in the same message; the recommender then answers.",
+    parameters: { type: "object", properties: {} },
+  },
 ];
 
 // Models sometimes send numbers as strings, or one query instead of a list: accept both.
@@ -147,12 +159,7 @@ const proposeArgs = z
   .strict();
 const commitArgs = z.object({ proposal_id: z.uuid() });
 
-export interface ToolOutcome {
-  /** Sent back to the model as JSON. */
-  result: unknown;
-  /** Set when the call failed, for the run log. */
-  error?: string;
-}
+export type { ToolOutcome } from "./toolLoop.js";
 
 export async function executeTool(ctx: RunContext, call: ToolCall): Promise<ToolOutcome> {
   switch (call.name) {
@@ -164,6 +171,15 @@ export async function executeTool(ctx: RunContext, call: ToolCall): Promise<Tool
       return proposeTool(ctx, call.arguments);
     case "commit_update":
       return commitTool(ctx, call.arguments);
+    case "recommend_shows":
+      // The recommendation agent answers once this run ends (see chat/service.ts).
+      ctx.stop = "handoff";
+      return {
+        result: {
+          status: "handed_off",
+          note: "The recommender answers this part. Stop here, and don't recommend anything yourself.",
+        },
+      };
     default:
       return failure("unknown_tool", `There is no tool named ${call.name}.`);
   }
@@ -190,7 +206,10 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   }
 
   const candidates = await searchMyList(ctx.db, ctx.userId, queries, {
-    userText: ctx.userMessage,
+    userText:
+      ctx.briefTitles.length > 0
+        ? [ctx.userMessage, ...ctx.briefTitles].join("\n")
+        : ctx.userMessage,
     contested: ctx.contested,
     answering: ctx.answering,
   });

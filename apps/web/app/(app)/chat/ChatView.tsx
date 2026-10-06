@@ -11,6 +11,7 @@ import { getApi, postApi } from "@/lib/clientApi";
 import { writeErrorMessage } from "@/lib/describeChange";
 
 import { ChangeCard, PendingCard } from "../ChangeCards";
+import { PickCard } from "./PickCard";
 
 const EXAMPLES = ["watched ep 3 of Frieren", "two more episodes of JJK", "dropping the isekai one"];
 
@@ -110,6 +111,9 @@ export function ChatView({ initialMessages }: { initialMessages: ChatMessageView
                     change={change}
                     onUndo={(id) => act(`/changes/${id}/undo`, changeResponseSchema)}
                   />
+                ))}
+                {message.picks.map((pick, i) => (
+                  <PickCard key={pick.animeId} pick={pick} rank={i + 1} />
                 ))}
                 {message.pending.map((proposal) => (
                   <PendingCard

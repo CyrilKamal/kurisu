@@ -1,15 +1,27 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 
 import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
-import { runAgent, type AgentDeps, type RunResult } from "../agent/runAgent.js";
+import { runAgent, type AgentDeps, type Prompt, type RunResult } from "../agent/runAgent.js";
 import type { Db, Executor } from "../db/client.js";
-import { anime, briefs, changes, chatMessages, conversations, proposals } from "../db/schema.js";
+import {
+  anime,
+  briefs,
+  changes,
+  chatMessages,
+  conversations,
+  listEntries,
+  proposals,
+  recommendations,
+} from "../db/schema.js";
 import type { ModelRef } from "../llm/modelConfig.js";
+import { runRecommender, type RecommendResult } from "../recommend/agent.js";
 import type { CommitErrorCode } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 
 export interface ChatDeps extends AgentDeps {
-  roles: { agent: ModelRef; escalation: ModelRef | null };
+  roles: { agent: ModelRef; escalation: ModelRef | null; recommend: ModelRef };
+  /** The recommendation agent's prompt. */
+  recommendPrompt: Prompt;
 }
 
 /** Earlier messages the model sees for context. */
@@ -42,6 +54,19 @@ export interface ChatMessageView {
   createdAt: string;
   changes: ChangeView[];
   pending: PendingView[];
+  picks: PickView[];
+}
+
+/** A recommended show, as a card under the reply. */
+export interface PickView {
+  animeId: number;
+  title: string;
+  pictureUrl: string | null;
+  status: string;
+  episodesWatched: number;
+  numEpisodes: number | null;
+  episodeMinutes: number | null;
+  why: string;
 }
 
 /**
@@ -53,7 +78,12 @@ export async function handleChatMessage(
   deps: ChatDeps,
   userId: string,
   text: string,
-): Promise<{ userMessageId: string; assistantMessageId: string; run: RunResult }> {
+): Promise<{
+  userMessageId: string;
+  assistantMessageId: string;
+  run: RunResult;
+  recommendation: RecommendResult | null;
+}> {
   const { db } = deps;
   const conversationId = await currentConversation(db, userId);
   const recent = (
@@ -78,6 +108,7 @@ export async function handleChatMessage(
 
   const escalation = deps.roles.escalation;
   const worthEscalating =
+    !run.handedOff &&
     run.committed.length === 0 &&
     ["clarification", "needs_confirmation", "error"].includes(run.outcome) &&
     run.error !== "model_auth";
@@ -107,18 +138,50 @@ export async function handleChatMessage(
     }
   }
 
+  // The progress agent handed a recommendation request over: the recommender answers it,
+  // after any updates in the same message.
+  let recommendation: RecommendResult | null = null;
+  if (run.handedOff) {
+    recommendation = await runRecommender(
+      { db, models: deps.models, prompt: deps.recommendPrompt },
+      { ...input, model: deps.roles.recommend, handedOffFromRunId: run.runId },
+    );
+  }
+
   const [assistantMessage] = await db
     .insert(chatMessages)
     .values({
       conversationId,
       role: "assistant",
-      content: replyFor(run),
+      content: combinedReply(run, recommendation),
       runId: run.runId,
     })
     .returning({ id: chatMessages.id });
   if (!assistantMessage) throw new Error("chat message insert returned no row");
+  if (recommendation?.recommendationId) {
+    await db
+      .update(recommendations)
+      .set({ chatMessageId: assistantMessage.id })
+      .where(eq(recommendations.id, recommendation.recommendationId));
+  }
 
-  return { userMessageId: userMessage.id, assistantMessageId: assistantMessage.id, run };
+  return {
+    userMessageId: userMessage.id,
+    assistantMessageId: assistantMessage.id,
+    run,
+    recommendation,
+  };
+}
+
+/** The progress agent's reply about any changes, then the recommender's, when there was one. */
+function combinedReply(run: RunResult, recommendation: RecommendResult | null): string {
+  if (!recommendation) return replyFor(run);
+  const parts: string[] = [];
+  if (run.committed.length > 0 || run.pending.length > 0) parts.push(replyFor(run));
+  parts.push(
+    recommendation.outcome === "error" ? errorReply(recommendation.error) : recommendation.reply,
+  );
+  return parts.filter((part) => part.length > 0).join("\n\n") || "Done.";
 }
 
 /**
@@ -247,6 +310,12 @@ export async function loadThread(
             ),
           );
 
+  const picksByMessage = await loadPicks(
+    db,
+    userId,
+    rows.map((r) => r.id),
+  );
+
   return rows.map((row) => {
     const mine = cards.filter((c) => c.proposal.runId === row.runId);
     return {
@@ -265,8 +334,58 @@ export async function loadThread(
           change: c.proposal.change,
           reason: c.proposal.confirmationReason,
         })),
+      picks: picksByMessage.get(row.id) ?? [],
     };
   });
+}
+
+/** Each message's recommended shows, as cards, in the order they were picked. */
+async function loadPicks(
+  db: Db,
+  userId: string,
+  messageIds: string[],
+): Promise<Map<string, PickView[]>> {
+  if (messageIds.length === 0) return new Map();
+  const rows = await db
+    .select({ messageId: recommendations.chatMessageId, picks: recommendations.picks })
+    .from(recommendations)
+    .where(
+      and(eq(recommendations.userId, userId), inArray(recommendations.chatMessageId, messageIds)),
+    );
+  const ids = [...new Set(rows.flatMap((r) => r.picks.map((p) => p.animeId)))];
+  if (ids.length === 0) return new Map();
+  const shows = await db
+    .select({
+      animeId: anime.malId,
+      title: anime.title,
+      pictureUrl: anime.mainPictureUrl,
+      numEpisodes: anime.numEpisodes,
+      episodeMinutes: anime.episodeMinutes,
+      status: listEntries.status,
+      episodesWatched: listEntries.numEpisodesWatched,
+    })
+    .from(anime)
+    .innerJoin(
+      listEntries,
+      and(eq(listEntries.animeId, anime.malId), eq(listEntries.userId, userId)),
+    )
+    .where(inArray(anime.malId, ids));
+  const byId = new Map(shows.map((s) => [s.animeId, s]));
+  return new Map(
+    rows.flatMap((r) =>
+      r.messageId
+        ? [
+            [
+              r.messageId,
+              r.picks.flatMap((p) => {
+                const show = byId.get(p.animeId);
+                return show ? [{ ...show, why: p.why }] : [];
+              }),
+            ] as const,
+          ]
+        : [],
+    ),
+  );
 }
 
 /** The user's most recent committed changes, newest first. */

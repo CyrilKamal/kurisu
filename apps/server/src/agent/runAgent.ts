@@ -1,13 +1,14 @@
 import { eq, inArray } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
-import { agentRuns, agentRunSteps, anime } from "../db/schema.js";
+import { agentRuns, anime } from "../db/schema.js";
 import type { ModelClient } from "../llm/modelClient.js";
 import type { ModelRef } from "../llm/modelConfig.js";
-import { ModelProviderError, type LlmMessage } from "../llm/types.js";
+import type { LlmMessage } from "../llm/types.js";
 import type { Change, CommitErrorCode, ListWriter } from "../writes/commit.js";
 import type { Proposal } from "../writes/propose.js";
 import { namedShows } from "./briefReply.js";
+import { runToolLoop } from "./toolLoop.js";
 import { executeTool, TOOL_SPECS, type RunContext } from "./tools.js";
 
 export interface Prompt {
@@ -38,6 +39,8 @@ export interface RunResult {
   model: string;
   outcome: AgentOutcome;
   reply: string;
+  /** The model called recommend_shows: the recommendation agent answers next. */
+  handedOff: boolean;
   /** True if the reply asks the user something. */
   asked: boolean;
   committed: Change[];
@@ -63,7 +66,6 @@ export interface AgentDeps {
 const DEFAULT_MAX_TURNS = 6;
 /** A reply to a brief can touch every show in it: search, propose and commit each. */
 const BRIEF_REPLY_MAX_TURNS = 10;
-const MAX_LOGGED_RESULT_CHARS = 4000;
 
 /**
  * One agent run: the model reads the message, calls tools, and replies. Every model call and
@@ -84,6 +86,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     .returning({ id: agentRuns.id });
   if (!run) throw new Error("agent_runs insert returned no row");
 
+  const brief = input.brief ? await briefShows(db, input.brief, input.message) : null;
   const ctx: RunContext = {
     db,
     userId: input.userId,
@@ -94,7 +97,8 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     briefEpisodes: input.brief
       ? new Map(input.brief.map((item) => [item.malId, item.episodes]))
       : null,
-    briefNamed: input.brief ? await briefShowsNamed(db, input.brief, input.message) : new Set(),
+    briefNamed: brief?.named ?? new Set(),
+    briefTitles: brief?.titles ?? [],
     clear: new Map(),
     proposalIds: new Set(),
     committed: [],
@@ -120,83 +124,35 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     { role: "user", content: input.message },
   ];
 
-  let seq = 0;
-  let inputTokens = 0;
-  let outputTokens = 0;
-  let reply: string | null = null;
-  let error: string | null = null;
-
-  const logStep = async (step: Omit<typeof agentRunSteps.$inferInsert, "runId" | "seq">) => {
-    await db.insert(agentRunSteps).values({ ...step, runId: run.id, seq: seq++ });
-  };
-
-  const maxTurns = deps.maxTurns ?? (input.brief ? BRIEF_REPLY_MAX_TURNS : DEFAULT_MAX_TURNS);
-  for (let turn = 0; turn < maxTurns; turn++) {
-    let response;
-    const callStarted = performance.now();
-    try {
-      response = await deps.models.chat(input.model, {
-        system: deps.prompt.system,
-        messages,
-        tools: TOOL_SPECS,
-      });
-    } catch (err) {
-      error = err instanceof ModelProviderError ? `model_${err.kind}` : "model_failed";
-      await logStep({
-        kind: "model_call",
-        latencyMs: Math.round(performance.now() - callStarted),
-        error: err instanceof Error ? err.message.slice(0, 300) : String(err),
-      });
-      break;
-    }
-
-    inputTokens += response.usage.inputTokens;
-    outputTokens += response.usage.outputTokens;
-    await logStep({
-      kind: "model_call",
-      latencyMs: response.latencyMs,
-      inputTokens: response.usage.inputTokens,
-      outputTokens: response.usage.outputTokens,
-      result: {
-        text: response.text,
-        toolCalls: response.toolCalls.map((c) => ({ name: c.name, arguments: c.arguments })),
-      },
-    });
-
-    if (response.toolCalls.length === 0) {
-      reply = response.text.trim();
-      break;
-    }
-
-    messages.push({
-      role: "assistant",
-      content: response.text,
-      toolCalls: response.toolCalls,
-      providerState: response.providerState,
-    });
-    for (const call of response.toolCalls) {
-      const toolStarted = performance.now();
-      const outcome = await executeTool(ctx, call);
-      const content = JSON.stringify(outcome.result);
-      await logStep({
-        kind: "tool_call",
-        toolName: call.name,
-        args: call.arguments,
-        result: truncate(outcome.result, content),
-        latencyMs: Math.round(performance.now() - toolStarted),
-        error: outcome.error ?? null,
-      });
-      messages.push({ role: "tool", toolCallId: call.id, name: call.name, content });
-    }
-    if (ctx.stop) break;
-  }
+  const loop = await runToolLoop({
+    db,
+    runId: run.id,
+    models: deps.models,
+    model: input.model,
+    system: deps.prompt.system,
+    tools: TOOL_SPECS,
+    messages,
+    maxTurns: deps.maxTurns ?? (input.brief ? BRIEF_REPLY_MAX_TURNS : DEFAULT_MAX_TURNS),
+    execute: (call) => executeTool(ctx, call),
+    shouldStop: () => ctx.stop !== null,
+  });
+  const { inputTokens, outputTokens } = loop;
+  let reply = loop.reply;
+  let error = loop.error;
 
   // Ran out of turns, or stopped for repeating itself. If changes were written or held, the
   // run still did its job: Chat shows them, so end with a plain reply instead of an error. A
   // model searching in circles gets an honest question back. agent_runs keeps the reason.
   let stopReason: string | null = null;
   if (reply === null && error === null) {
-    if (ctx.committed.length > 0 || ctx.pending.length > 0) {
+    if (ctx.stop === "handoff") {
+      // Not an error: the recommender answers. Any changes made first still show.
+      stopReason = "handoff";
+      reply =
+        ctx.committed.length > 0 || ctx.pending.length > 0
+          ? fallbackReply(ctx.committed.length, ctx.pending.length)
+          : "";
+    } else if (ctx.committed.length > 0 || ctx.pending.length > 0) {
       stopReason = ctx.stop ?? "max_turns";
       reply = fallbackReply(ctx.committed.length, ctx.pending.length);
     } else if (ctx.stop === "repeated_search") {
@@ -236,6 +192,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     model: input.model.ref,
     outcome,
     reply: text,
+    handedOff: ctx.stop === "handoff",
     asked,
     committed: ctx.committed,
     pending: ctx.pending,
@@ -254,18 +211,15 @@ function fallbackReply(committed: number, held: number): string {
   return committed > 0 ? `Done. ${waiting.replace("That change", "One change")}` : waiting;
 }
 
-function truncate(value: unknown, serialized: string): unknown {
-  return serialized.length <= MAX_LOGGED_RESULT_CHARS
-    ? value
-    : { truncated: true, preview: serialized.slice(0, MAX_LOGGED_RESULT_CHARS) };
-}
-
-/** Which of the brief's shows the message names, by any of their titles or nicknames. */
-async function briefShowsNamed(
+/**
+ * For a reply to a brief: which of its shows the message names (by any title or nickname), and
+ * the titles the brief wrote.
+ */
+async function briefShows(
   db: Db,
   brief: { malId: number }[],
   message: string,
-): Promise<Set<number>> {
+): Promise<{ named: Set<number>; titles: string[] }> {
   const rows = await db
     .select({
       malId: anime.malId,
@@ -281,7 +235,7 @@ async function briefShowsNamed(
         brief.map((item) => item.malId),
       ),
     );
-  return namedShows(
+  const named = namedShows(
     message,
     rows.map((row) => ({
       malId: row.malId,
@@ -290,4 +244,5 @@ async function briefShowsNamed(
       ),
     })),
   );
+  return { named, titles: rows.map((row) => row.title) };
 }

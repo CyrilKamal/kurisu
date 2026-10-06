@@ -29,7 +29,7 @@ export function parseModelRef(value: string): ModelRef {
   return { provider: provider as ProviderName, model, ref: value };
 }
 
-export const MODEL_ROLES = ["agent", "escalation", "eval", "brief"] as const;
+export const MODEL_ROLES = ["agent", "escalation", "eval", "brief", "recommend"] as const;
 export type ModelRole = (typeof MODEL_ROLES)[number];
 
 const priceSchema = z.object({
@@ -73,6 +73,7 @@ export function resolveRoles(
     escalation: pick("escalation"),
     eval: pick("eval"),
     brief: pick("brief"),
+    recommend: pick("recommend"),
   };
 }
 

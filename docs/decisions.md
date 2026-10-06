@@ -910,3 +910,52 @@ Both are now structural checks, so no prompt can repeat them.
 - A category is something the recommender can act on, such as avoiding slow shows.
 
 **Consequences:** The 4 existing drops have no reasons. Reasons accumulate as you drop shows and say why.
+
+## 2026-10-06 — Recommendations: a handoff to a separate agent, ranked in code, picks checked (Milestone 4)
+**Decision:**
+- **Routing.** The progress agent gets a `recommend_shows` tool. When a message asks what to watch, it makes any updates first, then hands over.
+  - Chat then runs a separate recommendation agent (prompt `recommend.v1`) on the `recommend` role, Flash per the design.
+  - Its reply follows the update's in one chat message.
+  - Both runs are logged; the recommendation run is linked by `handed_off_from_run_id` and has the outcome `recommended`.
+- **`find_candidates` (code).**
+  - Filters your Plan to Watch and in-progress shows (Watching, On Hold, rewatching; never completed, dropped or unaired) to the constraints: time available, episodes left, genres wanted or avoided, media type, which list.
+  - Ranks by taste fit (genre affinities), MAL score, a nudge for shows under way or airing, and penalties for genres you drop and, after "too long" drops, long shows.
+  - Returns the top 15 with plain facts behind each.
+  - Unknown genre names are reported back with the genres on your list.
+  - The loop is shared with the progress agent (`agent/toolLoop.ts`), so both log the same way.
+- **`present_picks`** stores up to 3 picks (your choice) in `recommendations`. Each must be a show a search in this run returned, with a one-line reason. Chat shows them as cards: cover, list status and progress, episodes left × length, the reason.
+
+**Alternatives:**
+- One agent with all the tools.
+- Classifying intent with a separate model call first.
+- Letting the model rank the whole backlog itself.
+- Free-text recommendations.
+
+**Why:**
+- The handoff keeps the progress agent's tested behavior and handles mixed messages without an extra call.
+- Ranking in code makes the constraints hard rules and keeps the model's job to mapping words to constraints and explaining picks.
+- Checked picks can't recommend a show that isn't on your list.
+
+**Consequences:**
+- A recommendation takes two model runs, the second on Flash.
+- Prompt v10 (the handoff and drop reasons) has to become the app's prompt for recommendations to work. That's gated on the 130 update cases.
+
+## 2026-10-06 — Prompts v10 and v11; brief titles count as your words; v11 becomes the app's prompt (Milestone 4)
+**Decision:**
+- **v10** adds the `recommend_shows` handoff and `drop_reason` to v9.
+- **v11** adds two things for replies to a brief: search with your own words for a show (nicknames like "daemons") as well as the brief's title, and "finished" means caught up, not completed.
+- **Code:** in a reply to a brief, the brief's own titles count as your words for search, since you're answering a message that named them. A search for a brief title is then settled by its exact name, even when the model also guesses other seasons of the same show.
+- v11 becomes the app's prompt.
+
+**Alternatives:** Shipping v10 as it was; changing the conflicting-guesses rule for everyone.
+**Why:** Flash-Lite on all 130 cases. v10 kept 0 wrong writes, but both of its runs got 2–3 of your brief replies fewer than v9: it asked about "Bleach Kashin-tan" because of its own wrong cour guesses, searched the wrong show for "daemons", and read "finished them" as Completed.
+
+| Prompt | Accuracy | Brief replies | Wrong writes |
+|---|---|---|---|
+| v9 | 122, 123 /130 | 34, 34 /35 | 0 |
+| v10 | 120, 119 /130 | 32, 31 /35 | 0 |
+| v11 + the search change | 124/130 | 35/35 | 0/123 |
+
+**Consequences:**
+- The remaining misses all ask or hold: MHA More, the Mushoku Tensei follow-up, TYBW s4, the Cowboy Bebop rewatch, and "final mha season".
+- The search change only applies when your message replies to a brief.
