@@ -35,6 +35,12 @@ const animeListItemSchema = z.object({
     status: z.string().nullish(),
     // When the show started airing: "2026-03-19", or partial ("2026-03", "2026") if MAL isn't sure.
     start_date: z.string().nullish(),
+    // Genres, themes and demographics in one list, e.g. "Slice of Life", "Iyashikei", "Shounen".
+    genres: z.array(z.object({ id: z.number().int().optional(), name: z.string() })).nullish(),
+    // Seconds per episode; 0 when MAL doesn't know.
+    average_episode_duration: z.number().nonnegative().nullish(),
+    // MAL's community score.
+    mean: z.number().nullish(),
     alternative_titles: z
       .object({
         synonyms: z.array(z.string()).nullish(),
@@ -93,7 +99,7 @@ export interface RetryOptions {
 export const DEFAULT_RETRY: RetryOptions = { retries: 3, baseDelayMs: 500, maxDelayMs: 30_000 };
 
 const LIST_FIELDS =
-  "list_status,num_episodes,media_type,status,start_date,main_picture,alternative_titles";
+  "list_status,num_episodes,media_type,status,start_date,main_picture,alternative_titles,genres,average_episode_duration,mean";
 const LIST_PAGE_SIZE = 1000; // MAL's maximum for this endpoint
 
 export async function fetchMe(apiBaseUrl: string, accessToken: string): Promise<MalUser> {

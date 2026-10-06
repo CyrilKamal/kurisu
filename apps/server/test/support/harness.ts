@@ -90,10 +90,24 @@ export async function startHarness(
   };
 }
 
+/**
+ * Empties every table. The previous test's login may still be refreshing taste and airing data
+ * in the background; if TRUNCATE deadlocks with it, Postgres aborts one side, so try again.
+ */
 export async function resetDatabase(db: Db): Promise<void> {
-  await db.execute(
-    sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs CASCADE`,
-  );
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await db.execute(
+        sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs, taste_genres, drop_reasons CASCADE`,
+      );
+      return;
+    } catch (err) {
+      const e = err as { code?: string; cause?: { code?: string } };
+      const deadlock = (e.code ?? e.cause?.code) === "40P01";
+      if (!deadlock || attempt >= 4) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    }
+  }
 }
 
 export interface LoginResult {
