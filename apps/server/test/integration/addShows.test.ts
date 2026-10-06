@@ -230,6 +230,45 @@ describe("adding a show that isn't on the list", () => {
     expect(h.fakeMal.deleteRequests).toEqual([]);
   });
 
+  it("finds shows on the list too, which are updated as usual, not added", async () => {
+    models.script(AGENT.ref, [
+      { toolCalls: [{ name: "search_anime", arguments: { queries: ["Fixture Watching Show"] } }] },
+      (req) => {
+        const results = lastToolResult(req).results as {
+          anime_id: number;
+          on_your_list: unknown;
+          clear_match: boolean;
+        }[];
+        expect(results[0]).toMatchObject({
+          anime_id: 900001,
+          on_your_list: { status: "watching", episodes_watched: 7 },
+          clear_match: true,
+        });
+        return {
+          toolCalls: [
+            {
+              name: "propose_update",
+              arguments: { anime_id: results[0]?.anime_id, episodes_watched: 8 },
+            },
+          ],
+        };
+      },
+      (req) => ({
+        toolCalls: [
+          { name: "commit_update", arguments: { proposal_id: lastToolResult(req).proposal_id } },
+        ],
+      }),
+      { text: "Updated Fixture Watching Show to episode 8." },
+    ]);
+
+    const chat = await say("watched ep 8 of fixture watching show");
+
+    expect(chat.messages[1]?.changes.map((c) => [c.kind, c.after])).toEqual([
+      ["update", { episodesWatched: 8 }],
+    ]);
+    expect(chat.messages[1]?.pending).toEqual([]);
+  });
+
   it("asks which show with cards when several fit", async () => {
     models.script(AGENT.ref, [
       { toolCalls: [{ name: "search_anime", arguments: { queries: ["fixture new show"] } }] },

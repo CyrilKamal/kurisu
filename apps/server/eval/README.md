@@ -197,6 +197,11 @@ Label every case the same way for the same wording, or no agent can pass them al
   - A count ("a wistoria ep", "one ep", "3 clevatess"): that many more episodes. "The other two" or "the others" means the rest, each up to its last listed episode.
   - An episode number ("ep 8", "the 2nd ep", "the first ep", "the premiere" = ep 1): that episode of the show the brief lists it for, not the show at that place in the list.
   - "Didn't watch any yet", "haven't seen them": nothing.
+- **Shows that aren't on your list** (adds always wait for your tap):
+  - "Started X" or "watched N eps of X" adds it with that progress; "finished X, 10/10" adds it as Completed with the score.
+  - "Gonna start X" adds it to Plan to Watch. For a show already on your list, "going to start X" still means started (ep 1).
+  - A name that later seasons' names start with ("Mushishi", "Natsume Yuujinchou") asks which one, as it does for your list.
+  - "Add X" for a show already on your list changes nothing and asks nothing; it says where the show is.
 
 ## Coverage checklist
 

@@ -1033,3 +1033,30 @@ Requested during Milestone 4, outside its scope.
 | v12 | 126/130 | 34/35 | 0/125 | 71.4% |
 
 **Consequences:** Adding shows works in Chat now. Your add cases come next, after the frozen catalog is built from their titles.
+
+## 2026-10-06 — Your add cases, prompt v13, and two search fixes (Milestone 4)
+**Decision:**
+- **Your 10 add cases** are in `eval/cases/adds.yaml`. The wordings and outcomes are yours; I suggested the scenarios and shows, and froze their AniList searches.
+- **Your decisions for these cases:**
+  - "started mushishi" and "watched 5 eps of Natsume Yuujinchou" ask which entry. This is the same rule as your list: an exact name that later seasons start with asks.
+  - "add X" for a show already on your list changes nothing and asks nothing.
+  - "gonna start X" for a show not on your list means Plan to Watch.
+- **Prompt v13** adds three rules:
+  - "gonna start X" means Plan to Watch for a show not on your list.
+  - When several shows outside the list fit, ask a real question naming them.
+  - Never call an add done before you tap.
+- **Search outside the list:** a series' own movies and specials no longer stop its exact name from being clear (The Tatami Galaxy vs its Specials). Other TV seasons still do (Mushishi). Searches of your own list are unchanged.
+- **`search_anime` also returns matches from your list,** scored with the rest. A show you have is then found and updated, not added, even if the model skips `search_my_list`.
+
+**Alternatives:** Keeping v12; fixing the skipped list search in the prompt only.
+**Why:** First run of your add cases on v12: 6/10. The misses were Tatami Galaxy and Shirobako (blocked by their specials and movies), Mushishi (a statement, not a question), and Look Back (added as ep 1, not Plan to Watch). v13 alone then skipped `search_my_list` for "started X" and said shows you have weren't on your list. That would have been an eval artifact in production, since AniList also returns your shows, but a tool shouldn't rely on it. With both fixes, on Flash-Lite over all 140 cases:
+
+| Prompt | Accuracy | Add cases | Brief replies | Wrong writes |
+|---|---|---|---|---|
+| v12 (earlier tools) | 126/130 + 6/10 | 6/10 | 34/35 | 0 |
+| v13 (fixed tools) | 136/140 | 10/10 | 35/35 | 0/126 |
+
+**Consequences:**
+- v13 is the app's prompt.
+- The remaining misses all ask or hold: bsd ep 5, Mushoku Tensei, TYBW s4, and the Cowboy Bebop rewatch.
+- In that last one the model said "tap Add" for a Confirm card, a wording slip.

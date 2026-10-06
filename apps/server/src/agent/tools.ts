@@ -102,7 +102,7 @@ export const TOOL_SPECS: ToolSpec[] = [
   {
     name: "search_anime",
     description:
-      "Search all anime, not just the user's list, by title: for a show they want to add, or say they watched, that isn't on their list. Pass the user's words plus official titles you know. Returns up to 5 shows; on_your_list is set for shows they already have; clear_match says whether the words clearly identify that show.",
+      "Search all anime, not just the user's list, by title: for a show they want to add, or say they watched, that isn't on their list. Pass the user's words plus official titles you know. Returns up to 5 shows, including matches on their list; on_your_list is set for shows they already have, which you update as usual; clear_match says whether the words clearly identify that show.",
     parameters: {
       type: "object",
       properties: {
@@ -306,10 +306,13 @@ async function searchAnimeTool(ctx: RunContext, raw: unknown): Promise<ToolOutco
   }
   // Rows for these shows, so they can be shown and proposed. Shows without a MAL id can't be.
   const shows = await rememberShows(ctx.db, found);
+  // The user's own entries by these names come along, scored with the rest, so a show they have
+  // is found (and updated, not added) even when the model skipped search_my_list.
+  const onList = await searchMyList(ctx.db, ctx.userId, queries, { limit: CATALOG_RESULTS });
   const candidates = await searchCatalog(
     ctx.db,
     ctx.userId,
-    shows.map((show) => show.malId),
+    [...new Set([...onList.map((c) => c.animeId), ...shows.map((show) => show.malId)])],
     queries,
     {
       limit: CATALOG_RESULTS,

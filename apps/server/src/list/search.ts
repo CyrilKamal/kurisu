@@ -80,6 +80,12 @@ export interface ScoredEntry<S extends ListStatus | null = ListStatus> extends O
 
 interface SearchOptions {
   limit?: number;
+  /**
+   * A series' own movies and specials don't stop its exact name from being clear. For searches
+   * outside the list, where every franchise brings its side stories along; on the list, the
+   * user put each entry there.
+   */
+  sideStoriesDontCount?: boolean;
   /** The user's message, so titles the model supplied can be told from the user's words. */
   userText?: string;
   /** Entries some search left tied, kept across the searches of one agent run. */
@@ -121,7 +127,10 @@ export async function searchCatalog(
   const cleaned = cleanQueries(queries);
   if (cleaned.length === 0 || animeIds.length === 0) return [];
   const pool = await scoredPool(db, userId, animeIds, cleaned);
-  return clearFirst(markClear(pool, cleaned, options), options.limit);
+  return clearFirst(
+    markClear(pool, cleaned, { ...options, sideStoriesDontCount: true }),
+    options.limit,
+  );
 }
 
 function cleanQueries(queries: string[]): string[] {
@@ -261,7 +270,12 @@ async function scoredPool(
 export function markClear<S extends ListStatus | null>(
   pool: ScoredEntry<S>[],
   queries: string[],
-  context: { userText?: string; contested?: Set<number>; answering?: boolean } = {},
+  context: {
+    userText?: string;
+    contested?: Set<number>;
+    answering?: boolean;
+    sideStoriesDontCount?: boolean;
+  } = {},
 ): SearchCandidate<S>[] {
   const said = context.userText === undefined ? null : ` ${normalizeName(context.userText)} `;
   const isUsersWords = (query: string) => said?.includes(` ${query} `) ?? false;
@@ -269,7 +283,13 @@ export function markClear<S extends ListStatus | null>(
   const verdicts = queries.map((query, qi) => ({
     query,
     contenders: contendersFor(pool, qi),
-    found: clearForQuery(pool, qi, query, context.answering === true && isUsersWords(query)),
+    found: clearForQuery(
+      pool,
+      qi,
+      query,
+      context.answering === true && isUsersWords(query),
+      context.sideStoriesDontCount === true,
+    ),
   }));
   // Every entry a query tied without picking it is contested, when the tie means something: it's
   // in the user's own words ("blue"), or between seasons of one show ("Tower of God Season 2").
@@ -348,6 +368,8 @@ function clearForQuery(
   query: string,
   /** The user named this entry exactly in answer to "which one?": siblings don't matter. */
   exactAnswers = false,
+  /** A series' movies and specials don't count as its siblings (see SearchOptions). */
+  sideStoriesDontCount = false,
 ): { id: number; by: ClearBy; byExactName: boolean } | null {
   let contenders = contendersFor(pool, qi);
   if (contenders.length === 0) return null;
@@ -361,6 +383,7 @@ function clearForQuery(
     ? contenders.filter(
         (e) =>
           e !== only &&
+          !(sideStoriesDontCount && isSideStory(e) && !isSideStory(only)) &&
           e.names.some((n) => normalizeName(n).startsWith(`${query} `)) &&
           seasonsOfOneShow(only, e),
       )
@@ -393,6 +416,13 @@ function clearForQuery(
   return active.length === 1 && active[0]
     ? { id: active[0].animeId, by: "only_in_progress", byExactName: false }
     : null;
+}
+
+/** Movies, specials, OVAs and the like, as opposed to a TV or web series. */
+const SIDE_STORY_TYPES = ["movie", "special", "ova", "tv_special", "music", "cm", "pv"];
+
+function isSideStory(e: AnyEntry): boolean {
+  return e.mediaType !== null && SIDE_STORY_TYPES.includes(e.mediaType);
 }
 
 /**

@@ -337,7 +337,9 @@ function resolveCase(
     changes.set(entry.id, normalized.change);
   }
 
-  if (evalCase.expect.writes.length === 0 && !evalCase.expect.clarify) {
+  // An expected add is held for the user, which counts as asking.
+  const asks = evalCase.expect.clarify || evalCase.expect.adds.length > 0;
+  if (evalCase.expect.writes.length === 0 && !asks) {
     // Allowed: the agent should do nothing (e.g. an unrelated message). Just make it explicit.
     if (!evalCase.tags.includes("no-action")) {
       warnings.push(`expects no writes and no question; consider tagging it "no-action".`);

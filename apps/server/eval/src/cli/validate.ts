@@ -16,11 +16,18 @@ for (const problem of errors) console.error(`ERROR   ${where(problem)}: ${proble
 for (const problem of warnings) console.warn(`warning ${where(problem)}: ${problem.message}`);
 
 if (verbose) {
-  for (const { case: c, expectedChanges } of cases) {
+  for (const { case: c, expectedChanges, expectedAdds } of cases) {
     const writes = [...expectedChanges].map(
       ([id, change]) => `${String(id)} ${JSON.stringify(change)}`,
     );
-    const expectation = [c.expect.clarify ? "ask" : null, writes.length ? writes.join("; ") : null]
+    const adds = [...expectedAdds].map(
+      ([id, change]) => `add ${String(id)} ${JSON.stringify(change)}`,
+    );
+    const expectation = [
+      c.expect.clarify ? "ask" : null,
+      writes.length ? writes.join("; ") : null,
+      adds.length ? adds.join("; ") : null,
+    ]
       .filter(Boolean)
       .join(" + ");
     console.log(`${c.id.padEnd(28)} ${expectation || "no action"}`);
