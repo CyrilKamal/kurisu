@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import { and, eq } from "drizzle-orm";
 
+import { briefAllows, type BriefRule } from "../agent/briefReply.js";
 import type { Db } from "../db/client.js";
 import { anime, listEntries, proposals } from "../db/schema.js";
 import { NOT_YET_AIRED } from "../mal/client.js";
@@ -39,11 +40,11 @@ export interface ProposeInput {
    */
   newestEpisode?: { latestAired: number | null };
   /**
-   * Set when the message says "watched it" in reply to a morning brief (decided by the caller),
-   * with the last episode the brief listed for this show (null if it wasn't in the brief). The
-   * user means caught up on what the brief listed, so any other progress is held.
+   * Set when the message replies to a morning brief (decided by the caller), with the episodes
+   * the brief listed for this show (empty if it wasn't listed) and which of the user's rules the
+   * message follows. Progress the rule doesn't allow is held (see agent/briefReply.ts).
    */
-  briefReply?: { lastListed: number | null };
+  briefReply?: { listed: number[]; rule: BriefRule };
   /**
    * The user's message has no number in it (decided by the caller), so a score in this change
    * wasn't given by them. It's held for them to confirm.
@@ -128,7 +129,14 @@ export async function proposeUpdate(db: Db, input: ProposeInput): Promise<Propos
             isProgress(entry, change) &&
             change.episodesWatched !== input.newestEpisode.latestAired
           ? "newest_episode_unknown"
-          : input.briefReply && change.episodesWatched !== input.briefReply.lastListed
+          : input.briefReply &&
+              isProgress(entry, change) &&
+              !briefAllows(
+                input.briefReply.rule,
+                input.briefReply.listed,
+                entry.episodesWatched,
+                change.episodesWatched,
+              )
             ? "not_in_brief"
             : input.noNumberGiven && change.score !== undefined
               ? "score_not_given"

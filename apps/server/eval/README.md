@@ -131,7 +131,7 @@ To test a reply like "watched it", end the history with a brief written exactly 
           episodes_watched: 1
 ```
 
-The harness reads the brief back out of that last message, as the app does from its own records. For a "watched it" reply, a write that isn't the last episode the brief listed for that show, or for a show the brief didn't list, is held for confirmation; the validator warns about cases that expect one.
+The harness reads the brief back out of that last message, as the app does from its own records. The agent holds any progress these rules don't allow (for example, "the 2nd ep" written to the second show in the list), and the validator warns about cases that expect a held write.
 
 ### What counts as correct
 
@@ -163,7 +163,12 @@ Label every case the same way for the same wording, or no agent can pass them al
 - **"Just watched X" with no number means the next episode** (one more than the list has).
 - **"Thinking about starting X" means nothing yet:** no write.
 - **"Resuming X" means back to Watching,** with the episode count unchanged.
-- **"Watched it" right after a morning brief means caught up on everything in it:** every show the brief listed, up to the last episode it listed. "Watched them (all)", "saw both" and "caught up" mean the same. A reply naming one show ("watched frieren") follows the rules above.
+- **Right after a morning brief**, for the shows it listed:
+  - "Watched it", "watched them (all)", "done", "finished", "caught up", "saw them": caught up on everything, each show up to the last episode the brief listed.
+  - Naming shows without a number ("watched wistoria", "the wistoria eps and daemons"): each named show up to its last listed episode; the others are left alone.
+  - A count ("a wistoria ep", "one ep", "3 clevatess"): that many more episodes. "The other two" or "the others" means the rest, each up to its last listed episode.
+  - An episode number ("ep 8", "the 2nd ep", "the first ep", "the premiere" = ep 1): that episode of the show the brief lists it for, not the show at that place in the list.
+  - "Didn't watch any yet", "haven't seen them": nothing.
 
 ## Coverage checklist
 

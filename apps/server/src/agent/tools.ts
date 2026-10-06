@@ -15,7 +15,7 @@ import {
 import type { ListChange } from "../writes/normalize.js";
 import { proposeUpdate, type Proposal, type ProposeError } from "../writes/propose.js";
 import { airingRows, latestAiredEpisode } from "../anilist/cache.js";
-import { mentionsWholeBrief } from "./briefReply.js";
+import { briefRule, mentionsWholeBrief } from "./briefReply.js";
 import { mentionsNewestEpisode } from "./newestEpisode.js";
 import { mentionsNumber } from "./scoreGiven.js";
 
@@ -33,10 +33,10 @@ export interface RunContext {
    */
   latestAired: Map<number, number>;
   /**
-   * When the message replies to a morning brief: each show the brief listed and the last episode
-   * it listed. Null otherwise.
+   * When the message replies to a morning brief: each show the brief listed and the episodes it
+   * listed for it, ascending. Null otherwise.
    */
-  briefEpisodes: Map<number, number> | null;
+  briefEpisodes: Map<number, number[]> | null;
   /** Anime ids a search marked as a clear match in this run, and why (see SearchCandidate). */
   clear: Map<number, "unique" | "only_in_progress">;
   /** Proposals created in this run. The model can only commit these. */
@@ -321,13 +321,18 @@ function isClearFor(
 }
 
 /**
- * What a vague episode reference pins progress to. "Watched it" after a brief means caught up on
- * everything the brief listed (that wins over "the newest episode", since more may have aired
- * since). Otherwise "the newest episode" means the latest aired one.
+ * What a vague episode reference pins progress to. Right after a brief, the brief's rules apply
+ * to the shows it listed (see agent/briefReply.ts); "watched it" can't touch a show it didn't
+ * list. They win over "the newest episode", since more may have aired since the brief.
+ * Otherwise "the newest episode" means the latest aired one.
  */
 function briefOrNewest(ctx: RunContext, animeId: number) {
-  if (ctx.briefEpisodes && mentionsWholeBrief(ctx.userMessage)) {
-    return { briefReply: { lastListed: ctx.briefEpisodes.get(animeId) ?? null } };
+  if (ctx.briefEpisodes) {
+    const listed = ctx.briefEpisodes.get(animeId);
+    if (listed) return { briefReply: { listed, rule: briefRule(ctx.userMessage) } };
+    if (mentionsWholeBrief(ctx.userMessage)) {
+      return { briefReply: { listed: [], rule: { kind: "last" } as const } };
+    }
   }
   if (mentionsNewestEpisode(ctx.userMessage)) {
     return { newestEpisode: { latestAired: ctx.latestAired.get(animeId) ?? null } };

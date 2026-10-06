@@ -289,13 +289,13 @@ ${brief.map((line) => (line ? `          ${line}` : "")).join("\n")}`;
     expect: { writes: [{ anime: "Kusuriya no Hitorigoto", episodes_watched: 7 }] }
   - id: not-listed
     message: watched them all${history}
-    expect: { writes: [{ anime: "Upcoming Sequel", status: dropped }] }
+    expect: { writes: [{ anime: 2, episodes_watched: 1 }] }
 `,
     });
 
     expect(result.errors).toEqual([]);
     expect(result.warnings.map((w) => [w.caseId, w.message])).toEqual([
-      ["one-more", expect.stringMatching(/listed up to ep 8 for it/)],
+      ["one-more", expect.stringMatching(/listed eps 7, 8 for it.*(last)/)],
       ["not-listed", expect.stringMatching(/doesn't list this show/)],
     ]);
   });

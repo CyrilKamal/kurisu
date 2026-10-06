@@ -26,10 +26,10 @@ export interface RunInput {
   model: ModelRef;
   escalatedFromRunId?: string;
   /**
-   * The morning brief this message replies to (the last history turn), as each show and the last
-   * episode it listed. Lets "watched it" be checked against what the brief actually said.
+   * The morning brief this message replies to (the last history turn), as each show and the
+   * episodes it listed. Lets "watched it" be checked against what the brief actually said.
    */
-  brief?: { malId: number; lastEpisode: number }[];
+  brief?: { malId: number; episodes: number[] }[];
 }
 
 export interface RunResult {
@@ -91,7 +91,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     seen: new Set(),
     latestAired: new Map(),
     briefEpisodes: input.brief
-      ? new Map(input.brief.map((item) => [item.malId, item.lastEpisode]))
+      ? new Map(input.brief.map((item) => [item.malId, item.episodes]))
       : null,
     clear: new Map(),
     proposalIds: new Set(),

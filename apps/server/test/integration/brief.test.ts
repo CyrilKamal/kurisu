@@ -501,6 +501,48 @@ describe('replying "watched it" to a brief', () => {
     expect(await heldReasons()).toEqual({ [WATCHING]: "not_in_brief", [PAUSED]: "not_in_brief" });
   });
 
+  it("writes a named episode only for the show the brief listed it for", async () => {
+    await sendBrief();
+    models.script(
+      AGENT.ref,
+      replyScript([
+        { anime_id: WATCHING, episodes_watched: 9 },
+        { anime_id: SECOND, episodes_watched: 9 },
+      ]),
+    );
+
+    await send("POST", "/chat/messages", { text: "watched ep 9" });
+
+    expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
+    expect(await heldReasons()).toEqual({ [SECOND]: "not_in_brief" });
+  });
+
+  it("caps a count at the last episode the brief listed", async () => {
+    await sendBrief();
+    models.script(
+      AGENT.ref,
+      replyScript([
+        { anime_id: WATCHING, episodes_watched: 8 },
+        { anime_id: SECOND, episodes_watched: 2 },
+      ]),
+    );
+
+    await send("POST", "/chat/messages", { text: "watched one ep of each" });
+
+    expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
+    expect(await heldReasons()).toEqual({ [SECOND]: "not_in_brief" });
+  });
+
+  it("writes nothing when the reply says they haven't watched", async () => {
+    await sendBrief();
+    models.script(AGENT.ref, replyScript([{ anime_id: WATCHING, episodes_watched: 9 }]));
+
+    await send("POST", "/chat/messages", { text: "havent seen them yet" });
+
+    expect(h.fakeMal.patchRequests).toEqual([]);
+    expect(await heldReasons()).toEqual({ [WATCHING]: "not_in_brief" });
+  });
+
   it("only applies right after the brief", async () => {
     await sendBrief();
     models.script(AGENT.ref, [{ text: "Hi!" }]);
