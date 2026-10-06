@@ -17,6 +17,7 @@ import { ChangeCard, PendingCard } from "../ChangeCards";
 import { useChatShell } from "./ChatShell";
 import { MenuIcon, NewChatIcon } from "./icons";
 import { PickCard } from "./PickCard";
+import { ShowCard } from "./ShowCard";
 
 const EXAMPLES = [
   "watched ep 3 of Frieren",
@@ -143,7 +144,7 @@ export function ChatView({
           </div>
         ) : (
           <ul className="flex flex-col gap-3">
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <li
                 key={message.id}
                 className={message.role === "user" ? "flex justify-end" : "flex flex-col gap-2"}
@@ -166,6 +167,20 @@ export function ChatView({
                 ))}
                 {message.picks.map((pick, i) => (
                   <PickCard key={pick.animeId} pick={pick} rank={i + 1} />
+                ))}
+                {message.shows.map((show) => (
+                  <ShowCard
+                    key={show.animeId}
+                    show={show}
+                    // Only the latest question can still be answered by tapping.
+                    {...(message.asksToChoose &&
+                      index === messages.length - 1 &&
+                      !sending && {
+                        onChoose: () => {
+                          void send(show.title);
+                        },
+                      })}
+                  />
                 ))}
                 {message.pending.map((proposal) => (
                   <PendingCard

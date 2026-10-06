@@ -450,6 +450,11 @@ export const chatMessages = pgTable(
     content: text("content").notNull(),
     // The agent run that produced an assistant message.
     runId: uuid("run_id").references((): AnyPgColumn => agentRuns.id),
+    // Shows an assistant message names, in order, shown as cards (see chat/mentions.ts).
+    showIds: integer("show_ids")
+      .array()
+      .notNull()
+      .default(sql`'{}'::integer[]`),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
   (table) => [index("chat_messages_conversation_idx").on(table.conversationId, table.createdAt)],

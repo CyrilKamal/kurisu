@@ -143,6 +143,19 @@ export const pickViewSchema = z.object({
 });
 export type PickView = z.infer<typeof pickViewSchema>;
 
+/** A show a reply names, as a card. `status` is null when it isn't on the user's list. */
+export const showCardSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  numEpisodes: z.number().int().positive().nullable(),
+  episodeMinutes: z.number().int().positive().nullable(),
+  status: listStatusSchema.nullable(),
+  episodesWatched: z.number().int().nonnegative(),
+});
+export type ShowCard = z.infer<typeof showCardSchema>;
+
 export const chatMessageViewSchema = z.object({
   id: z.uuid(),
   role: z.enum(["user", "assistant"]),
@@ -151,6 +164,10 @@ export const chatMessageViewSchema = z.object({
   changes: z.array(changeViewSchema),
   pending: z.array(pendingProposalViewSchema),
   picks: z.array(pickViewSchema),
+  /** Shows the reply names that have no other card in it. */
+  shows: z.array(showCardSchema),
+  /** The reply asks a question, so its show cards answer it when tapped. */
+  asksToChoose: z.boolean(),
 });
 export type ChatMessageView = z.infer<typeof chatMessageViewSchema>;
 

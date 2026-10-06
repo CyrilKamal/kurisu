@@ -43,6 +43,8 @@ export interface RunResult {
   handedOff: boolean;
   /** True if the reply asks the user something. */
   asked: boolean;
+  /** Shows a search or get_entry returned in this run, in the order first seen. */
+  lookedUp: number[];
   committed: Change[];
   /** Proposals waiting for the user's confirmation. */
   pending: Proposal[];
@@ -194,6 +196,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     reply: text,
     handedOff: ctx.stop === "handoff",
     asked,
+    lookedUp: [...ctx.seen],
     committed: ctx.committed,
     pending: ctx.pending,
     commitErrors: ctx.commitErrors,

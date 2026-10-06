@@ -986,3 +986,14 @@ Requested during Milestone 4, outside its scope.
 **Alternatives:** A menu per chat with Rename and Delete; renaming from the chat's header.
 **Why:** You asked for it. Two small buttons on each row are one tap on a phone, where a menu would be two.
 **Consequences:** A renamed chat keeps its name; a new message doesn't change it.
+
+## 2026-10-06 — Show cards for the shows a reply names (Milestone 4)
+**Decision:** When an agent reply names a show, it gets a card: cover, title, and where you are in it, or "Not on your list".
+- **Which shows count:** only shows the run looked up (search or `get_entry`), named as whole words (title, English title or a synonym). The longer name wins where names overlap, and a one-word name must keep its capital.
+- **Skipped:** shows that already have a change, Confirm or pick card in the same message. At most 5.
+- **Answering by tap:** when the reply asks a question and is the latest message, the cards are buttons. A tap sends the show's exact title as your reply, which the agent already treats as settling its question.
+- **Storage:** `chat_messages.show_ids`.
+
+**Alternatives:** A tool the model calls to attach cards: it needs a prompt change and the model has to remember to call it. Cards for every show the run looked up, named or not: they'd show shows the reply didn't talk about.
+**Why:** You asked for cards when the agent asks or talks about a show, with a tap to answer. Matching names in code works with today's prompt and can't attach a show the run never saw.
+**Consequences:** A reply that shortens a title ("Frieren S2") gets no card for it. Shows found outside your list (adding shows, next) get cards the same way.
