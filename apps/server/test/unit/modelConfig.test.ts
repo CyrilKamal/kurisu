@@ -14,6 +14,7 @@ const file: ModelsFile = {
     escalation: "gemini:b",
     eval: "ollama:qwen3.6:27b",
     brief: "gemini:a",
+    recommend: "gemini:b",
   },
   ollama: { numCtx: 8192, think: false },
   pricesPerMillionTokens: {

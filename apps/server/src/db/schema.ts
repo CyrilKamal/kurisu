@@ -418,6 +418,8 @@ export const agentOutcome = pgEnum("agent_outcome", [
   "clarification",
   "no_action",
   "error",
+  // The recommendation agent presented picks.
+  "recommended",
 ]);
 export const agentStepKind = pgEnum("agent_step_kind", ["model_call", "tool_call"]);
 
@@ -466,6 +468,8 @@ export const agentRuns = pgTable(
     }),
     // Set on an escalated run: the run it retried.
     escalatedFromRunId: uuid("escalated_from_run_id").references((): AnyPgColumn => agentRuns.id),
+    // Set on a recommendation run: the progress-sync run that handed the message over.
+    handedOffFromRunId: uuid("handed_off_from_run_id").references((): AnyPgColumn => agentRuns.id),
     promptVersion: text("prompt_version").notNull(),
     model: text("model").notNull(),
     startedAt: timestamptz("started_at").notNull().defaultNow(),
@@ -478,6 +482,33 @@ export const agentRuns = pgTable(
     error: text("error"),
   },
   (table) => [index("agent_runs_user_started_idx").on(table.userId, table.startedAt.desc())],
+);
+
+/** One recommendation: the picks the recommendation agent presented, with their reasons. */
+export const recommendations = pgTable(
+  "recommendations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    runId: uuid("run_id")
+      .notNull()
+      .unique()
+      .references((): AnyPgColumn => agentRuns.id, { onDelete: "cascade" }),
+    // The chat message the picks show under; set once the reply is saved.
+    chatMessageId: uuid("chat_message_id").references((): AnyPgColumn => chatMessages.id, {
+      onDelete: "set null",
+    }),
+    picks: jsonb("picks").$type<{ animeId: number; why: string }[]>().notNull(),
+    // The constraints of the search each pick came from, for debugging and the eval.
+    constraints: jsonb("constraints").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("recommendations_user_idx").on(table.userId, table.createdAt.desc()),
+    index("recommendations_message_idx").on(table.chatMessageId),
+  ],
 );
 
 /** Every model call and tool call within a run, in order, with arguments and results. */

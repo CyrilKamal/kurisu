@@ -85,6 +85,13 @@
       "when": 1791275087529,
       "tag": "0011_taste_memory",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791275882120,
+      "tag": "0012_recommendations",
+      "breakpoints": true
     }
   ]
 }

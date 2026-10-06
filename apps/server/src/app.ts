@@ -1,7 +1,7 @@
 import fastifyCookie from "@fastify/cookie";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
-import { CURRENT_PROMPT } from "./agent/prompts/index.js";
+import { CURRENT_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
 import { airingCandidateIds, refreshAiring } from "./anilist/cache.js";
 import { refreshTaste } from "./taste/profile.js";
 import { createAniListClient } from "./anilist/client.js";
@@ -29,7 +29,7 @@ export interface BuildAppOptions {
   malRetry?: RetryOptions;
   /** Tests inject a scripted model client and the models it answers as. */
   models?: ModelClient;
-  roles?: { agent: ModelRef; escalation: ModelRef | null; brief?: ModelRef };
+  roles?: { agent: ModelRef; escalation: ModelRef | null; brief?: ModelRef; recommend?: ModelRef };
   /** AniList request spacing and retries. Tests shorten them. */
   anilist?: { minIntervalMs?: number; retry?: RetryOptions };
   /** Extra push-service origins to accept; tests point subscriptions at a local fake. */
@@ -159,9 +159,14 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     models,
     writeListStatus,
     prompt: CURRENT_PROMPT,
-    roles: options.roles ?? {
-      agent: configuredRoles.agent,
-      escalation: configuredRoles.escalation,
+    recommendPrompt: RECOMMEND_PROMPT,
+    roles: {
+      agent: options.roles?.agent ?? configuredRoles.agent,
+      escalation:
+        options.roles?.escalation === undefined
+          ? configuredRoles.escalation
+          : options.roles.escalation,
+      recommend: options.roles?.recommend ?? configuredRoles.recommend,
     },
   });
 

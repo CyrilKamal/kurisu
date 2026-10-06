@@ -51,6 +51,7 @@ const envSchema = z.object({
   AGENT_ESCALATION_MODEL: optional(z.string().optional()),
   EVAL_MODEL: optional(z.string().optional()),
   BRIEF_MODEL: optional(z.string().optional()),
+  RECOMMEND_MODEL: optional(z.string().optional()),
 
   // "off" stops the daily brief job (the routes still work). Tests turn it off.
   BRIEF_SCHEDULER: optional(z.enum(["on", "off"]).default("on")),
@@ -77,7 +78,13 @@ export interface Config {
     geminiApiKey: string | null;
     ollamaBaseUrl: string;
     /** Per-role overrides of config/models.json, as "provider:model" refs. */
-    overrides: { agent?: string; escalation?: string; eval?: string; brief?: string };
+    overrides: {
+      agent?: string;
+      escalation?: string;
+      eval?: string;
+      brief?: string;
+      recommend?: string;
+    };
   };
   brief: { scheduler: boolean };
 }
@@ -130,6 +137,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         ...(parsed.AGENT_ESCALATION_MODEL ? { escalation: parsed.AGENT_ESCALATION_MODEL } : {}),
         ...(parsed.EVAL_MODEL ? { eval: parsed.EVAL_MODEL } : {}),
         ...(parsed.BRIEF_MODEL ? { brief: parsed.BRIEF_MODEL } : {}),
+        ...(parsed.RECOMMEND_MODEL ? { recommend: parsed.RECOMMEND_MODEL } : {}),
       },
     },
     brief: { scheduler: parsed.BRIEF_SCHEDULER === "on" },

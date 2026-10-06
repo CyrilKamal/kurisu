@@ -129,6 +129,20 @@ export const pendingProposalViewSchema = z.object({
 });
 export type PendingProposalView = z.infer<typeof pendingProposalViewSchema>;
 
+/** A recommended show, shown as a card under the reply. */
+export const pickViewSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  status: listStatusSchema,
+  episodesWatched: z.number().int().nonnegative(),
+  numEpisodes: z.number().int().positive().nullable(),
+  episodeMinutes: z.number().int().positive().nullable(),
+  /** One line on why it fits. */
+  why: z.string(),
+});
+export type PickView = z.infer<typeof pickViewSchema>;
+
 export const chatMessageViewSchema = z.object({
   id: z.uuid(),
   role: z.enum(["user", "assistant"]),
@@ -136,6 +150,7 @@ export const chatMessageViewSchema = z.object({
   createdAt: z.iso.datetime(),
   changes: z.array(changeViewSchema),
   pending: z.array(pendingProposalViewSchema),
+  picks: z.array(pickViewSchema),
 });
 export type ChatMessageView = z.infer<typeof chatMessageViewSchema>;
 
