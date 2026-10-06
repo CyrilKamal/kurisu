@@ -94,7 +94,7 @@ export function registerChatRoutes(
       };
     } catch (err) {
       if (err instanceof ConversationNotFoundError) {
-        return reply.code(404).send({ error: "not_found" });
+        return await reply.code(404).send({ error: "not_found" });
       }
       throw err;
     } finally {

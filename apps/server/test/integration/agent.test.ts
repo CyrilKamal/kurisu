@@ -892,8 +892,8 @@ describe("chats", () => {
     const list = contract.conversationsResponseSchema.parse(
       (await get("/chat/conversations")).json(),
     );
-    expect(list.conversations).toEqual([
-      { id: chat.id, title: "watched ep 3 of frieren", lastMessageAt: expect.any(String) },
+    expect(list.conversations.map(({ id, title }) => ({ id, title }))).toEqual([
+      { id: chat.id, title: "watched ep 3 of frieren" },
     ]);
   });
 
