@@ -4,6 +4,7 @@ import type { Db } from "../db/client.js";
 import { anime, listEntries } from "../db/schema.js";
 import { NOT_YET_AIRED } from "../mal/client.js";
 import type { ListStatus } from "../writes/normalize.js";
+import { usersWords, type UsersWords } from "./grounding.js";
 import { matchesSeason, normalizeName, seasonRef, type SeasonRef } from "./seasons.js";
 
 /** Below this, a name isn't considered a match at all. */
@@ -88,6 +89,12 @@ interface SearchOptions {
   sideStoriesDontCount?: boolean;
   /** The user's message, so titles the model supplied can be told from the user's words. */
   userText?: string;
+  /**
+   * All of the user's own words in this run, one message per item: this message, their earlier
+   * messages in the chat and a brief's titles. A title the model supplied only makes a show clear
+   * when these name it (see markClear).
+   */
+  groundIn?: string[];
   /** Entries some search left tied, kept across the searches of one agent run. */
   contested?: Set<number>;
   /** The user is answering the agent's question, so naming an entry exactly picks it. */
@@ -266,12 +273,18 @@ async function scoredPool(
  * different seasons of one franchise, both are contested too: it's guessing between them. And
  * a search with none of the user's words in it is all guesses, so only an entry's exact name
  * makes it clear there.
+ *
+ * A title the model supplied must also be grounded in the user's own words (groundIn): it's only
+ * their words rearranged, or they name the show, or another season of it and the code picks this
+ * one (see grounded). The model reading "the eater one" as "Soul Eater" is its guess, not the
+ * user's words, so it waits for them.
  */
 export function markClear<S extends ListStatus | null>(
   pool: ScoredEntry<S>[],
   queries: string[],
   context: {
     userText?: string;
+    groundIn?: string[];
     contested?: Set<number>;
     answering?: boolean;
     sideStoriesDontCount?: boolean;
@@ -322,12 +335,16 @@ export function markClear<S extends ListStatus | null>(
 
   // With none of the user's words in this search, the model's titles are all guesses: only an
   // entry's exact name counts (that's how nicknames decode), not a fuzzy match or a tie-break.
-  const guessesOnly = said !== null && !queries.some(isUsersWords);
+  // Their words in another order ("isekai chronicles season 2") are still theirs.
+  const words = context.groundIn === undefined ? null : usersWords(context.groundIn);
+  const guessesOnly =
+    said !== null && !queries.some((q) => isUsersWords(q) || (words?.says(q) ?? false));
 
   const clearBy = new Map<number, ClearBy>();
   for (const { query, found } of verdicts) {
     if (!found || (!isUsersWords(query) && contested.has(found.id))) continue;
     if (guessesOnly && !found.byExactName) continue;
+    if (words && !isUsersWords(query) && !grounded(pool, found, query, words)) continue;
     if (found.by === "unique" || !clearBy.has(found.id)) clearBy.set(found.id, found.by);
   }
   return pool.map((e) => {
@@ -349,6 +366,38 @@ export function markClear<S extends ListStatus | null>(
       clearBy: by,
     };
   });
+}
+
+/**
+ * Whether the user's own words point at an entry that a title the model supplied made clear:
+ * 1. the query is only their words, rearranged ("isekai chronicles season 2" for "season 2 of
+ *    isekai chronicles"),
+ * 2. they name it, by one of its names or their initials ("ylia"), or
+ * 3. they name another season of the same show, and the code picked this one: by the season or
+ *    part number in the query, which the same message gives ("cote s4"), or, with no number, as
+ *    the only season in progress ("bsd" is only season 1's nickname, but "watched ep 5 of bsd"
+ *    means the season being watched).
+ * "Soul Eater" from "the eater one" is neither, and neither is a season number only the model
+ * gave ("bsd" searched as "Bungou Stray Dogs 5th Season").
+ */
+function grounded(
+  pool: AnyEntry[],
+  found: { id: number; by: ClearBy },
+  query: string,
+  words: UsersWords,
+): boolean {
+  if (words.says(query)) return true;
+  const entry = pool.find((e) => e.animeId === found.id);
+  if (!entry) return false;
+  if (entry.names.some((n) => words.names(n))) return true;
+  const ref = seasonRef(query);
+  const numbered = ref.season !== null || ref.part !== null;
+  if (!numbered && found.by !== "only_in_progress") return false;
+  return pool.some(
+    (other) =>
+      (other === entry || seasonsOfOneShow(other, entry)) &&
+      other.names.some((n) => words.names(n, numbered ? ref : undefined)),
+  );
 }
 
 /** The entries tied for best on one query (within CLEAR_MARGIN), if the best is strong enough. */

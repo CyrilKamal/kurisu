@@ -69,6 +69,12 @@ export interface RunContext {
   toldWaiting: Set<string>;
   /** The user's message, so search can tell their words from titles the model supplied. */
   userMessage: string;
+  /**
+   * Everything the user said that search may ground a match in: this message, their earlier
+   * messages in the chat (never the agent's) and, in a reply to a brief, the brief's titles. A
+   * title the model supplied only makes a show clear when these name it (see markClear).
+   */
+  groundIn: string[];
   /** Entries some search left tied; only the user's words can settle them (see markClear). */
   contested: Set<number>;
   /** The message answers the agent's own question ("which one?"). */
@@ -250,6 +256,7 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
       ctx.briefTitles.length > 0
         ? [ctx.userMessage, ...ctx.briefTitles].join("\n")
         : ctx.userMessage,
+    groundIn: ctx.groundIn,
     contested: ctx.contested,
     answering: ctx.answering,
   });
@@ -317,6 +324,7 @@ async function searchAnimeTool(ctx: RunContext, raw: unknown): Promise<ToolOutco
     {
       limit: CATALOG_RESULTS,
       userText: ctx.userMessage,
+      groundIn: ctx.groundIn,
       contested: ctx.contested,
       answering: ctx.answering,
     },

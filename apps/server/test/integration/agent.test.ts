@@ -17,7 +17,7 @@ import {
   users,
 } from "../../src/db/schema.js";
 import { parseModelRef } from "../../src/llm/modelConfig.js";
-import { ModelProviderError } from "../../src/llm/types.js";
+import { ModelProviderError, type ChatRequest } from "../../src/llm/types.js";
 import { createMalListWriter } from "../../src/writes/commit.js";
 import { fixtureList } from "../fixtures/animeList.js";
 import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
@@ -78,7 +78,7 @@ function updateScript(
   ];
 }
 
-function run(message: string) {
+function run(message: string, history: { role: "user" | "assistant"; content: string }[] = []) {
   return runAgent(
     {
       db: h.db,
@@ -89,7 +89,52 @@ function run(message: string) {
       }),
       prompt: PROGRESS_SYNC_V1,
     },
-    { userId, conversationId: null, history: [], message, model: LITE },
+    { userId, conversationId: null, history, message, model: LITE },
+  );
+}
+
+/** Puts these shows on the user's list, in the mirror and on the fake MAL (so commits succeed). */
+async function addShows(
+  shows: {
+    malId: number;
+    title: string;
+    status: "watching" | "completed" | "plan_to_watch";
+    episodes: number;
+    total?: number;
+  }[],
+) {
+  await h.db
+    .insert(anime)
+    .values(shows.map((s) => ({ malId: s.malId, title: s.title, numEpisodes: s.total ?? 12 })));
+  h.fakeMal.list.push(
+    ...shows.map((s) => ({
+      node: {
+        id: s.malId,
+        title: s.title,
+        media_type: "tv",
+        num_episodes: s.total ?? 12,
+        status: "finished_airing",
+      },
+      list_status: {
+        status: s.status,
+        score: 0,
+        num_episodes_watched: s.episodes,
+        is_rewatching: false,
+        updated_at: "2026-09-01T00:00:00+00:00",
+      },
+    })),
+  );
+  await h.db.insert(listEntries).values(
+    shows.map((s) => ({
+      userId,
+      animeId: s.malId,
+      status: s.status,
+      score: 0,
+      numEpisodesWatched: s.episodes,
+      isRewatching: false,
+      malUpdatedAt: new Date(),
+      syncedAt: new Date(),
+    })),
   );
 }
 
@@ -339,7 +384,7 @@ describe("runAgent", () => {
       })),
     ]);
 
-    const result = await run("watched ep 8");
+    const result = await run("watched ep 8 of fixture watching show");
 
     expect(result).toMatchObject({ outcome: "committed", error: null, reply: "Done." });
     const [logged] = await h.db.select().from(agentRuns).where(eq(agentRuns.id, result.runId));
@@ -348,7 +393,7 @@ describe("runAgent", () => {
 
   it("only commits proposals from its own run", async () => {
     models.script(LITE.ref, updateScript("fixture watching show", { episodes_watched: 8 }));
-    const first = await run("watched ep 8");
+    const first = await run("watched ep 8 of fixture watching show");
     const [proposal] = await h.db
       .select({ id: proposals.id })
       .from(proposals)
@@ -519,45 +564,11 @@ describe("the clear-match tie-break", () => {
    * franchise; only one is in progress, and "isekai" ties them all.
    */
   async function addIsekaiShows() {
-    const shows = [
-      { malId: 910001, title: "Isekai Alpha", status: "completed" as const, episodes: 12 },
-      { malId: 910002, title: "Isekai Beta", status: "plan_to_watch" as const, episodes: 0 },
-      { malId: 910003, title: "Isekai Gamma", status: "watching" as const, episodes: 4 },
-    ];
-    await h.db
-      .insert(anime)
-      .values(shows.map((s) => ({ malId: s.malId, title: s.title, numEpisodes: 12 })));
-    // ...and on the fake MAL, so a committed write succeeds.
-    h.fakeMal.list.push(
-      ...shows.map((s) => ({
-        node: {
-          id: s.malId,
-          title: s.title,
-          media_type: "tv",
-          num_episodes: 12,
-          status: "finished_airing",
-        },
-        list_status: {
-          status: s.status,
-          score: 0,
-          num_episodes_watched: s.episodes,
-          is_rewatching: false,
-          updated_at: "2026-09-01T00:00:00+00:00",
-        },
-      })),
-    );
-    await h.db.insert(listEntries).values(
-      shows.map((s) => ({
-        userId,
-        animeId: s.malId,
-        status: s.status,
-        score: 0,
-        numEpisodesWatched: s.episodes,
-        isRewatching: false,
-        malUpdatedAt: new Date(),
-        syncedAt: new Date(),
-      })),
-    );
+    await addShows([
+      { malId: 910001, title: "Isekai Alpha", status: "completed", episodes: 12 },
+      { malId: 910002, title: "Isekai Beta", status: "plan_to_watch", episodes: 0 },
+      { malId: 910003, title: "Isekai Gamma", status: "watching", episodes: 4 },
+    ]);
   }
 
   function tieScript(change: Record<string, unknown>): ScriptStep[] {
@@ -601,6 +612,102 @@ describe("the clear-match tie-break", () => {
     expect(result.outcome).toBe("needs_confirmation");
     expect(result.pending[0]?.confirmationReason).toBe("ambiguous_match");
     expect(h.fakeMal.patchRequests).toHaveLength(0);
+  });
+});
+
+describe("matches grounded in the user's words", () => {
+  const SOUL_EATER = 3588;
+  const DEVILMAN = 35120;
+  const MONSTER = 19;
+
+  type Request = Omit<ChatRequest, "model">;
+  /** The first result of the last search. */
+  const firstResult = (req: Request) =>
+    (lastToolResult(req).results as { anime_id: number; clear_match: boolean }[])[0];
+  /** Commits every proposal made so far in the run. */
+  const commitAll = (req: Request) => ({
+    toolCalls: req.messages.flatMap((m) => {
+      if (m.role !== "tool") return [];
+      const { proposal_id } = JSON.parse(m.content) as { proposal_id?: string };
+      return proposal_id ? [{ name: "commit_update", arguments: { proposal_id } }] : [];
+    }),
+  });
+  const search = (...queries: string[]) => ({
+    toolCalls: [{ name: "search_my_list", arguments: { queries } }],
+  });
+  const propose = (animeId: number, change: Record<string, unknown>) => ({
+    name: "propose_update",
+    arguments: { anime_id: animeId, ...change },
+  });
+
+  it("holds a show the model made up from vague words, and writes the one the user named", async () => {
+    await addShows([
+      { malId: SOUL_EATER, title: "Soul Eater", status: "plan_to_watch", episodes: 0 },
+      { malId: DEVILMAN, title: "Devilman: Crybaby", status: "plan_to_watch", episodes: 0 },
+    ]);
+    const started = { status: "watching", episodes_watched: 1 };
+    models.script(LITE.ref, [
+      search("Devilman Crybaby"),
+      (req) => {
+        expect(firstResult(req)).toEqual(
+          expect.objectContaining({ anime_id: DEVILMAN, clear_match: true }),
+        );
+        // The model's reading of "the eater one".
+        return search("Soul Eater", "the eater one");
+      },
+      (req) => {
+        expect(firstResult(req)).toEqual(
+          expect.objectContaining({ anime_id: SOUL_EATER, clear_match: false }),
+        );
+        return { toolCalls: [propose(DEVILMAN, started), propose(SOUL_EATER, started)] };
+      },
+      commitAll,
+      { text: "Started Devilman; confirm Soul Eater." },
+    ]);
+
+    const result = await run("Starting devilman crybaby and the eater one");
+
+    expect(h.fakeMal.patchRequests.map((r) => r.animeId)).toEqual([DEVILMAN]);
+    expect(result.pending.map((p) => [p.animeId, p.confirmationReason])).toEqual([
+      [SOUL_EATER, "ambiguous_match"],
+    ]);
+  });
+
+  it("counts the user's earlier messages as their words, never the agent's", async () => {
+    await addShows([
+      { malId: MONSTER, title: "Monster", status: "watching", episodes: 37, total: 74 },
+    ]);
+    const correction = (episode: number, clear: boolean): ScriptStep[] => [
+      search("monster"),
+      (req) => {
+        expect(firstResult(req)).toEqual(
+          expect.objectContaining({ anime_id: MONSTER, clear_match: clear }),
+        );
+        return { toolCalls: [propose(MONSTER, { episodes_watched: episode })] };
+      },
+      commitAll,
+      { text: "Done." },
+    ];
+
+    models.script(LITE.ref, correction(38, true));
+    const said = await run("actually I meant ep 38", [
+      { role: "user", content: "Just got to ep 37 in monster" },
+      { role: "assistant", content: "Updated Monster: you're on episode 37." },
+    ]);
+
+    expect(said.outcome).toBe("committed");
+    expect(h.fakeMal.patchRequests).toEqual([
+      { animeId: MONSTER, form: { num_watched_episodes: "38" } },
+    ]);
+
+    // Only the agent named Monster, so the change waits for the user.
+    models.script(LITE.ref, correction(39, false));
+    const unsaid = await run("actually I meant ep 39", [
+      { role: "assistant", content: "Updated Monster: you're on episode 38." },
+    ]);
+
+    expect(unsaid.outcome).toBe("needs_confirmation");
+    expect(h.fakeMal.patchRequests).toHaveLength(1);
   });
 });
 
@@ -663,7 +770,7 @@ describe("chat API", () => {
       updateScript("fixture watching show", { episodes_watched: 8 }, "Done on Flash."),
     );
 
-    const res = await post("/chat/messages", { text: "watched ep 8 of the watching one" });
+    const res = await post("/chat/messages", { text: "watched ep 8 of fixture watching show" });
 
     const body = contract.chatThreadResponseSchema.parse(res.json());
     expect(body.messages[1]?.content).toBe("Done on Flash.");
@@ -802,7 +909,7 @@ describe("chat API", () => {
   it("undoes a change once", async () => {
     models.script(LITE.ref, updateScript("fixture watching show", { episodes_watched: 8 }));
     const body = contract.chatThreadResponseSchema.parse(
-      (await post("/chat/messages", { text: "watched ep 8" })).json(),
+      (await post("/chat/messages", { text: "watched ep 8 of fixture watching show" })).json(),
     );
     const changeId = body.messages[1]?.changes[0]?.id ?? "";
 
