@@ -31,7 +31,7 @@ export function ListBrowser({
   entries: ListEntry[];
   /** The view in the URL the server rendered. */
   initialView: ListView;
-  /** The title row, above the tabs in the sticky header. */
+  /** The title row, above the tabs. */
   header: ReactNode;
   /** Sync notices, between the header and the entries. */
   banner: ReactNode;
@@ -56,8 +56,9 @@ export function ListBrowser({
 
   return (
     <>
-      <header className="sticky top-0 z-10 -mx-4 border-b border-zinc-200 bg-white/90 px-4 pt-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
-        {header}
+      <header className="pt-3">{header}</header>
+      {/* Only the tabs and filters stay pinned, so they don't fill a phone's screen. */}
+      <div className="sticky top-0 z-10 -mx-4 border-b border-zinc-200 bg-white/90 px-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
         <StatusTabs
           selected={view.status}
           counts={counts}
@@ -67,7 +68,7 @@ export function ListBrowser({
           }}
         />
         {entries.length > 0 && <ListFilters entries={entries} view={view} onChange={update} />}
-      </header>
+      </div>
 
       {banner}
 

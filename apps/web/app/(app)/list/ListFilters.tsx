@@ -144,9 +144,9 @@ function Menu({
   children: ReactNode;
 }) {
   return (
-    <label className="relative shrink-0">
-      <span className="sr-only">{label}</span>
+    <div className="relative shrink-0">
       <select
+        aria-label={label}
         value={value}
         onChange={(event) => {
           onChange(event.target.value);
@@ -160,7 +160,7 @@ function Menu({
         {children}
       </select>
       <ChevronIcon />
-    </label>
+    </div>
   );
 }
 
