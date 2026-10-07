@@ -1,0 +1,23 @@
+# Format examples for recommendation cases (see eval/README.md, "Recommendation cases").
+# The real cases are yours, in their own recommend-*.yaml files.
+snapshot: my-list
+cases:
+  - id: rec-example-movie
+    message: what movie should I watch tonight
+    tags: [example, movie]
+    expect:
+      media_types: [movie]
+
+  - id: rec-example-short-chill
+    message: I have 30 minutes, something chill
+    tags: [example, time, mood]
+    expect:
+      max_episode_minutes: 30
+      genres_any: [Slice of Life, Iyashikei]
+      genres_none: [Horror]
+
+  - id: rec-example-new
+    message: recommend me something I haven't seen before
+    tags: [example, new]
+    expect:
+      source: new

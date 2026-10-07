@@ -1144,3 +1144,21 @@ Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste 
 
 **Why:** CI caught two overlapping refreshes failing with a duplicate key. A refresh after a sync and the one at the start of each recommendation can overlap in the app too, and the recommendation would then fail.
 **Consequences:** A second refresh waits for the first, then recomputes from the committed data.
+## 2026-10-06 — Recommendation eval: labels on picks, with frozen show details and pool (Milestone 4)
+**Decision:**
+- **Format:** recommendation cases live in `eval/cases/recommend-*.yaml`. Each has a message and labels: `media_types`, `max_episode_minutes`, `genres_any`, `genres_none`, `source` (list, plan_to_watch, in_progress, new or any), `must_not` and `picks: false`.
+- **Runner:** `pnpm eval:recommend` runs the real flow (the progress agent, then the handoff, then the recommender) against the my-list snapshot.
+- **A case is right when:** the message reached the recommender, it got picks, and every pick is valid and within the hard labels. Genre fit (`genres_any`) is reported but doesn't fail a case.
+- **Frozen data:** show details (MAL genres, episode length, community score) and the discovery pool (AniList data plus strength) are frozen once in `snapshots/details.json` and `snapshots/discovery.json` by `pnpm eval:recommend-data`.
+
+**Alternatives:**
+- Comparing picks with an expected list of shows, which breaks whenever the ranking changes and has many right answers.
+- Grading picks with a model, which costs more and is less repeatable.
+- Freezing taste memory or the favorites behind each pool show, which would publish your rating patterns in a public repo.
+
+**Why:** Labels describe what the request demands, and a pick either meets them or doesn't, so the score holds up as ranking changes. Freezing the details and pool makes runs repeatable without AniList or MAL calls.
+
+**Consequences:**
+- Taste is neutral in the eval, since the snapshot has no scores. It measures following the request, not personal fit.
+- The pool reflects the day it was frozen; re-freezing (`--force`) means re-checking cases that name pool shows.
+- A first run of the 3 format examples on Flash-Lite plus Flash: 3/3 right, 9/9 picks valid and within labels, median 10.4 s, about 1¢ a case.

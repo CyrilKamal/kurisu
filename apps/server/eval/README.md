@@ -249,3 +249,97 @@ The report prints:
 - **Cost per update:** $0 on a local model. The report also shows the equivalent at the agent model's paid prices.
 
 It also breaks accuracy down by tag and, for every failure, shows the expected versus actual writes, the reply, and the tool calls the agent made. The full JSON report lands in `eval/results/` (gitignored).
+
+## Recommendation cases
+
+Recommendation cases check what Chat recommends for "what should I watch" messages. They live in their own files, named `recommend-<anything>.yaml`, and run separately with `pnpm eval:recommend`.
+
+Each case runs the real flow:
+1. The progress agent reads your message and hands it to the recommender.
+2. The recommender searches your list (Plan to Watch and shows in progress) and the discovery pool (shows new to you).
+3. It presents up to 3 picks.
+
+Each case then checks every pick against the labels you give.
+
+```yaml
+snapshot: my-list
+cases:
+  - id: rec-movie-tonight
+    message: "what movie should I watch tn"
+    tags: [movie]
+    expect:
+      media_types: [movie]
+  - id: rec-short-and-funny
+    message: "got 25 mins, something funny"
+    tags: [time, mood]
+    expect:
+      max_episode_minutes: 25
+      genres_any: [Comedy]
+      genres_none: [Horror]
+  - id: rec-continue
+    message: "what should i continue"
+    tags: [continue]
+    expect:
+      source: in_progress
+      must_not: ["Monster"]
+```
+
+Labels, all optional (`expect: {}` means "any sensible picks"):
+
+- **`media_types`:** every pick is one of these: `tv`, `movie`, `ova`, `ona`, `special`, `tv_special` or `music`. For "a show" or "a series", the app uses `[tv, ona]`.
+- **`max_episode_minutes`:** every pick's episodes (or the movie) run at most this long. A pick whose length is unknown fails it.
+- **`genres_any`:** the picks should have at least one of these genres, for a mood like "chill" or "funny". This is reported as **genre fit** and doesn't fail a case, since moods map to genres loosely.
+- **`genres_none`:** no pick has any of these. This fails the case.
+- **Genre names** are MAL's, spelled as MAL spells them ("Slice of Life", "Iyashikei", "Suspense"). The validator suggests the right spelling.
+- **`source`:** where the picks should come from:
+  - `list`: your Plan to Watch or shows in progress;
+  - `plan_to_watch`;
+  - `in_progress`: watching, on hold or rewatching;
+  - `new`: not on your list;
+  - `any`: the default.
+- **`must_not`:** shows that must never be picked: a title from the snapshot or the discovery pool, or a MAL id. `pnpm eval:lookup` finds list titles.
+- **`picks: false`:** nothing should be recommended, because nothing can fit.
+
+### What counts as correct
+
+A case is right when all of these hold:
+- the message reached the recommender;
+- there's at least one pick (none for `picks: false`);
+- every pick is valid: not completed, dropped or unaired, and from your list or the pool;
+- every pick is within the hard labels: `media_types`, `max_episode_minutes`, `genres_none`, `source` and `must_not`.
+
+The report also shows:
+- the share of valid picks;
+- the share of picks within the labels;
+- genre fit;
+- picks per case;
+- median and p90 latency of both agents together;
+- cost per case at the configured models' prices.
+
+### Frozen data, and what this doesn't measure
+
+- **Frozen data:** `snapshots/details.json` holds MAL's genres, episode length and community score for the snapshot's shows. `snapshots/discovery.json` holds your discovery pool's AniList data and how strongly it points at each show. Both were frozen once with `pnpm eval:recommend-data`, which refuses to overwrite them. Neither holds a score you gave, or which favorites led to each pool show.
+- **Taste isn't measured:** the snapshot has no scores, so taste is neutral. These cases measure whether recommendations follow the request (length, kind of show, mood, source), not how well they match your taste.
+
+### Checklist (yours to write; aim for about 20)
+
+- [ ] a movie, and "a show" or "a series"
+- [ ] time limits ("I have 30 minutes", "something under an hour")
+- [ ] moods ("something chill", "funny", "sad", "hype")
+- [ ] things to avoid ("nothing scary", "no romance")
+- [ ] continuing something in progress
+- [ ] something from Plan to Watch, and something new ("I haven't seen")
+- [ ] a short series ("something I can finish this weekend")
+- [ ] a mix of constraints ("a short funny movie")
+- [ ] a request nothing can fit (`picks: false`)
+- [ ] a recommendation in the same message as an update ("finished X, what next?")
+
+`cases/recommend-examples.yaml` shows the format with three examples.
+
+```bash
+pnpm eval:recommend                        # every recommendation case, on the configured models
+pnpm eval:recommend --case rec-movie-tonight
+pnpm eval:recommend --model gemini:gemini-3.5-flash-lite   # try another recommender model
+```
+
+A case costs about 1¢ on the paid tier, and takes 10 to 15 seconds.
