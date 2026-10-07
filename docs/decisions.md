@@ -1096,3 +1096,14 @@ Requested during Milestone 4, outside its scope.
 **Alternatives:** Letting the model loosen any constraint, as v1 and v2 did.
 **Why:** Your first try, "what movie should I watch tn", came 17 seconds after your re-sync, while your first pool was still building (it took about 45 s). With no movie on your list, v2 "loosened the least important constraint" and recommended two specials and an episode. As you put it, movies when asked for movies, shows when asked for shows.
 **Consequences:** A movie request with no movie that fits gets an honest "nothing fits" instead of something else.
+
+## 2026-10-06 — List filters run in the browser (Milestone 4)
+**Decision:**
+- **What you can filter:** within each status tab, the List screen filters by title (main, English and synonyms), type, genre and airing state, and sorts by recent update, title, your score, MAL score or shortest.
+- **Where it runs:** filtering happens in the browser on the list the page already loaded. The view lives in the URL through `history.replaceState`, so a reload keeps it.
+- **Across tabs:** filters stay set when you switch tabs, and each tab's count shows its matches.
+- **What it needed:** `/list` entries gained `altTitles`, `genres`, `episodeMinutes` and `malMean`.
+
+**Alternatives:** Filtering on the server through query parameters, which costs a round trip for every keystroke and tab switch.
+**Why:** A list of a few hundred shows filters instantly in the browser. The page already loads the whole list.
+**Consequences:** A list in the many thousands would need server-side paging and filtering. The genre menu lists only genres present in the tab, with counts.

@@ -64,6 +64,13 @@ export const listEntrySchema = z.object({
   mediaType: z.string().nullable(),
   numEpisodes: z.number().int().positive().nullable(),
   airingStatus: z.string().nullable(),
+  /** MAL's English title and synonyms, so filtering by "Frieren" finds "Sousou no Frieren". */
+  altTitles: z.array(z.string()),
+  /** Genres, themes and demographics, as MAL names them. */
+  genres: z.array(z.string()),
+  episodeMinutes: z.number().int().positive().nullable(),
+  /** MAL's community score; null when it has none yet. */
+  malMean: z.number().positive().nullable(),
   status: listStatusSchema,
   score: z.number().int().min(0).max(10),
   episodesWatched: z.number().int().nonnegative(),

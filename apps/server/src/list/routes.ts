@@ -30,6 +30,11 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
         mediaType: anime.mediaType,
         numEpisodes: anime.numEpisodes,
         airingStatus: anime.airingStatus,
+        titleEn: anime.titleEn,
+        synonyms: anime.synonyms,
+        genres: anime.genres,
+        episodeMinutes: anime.episodeMinutes,
+        malMean: anime.malMean,
         status: listEntries.status,
         score: listEntries.score,
         episodesWatched: listEntries.numEpisodesWatched,
@@ -42,7 +47,11 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
       .orderBy(desc(listEntries.malUpdatedAt), listEntries.animeId);
 
     return {
-      entries: rows.map((row) => ({ ...row, updatedAt: row.updatedAt.toISOString() })),
+      entries: rows.map(({ titleEn, synonyms, ...row }) => ({
+        ...row,
+        altTitles: altTitles(row.title, titleEn, synonyms),
+        updatedAt: row.updatedAt.toISOString(),
+      })),
       lastSync: toLastSync(await latestSyncRun(db, user.id)),
     };
   });
@@ -74,4 +83,18 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
       return reply.code(502).send({ error: "sync_failed", lastSync });
     },
   );
+}
+
+/** The English title and synonyms, without blanks or repeats of the main title. */
+function altTitles(title: string, titleEn: string | null, synonyms: string[]): string[] {
+  const seen = new Set([title.toLowerCase()]);
+  const result: string[] = [];
+  for (const name of [titleEn ?? "", ...synonyms]) {
+    const key = name.trim().toLowerCase();
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      result.push(name.trim());
+    }
+  }
+  return result;
 }
