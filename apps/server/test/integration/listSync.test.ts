@@ -109,6 +109,10 @@ describe("sync on login", () => {
       mediaType: "tv",
       numEpisodes: 12,
       airingStatus: "finished_airing",
+      altTitles: ["The Watching Show", "FWS"],
+      genres: ["Action", "Fantasy"],
+      episodeMinutes: 24,
+      malMean: 8.1,
       status: "watching",
       score: 0,
       episodesWatched: 7,
@@ -118,7 +122,14 @@ describe("sync on login", () => {
 
     // Unknown episode count (MAL's 0) and a missing picture come through as null.
     const sequel = list.entries.find((e) => e.animeId === 900005);
-    expect(sequel).toMatchObject({ numEpisodes: null, pictureUrl: null, status: "plan_to_watch" });
+    expect(sequel).toMatchObject({
+      numEpisodes: null,
+      pictureUrl: null,
+      status: "plan_to_watch",
+      altTitles: [],
+      episodeMinutes: null,
+      malMean: null,
+    });
     expect(list.entries.find((e) => e.animeId === 900006)?.isRewatching).toBe(true);
 
     // Partial dates are kept as MAL sent them.
