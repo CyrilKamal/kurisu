@@ -527,7 +527,12 @@ describe('replying "watched it" to a brief', () => {
     await reply("watched them all");
 
     expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([SECOND]);
-    expect(await heldReasons()).toEqual({ [WATCHING]: "not_in_brief", [PAUSED]: "not_in_brief" });
+    // Neither the reply nor the brief names the paused show, so the model's title for it isn't
+    // the user's words: it's held as unclear before the brief's rules come into it.
+    expect(await heldReasons()).toEqual({
+      [WATCHING]: "not_in_brief",
+      [PAUSED]: "ambiguous_match",
+    });
   });
 
   it("writes a named episode only for the show the brief listed it for", async () => {
@@ -605,7 +610,8 @@ describe('replying "watched it" to a brief', () => {
     await reply("hello");
     models.script(AGENT.ref, replyScript([{ anime_id: WATCHING, episodes_watched: 8 }]));
 
-    await reply("watched it");
+    // Right after the brief this would mean caught up (ep 9); now it's just the next episode.
+    await reply("watched fixture watching show");
 
     expect(h.fakeMal.patchRequests.map((p) => p.animeId)).toEqual([WATCHING]);
   });

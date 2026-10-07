@@ -1163,3 +1163,39 @@ Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste 
 - Taste is neutral in the eval, since the snapshot has no scores. It measures following the request, not personal fit.
 - The pool reflects the day it was frozen; re-freezing (`--force`) means re-checking cases that name pool shows.
 - A first run of the 3 format examples on Flash-Lite plus Flash: 3/3 right, 9/9 picks valid and within labels, median 10.4 s, about 1¢ a case.
+
+## 2026-10-06 — A clear match must be grounded in your words (Milestone 4)
+**Decision:** This refines "The model's guesses can't decide between seasons". A title the model supplied only makes a show clear when your own words point at that show. Your words are this message, your earlier messages in the chat (never the agent's), and a brief's titles when you reply to it. A model's query counts when one of these holds:
+- **Your words, rearranged.** Every word of the query is in one of your messages ("isekai chronicles season 2" for "season 2 of isekai chronicles"). Such a search also isn't "all guesses".
+- **You named the show.** One of its names is in one message as whole words, or one word is the initials of a name of 3+ words ("ylia", "mha", "cote", "sds"; a leading "The" and everyday words don't count).
+- **You named another season, and code picked this one.** It's the only season in progress ("bsd" is only season 1's nickname), or it has the season or part number the query has, which the same message gives ("cote s4"). Bare numbers like "a 10" or "3 eps" aren't season numbers.
+
+Anything else is held as `ambiguous_match`, and the agent asks. A query that is your words as they stand, which includes the brief's titles in a reply, works as before. There's no prompt change.
+
+**Alternatives:**
+- Only your rule as first stated (the whole name, or the query, in the message): this breaks "bsd", which you wanted kept.
+- Tolerating typos ("Hoyuka" → Hyouka): you chose to have those ask.
+- Word overlap: "eater" would ground Soul Eater.
+
+**Why:** "Starting devilman crybaby and the eater one" wrote Soul Eater in about 2 of 8 Flash-Lite runs. The model turned "the eater one" into "Soul Eater", an exact name, so search marked it clear. You'd rather answer a question than get a wrong write.
+
+**Consequences:**
+- A free replay of every search in the last 5 full Flash-Lite runs (615 committed writes) with the new rule:
+  - The Soul Eater write turns into a question.
+  - So do the typos "omp 3" and "Hoyuka", "Tenjiku arc" (the model searched "Tokyo Revengers Tenjiku Arc"), "the final mha season" (word order) and "TYBW s4".
+  - Nothing else changes: bsd, MHA More, cote s4, ylia, sds season 3, "actually I meant ep 38" and every brief reply still write.
+- Live, on Flash-Lite with progress-sync v13, all 140 cases:
+
+  | Run | Accuracy | Wrong writes | Clarification precision | Clarification recall |
+  | --- | --- | --- | --- | --- |
+  | before, temperature 0 | 136/140 | 0/126 | — | — |
+  | before, no temperature | 133/140 | 1/125 (Soul Eater) | 74.3% | 96.3% |
+  | **with this rule** | **133/140** | **0/123** | **71.1%** | **100%** |
+
+  - The new misses are the expected questions: omp 3, Hoyuka, the final mha season and Tenjiku arc.
+  - The other three misses are older ones, where the rule changed nothing: bsd ep 5 (the model asked), Mushoku Tensei (dropping by tie-break is held) and TYBW s4. In TYBW s4, the rule blocked the model's own wrong cour, Soukoku-tan.
+  - The devilman case ran 8 more times. It wrote Devilman every time and Soul Eater never; in 6 of those runs the model searched "Soul Eater" and then asked.
+- The rule only removes clear matches. The one exception is a search of your rearranged words, and any show that makes clear is one your words name.
+- Two tests changed:
+  - A show neither a brief nor the reply names is now held as "Not sure this is the show you meant" instead of "Your brief didn't list this episode".
+  - "watched it" two messages after a brief no longer reaches a show nobody named.

@@ -119,6 +119,11 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
     pending: [],
     toldWaiting: new Set(),
     userMessage: input.message,
+    groundIn: [
+      input.message,
+      ...input.history.filter((m) => m.role === "user").map((m) => m.content),
+      ...(brief?.titles ?? []),
+    ],
     contested: new Set(),
     // A brief isn't a question, even when a show's title ends in "?".
     answering:

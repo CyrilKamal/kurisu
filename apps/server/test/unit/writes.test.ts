@@ -414,6 +414,214 @@ describe("markClear", () => {
     });
   });
 
+  describe("grounded in the user's words", () => {
+    /** The clear matches when the user's messages are known, as the agent's tools search. */
+    const grounded = (
+      pool: ScoredEntry[],
+      queries: string[],
+      message: string,
+      earlier: string[] = [],
+    ) =>
+      markClear(pool, queries, { userText: message, groundIn: [message, ...earlier] })
+        .filter((c) => c.clear)
+        .map((c) => c.animeId);
+    /**
+     * The same entries with a first query of the user's own words that matches none of them well
+     * ("mha"), so the search isn't all the model's guesses.
+     */
+    const withUsersWords = (pool: ScoredEntry[]) =>
+      pool.map((e) => ({ ...e, scores: [0.3, ...e.scores], exact: [false, ...e.exact] }));
+
+    const eater = () => [
+      entry(3588, [1, 0.4], { names: ["Soul Eater"], exact: [true, false] }),
+      entry(27631, [0.5, 0.4], { names: ["God Eater"] }),
+    ];
+    const devilmanAndEater = "Starting devilman crybaby and the eater one";
+
+    it("a title the model made up from vague words waits for the user", () => {
+      // "the eater one" -> "Soul Eater" is an exact name, but the user never said it.
+      expect(grounded(eater(), ["soul eater", "the eater one"], devilmanAndEater)).toEqual([]);
+      // Searching beyond the list (search_anime) holds it the same way.
+      expect(
+        markClear(eater(), ["soul eater", "the eater one"], {
+          userText: devilmanAndEater,
+          groundIn: [devilmanAndEater],
+          sideStoriesDontCount: true,
+        }).some((c) => c.clear),
+      ).toBe(false);
+      // Without the user's messages to check against, it's clear as before.
+      expect(
+        markClear(eater(), ["soul eater", "the eater one"], { userText: devilmanAndEater })
+          .filter((c) => c.clear)
+          .map((c) => c.animeId),
+      ).toEqual([3588]);
+    });
+
+    it("a show the user named is clear, by any of its names", () => {
+      const devilman = [entry(35120, 1, { names: ["Devilman: Crybaby"], exact: true })];
+      expect(grounded(devilman, ["devilman crybaby"], devilmanAndEater)).toEqual([35120]);
+      // The model searched the Japanese title; the user wrote the English one.
+      const ylia = [
+        entry(23273, 1, { names: ["Shigatsu wa Kimi no Uso", "Your Lie in April"], exact: true }),
+      ];
+      const message = "watched ep 4 of your lie in april";
+      expect(grounded(ylia, ["shigatsu wa kimi no uso"], message)).toEqual([23273]);
+    });
+
+    it("the initials of a title of three or more words name it", () => {
+      const ylia = [
+        entry(23273, 1, { names: ["Shigatsu wa Kimi no Uso", "Your Lie in April"], exact: true }),
+      ];
+      expect(grounded(ylia, ["your lie in april"], "I watched the next ep of ylia")).toEqual([
+        23273,
+      ]);
+      // Two words are too few to be sure of, and everyday words aren't initials.
+      const grand = [entry(1, 1, { names: ["Grand Blue"], exact: true })];
+      expect(grounded(grand, ["grand blue"], "watched gb ep 2")).toEqual([]);
+      const made = [entry(2, 1, { names: ["Tokyo Hikari Engine"], exact: true })];
+      expect(grounded(made, ["tokyo hikari engine"], "watched the first ep")).toEqual([]);
+    });
+
+    it("another season the user named lets the code pick the one in progress", () => {
+      // "bsd" is only season 1's nickname; "ep 5 of bsd" means the season being watched.
+      const bsd = [
+        entry(31478, [1, 1], { names: ["Bungou Stray Dogs", "BSD"], exact: [true, true] }),
+        entry(50330, [0.2, 0.95], { names: ["Bungou Stray Dogs 4th Season"], status: "watching" }),
+        entry(54898, [0.2, 0.95], {
+          names: ["Bungou Stray Dogs 5th Season"],
+          status: "plan_to_watch",
+        }),
+      ];
+      expect(
+        grounded(bsd, ["bsd", "bungou stray dogs"], "Watched episode 5 of bsd").sort(),
+      ).toEqual([31478, 50330]);
+      // Vague words the model read as Bungou Stray Dogs name no season of it.
+      const vague = bsd.map((e) => ({
+        ...e,
+        scores: [0.3, e.scores[1] ?? 0],
+        exact: [false, e.exact[1] ?? false],
+      }));
+      expect(
+        grounded(vague, ["the stray one", "bungou stray dogs"], "Watched ep 5 of the stray one"),
+      ).toEqual([]);
+      // MHA More: "mha" names season 1 by its initials, and More is the season being watched.
+      const mha = [
+        entry(31964, 1, { names: ["Boku no Hero Academia", "My Hero Academia"], exact: true }),
+        entry(63130, 0.95, {
+          names: ["Boku no Hero Academia: More", "My Hero Academia: More"],
+          status: "watching",
+        }),
+        entry(54789, 0.95, { names: ["Boku no Hero Academia 7th Season"] }),
+      ];
+      expect(
+        grounded(withUsersWords(mha), ["mha", "my hero academia"], "Just watched MHA more"),
+      ).toEqual([63130]);
+    });
+
+    it("a season number counts only when the user gave it", () => {
+      const bsd5 = [
+        entry(31478, 0.9, { names: ["Bungou Stray Dogs", "BSD"] }),
+        entry(54898, 1, { names: ["Bungou Stray Dogs 5th Season"], exact: true }),
+      ];
+      const fifth = "bungou stray dogs 5th season";
+      expect(grounded(withUsersWords(bsd5), ["bsd", fifth], "Watched episode 5 of bsd")).toEqual(
+        [],
+      );
+      expect(grounded(withUsersWords(bsd5), ["bsd s5", fifth], "watched ep 2 of bsd s5")).toEqual([
+        54898,
+      ]);
+
+      // "cote s4": the user's initials name season 1, the number picks season 4.
+      const cote = [
+        entry(35507, 0.85, {
+          names: ["Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e", "Classroom of the Elite"],
+        }),
+        entry(51180, 0.85, {
+          names: ["Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 3rd Season"],
+        }),
+        entry(59708, 0.95, {
+          names: [
+            "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 4th Season: 2-nensei-hen 1 Gakki",
+            "Classroom of the Elite 4th Season: Second Year, First Semester",
+          ],
+          status: "watching",
+        }),
+      ];
+      const season4 = "classroom of the elite season 4";
+      expect(
+        grounded(withUsersWords(cote), ["cote s4", season4], "finished episode 9 of cote s4"),
+      ).toEqual([59708]);
+      expect(
+        grounded(withUsersWords(cote), ["cote", season4], "finished episode 9 of cote"),
+      ).toEqual([]);
+
+      // "sds season 3": initials of "The Seven Deadly Sins", and a season MAL names after its arc.
+      const sds = [
+        entry(23755, 0.95, { names: ["Nanatsu no Taizai", "The Seven Deadly Sins"] }),
+        entry(34577, 0.95, {
+          names: ["Nanatsu no Taizai: Imashime no Fukkatsu", "Seven Deadly Sins Season 2"],
+        }),
+        entry(39701, 0.95, {
+          names: ["Nanatsu no Taizai: Kamigami no Gekirin"],
+          status: "on_hold",
+        }),
+      ];
+      expect(
+        grounded(
+          withUsersWords(sds),
+          ["sds season 3", "seven deadly sins season 3"],
+          "gonna pick up sds season 3 again",
+        ),
+      ).toEqual([39701]);
+    });
+
+    it("the user's earlier messages count, but a name can't span two of them", () => {
+      const monster = [entry(19, 1, { names: ["Monster"], exact: true, status: "watching" })];
+      expect(
+        grounded(monster, ["monster"], "actually I meant ep 38", ["Just got to ep 37 in monster"]),
+      ).toEqual([19]);
+      expect(grounded(monster, ["monster"], "actually I meant ep 38")).toEqual([]);
+
+      const grand = [entry(1, 1, { names: ["Grand Blue"], exact: true })];
+      expect(
+        grounded(grand, ["grand blue"], "and ep 2 of blue", ["finally watched grand"]),
+      ).toEqual([]);
+    });
+
+    it("the user's own words need nothing more", () => {
+      // "frieren" isn't a whole name of either season, but the user typed the query.
+      const frieren = [
+        entry(52991, 0.95, { names: ["Sousou no Frieren", "Frieren: Beyond Journey's End"] }),
+        entry(59978, 0.95, { names: ["Sousou no Frieren 2nd Season"], status: "watching" }),
+      ];
+      expect(grounded(frieren, ["frieren"], "frieren ep 5")).toEqual([59978]);
+    });
+
+    it("the user's own words in another order are still theirs", () => {
+      // No title is in the message, but the model only rearranged what the user wrote.
+      const chronicles = [
+        entry(900011, 0.85, { names: ["Isekai Chronicles: Reborn as a Fixture"] }),
+        entry(900012, 0.95, {
+          names: ["Isekai Chronicles: Reborn as a Fixture Season 2"],
+          status: "plan_to_watch",
+        }),
+      ];
+      const message = "started season 2 of isekai chronicles";
+      // Rearranged words aren't the model's guesses, so the season number decides even alone.
+      expect(grounded(chronicles, ["isekai chronicles season 2"], message)).toEqual([900012]);
+      expect(
+        grounded(
+          withUsersWords(chronicles),
+          ["season 2 of", "isekai chronicles season 2"],
+          message,
+        ),
+      ).toEqual([900012]);
+      // One word of its own ("reborn") makes it the model's title again.
+      const reborn = "isekai chronicles reborn season 2";
+      expect(grounded(withUsersWords(chronicles), ["season 2 of", reborn], message)).toEqual([]);
+    });
+  });
+
   it("judges each query on its own, so one search can cover several shows", () => {
     const pool = [
       entry(1, [1, 0.3], { names: ["World Trigger"], exact: [true, false] }),

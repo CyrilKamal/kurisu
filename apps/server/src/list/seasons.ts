@@ -58,6 +58,34 @@ function findPart(t: string): number | null {
 }
 
 /**
+ * Every season and part number a message gives in so many words: "s4", "season 3", "2nd season",
+ * "second season", "II", "part 2", "cour 2". A bare number isn't one: in "rated it a 10" or
+ * "watched 3 eps" it's a score or a count, so the trailing-number rule of seasonRef is left out.
+ */
+export function seasonMarkers(text: string): { seasons: Set<number>; parts: Set<number> } {
+  const t = normalizeName(text);
+  const seasons = new Set<number>();
+  for (const m of t.matchAll(
+    /\b(?:season (\d{1,2})|(\d{1,2})(?:st|nd|rd|th) season|s(\d{1,2}))\b/g,
+  )) {
+    seasons.add(Number(m[1] ?? m[2] ?? m[3]));
+  }
+  for (const m of t.matchAll(/\b(second|third|fourth|fifth|sixth) season\b/g)) {
+    const n = m[1] ? ORDINAL_WORDS[m[1]] : undefined;
+    if (n) seasons.add(n);
+  }
+  for (const token of t.split(" ")) {
+    const roman = ROMAN[token];
+    if (roman) seasons.add(roman);
+  }
+  const parts = new Set<number>();
+  for (const m of t.matchAll(/\b(?:(?:part|cour) (\d{1,2})|(\d{1,2})(?:st|nd|rd|th) cour)\b/g)) {
+    parts.add(Number(m[1] ?? m[2]));
+  }
+  return { seasons, parts };
+}
+
+/**
  * Whether an entry, by any of its names, is the season and part a query asks for. An entry with
  * no season number counts as season 1, and one with no part number as part 1.
  */
