@@ -1128,7 +1128,7 @@ Requested during Milestone 4, outside its scope.
 - a table of every genre;
 - your drop reasons, newest first.
 
-Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste memory only; the show stays dropped on MAL. The drop categories moved to the shared contract, so the page and the agent's tool use the same list.
+Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste memory only; your list on MAL stays as it is. The drop categories moved to the shared contract, so the page and the agent's tool use the same list.
 **Alternatives:**
 - Showing raw genre averages instead of affinity, which would disagree with how recommendations rank.
 - Undoing the drop along with its reason, which History's undo already does.

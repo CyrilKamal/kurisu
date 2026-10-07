@@ -13,7 +13,7 @@ export function DropReasons({ initialReasons }: { initialReasons: DropReasonView
   const [notice, setNotice] = useState<string | null>(null);
 
   async function remove(reason: DropReasonView) {
-    const question = `Forget why you dropped ${reason.title}? The show stays dropped on your list.`;
+    const question = `Forget why you dropped ${reason.title}? Your list stays as it is.`;
     if (!window.confirm(question)) return;
     setNotice(null);
     setReasons((current) => current.filter((r) => r.id !== reason.id));

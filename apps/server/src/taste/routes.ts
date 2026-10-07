@@ -35,7 +35,7 @@ export function registerTasteRoutes(app: FastifyInstance, deps: TasteRouteDeps):
     };
   });
 
-  /** Forgets one drop reason, so recommendations stop counting it. The show stays dropped. */
+  /** Forgets one drop reason, so recommendations stop counting it. The list itself is untouched. */
   app.delete(
     "/taste/drop-reasons/:id",
     { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] },
