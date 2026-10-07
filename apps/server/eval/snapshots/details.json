@@ -1,0 +1,4053 @@
+{
+  "description": "MAL's genres, episode length and community score for the my-list snapshot's shows, frozen for the recommendation eval. Public show data only.",
+  "source": "mal",
+  "snapshot": "my-list",
+  "frozenAt": "2026-10-07T01:26:42.520Z",
+  "shows": [
+    {
+      "malId": 1,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Award Winning",
+        "Sci-Fi",
+        "Space"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.75
+    },
+    {
+      "malId": 6,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Adventure",
+        "Sci-Fi",
+        "Shounen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.22
+    },
+    {
+      "malId": 8,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 6.97
+    },
+    {
+      "malId": 19,
+      "genres": [
+        "Adult Cast",
+        "Drama",
+        "Mystery",
+        "Psychological",
+        "Seinen",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.9
+    },
+    {
+      "malId": 20,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Martial Arts",
+        "Shounen"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.03
+    },
+    {
+      "malId": 21,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.72
+    },
+    {
+      "malId": 57,
+      "genres": [
+        "Drama",
+        "Music",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.29
+    },
+    {
+      "malId": 121,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Award Winning",
+        "Drama",
+        "Fantasy",
+        "Military",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.12
+    },
+    {
+      "malId": 205,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Historical",
+        "Samurai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.52
+    },
+    {
+      "malId": 227,
+      "genres": [
+        "Avant Garde",
+        "Comedy",
+        "Mecha",
+        "Parody",
+        "Psychological",
+        "Sci-Fi",
+        "Suspense"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.04
+    },
+    {
+      "malId": 249,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Historical",
+        "Love Polygon",
+        "Mythology",
+        "Romance",
+        "Shounen",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.88
+    },
+    {
+      "malId": 263,
+      "genres": [
+        "Combat Sports",
+        "Shounen",
+        "Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.78
+    },
+    {
+      "malId": 269,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8
+    },
+    {
+      "malId": 270,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Gore",
+        "Horror",
+        "Seinen",
+        "Supernatural",
+        "Vampire"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.5
+    },
+    {
+      "malId": 392,
+      "genres": [
+        "Action",
+        "Martial Arts",
+        "Mythology",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.46
+    },
+    {
+      "malId": 1292,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Gore",
+        "Samurai"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 7.38
+    },
+    {
+      "malId": 1535,
+      "genres": [
+        "Psychological",
+        "Shounen",
+        "Supernatural",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.62
+    },
+    {
+      "malId": 1575,
+      "genres": [
+        "Award Winning",
+        "Drama",
+        "Mecha",
+        "Military",
+        "School",
+        "Sci-Fi",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.71
+    },
+    {
+      "malId": 1604,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Organized Crime",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.12
+    },
+    {
+      "malId": 1735,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Martial Arts",
+        "Shounen"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.29
+    },
+    {
+      "malId": 2001,
+      "genres": [
+        "Adventure",
+        "Award Winning",
+        "Mecha",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.65
+    },
+    {
+      "malId": 2025,
+      "genres": [
+        "Action",
+        "Mystery",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.04
+    },
+    {
+      "malId": 2167,
+      "genres": [
+        "Drama",
+        "Romance",
+        "School"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.99
+    },
+    {
+      "malId": 2402,
+      "genres": [
+        "Combat Sports",
+        "Drama",
+        "Shounen",
+        "Sports"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.39
+    },
+    {
+      "malId": 2904,
+      "genres": [
+        "Award Winning",
+        "Drama",
+        "Mecha",
+        "Military",
+        "Sci-Fi",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.92
+    },
+    {
+      "malId": 3002,
+      "genres": [
+        "Adult Cast",
+        "High Stakes Game",
+        "Psychological",
+        "Seinen",
+        "Strategy Game",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.25
+    },
+    {
+      "malId": 3588,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Fantasy",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.86
+    },
+    {
+      "malId": 4181,
+      "genres": [
+        "Drama",
+        "Romance"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.93
+    },
+    {
+      "malId": 5081,
+      "genres": [
+        "Mystery",
+        "Romance",
+        "Supernatural",
+        "Vampire"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.32
+    },
+    {
+      "malId": 6114,
+      "genres": [
+        "Delinquents",
+        "Drama",
+        "Historical",
+        "Seinen",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.46
+    },
+    {
+      "malId": 7674,
+      "genres": [
+        "Comedy",
+        "Drama",
+        "Otaku Culture",
+        "Romance",
+        "Shounen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.17
+    },
+    {
+      "malId": 9253,
+      "genres": [
+        "Drama",
+        "Psychological",
+        "Sci-Fi",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 9.07
+    },
+    {
+      "malId": 10087,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 27,
+      "malMean": 8.26
+    },
+    {
+      "malId": 10620,
+      "genres": [
+        "Action",
+        "Gore",
+        "High Stakes Game",
+        "Psychological",
+        "Shounen",
+        "Supernatural",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.37
+    },
+    {
+      "malId": 11061,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 9.03
+    },
+    {
+      "malId": 11111,
+      "genres": [
+        "Gore",
+        "Horror",
+        "Mystery",
+        "School"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.46
+    },
+    {
+      "malId": 11757,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Romance",
+        "Video Game"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.23
+    },
+    {
+      "malId": 12189,
+      "genres": [
+        "Mystery",
+        "School",
+        "Slice of Life"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.04
+    },
+    {
+      "malId": 13601,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Detective",
+        "Mystery",
+        "Psychological",
+        "Sci-Fi",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.32
+    },
+    {
+      "malId": 14075,
+      "genres": [
+        "Action",
+        "Drama",
+        "Fantasy",
+        "Mystery",
+        "Psychological",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.88
+    },
+    {
+      "malId": 14513,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8
+    },
+    {
+      "malId": 14719,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Historical",
+        "Shounen",
+        "Supernatural",
+        "Vampire"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.87
+    },
+    {
+      "malId": 16498,
+      "genres": [
+        "Action",
+        "Award Winning",
+        "Drama",
+        "Gore",
+        "Military",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.58
+    },
+    {
+      "malId": 16592,
+      "genres": [
+        "High Stakes Game",
+        "Horror",
+        "Mystery",
+        "Psychological",
+        "School",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.19
+    },
+    {
+      "malId": 17074,
+      "genres": [
+        "Comedy",
+        "Mystery",
+        "Romance",
+        "Supernatural",
+        "Vampire"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.76
+    },
+    {
+      "malId": 17265,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Adventure",
+        "Fantasy",
+        "Video Game"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.89
+    },
+    {
+      "malId": 18115,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.2
+    },
+    {
+      "malId": 18179,
+      "genres": [
+        "Racing",
+        "Shounen",
+        "Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.92
+    },
+    {
+      "malId": 19815,
+      "genres": [
+        "Comedy",
+        "Ecchi",
+        "Fantasy",
+        "Isekai",
+        "Strategy Game"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.03
+    },
+    {
+      "malId": 20507,
+      "genres": [
+        "Action",
+        "Mythology",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.94
+    },
+    {
+      "malId": 20583,
+      "genres": [
+        "School",
+        "Shounen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.43
+    },
+    {
+      "malId": 20785,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Romance",
+        "School",
+        "Sci-Fi",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.36
+    },
+    {
+      "malId": 20899,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.11
+    },
+    {
+      "malId": 21843,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.61
+    },
+    {
+      "malId": 21881,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Romance",
+        "Video Game"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.72
+    },
+    {
+      "malId": 22199,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Gore",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.48
+    },
+    {
+      "malId": 22319,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Gore",
+        "Horror",
+        "Psychological",
+        "Seinen",
+        "Suspense",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.79
+    },
+    {
+      "malId": 22535,
+      "genres": [
+        "Action",
+        "Gore",
+        "Horror",
+        "Psychological",
+        "Sci-Fi",
+        "Seinen",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.32
+    },
+    {
+      "malId": 23273,
+      "genres": [
+        "Drama",
+        "Love Polygon",
+        "Music",
+        "Performing Arts",
+        "Romance",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.64
+    },
+    {
+      "malId": 23283,
+      "genres": [
+        "Detective",
+        "Mystery",
+        "Psychological",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.08
+    },
+    {
+      "malId": 23755,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.59
+    },
+    {
+      "malId": 24405,
+      "genres": [
+        "Action",
+        "Sci-Fi",
+        "Shounen"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.59
+    },
+    {
+      "malId": 24439,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen",
+        "Super Power",
+        "Urban Fantasy",
+        "Vampire"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 7.59
+    },
+    {
+      "malId": 24833,
+      "genres": [
+        "Action",
+        "Comedy",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.07
+    },
+    {
+      "malId": 25183,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Drama",
+        "Organized Crime",
+        "Seinen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.42
+    },
+    {
+      "malId": 25777,
+      "genres": [
+        "Action",
+        "Drama",
+        "Gore",
+        "Military",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.54
+    },
+    {
+      "malId": 26055,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.44
+    },
+    {
+      "malId": 26243,
+      "genres": [
+        "Action",
+        "Drama",
+        "Fantasy",
+        "Military",
+        "Shounen",
+        "Vampire"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.49
+    },
+    {
+      "malId": 27631,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Military",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.17
+    },
+    {
+      "malId": 27899,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Gore",
+        "Horror",
+        "Psychological",
+        "Seinen",
+        "Suspense",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.03
+    },
+    {
+      "malId": 28121,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.52
+    },
+    {
+      "malId": 28223,
+      "genres": [
+        "Adult Cast",
+        "Drama",
+        "Fantasy",
+        "High Stakes Game",
+        "Psychological",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.13
+    },
+    {
+      "malId": 28623,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Gore",
+        "Historical",
+        "Horror",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.29
+    },
+    {
+      "malId": 28851,
+      "genres": [
+        "Award Winning",
+        "Drama",
+        "Shounen"
+      ],
+      "episodeMinutes": 130,
+      "malMean": 8.93
+    },
+    {
+      "malId": 28891,
+      "genres": [
+        "School",
+        "Shounen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.61
+    },
+    {
+      "malId": 28999,
+      "genres": [
+        "Drama",
+        "School",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.76
+    },
+    {
+      "malId": 30187,
+      "genres": [
+        "Drama",
+        "Mystery",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.41
+    },
+    {
+      "malId": 30276,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Comedy",
+        "Parody",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.47
+    },
+    {
+      "malId": 30503,
+      "genres": [
+        "Action",
+        "Mythology",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.14
+    },
+    {
+      "malId": 30654,
+      "genres": [
+        "Action",
+        "Comedy",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.46
+    },
+    {
+      "malId": 31043,
+      "genres": [
+        "Mystery",
+        "Psychological",
+        "Seinen",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.31
+    },
+    {
+      "malId": 31229,
+      "genres": [
+        "Action",
+        "Josei",
+        "Supernatural",
+        "Vampire"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.87
+    },
+    {
+      "malId": 31240,
+      "genres": [
+        "Drama",
+        "Fantasy",
+        "Isekai",
+        "Psychological",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.25
+    },
+    {
+      "malId": 31478,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Detective",
+        "Mystery",
+        "Organized Crime",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.8
+    },
+    {
+      "malId": 31741,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.83
+    },
+    {
+      "malId": 31798,
+      "genres": [
+        "Drama",
+        "Romance",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.36
+    },
+    {
+      "malId": 31904,
+      "genres": [
+        "Action",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 5.35
+    },
+    {
+      "malId": 31933,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.51
+    },
+    {
+      "malId": 31964,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.82
+    },
+    {
+      "malId": 32182,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.49
+    },
+    {
+      "malId": 32281,
+      "genres": [
+        "Award Winning",
+        "Drama"
+      ],
+      "episodeMinutes": 107,
+      "malMean": 8.82
+    },
+    {
+      "malId": 32729,
+      "genres": [
+        "Drama",
+        "Love Polygon",
+        "Romance",
+        "School",
+        "Sci-Fi",
+        "Shoujo",
+        "Time Travel"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.63
+    },
+    {
+      "malId": 32867,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Detective",
+        "Mystery",
+        "Organized Crime",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.16
+    },
+    {
+      "malId": 32935,
+      "genres": [
+        "School",
+        "Shounen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.77
+    },
+    {
+      "malId": 32998,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Drama",
+        "Historical",
+        "Organized Crime",
+        "Suspense"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.82
+    },
+    {
+      "malId": 33486,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.04
+    },
+    {
+      "malId": 33889,
+      "genres": [
+        "Action",
+        "Drama",
+        "Fantasy",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 5.8
+    },
+    {
+      "malId": 33926,
+      "genres": [
+        "Action",
+        "Video Game"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.85
+    },
+    {
+      "malId": 34134,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Comedy",
+        "Parody",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.52
+    },
+    {
+      "malId": 34542,
+      "genres": [
+        "Action",
+        "Drama",
+        "Gore",
+        "Psychological",
+        "Sci-Fi",
+        "Seinen",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.62
+    },
+    {
+      "malId": 34566,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Martial Arts",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 5.97
+    },
+    {
+      "malId": 34572,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.14
+    },
+    {
+      "malId": 34577,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.52
+    },
+    {
+      "malId": 34599,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Gore",
+        "Mystery",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.62
+    },
+    {
+      "malId": 35120,
+      "genres": [
+        "Action",
+        "Avant Garde",
+        "Gore",
+        "Horror",
+        "Mythology",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.74
+    },
+    {
+      "malId": 35507,
+      "genres": [
+        "Drama",
+        "Psychological",
+        "School",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.82
+    },
+    {
+      "malId": 35737,
+      "genres": [
+        "Action",
+        "Detective",
+        "Mystery",
+        "Psychological",
+        "Sci-Fi",
+        "Seinen",
+        "Suspense"
+      ],
+      "episodeMinutes": 61,
+      "malMean": 8.44
+    },
+    {
+      "malId": 35760,
+      "genres": [
+        "Action",
+        "Drama",
+        "Gore",
+        "Military",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.65
+    },
+    {
+      "malId": 35790,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.89
+    },
+    {
+      "malId": 35839,
+      "genres": [
+        "Adventure",
+        "CGDCT",
+        "Comedy",
+        "Drama"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.5
+    },
+    {
+      "malId": 36456,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.97
+    },
+    {
+      "malId": 36474,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Video Game"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.58
+    },
+    {
+      "malId": 36563,
+      "genres": [
+        "Adult Cast",
+        "Combat Sports",
+        "Sci-Fi",
+        "Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.87
+    },
+    {
+      "malId": 36649,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Delinquents",
+        "Drama",
+        "Organized Crime",
+        "Psychological",
+        "Shoujo",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.45
+    },
+    {
+      "malId": 37105,
+      "genres": [
+        "Adult Cast",
+        "Comedy",
+        "Gag Humor",
+        "Seinen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.45
+    },
+    {
+      "malId": 37347,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.24
+    },
+    {
+      "malId": 37349,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Gore"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.41
+    },
+    {
+      "malId": 37407,
+      "genres": [
+        "Fantasy",
+        "Mystery",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 118,
+      "malMean": 7.53
+    },
+    {
+      "malId": 37510,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.78
+    },
+    {
+      "malId": 37520,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Historical",
+        "Mythology",
+        "Samurai",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.26
+    },
+    {
+      "malId": 37521,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Gore",
+        "Historical",
+        "Seinen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.78
+    },
+    {
+      "malId": 37525,
+      "genres": [
+        "Adult Cast",
+        "Detective",
+        "Mystery",
+        "Psychological",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.73
+    },
+    {
+      "malId": 37779,
+      "genres": [
+        "Mystery",
+        "Psychological",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.46
+    },
+    {
+      "malId": 37926,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Mystery",
+        "Video Game"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.87
+    },
+    {
+      "malId": 37932,
+      "genres": [
+        "Action",
+        "Video Game"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.88
+    },
+    {
+      "malId": 37936,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Historical",
+        "Martial Arts"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 7.85
+    },
+    {
+      "malId": 37991,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Organized Crime",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.58
+    },
+    {
+      "malId": 38000,
+      "genres": [
+        "Action",
+        "Award Winning",
+        "Historical",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.39
+    },
+    {
+      "malId": 38003,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Detective",
+        "Mystery",
+        "Organized Crime",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.19
+    },
+    {
+      "malId": 38408,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.86
+    },
+    {
+      "malId": 38524,
+      "genres": [
+        "Action",
+        "Drama",
+        "Gore",
+        "Military",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 9.05
+    },
+    {
+      "malId": 38594,
+      "genres": [
+        "Adult Cast",
+        "Drama",
+        "Romance",
+        "Supernatural"
+      ],
+      "episodeMinutes": 95,
+      "malMean": 7.62
+    },
+    {
+      "malId": 38656,
+      "genres": [
+        "Action",
+        "High Stakes Game",
+        "Mystery",
+        "Shounen",
+        "Super Power",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 7.2
+    },
+    {
+      "malId": 38671,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Sci-Fi",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.72
+    },
+    {
+      "malId": 38691,
+      "genres": [
+        "Adventure",
+        "Comedy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.26
+    },
+    {
+      "malId": 38826,
+      "genres": [
+        "Award Winning",
+        "Drama",
+        "Romance",
+        "Supernatural"
+      ],
+      "episodeMinutes": 112,
+      "malMean": 8.27
+    },
+    {
+      "malId": 38883,
+      "genres": [
+        "School",
+        "Shounen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.37
+    },
+    {
+      "malId": 39198,
+      "genres": [
+        "Adventure",
+        "Award Winning",
+        "Mystery",
+        "Sci-Fi",
+        "Shounen",
+        "Space",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 28,
+      "malMean": 8.07
+    },
+    {
+      "malId": 39463,
+      "genres": [
+        "Action",
+        "Ecchi",
+        "Mystery",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.94
+    },
+    {
+      "malId": 39535,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Ecchi",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.31
+    },
+    {
+      "malId": 39587,
+      "genres": [
+        "Drama",
+        "Fantasy",
+        "Isekai",
+        "Psychological",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.32
+    },
+    {
+      "malId": 39617,
+      "genres": [
+        "Mystery",
+        "Psychological",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 5.23
+    },
+    {
+      "malId": 39701,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.47
+    },
+    {
+      "malId": 40028,
+      "genres": [
+        "Action",
+        "Drama",
+        "Gore",
+        "Military",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.79
+    },
+    {
+      "malId": 40052,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Adventure",
+        "Mystery",
+        "Organized Crime"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.18
+    },
+    {
+      "malId": 40056,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.35
+    },
+    {
+      "malId": 40221,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Mystery"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.55
+    },
+    {
+      "malId": 40333,
+      "genres": [
+        "Avant Garde",
+        "Drama",
+        "Horror",
+        "Psychological",
+        "Seinen",
+        "Suspense"
+      ],
+      "episodeMinutes": 29,
+      "malMean": 5.66
+    },
+    {
+      "malId": 40356,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.53
+    },
+    {
+      "malId": 40454,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.47
+    },
+    {
+      "malId": 40456,
+      "genres": [
+        "Action",
+        "Historical",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 117,
+      "malMean": 8.53
+    },
+    {
+      "malId": 40496,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Reincarnation",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.29
+    },
+    {
+      "malId": 40497,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Romance",
+        "School",
+        "Sci-Fi",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.27
+    },
+    {
+      "malId": 40532,
+      "genres": [
+        "Adult Cast",
+        "Adventure",
+        "Historical",
+        "Racing"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.24
+    },
+    {
+      "malId": 40748,
+      "genres": [
+        "Action",
+        "Award Winning",
+        "School",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.49
+    },
+    {
+      "malId": 40776,
+      "genres": [
+        "School",
+        "Shounen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.56
+    },
+    {
+      "malId": 40834,
+      "genres": [
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.48
+    },
+    {
+      "malId": 40852,
+      "genres": [
+        "Adventure",
+        "Comedy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.15
+    },
+    {
+      "malId": 40904,
+      "genres": [
+        "Adult Cast",
+        "Drama",
+        "Romance",
+        "Time Travel"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 7.38
+    },
+    {
+      "malId": 40908,
+      "genres": [
+        "Action",
+        "Detective",
+        "Mystery",
+        "Mythology",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.35
+    },
+    {
+      "malId": 40911,
+      "genres": [
+        "Adult Cast",
+        "Historical",
+        "Mystery",
+        "Organized Crime",
+        "Psychological",
+        "Shounen",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.17
+    },
+    {
+      "malId": 40956,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Sci-Fi",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.82
+    },
+    {
+      "malId": 40964,
+      "genres": [
+        "Fantasy",
+        "Mecha"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.35
+    },
+    {
+      "malId": 41025,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.35
+    },
+    {
+      "malId": 41120,
+      "genres": [
+        "Adult Cast",
+        "Detective",
+        "Mystery"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.5
+    },
+    {
+      "malId": 41345,
+      "genres": [
+        "Action",
+        "School",
+        "Supernatural",
+        "Vampire"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.9
+    },
+    {
+      "malId": 41353,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Martial Arts",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.07
+    },
+    {
+      "malId": 41433,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Gore",
+        "Sci-Fi",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.56
+    },
+    {
+      "malId": 41457,
+      "genres": [
+        "Drama",
+        "Mecha",
+        "Military",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.36
+    },
+    {
+      "malId": 41467,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.97
+    },
+    {
+      "malId": 41468,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 21,
+      "malMean": 7.14
+    },
+    {
+      "malId": 41587,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.35
+    },
+    {
+      "malId": 41619,
+      "genres": [
+        "Psychological",
+        "Shounen",
+        "Super Power",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.17
+    },
+    {
+      "malId": 42192,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Sci-Fi",
+        "Shounen",
+        "Space"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.24
+    },
+    {
+      "malId": 42205,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.91
+    },
+    {
+      "malId": 42249,
+      "genres": [
+        "Action",
+        "Delinquents",
+        "Drama",
+        "Shounen",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.8
+    },
+    {
+      "malId": 42307,
+      "genres": [
+        "Action",
+        "High Stakes Game",
+        "Mystery",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.16
+    },
+    {
+      "malId": 42544,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Historical"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.08
+    },
+    {
+      "malId": 42627,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Gore",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.24
+    },
+    {
+      "malId": 42923,
+      "genres": [
+        "Racing",
+        "Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.99
+    },
+    {
+      "malId": 43299,
+      "genres": [
+        "Drama",
+        "Psychological",
+        "Supernatural",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.53
+    },
+    {
+      "malId": 43325,
+      "genres": [
+        "Adult Cast",
+        "Historical",
+        "Mystery",
+        "Organized Crime",
+        "Psychological",
+        "Shounen",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.29
+    },
+    {
+      "malId": 43523,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.71
+    },
+    {
+      "malId": 43629,
+      "genres": [
+        "Drama",
+        "Shoujo",
+        "Supernatural"
+      ],
+      "episodeMinutes": null,
+      "malMean": null
+    },
+    {
+      "malId": 43690,
+      "genres": [
+        "Action",
+        "Gore",
+        "Horror",
+        "Mystery",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 6.67
+    },
+    {
+      "malId": 43760,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.33
+    },
+    {
+      "malId": 43814,
+      "genres": [
+        "Action",
+        "High Stakes Game",
+        "Strategy Game",
+        "Super Power",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.74
+    },
+    {
+      "malId": 44074,
+      "genres": [
+        "Adult Cast",
+        "Drama",
+        "Mystery",
+        "Super Power",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.69
+    },
+    {
+      "malId": 44511,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Gore",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.42
+    },
+    {
+      "malId": 44961,
+      "genres": [
+        "Drama",
+        "Mythology",
+        "Psychological",
+        "Shounen",
+        "Supernatural",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.01
+    },
+    {
+      "malId": 45560,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Historical",
+        "Samurai",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.62
+    },
+    {
+      "malId": 45576,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Ecchi",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.59
+    },
+    {
+      "malId": 46095,
+      "genres": [
+        "Action",
+        "Music",
+        "Sci-Fi",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.37
+    },
+    {
+      "malId": 46352,
+      "genres": [
+        "Drama",
+        "School",
+        "Seinen",
+        "Visual Arts"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.79
+    },
+    {
+      "malId": 46569,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Gore",
+        "Historical",
+        "Samurai",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.08
+    },
+    {
+      "malId": 47160,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Gore"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.21
+    },
+    {
+      "malId": 47161,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.22
+    },
+    {
+      "malId": 47164,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.75
+    },
+    {
+      "malId": 47194,
+      "genres": [
+        "Mystery",
+        "Shounen",
+        "Supernatural",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.46
+    },
+    {
+      "malId": 47790,
+      "genres": [
+        "Action",
+        "Drama",
+        "Fantasy",
+        "Isekai",
+        "Mystery",
+        "Reincarnation",
+        "Romance"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.3
+    },
+    {
+      "malId": 47917,
+      "genres": [
+        "CGDCT",
+        "Comedy",
+        "Music"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.72
+    },
+    {
+      "malId": 48316,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.21
+    },
+    {
+      "malId": 48375,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Sci-Fi",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 71,
+      "malMean": 7.65
+    },
+    {
+      "malId": 48414,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.14
+    },
+    {
+      "malId": 48417,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Reincarnation",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.82
+    },
+    {
+      "malId": 48418,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Reincarnation",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.49
+    },
+    {
+      "malId": 48556,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Music",
+        "Sci-Fi",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.16
+    },
+    {
+      "malId": 48569,
+      "genres": [
+        "Drama",
+        "Mecha",
+        "Military",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.73
+    },
+    {
+      "malId": 48580,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Historical",
+        "Mystery",
+        "Shounen",
+        "Urban Fantasy",
+        "Vampire"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.9
+    },
+    {
+      "malId": 48583,
+      "genres": [
+        "Action",
+        "Drama",
+        "Gore",
+        "Military",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.78
+    },
+    {
+      "malId": 48661,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.04
+    },
+    {
+      "malId": 48761,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.89
+    },
+    {
+      "malId": 48776,
+      "genres": [
+        "Fantasy",
+        "Strategy Game"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.4
+    },
+    {
+      "malId": 48849,
+      "genres": [
+        "Award Winning",
+        "Isekai",
+        "Mystery",
+        "Super Power"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.86
+    },
+    {
+      "malId": 49052,
+      "genres": [
+        "Seinen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.15
+    },
+    {
+      "malId": 49114,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Historical",
+        "Mystery",
+        "Shounen",
+        "Urban Fantasy",
+        "Vampire"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.19
+    },
+    {
+      "malId": 49154,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Organized Crime"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.16
+    },
+    {
+      "malId": 49357,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Military",
+        "Sci-Fi",
+        "Space"
+      ],
+      "episodeMinutes": 16,
+      "malMean": 7.08
+    },
+    {
+      "malId": 49387,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Gore",
+        "Historical",
+        "Seinen"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.83
+    },
+    {
+      "malId": 49413,
+      "genres": [
+        "Adult Cast",
+        "Drama",
+        "Mystery",
+        "Super Power",
+        "Suspense",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.62
+    },
+    {
+      "malId": 49596,
+      "genres": [
+        "Shounen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.09
+    },
+    {
+      "malId": 49613,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.52
+    },
+    {
+      "malId": 49709,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.11
+    },
+    {
+      "malId": 49733,
+      "genres": [
+        "Adult Cast",
+        "Historical",
+        "Mystery",
+        "Psychological",
+        "Shounen",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.81
+    },
+    {
+      "malId": 49818,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Fantasy",
+        "Isekai",
+        "Mystery",
+        "Suspense"
+      ],
+      "episodeMinutes": 35,
+      "malMean": 8.61
+    },
+    {
+      "malId": 49828,
+      "genres": [
+        "Mecha",
+        "School",
+        "Sci-Fi",
+        "Space"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.84
+    },
+    {
+      "malId": 49889,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.84
+    },
+    {
+      "malId": 49918,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.21
+    },
+    {
+      "malId": 49969,
+      "genres": [
+        "Sci-Fi",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.07
+    },
+    {
+      "malId": 50002,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Sci-Fi",
+        "Shounen",
+        "Space"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.41
+    },
+    {
+      "malId": 50172,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.72
+    },
+    {
+      "malId": 50204,
+      "genres": [
+        "Mystery",
+        "Sci-Fi",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.33
+    },
+    {
+      "malId": 50265,
+      "genres": [
+        "Action",
+        "Award Winning",
+        "Childcare",
+        "Comedy",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.4
+    },
+    {
+      "malId": 50273,
+      "genres": [
+        "High Stakes Game",
+        "Psychological",
+        "Shounen",
+        "Strategy Game",
+        "Suspense"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.7
+    },
+    {
+      "malId": 50330,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Detective",
+        "Mystery",
+        "Organized Crime",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.41
+    },
+    {
+      "malId": 50346,
+      "genres": [
+        "Romance",
+        "Shounen",
+        "Supernatural",
+        "Vampire"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.94
+    },
+    {
+      "malId": 50380,
+      "genres": [
+        "Adult Cast",
+        "Comedy",
+        "Music",
+        "Reincarnation",
+        "Showbiz"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.08
+    },
+    {
+      "malId": 50602,
+      "genres": [
+        "Action",
+        "Childcare",
+        "Comedy",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.19
+    },
+    {
+      "malId": 50608,
+      "genres": [
+        "Action",
+        "Delinquents",
+        "Drama",
+        "Shounen",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.61
+    },
+    {
+      "malId": 50613,
+      "genres": [
+        "Action",
+        "Historical",
+        "Samurai",
+        "Shounen"
+      ],
+      "episodeMinutes": 22,
+      "malMean": 7.62
+    },
+    {
+      "malId": 50709,
+      "genres": [
+        "Action"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.14
+    },
+    {
+      "malId": 50713,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Romance",
+        "School",
+        "Sci-Fi",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.05
+    },
+    {
+      "malId": 50932,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.08
+    },
+    {
+      "malId": 51009,
+      "genres": [
+        "Action",
+        "Gore",
+        "School",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.69
+    },
+    {
+      "malId": 51019,
+      "genres": [
+        "Action",
+        "Historical",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 28,
+      "malMean": 8.14
+    },
+    {
+      "malId": 51096,
+      "genres": [
+        "Drama",
+        "Psychological",
+        "School",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.03
+    },
+    {
+      "malId": 51105,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.56
+    },
+    {
+      "malId": 51179,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.18
+    },
+    {
+      "malId": 51180,
+      "genres": [
+        "Drama",
+        "Psychological",
+        "School",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.91
+    },
+    {
+      "malId": 51297,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.56
+    },
+    {
+      "malId": 51367,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.03
+    },
+    {
+      "malId": 51368,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Historical",
+        "Samurai",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.04
+    },
+    {
+      "malId": 51371,
+      "genres": [
+        "Action",
+        "Historical",
+        "Samurai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 5.98
+    },
+    {
+      "malId": 51495,
+      "genres": [
+        "Adventure",
+        "Fantasy",
+        "Harem",
+        "Isekai",
+        "Romance"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 5.49
+    },
+    {
+      "malId": 51535,
+      "genres": [
+        "Action",
+        "Drama",
+        "Gore",
+        "Military",
+        "Shounen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 73,
+      "malMean": 8.86
+    },
+    {
+      "malId": 51553,
+      "genres": [
+        "Fantasy",
+        "Seinen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.47
+    },
+    {
+      "malId": 51673,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.59
+    },
+    {
+      "malId": 51711,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.36
+    },
+    {
+      "malId": 51818,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Sci-Fi",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.73
+    },
+    {
+      "malId": 52034,
+      "genres": [
+        "Award Winning",
+        "Drama",
+        "Reincarnation",
+        "Seinen",
+        "Showbiz"
+      ],
+      "episodeMinutes": 31,
+      "malMean": 8.52
+    },
+    {
+      "malId": 52211,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Fantasy",
+        "Gag Humor",
+        "Parody",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.6
+    },
+    {
+      "malId": 52215,
+      "genres": [
+        "Drama",
+        "Historical",
+        "Seinen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.72
+    },
+    {
+      "malId": 52299,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Adventure",
+        "Fantasy",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.13
+    },
+    {
+      "malId": 52347,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen",
+        "Video Game"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.1
+    },
+    {
+      "malId": 52588,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Fantasy",
+        "Military",
+        "Sci-Fi",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.19
+    },
+    {
+      "malId": 52635,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Mystery"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.65
+    },
+    {
+      "malId": 52657,
+      "genres": [
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 7.42
+    },
+    {
+      "malId": 52701,
+      "genres": [
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Gourmet",
+        "Seinen"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.58
+    },
+    {
+      "malId": 52741,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.73
+    },
+    {
+      "malId": 52807,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Comedy",
+        "Parody",
+        "Seinen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 4.77
+    },
+    {
+      "malId": 52816,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Fantasy",
+        "Gore",
+        "Seinen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.46
+    },
+    {
+      "malId": 52991,
+      "genres": [
+        "Adventure",
+        "Award Winning",
+        "Drama",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 9.25
+    },
+    {
+      "malId": 53199,
+      "genres": [
+        "Mecha",
+        "School",
+        "Sci-Fi",
+        "Space"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.88
+    },
+    {
+      "malId": 53273,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.5
+    },
+    {
+      "malId": 53393,
+      "genres": [
+        "Adventure",
+        "Mystery",
+        "Sci-Fi",
+        "Seinen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.2
+    },
+    {
+      "malId": 53411,
+      "genres": [
+        "Action",
+        "Childcare",
+        "Comedy",
+        "Organized Crime"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.09
+    },
+    {
+      "malId": 53439,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.72
+    },
+    {
+      "malId": 53447,
+      "genres": [
+        "Action",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.66
+    },
+    {
+      "malId": 53613,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Reincarnation",
+        "Seinen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.25
+    },
+    {
+      "malId": 53770,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.29
+    },
+    {
+      "malId": 53887,
+      "genres": [
+        "Action",
+        "Childcare",
+        "Comedy",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.05
+    },
+    {
+      "malId": 53998,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.7
+    },
+    {
+      "malId": 54112,
+      "genres": [
+        "Adult Cast",
+        "Comedy",
+        "Seinen",
+        "Survival",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.69
+    },
+    {
+      "malId": 54449,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Gore",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.74
+    },
+    {
+      "malId": 54492,
+      "genres": [
+        "Drama",
+        "Historical",
+        "Medical",
+        "Mystery"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.84
+    },
+    {
+      "malId": 54595,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.24
+    },
+    {
+      "malId": 54703,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.42
+    },
+    {
+      "malId": 54724,
+      "genres": [
+        "Adventure",
+        "Comedy",
+        "Historical",
+        "Samurai",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.78
+    },
+    {
+      "malId": 54789,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.15
+    },
+    {
+      "malId": 54865,
+      "genres": [
+        "Shounen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.49
+    },
+    {
+      "malId": 54869,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Organized Crime"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.12
+    },
+    {
+      "malId": 54898,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Detective",
+        "Mystery",
+        "Organized Crime",
+        "Seinen",
+        "Super Power",
+        "Vampire"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.6
+    },
+    {
+      "malId": 54900,
+      "genres": [
+        "Action",
+        "Delinquents",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.7
+    },
+    {
+      "malId": 54918,
+      "genres": [
+        "Action",
+        "Delinquents",
+        "Drama",
+        "Shounen",
+        "Time Travel"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.81
+    },
+    {
+      "malId": 55644,
+      "genres": [
+        "Adventure",
+        "Comedy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.3
+    },
+    {
+      "malId": 55701,
+      "genres": [
+        "Action",
+        "Historical",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 30,
+      "malMean": 7.99
+    },
+    {
+      "malId": 55791,
+      "genres": [
+        "Drama",
+        "Reincarnation",
+        "Seinen",
+        "Showbiz"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.5
+    },
+    {
+      "malId": 55813,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Fantasy",
+        "Gag Humor",
+        "Parody",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.77
+    },
+    {
+      "malId": 55825,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Gore",
+        "Historical",
+        "Samurai",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.15
+    },
+    {
+      "malId": 55848,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Fantasy",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.35
+    },
+    {
+      "malId": 55888,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.37
+    },
+    {
+      "malId": 56009,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "episodeMinutes": 28,
+      "malMean": 8.12
+    },
+    {
+      "malId": 56038,
+      "genres": [
+        "Action",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.19
+    },
+    {
+      "malId": 56063,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Sci-Fi"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.06
+    },
+    {
+      "malId": 56285,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Gore",
+        "Sci-Fi",
+        "Super Power"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 6.51
+    },
+    {
+      "malId": 56690,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.53
+    },
+    {
+      "malId": 56784,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.67
+    },
+    {
+      "malId": 57184,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Adventure",
+        "Mystery",
+        "Organized Crime"
+      ],
+      "episodeMinutes": 22,
+      "malMean": 6.81
+    },
+    {
+      "malId": 57334,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.38
+    },
+    {
+      "malId": 57555,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Gore",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 100,
+      "malMean": 9.05
+    },
+    {
+      "malId": 57658,
+      "genres": [
+        "Action",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.58
+    },
+    {
+      "malId": 57892,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Isekai"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.46
+    },
+    {
+      "malId": 58059,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.85
+    },
+    {
+      "malId": 58567,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Adventure",
+        "Fantasy",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.49
+    },
+    {
+      "malId": 58572,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Shounen",
+        "Video Game"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.25
+    },
+    {
+      "malId": 58811,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Mythology",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.87
+    },
+    {
+      "malId": 58913,
+      "genres": [
+        "Horror",
+        "Mystery",
+        "Supernatural"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.02
+    },
+    {
+      "malId": 58939,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Comedy",
+        "Organized Crime",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.58
+    },
+    {
+      "malId": 59027,
+      "genres": [
+        "Action",
+        "Childcare",
+        "Comedy",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.21
+    },
+    {
+      "malId": 59062,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.2
+    },
+    {
+      "malId": 59160,
+      "genres": [
+        "Action",
+        "Delinquents",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.63
+    },
+    {
+      "malId": 59177,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Fantasy",
+        "Military",
+        "Sci-Fi",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.78
+    },
+    {
+      "malId": 59189,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.06
+    },
+    {
+      "malId": 59192,
+      "genres": [
+        "Action",
+        "Award Winning",
+        "Historical",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 155,
+      "malMean": 8.65
+    },
+    {
+      "malId": 59193,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.69
+    },
+    {
+      "malId": 59205,
+      "genres": [
+        "Action",
+        "Fantasy"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 7.79
+    },
+    {
+      "malId": 59229,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Sci-Fi",
+        "Shounen",
+        "Urban Fantasy"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.1
+    },
+    {
+      "malId": 59708,
+      "genres": [
+        "Drama",
+        "Psychological",
+        "School",
+        "Suspense"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.82
+    },
+    {
+      "malId": 59978,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.84
+    },
+    {
+      "malId": 59983,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "School",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.17
+    },
+    {
+      "malId": 59989,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Mystery"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 6.88
+    },
+    {
+      "malId": 60058,
+      "genres": [
+        "Drama",
+        "Reincarnation",
+        "Seinen",
+        "Showbiz"
+      ],
+      "episodeMinutes": 27,
+      "malMean": 8.67
+    },
+    {
+      "malId": 60098,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.71
+    },
+    {
+      "malId": 60146,
+      "genres": [
+        "Fantasy",
+        "Isekai",
+        "Reincarnation"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 6.22
+    },
+    {
+      "malId": 60285,
+      "genres": [
+        "Action",
+        "Adult Cast",
+        "Comedy",
+        "Organized Crime",
+        "Shounen"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 7.9
+    },
+    {
+      "malId": 60489,
+      "genres": [
+        "Drama",
+        "Psychological",
+        "Sci-Fi",
+        "Shounen",
+        "Time Travel"
+      ],
+      "episodeMinutes": 26,
+      "malMean": 8.74
+    },
+    {
+      "malId": 60543,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.37
+    },
+    {
+      "malId": 60593,
+      "genres": [
+        "Action",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.57
+    },
+    {
+      "malId": 60636,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 9.01
+    },
+    {
+      "malId": 61200,
+      "genres": [
+        "Action",
+        "Drama",
+        "Fantasy",
+        "Gore",
+        "Mythology",
+        "Seinen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.62
+    },
+    {
+      "malId": 61469,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Historical",
+        "Mystery",
+        "Racing",
+        "Seinen",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 27,
+      "malMean": 9.05
+    },
+    {
+      "malId": 61603,
+      "genres": [
+        "Seinen",
+        "Sports",
+        "Team Sports"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.1
+    },
+    {
+      "malId": 61942,
+      "genres": [
+        "Action",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.4
+    },
+    {
+      "malId": 61967,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Shounen"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 8.83
+    },
+    {
+      "malId": 62001,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Shounen",
+        "Supernatural"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.8
+    },
+    {
+      "malId": 62513,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "School"
+      ],
+      "episodeMinutes": 24,
+      "malMean": 7.83
+    },
+    {
+      "malId": 63130,
+      "genres": [
+        "Action",
+        "School",
+        "Shounen",
+        "Super Power"
+      ],
+      "episodeMinutes": 23,
+      "malMean": 8.09
+    },
+    {
+      "malId": 63375,
+      "genres": [
+        "Drama",
+        "Military"
+      ],
+      "episodeMinutes": 25,
+      "malMean": 8.52
+    }
+  ]
+}
