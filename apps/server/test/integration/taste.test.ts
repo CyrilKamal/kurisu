@@ -80,6 +80,12 @@ describe("rating patterns", () => {
     expect(taste.genres[0]?.genre).toBe("Drama");
   });
 
+  it("survives overlapping refreshes, as after a sync and at a recommendation", async () => {
+    await Promise.all([1, 2, 3, 4].map(() => refreshTaste(h.db, userId)));
+    const taste = await loadTaste(h.db, userId);
+    expect(taste.genres.filter((g) => g.genre === "Drama")).toHaveLength(1);
+  });
+
   it("is refreshed in the background after a list sync", async () => {
     // beforeEach logged in, which synced.
     const deadline = Date.now() + 5_000;

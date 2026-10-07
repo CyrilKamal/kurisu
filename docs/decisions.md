@@ -1135,3 +1135,12 @@ Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste 
 
 **Why:** The page should explain the numbers recommendations actually use. Forgetting a reason is about taste, not about your list.
 **Consequences:** A drop reason can't be edited, only deleted; dropping the show again with a new reason records a new one.
+
+## 2026-10-06 — Taste refreshes run one at a time per user (Milestone 4)
+**Decision:** `refreshTaste` takes a transaction-scoped Postgres advisory lock keyed on the user before it deletes and re-inserts their `taste_genres` rows.
+**Alternatives:**
+- Upserting with `ON CONFLICT`, which can leave rows for genres that no longer apply when two refreshes overlap.
+- Retrying on a duplicate-key error.
+
+**Why:** CI caught two overlapping refreshes failing with a duplicate key. A refresh after a sync and the one at the start of each recommendation can overlap in the app too, and the recommendation would then fail.
+**Consequences:** A second refresh waits for the first, then recomputes from the committed data.
