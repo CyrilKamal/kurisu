@@ -71,8 +71,11 @@ describe("gemini provider", () => {
         },
       ],
       toolConfig: { functionCallingConfig: { mode: "AUTO" } },
-      generationConfig: { temperature: 0 },
     });
+    // Newer Gemini models reject sampling settings and thinking budgets with a 400.
+    for (const key of ["temperature", "topP", "topK", "thinkingConfig.thinkingBudget"]) {
+      expect(request?.body).not.toHaveProperty(`generationConfig.${key}`);
+    }
   });
 
   it("parses function calls, counts thinking tokens as output and hides thoughts", async () => {

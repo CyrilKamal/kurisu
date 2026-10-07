@@ -36,7 +36,8 @@ export interface ChatRequest {
   system: string;
   messages: LlmMessage[];
   tools: ToolSpec[];
-  temperature?: number;
+  // No sampling settings (temperature, top_p, top_k): newer Gemini models reject them, so every
+  // model runs on its own defaults.
   signal?: AbortSignal;
 }
 
