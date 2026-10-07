@@ -18,6 +18,7 @@ import { useChatShell } from "./ChatShell";
 import { MenuIcon, NewChatIcon } from "./icons";
 import { PickCard } from "./PickCard";
 import { ShowCard } from "./ShowCard";
+import { ThinkingBubble } from "./ThinkingBubble";
 
 const EXAMPLES = [
   "watched ep 3 of Frieren",
@@ -25,6 +26,21 @@ const EXAMPLES = [
   "dropping the isekai one",
   "40 minutes, something chill",
 ];
+
+/** The user's message as it shows while the reply is on its way. */
+function sendingMessage(id: string, content: string): ChatMessageView {
+  return {
+    id,
+    role: "user",
+    content,
+    createdAt: new Date().toISOString(),
+    changes: [],
+    pending: [],
+    picks: [],
+    shows: [],
+    asksToChoose: false,
+  };
+}
 
 function sendErrorMessage(status: number, error: string): string {
   if (status === 0) return "Network error. Check your connection and try again.";
@@ -55,6 +71,8 @@ export function ChatView({
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
+  /** Numbers the messages shown while they're sent. */
+  const sentCount = useRef(0);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ block: "end" });
@@ -72,20 +90,27 @@ export function ChatView({
     setSending(true);
     setNotice(null);
     setDraft("");
+    // Show the message right away; the server's copy replaces it when the reply arrives.
+    sentCount.current += 1;
+    const shownId = `sending-${String(sentCount.current)}`;
+    setMessages((current) => [...current, sendingMessage(shownId, trimmed)]);
     const result = await postApi("/chat/messages", chatThreadResponseSchema, {
       text: trimmed,
       ...(conversation && { conversationId: conversation.id }),
     });
     setSending(false);
+    const withoutShown = (current: ChatMessageView[]) => current.filter((m) => m.id !== shownId);
     if (result.ok && result.data) {
       const { conversation: chat, messages: added } = result.data;
-      setMessages((current) => [...current, ...added]);
+      setMessages((current) => [...withoutShown(current), ...added]);
       void refreshChats();
       // The first message created the chat: move to its address, unless the user went elsewhere.
       if (!conversation && window.location.pathname === "/chat/new") {
         router.replace(`/chat/${chat.id}`, { scroll: false });
       }
     } else if (!result.ok) {
+      // Not sent: the message goes back to the box to try again.
+      setMessages(withoutShown);
       setDraft(trimmed);
       setNotice(sendErrorMessage(result.status, result.error));
     }
@@ -204,8 +229,8 @@ export function ChatView({
               </li>
             ))}
             {sending && (
-              <li className="text-sm text-zinc-500" role="status">
-                Thinking…
+              <li>
+                <ThinkingBubble />
               </li>
             )}
           </ul>
