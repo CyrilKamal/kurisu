@@ -1144,6 +1144,7 @@ Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste 
 
 **Why:** CI caught two overlapping refreshes failing with a duplicate key. A refresh after a sync and the one at the start of each recommendation can overlap in the app too, and the recommendation would then fail.
 **Consequences:** A second refresh waits for the first, then recomputes from the committed data.
+
 ## 2026-10-06 — Recommendation eval: labels on picks, with frozen show details and pool (Milestone 4)
 **Decision:**
 - **Format:** recommendation cases live in `eval/cases/recommend-*.yaml`. Each has a message and labels: `media_types`, `max_episode_minutes`, `genres_any`, `genres_none`, `source` (list, plan_to_watch, in_progress, new or any), `must_not` and `picks: false`.
