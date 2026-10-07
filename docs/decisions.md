@@ -1115,6 +1115,8 @@ Requested during Milestone 4, outside its scope.
 - Send `thinking_level` explicitly, which would change behavior that the evals have already measured.
 **Why:** Google wrote that newer Gemini models will answer these fields with a 400 error, and that Gemini 3.6 Flash and later already ignore them. We sent temperature 0 on every call (0.4 for brief summaries) and never set a thinking budget.
 **Consequences:**
-- Flash-Lite (3.5) may have honored temperature 0, so its eval was rerun without it; the result is in the PR.
+- Flash-Lite (3.5) predates 3.6 and may have honored temperature 0, so the eval was rerun without it.
+  - On all 140 cases: 133/140 correct and 1 wrong write, against 136/140 and 0 before.
+  - The wrong write was "the eater one" taken as Soul Eater. It also happens at temperature 0: 2 times in 8 runs of that case, either way. The difference is run-to-run noise, not this change, and that weakness is tracked separately.
 - Brief summaries lose their 0.4 setting; the summary check still guards their content.
 - Moving to the Interactions API is a separate choice; `generateContent` remains supported.
