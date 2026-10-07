@@ -53,8 +53,9 @@ export function createGeminiProvider(options: GeminiOptions): ModelProvider {
           model: request.model,
           contents: toContents(request.messages),
           config: {
+            // No temperature, top_p, top_k or thinking budget: newer Gemini models answer them with
+            // a 400, so each model's own defaults apply.
             systemInstruction: request.system,
-            temperature: request.temperature ?? 0,
             tools: [
               {
                 functionDeclarations: request.tools.map((tool) => ({

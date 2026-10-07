@@ -55,7 +55,8 @@ export function createOllamaProvider(options: OllamaOptions): ModelProvider {
         model: request.model,
         stream: false,
         think: options.think ?? false,
-        options: { temperature: request.temperature ?? 0, num_ctx: options.numCtx ?? 8192 },
+        // Temperature 0 keeps local eval runs repeatable.
+        options: { temperature: 0, num_ctx: options.numCtx ?? 8192 },
         messages: [{ role: "system", content: request.system }, ...request.messages.map(toOllama)],
         tools: request.tools.map((tool) => ({
           type: "function",

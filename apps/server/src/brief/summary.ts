@@ -46,7 +46,6 @@ export async function writeSummary(
       system: BRIEF_SUMMARY_PROMPT.system,
       messages: [{ role: "user", content: `New episodes:\n${listing}` }],
       tools: [],
-      temperature: 0.4,
     });
     const text = response.text.trim();
     const usage = {

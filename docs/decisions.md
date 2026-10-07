@@ -1107,3 +1107,14 @@ Requested during Milestone 4, outside its scope.
 **Alternatives:** Filtering on the server through query parameters, which costs a round trip for every keystroke and tab switch.
 **Why:** A list of a few hundred shows filters instantly in the browser. The page already loads the whole list.
 **Consequences:** A list in the many thousands would need server-side paging and filtering. The genre menu lists only genres present in the tab, with counts.
+
+## 2026-10-06 — No sampling settings in model requests (Milestone 4)
+**Decision:** Model requests no longer carry a temperature. `ChatRequest` loses its `temperature` field, so no caller can set one. Gemini gets no `temperature`, `top_p`, `top_k` or thinking budget, so each model uses its own defaults. Ollama keeps a fixed temperature of 0, which keeps local eval runs repeatable.
+**Alternatives:**
+- Keep the field and have the Gemini provider ignore it, which would be a setting that silently does nothing.
+- Send `thinking_level` explicitly, which would change behavior that the evals have already measured.
+**Why:** Google wrote that newer Gemini models will answer these fields with a 400 error, and that Gemini 3.6 Flash and later already ignore them. We sent temperature 0 on every call (0.4 for brief summaries) and never set a thinking budget.
+**Consequences:**
+- Flash-Lite (3.5) may have honored temperature 0, so its eval was rerun without it; the result is in the PR.
+- Brief summaries lose their 0.4 setting; the summary check still guards their content.
+- Moving to the Interactions API is a separate choice; `generateContent` remains supported.
