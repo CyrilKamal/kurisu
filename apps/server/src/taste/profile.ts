@@ -37,6 +37,9 @@ export interface TasteProfile {
  */
 export async function refreshTaste(db: Db, userId: string): Promise<void> {
   await db.transaction(async (tx) => {
+    // One refresh per user at a time: a refresh after a sync and one at the start of a
+    // recommendation can overlap, and both would insert the same rows.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`taste:${userId}`}))`);
     await tx.delete(tasteGenres).where(eq(tasteGenres.userId, userId));
     await tx.execute(sql`
       WITH overall AS (

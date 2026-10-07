@@ -5,6 +5,7 @@ import type { LoginError } from "../../src/auth/routes.js";
 import type { BriefErrorCode } from "../../src/brief/routes.js";
 import { STREAMING_SERVICES } from "../../src/brief/services.js";
 import { CHAT_TITLE_MAX } from "../../src/chat/titles.js";
+import { DROP_CATEGORIES } from "../../src/taste/dropReasons.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import { chatMessages, conversations, syncRuns, users } from "../../src/db/schema.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
@@ -85,6 +86,7 @@ describe("shared constants", () => {
     expectTypeOf<PushErrorCode>().toEqualTypeOf<contract.PushError>();
     expectTypeOf<BriefErrorCode>().toEqualTypeOf<contract.BriefError>();
     expect(CHAT_TITLE_MAX).toBe(contract.CHAT_TITLE_MAX);
+    expect([...DROP_CATEGORIES]).toEqual([...contract.DROP_CATEGORIES]);
     expect(STREAMING_SERVICES.map(({ id, label }) => ({ id, label }))).toEqual(
       contract.STREAMING_SERVICES.map(({ id, label }) => ({ id, label })),
     );
@@ -101,6 +103,12 @@ describe("responses match the contract", () => {
     const res = await get("/list");
     const parsed = contract.listResponseSchema.parse(res.json());
     expect(parsed.entries).toHaveLength(fixtureList().length);
+  });
+
+  it("GET /taste", async () => {
+    const res = await get("/taste");
+    expect(res.statusCode).toBe(200);
+    expect(() => contract.tasteResponseSchema.parse(res.json())).not.toThrow();
   });
 
   it("POST /sync success", async () => {

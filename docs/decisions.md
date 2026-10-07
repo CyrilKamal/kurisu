@@ -1120,3 +1120,27 @@ Requested during Milestone 4, outside its scope.
   - The wrong write was "the eater one" taken as Soul Eater. It also happens at temperature 0: 2 times in 8 runs of that case, either way. The difference is run-to-run noise, not this change, and that weakness is tracked separately.
 - Brief summaries lose their 0.4 setting; the summary check still guards their content.
 - Moving to the Interactions API is a separate choice; `generateContent` remains supported.
+
+## 2026-10-06 — The Taste page shows taste memory, and deleting a drop reason only forgets it (Milestone 4)
+**Decision:** `/list/taste` shows:
+- your average score;
+- the genres you rate most above and below it (up to 8 each, as bars of the shrunk affinity the recommender uses);
+- a table of every genre;
+- your drop reasons, newest first.
+
+Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste memory only; your list on MAL stays as it is. The drop categories moved to the shared contract, so the page and the agent's tool use the same list.
+**Alternatives:**
+- Showing raw genre averages instead of affinity, which would disagree with how recommendations rank.
+- Undoing the drop along with its reason, which History's undo already does.
+
+**Why:** The page should explain the numbers recommendations actually use. Forgetting a reason is about taste, not about your list.
+**Consequences:** A drop reason can't be edited, only deleted; dropping the show again with a new reason records a new one.
+
+## 2026-10-06 — Taste refreshes run one at a time per user (Milestone 4)
+**Decision:** `refreshTaste` takes a transaction-scoped Postgres advisory lock keyed on the user before it deletes and re-inserts their `taste_genres` rows.
+**Alternatives:**
+- Upserting with `ON CONFLICT`, which can leave rows for genres that no longer apply when two refreshes overlap.
+- Retrying on a duplicate-key error.
+
+**Why:** CI caught two overlapping refreshes failing with a duplicate key. A refresh after a sync and the one at the start of each recommendation can overlap in the app too, and the recommendation would then fail.
+**Consequences:** A second refresh waits for the first, then recomputes from the committed data.
