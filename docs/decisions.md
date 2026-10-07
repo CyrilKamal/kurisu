@@ -1184,6 +1184,17 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
   - The Soul Eater write turns into a question.
   - So do the typos "omp 3" and "Hoyuka", "Tenjiku arc" (the model searched "Tokyo Revengers Tenjiku Arc"), "the final mha season" (word order) and "TYBW s4".
   - Nothing else changes: bsd, MHA More, cote s4, ylia, sds season 3, "actually I meant ep 38" and every brief reply still write.
+- Live, on Flash-Lite with progress-sync v13, all 140 cases:
+
+  | Run | Accuracy | Wrong writes | Clarification precision | Clarification recall |
+  | --- | --- | --- | --- | --- |
+  | before, temperature 0 | 136/140 | 0/126 | — | — |
+  | before, no temperature | 133/140 | 1/125 (Soul Eater) | 74.3% | 96.3% |
+  | **with this rule** | **133/140** | **0/123** | **71.1%** | **100%** |
+
+  - The new misses are the expected questions: omp 3, Hoyuka, the final mha season and Tenjiku arc.
+  - The other three misses are older ones, where the rule changed nothing: bsd ep 5 (the model asked), Mushoku Tensei (dropping by tie-break is held) and TYBW s4. In TYBW s4, the rule blocked the model's own wrong cour, Soukoku-tan.
+  - The devilman case ran 8 more times. It wrote Devilman every time and Soul Eater never; in 6 of those runs the model searched "Soul Eater" and then asked.
 - The rule only removes clear matches. The one exception is a search of your rearranged words, and any show that makes clear is one your words name.
 - Two tests changed:
   - A show neither a brief nor the reply names is now held as "Not sure this is the show you meant" instead of "Your brief didn't list this episode".
