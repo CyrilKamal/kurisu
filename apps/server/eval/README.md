@@ -288,6 +288,7 @@ Labels, all optional (`expect: {}` means "any sensible picks"):
 
 - **`media_types`:** every pick is one of these: `tv`, `movie`, `ova`, `ona`, `special`, `tv_special` or `music`. For "a show" or "a series", the app uses `[tv, ona]`.
 - **`max_episode_minutes`:** every pick's episodes (or the movie) run at most this long. A pick whose length is unknown fails it.
+- **`max_episodes_left`:** every pick has at most this many episodes left to watch, for "something I can finish this weekend". A pick whose episode count is unknown fails it.
 - **`genres_any`:** the picks should have at least one of these genres, for a mood like "chill" or "funny". This is reported as **genre fit** and doesn't fail a case, since moods map to genres loosely.
 - **`genres_none`:** no pick has any of these. This fails the case.
 - **Genre names** are MAL's, spelled as MAL spells them ("Slice of Life", "Iyashikei", "Suspense"). The validator suggests the right spelling.

@@ -13,6 +13,9 @@ export interface PickedShow {
   /** Whether a show new to the user is in their discovery pool. */
   inPool: boolean;
   mediaType: string | null;
+  /** Null when MAL doesn't know the total yet. */
+  numEpisodes: number | null;
+  episodesWatched: number;
   episodeMinutes: number | null;
   genres: string[];
   airingStatus: string | null;
@@ -78,6 +81,14 @@ export function checkPick(
       constraint(
         `${String(pick.episodeMinutes)}-minute episodes, over ${String(expect.max_episode_minutes)}`,
       );
+    }
+  }
+  if (expect.max_episodes_left !== undefined) {
+    const left =
+      pick.numEpisodes === null ? null : Math.max(0, pick.numEpisodes - pick.episodesWatched);
+    if (left === null) constraint("episode count unknown");
+    else if (left > expect.max_episodes_left) {
+      constraint(`${String(left)} episodes left, over ${String(expect.max_episodes_left)}`);
     }
   }
   const genres = new Set(pick.genres.map((g) => g.toLowerCase()));

@@ -47,6 +47,7 @@ if (verbose) {
       e.source === "any" ? null : `from ${e.source}`,
       e.media_types ? e.media_types.join("/") : null,
       e.max_episode_minutes === undefined ? null : `≤${String(e.max_episode_minutes)} min`,
+      e.max_episodes_left === undefined ? null : `≤${String(e.max_episodes_left)} eps left`,
       e.genres_any ? `any of ${e.genres_any.join(", ")}` : null,
       e.genres_none ? `none of ${e.genres_none.join(", ")}` : null,
       e.must_not.length ? `never ${e.must_not.join(", ")}` : null,

@@ -172,6 +172,8 @@ const pick = (fields: Partial<PickedShow> = {}): PickedShow => ({
   isRewatching: false,
   inPool: false,
   mediaType: "tv",
+  numEpisodes: 26,
+  episodesWatched: 0,
   episodeMinutes: 24,
   genres: ["Slice of Life"],
   airingStatus: "finished_airing",
@@ -209,6 +211,15 @@ describe("checkPick", () => {
     expect(messages(pick({ episodeMinutes: null }), expectOf({ max_episode_minutes: 30 }))).toEqual(
       ["constraint: episode length unknown"],
     );
+  });
+
+  it("counts the episodes left to watch", () => {
+    const labels = expectOf({ max_episodes_left: 13 });
+    expect(messages(pick(), labels)).toEqual(["constraint: 26 episodes left, over 13"]);
+    expect(messages(pick({ episodesWatched: 14 }), labels)).toEqual([]);
+    expect(messages(pick({ numEpisodes: null }), labels)).toEqual([
+      "constraint: episode count unknown",
+    ]);
   });
 
   it("checks where a pick came from", () => {
