@@ -332,3 +332,49 @@ export const BRIEF_ERRORS = [
 ] as const;
 export type BriefError = (typeof BRIEF_ERRORS)[number];
 export const briefErrorResponseSchema = z.object({ error: z.enum(BRIEF_ERRORS) });
+
+/** Why a user dropped a show, as one of a few categories; their own words are kept alongside. */
+export const DROP_CATEGORIES = [
+  "pacing",
+  "story",
+  "characters",
+  "art_animation",
+  "too_long",
+  "lost_interest",
+  "other",
+] as const;
+export type DropCategory = (typeof DROP_CATEGORIES)[number];
+
+/** How the user rates one genre (genres, themes and demographics, as MAL names them). */
+export const tasteGenreSchema = z.object({
+  genre: z.string(),
+  /** Shows in the genre the user scored, and their average score. */
+  scored: z.number().int().nonnegative(),
+  meanScore: z.number().nullable(),
+  dropped: z.number().int().nonnegative(),
+  /** The genre average minus the overall average, pulled toward 0 when few shows back it. */
+  affinity: z.number(),
+});
+export type TasteGenre = z.infer<typeof tasteGenreSchema>;
+
+/** A reason the user gave for dropping a show. */
+export const dropReasonViewSchema = z.object({
+  id: z.uuid(),
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  category: z.enum(DROP_CATEGORIES),
+  /** The user's message that gave the reason. */
+  said: z.string(),
+  createdAt: z.iso.datetime(),
+});
+export type DropReasonView = z.infer<typeof dropReasonViewSchema>;
+
+/** GET /taste: rating patterns by genre (best first) and drop reasons (newest first). */
+export const tasteResponseSchema = z.object({
+  /** The average over everything the user scored; null when they scored nothing. */
+  overallMean: z.number().nullable(),
+  scoredCount: z.number().int().nonnegative(),
+  genres: z.array(tasteGenreSchema),
+  dropReasons: z.array(dropReasonViewSchema),
+});
+export type TasteResponse = z.infer<typeof tasteResponseSchema>;

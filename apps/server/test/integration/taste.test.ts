@@ -1,8 +1,10 @@
+import { tasteResponseSchema } from "@kurisu/shared";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { PROGRESS_SYNC_V9 } from "../../src/agent/prompts/progressSync.v9.js";
 import { runAgent } from "../../src/agent/runAgent.js";
+import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import { changes, dropReasons, proposals, tasteGenres, users } from "../../src/db/schema.js";
 import { parseModelRef } from "../../src/llm/modelConfig.js";
 import { loadTaste, refreshTaste } from "../../src/taste/profile.js";
@@ -11,12 +13,15 @@ import { undoChange } from "../../src/writes/undo.js";
 import { fixtureList } from "../fixtures/animeList.js";
 import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
 import { lastToolResult, ScriptedModels } from "../support/scriptedModels.js";
+import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
 
 const LITE = parseModelRef("ollama:test-lite");
 const WATCHING = 900001; // Fixture Watching Show: Action, Fantasy
+const DROPPED = 900004; // Fixture Dropped Show
 
 let h: Harness;
 let userId: string;
+let cookie: string;
 const models = new ScriptedModels();
 
 beforeAll(async () => {
@@ -32,7 +37,7 @@ beforeEach(async () => {
   h.fakeMal.reset();
   h.fakeMal.list = fixtureList();
   models.reset();
-  await login(h);
+  cookie = (await login(h)).sessionCookie ?? "";
   const [user] = await h.db.select({ id: users.id }).from(users);
   if (!user) throw new Error("no user");
   userId = user.id;
@@ -148,5 +153,74 @@ describe("drop reasons", () => {
     expect(result.committed).toEqual([]);
     expect(await h.db.select().from(proposals)).toEqual([]);
     expect(await h.db.select().from(dropReasons)).toEqual([]);
+  });
+});
+
+describe("Taste page routes", () => {
+  function deleteReason(id: string, headers: Record<string, string> = { origin: TEST_WEB_ORIGIN }) {
+    return h.app.inject({
+      method: "DELETE",
+      url: `/taste/drop-reasons/${id}`,
+      headers,
+      cookies: { [SESSION_COOKIE]: cookie },
+    });
+  }
+
+  async function addReason(owner: string) {
+    const [reason] = await h.db
+      .insert(dropReasons)
+      .values({ userId: owner, animeId: DROPPED, category: "pacing", said: "way too slow" })
+      .returning();
+    if (!reason) throw new Error("no reason");
+    return reason;
+  }
+
+  it("GET /taste needs a session", async () => {
+    expect((await h.app.inject({ method: "GET", url: "/taste" })).statusCode).toBe(401);
+  });
+
+  it("GET /taste returns rating patterns and drop reasons", async () => {
+    await refreshTaste(h.db, userId);
+    const reason = await addReason(userId);
+
+    const res = await h.app.inject({
+      method: "GET",
+      url: "/taste",
+      cookies: { [SESSION_COOKIE]: cookie },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const taste = tasteResponseSchema.parse(res.json());
+    expect(taste).toMatchObject({ overallMean: 7, scoredCount: 4 });
+    expect(taste.genres[0]).toMatchObject({ genre: "Drama", scored: 1, meanScore: 9 });
+    expect(taste.dropReasons).toEqual([
+      {
+        id: reason.id,
+        animeId: DROPPED,
+        title: "Fixture Dropped Show",
+        category: "pacing",
+        said: "way too slow",
+        createdAt: reason.createdAt.toISOString(),
+      },
+    ]);
+  });
+
+  it("DELETE forgets one of your drop reasons, and only yours", async () => {
+    const mine = await addReason(userId);
+    const [other] = await h.db
+      .insert(users)
+      .values({ malUserId: 1, malUsername: "someone_else" })
+      .returning();
+    if (!other) throw new Error("no user");
+    const theirs = await addReason(other.id);
+
+    expect((await deleteReason(mine.id, {})).statusCode).toBe(403); // no Origin header
+    expect((await deleteReason(theirs.id)).statusCode).toBe(404);
+    expect((await deleteReason("not-a-uuid")).statusCode).toBe(404);
+    expect((await deleteReason(mine.id)).statusCode).toBe(204);
+    expect((await deleteReason(mine.id)).statusCode).toBe(404);
+
+    const left = await h.db.select({ id: dropReasons.id }).from(dropReasons);
+    expect(left).toEqual([{ id: theirs.id }]);
   });
 });

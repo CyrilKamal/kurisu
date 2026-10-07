@@ -22,6 +22,7 @@ import type { RetryOptions } from "./mal/client.js";
 import { registerPushRoutes } from "./push/routes.js";
 import { createPushSender } from "./push/send.js";
 import { createListSync } from "./sync/listSync.js";
+import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
 import { createMalListRemover, createMalListWriter } from "./writes/commit.js";
 
@@ -162,6 +163,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   app.get("/health", () => ({ status: "ok" }));
   registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
   registerListRoutes(app, { config, db, listSync });
+  registerTasteRoutes(app, { config, db });
   registerPushRoutes(app, {
     config,
     db,

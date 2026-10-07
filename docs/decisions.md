@@ -1120,3 +1120,18 @@ Requested during Milestone 4, outside its scope.
   - The wrong write was "the eater one" taken as Soul Eater. It also happens at temperature 0: 2 times in 8 runs of that case, either way. The difference is run-to-run noise, not this change, and that weakness is tracked separately.
 - Brief summaries lose their 0.4 setting; the summary check still guards their content.
 - Moving to the Interactions API is a separate choice; `generateContent` remains supported.
+
+## 2026-10-06 — The Taste page shows taste memory, and deleting a drop reason only forgets it (Milestone 4)
+**Decision:** `/list/taste` shows:
+- your average score;
+- the genres you rate most above and below it (up to 8 each, as bars of the shrunk affinity the recommender uses);
+- a table of every genre;
+- your drop reasons, newest first.
+
+Deleting a drop reason (`DELETE /taste/drop-reasons/:id`) removes it from taste memory only; the show stays dropped on MAL. The drop categories moved to the shared contract, so the page and the agent's tool use the same list.
+**Alternatives:**
+- Showing raw genre averages instead of affinity, which would disagree with how recommendations rank.
+- Undoing the drop along with its reason, which History's undo already does.
+
+**Why:** The page should explain the numbers recommendations actually use. Forgetting a reason is about taste, not about your list.
+**Consequences:** A drop reason can't be edited, only deleted; dropping the show again with a new reason records a new one.
