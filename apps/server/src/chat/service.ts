@@ -44,6 +44,8 @@ export interface ChangeView {
   committedAt: string;
   undone: boolean;
   isUndo: boolean;
+  /** Who made it: the agent, the user on the List screen, an import, or an undo. */
+  source: "agent" | "user" | "import" | "undo";
 }
 
 export interface PendingView {
@@ -484,7 +486,9 @@ export async function loadThread(
       role: row.role,
       content: row.content,
       createdAt: row.createdAt.toISOString(),
-      changes: mine.flatMap((c) => (c.change ? [toChangeView(c.change, c.title, false)] : [])),
+      changes: mine.flatMap((c) =>
+        c.change ? [toChangeView(c.change, c.title, c.proposal.source)] : [],
+      ),
       pending: mine
         .filter((c) => c.proposal.status === "pending" && c.proposal.requiresConfirmation)
         .map((c) => {
@@ -601,7 +605,7 @@ export async function loadChanges(db: Db, userId: string, limit = 50): Promise<C
     .where(eq(changes.userId, userId))
     .orderBy(desc(changes.committedAt))
     .limit(limit);
-  return rows.map((r) => toChangeView(r.change, r.title, r.source === "undo"));
+  return rows.map((r) => toChangeView(r.change, r.title, r.source));
 }
 
 export async function loadChange(db: Db, userId: string, id: string): Promise<ChangeView | null> {
@@ -611,13 +615,13 @@ export async function loadChange(db: Db, userId: string, id: string): Promise<Ch
     .innerJoin(anime, eq(changes.animeId, anime.malId))
     .innerJoin(proposals, eq(changes.proposalId, proposals.id))
     .where(and(eq(changes.userId, userId), eq(changes.id, id)));
-  return row ? toChangeView(row.change, row.title, row.source === "undo") : null;
+  return row ? toChangeView(row.change, row.title, row.source) : null;
 }
 
 function toChangeView(
   change: typeof changes.$inferSelect,
   title: string,
-  isUndo: boolean,
+  source: ChangeView["source"],
 ): ChangeView {
   return {
     id: change.id,
@@ -628,7 +632,8 @@ function toChangeView(
     after: change.after,
     committedAt: change.committedAt.toISOString(),
     undone: change.undoneByChangeId !== null,
-    isUndo,
+    isUndo: source === "undo",
+    source,
   };
 }
 

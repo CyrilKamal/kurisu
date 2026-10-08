@@ -1,5 +1,12 @@
+import {
+  EDIT_ERRORS,
+  listEditRequestSchema,
+  listRemoveRequestSchema,
+  type EditError,
+} from "@kurisu/shared";
 import { desc, eq } from "drizzle-orm";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
 
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
 import type { Config } from "../config.js";
@@ -7,15 +14,72 @@ import type { Db } from "../db/client.js";
 import { anime, listEntries } from "../db/schema.js";
 import { latestSyncRun, MANUAL_SYNC_COOLDOWN_MS, type ListSync } from "../sync/listSync.js";
 import { toLastSync } from "../sync/summary.js";
+import { loadChange } from "../chat/service.js";
+import type { WriteDeps } from "../writes/commit.js";
+import { writeError } from "../writes/httpErrors.js";
+import { editEntry, removeEntry, type ManualResult } from "../writes/manual.js";
 
 export interface ListRouteDeps {
   config: Config;
   db: Db;
   listSync: ListSync;
+  /** The single write path, for edits made on the List screen. */
+  writes: WriteDeps;
+}
+
+const animeParams = z.object({ animeId: z.coerce.number().int().positive() });
+
+function userIdOf(request: FastifyRequest): string {
+  if (!request.user) throw new Error("requireUser did not set request.user");
+  return request.user.id;
 }
 
 export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): void {
-  const { config, db, listSync } = deps;
+  const { config, db, listSync, writes } = deps;
+  const guards = { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] };
+
+  /** Sends what a manual edit or removal did, as History shows it, or why it didn't happen. */
+  async function sendResult(reply: FastifyReply, userId: string, result: ManualResult) {
+    if (result.status === "committed") {
+      return { change: await loadChange(db, userId, result.change.id) };
+    }
+    if (result.status === "invalid") {
+      const error: EditError = (EDIT_ERRORS as readonly string[]).includes(result.error)
+        ? (result.error as EditError)
+        : "invalid_edit";
+      return reply.code(400).send({ error });
+    }
+    return writeError(reply, result.status === "failed" ? result.error : result.status);
+  }
+
+  /** The user changes an entry themselves; written through the same proposal and commit path. */
+  app.post("/list/:animeId/edit", guards, async (request, reply) => {
+    const params = animeParams.safeParse(request.params);
+    if (!params.success) return reply.code(404).send({ error: "not_found" });
+    const body = listEditRequestSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: "invalid_edit" });
+    const { requestId, ...edit } = body.data;
+    const userId = userIdOf(request);
+    return sendResult(
+      reply,
+      userId,
+      await editEntry(writes, userId, params.data.animeId, edit, requestId),
+    );
+  });
+
+  /** Takes a show off the list; History can put it back. */
+  app.post("/list/:animeId/remove", guards, async (request, reply) => {
+    const params = animeParams.safeParse(request.params);
+    if (!params.success) return reply.code(404).send({ error: "not_found" });
+    const body = listRemoveRequestSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: "invalid_edit" });
+    const userId = userIdOf(request);
+    return sendResult(
+      reply,
+      userId,
+      await removeEntry(writes, userId, params.data.animeId, body.data.requestId),
+    );
+  });
 
   /** The user's mirrored list. Reads Postgres only; never calls MAL. */
   app.get("/list", { preHandler: requireUser(db) }, async (request) => {

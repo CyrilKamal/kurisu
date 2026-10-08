@@ -39,7 +39,8 @@ export const proposalStatus = pgEnum("proposal_status", [
   "failed",
   "cancelled",
 ]);
-export const proposalSource = pgEnum("proposal_source", ["agent", "undo"]);
+// Who staged a proposal: the agent, an undo, the user on the List screen, or an import.
+export const proposalSource = pgEnum("proposal_source", ["agent", "undo", "user", "import"]);
 /**
  * update: changes an entry on the list. add: puts a show on the list (always confirmed by the
  * user first). remove: takes one off, only to undo an add.

@@ -1,8 +1,12 @@
 "use client";
 
-import type { ListEntry } from "@kurisu/shared";
-import { useMemo, useState, type ReactNode } from "react";
+import { changeResponseSchema, type ChangeView, type ListEntry } from "@kurisu/shared";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 
+import { postApi, sendApi } from "@/lib/clientApi";
+import { describeWrite } from "@/lib/describeChange";
+import { canAddEpisode, editErrorMessage } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
 import {
   clearFilters,
@@ -13,6 +17,7 @@ import {
   type ListView,
 } from "@/lib/listFilters";
 
+import { EditSheet } from "./EditSheet";
 import { EntryRow } from "./EntryRow";
 import { ListFilters } from "./ListFilters";
 import { StatusTabs } from "./StatusTabs";
@@ -50,6 +55,44 @@ export function ListBrowser({
     window.history.replaceState(null, "", listHref(next));
   }
 
+  const router = useRouter();
+  const [, startRefresh] = useTransition();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [savingId, setSavingId] = useState<number | null>(null);
+  const [notice, setNotice] = useState<{ text: string; undoId: string | null } | null>(null);
+  const editing = entries.find((e) => e.animeId === editingId) ?? null;
+
+  /** After a write: say what changed, offer Undo, and reload the list from the server. */
+  function written(change: ChangeView, undoable = true) {
+    setEditingId(null);
+    setNotice({
+      text: `${change.title}: ${describeWrite(change.kind, change.before, change.after)}`,
+      undoId: undoable ? change.id : null,
+    });
+    startRefresh(() => {
+      router.refresh();
+    });
+  }
+
+  async function addEpisode(entry: ListEntry) {
+    setSavingId(entry.animeId);
+    const result = await sendApi(
+      "POST",
+      `/list/${String(entry.animeId)}/edit`,
+      changeResponseSchema,
+      { episodesWatched: entry.episodesWatched + 1, requestId: crypto.randomUUID() },
+    );
+    setSavingId(null);
+    if (result.ok && result.data) written(result.data.change);
+    else if (!result.ok) setNotice({ text: editErrorMessage(result.error), undoId: null });
+  }
+
+  async function undo(changeId: string) {
+    const result = await postApi(`/changes/${changeId}/undo`, changeResponseSchema);
+    if (result.ok && result.data) written(result.data.change, false);
+    else if (!result.ok) setNotice({ text: editErrorMessage(result.error), undoId: null });
+  }
+
   const filtered = isFiltered(view);
   const counts = useMemo(() => countMatches(entries, view), [entries, view]);
   const visible = useMemo(() => visibleEntries(entries, view), [entries, view]);
@@ -75,7 +118,17 @@ export function ListBrowser({
       {visible.length > 0 ? (
         <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {visible.map((entry) => (
-            <EntryRow key={entry.animeId} entry={entry} />
+            <EntryRow
+              key={entry.animeId}
+              entry={entry}
+              onEdit={() => {
+                setEditingId(entry.animeId);
+              }}
+              {...(canAddEpisode(entry) && {
+                onNextEpisode: () => void addEpisode(entry),
+              })}
+              busy={savingId === entry.animeId}
+            />
           ))}
         </ul>
       ) : (
@@ -98,6 +151,47 @@ export function ListBrowser({
               Clear filters
             </button>
           )}
+        </div>
+      )}
+
+      {editing && (
+        <EditSheet
+          key={editing.animeId}
+          entry={editing}
+          onClose={() => {
+            setEditingId(null);
+          }}
+          onSaved={written}
+        />
+      )}
+
+      {notice && (
+        <div
+          role="status"
+          className="fixed inset-x-0 bottom-16 z-20 mx-auto flex max-w-2xl items-center gap-3 rounded-lg bg-zinc-900 px-3 py-2 text-sm text-white shadow-lg dark:bg-zinc-100 dark:text-zinc-900"
+        >
+          <span className="min-w-0 flex-1 truncate">{notice.text}</span>
+          {notice.undoId && (
+            <button
+              type="button"
+              onClick={() => {
+                if (notice.undoId) void undo(notice.undoId);
+              }}
+              className="shrink-0 font-medium underline"
+            >
+              Undo
+            </button>
+          )}
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => {
+              setNotice(null);
+            }}
+            className="shrink-0 px-1"
+          >
+            ×
+          </button>
         </div>
       )}
     </>

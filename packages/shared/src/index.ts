@@ -128,6 +128,10 @@ export type ShowCard = z.infer<typeof showCardSchema>;
 export const WRITE_KINDS = ["update", "add", "remove"] as const;
 export type WriteKind = (typeof WRITE_KINDS)[number];
 
+/** Who made a change: the agent in Chat, the user on the List screen, an import, or an undo. */
+export const CHANGE_SOURCES = ["agent", "user", "import", "undo"] as const;
+export type ChangeSource = (typeof CHANGE_SOURCES)[number];
+
 export const changeViewSchema = z.object({
   id: z.uuid(),
   animeId: z.number().int().positive(),
@@ -140,6 +144,7 @@ export const changeViewSchema = z.object({
   undone: z.boolean(),
   /** True if this change is itself an undo. */
   isUndo: z.boolean(),
+  source: z.enum(CHANGE_SOURCES),
 });
 export type ChangeView = z.infer<typeof changeViewSchema>;
 
@@ -238,6 +243,36 @@ export const WRITE_ERRORS = [
   "internal_error",
 ] as const;
 export const writeErrorResponseSchema = z.object({ error: z.enum(WRITE_ERRORS) });
+
+/** POST /list/:animeId/edit: the fields the user changed on the List screen. */
+export const listEditRequestSchema = z
+  .object({
+    status: listStatusSchema.optional(),
+    episodesWatched: z.number().int().nonnegative().max(100_000).optional(),
+    score: z.number().int().min(0).max(10).optional(),
+    isRewatching: z.boolean().optional(),
+    /** One per tap, so a retried tap writes once. */
+    requestId: z.uuid(),
+  })
+  .strict();
+export type ListEditRequest = z.infer<typeof listEditRequestSchema>;
+
+/** POST /list/:animeId/remove: takes a show off the list (undoable). */
+export const listRemoveRequestSchema = z.object({ requestId: z.uuid() }).strict();
+
+/** Why an edit was turned down before anything was written. */
+export const EDIT_ERRORS = [
+  "invalid_edit",
+  "no_change",
+  "episodes_exceed_total",
+  "negative_episodes",
+  "score_out_of_range",
+  "rewatch_not_completed",
+] as const;
+export type EditError = (typeof EDIT_ERRORS)[number];
+export const editErrorResponseSchema = z.object({
+  error: z.enum([...WRITE_ERRORS, ...EDIT_ERRORS]),
+});
 
 /** GET /push/public-key: the VAPID key browsers subscribe with, or null when push is off. */
 export const pushPublicKeyResponseSchema = z.object({ publicKey: z.string().nullable() });
