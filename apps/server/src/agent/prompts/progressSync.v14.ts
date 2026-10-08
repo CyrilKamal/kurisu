@@ -4,7 +4,9 @@
  *
  * v14 (from v13): asking what's on a streaming service ("any movies on Netflix?", "anything on
  * iQIYI?") is a recommendation request, handed to the recommender (which knows the user's
- * services), not a question about the service to answer itself.
+ * services), not a question about the service to answer itself. Never made current: side by
+ * side with v13 it got ordinary updates wrong that v13 gets right ("gonna start clannad" 3/3 runs,
+ * "culling game" 2/3), and one run wrote a wrong update (docs/decisions.md, 2026-10-08).
  * v13 (from v12), from the add cases: "gonna start X" for a show not on the list means Plan to
  * Watch with no episodes; when several shows outside the list fit, actually ask, as a question
  * naming them; and never call an add done before the user taps Add.
