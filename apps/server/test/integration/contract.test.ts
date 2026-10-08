@@ -111,6 +111,21 @@ describe("responses match the contract", () => {
     expect(() => contract.tasteResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("GET /diary and DELETE /diary/notes/:id", async () => {
+    const diary = await get("/diary");
+    expect(diary.statusCode).toBe(200);
+    expect(() => contract.diaryResponseSchema.parse(diary.json())).not.toThrow();
+
+    const missing = await h.app.inject({
+      method: "DELETE",
+      url: `/diary/notes/${crypto.randomUUID()}`,
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+    });
+    expect(missing.statusCode).toBe(404);
+    expect(missing.json()).toEqual({ error: "not_found" });
+  });
+
   it("GET /stats and PUT /stats/goal", async () => {
     const stats = await get("/stats");
     expect(stats.statusCode).toBe(200);

@@ -75,6 +75,11 @@ export const evalCaseSchema = z
          * these count as asking. Titles resolve against the frozen catalog (snapshots/catalog.json).
          */
         adds: z.array(expectedAddSchema).default([]),
+        /**
+         * Whether a diary note should be saved (the user said how they felt about a show they
+         * updated). Absent means not checked.
+         */
+        reaction: z.boolean().optional(),
       })
       .strict(),
   })

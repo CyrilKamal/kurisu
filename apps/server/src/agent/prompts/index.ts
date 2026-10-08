@@ -12,6 +12,7 @@ import { PROGRESS_SYNC_V12 } from "./progressSync.v12.js";
 import { PROGRESS_SYNC_V13 } from "./progressSync.v13.js";
 import { PROGRESS_SYNC_V14 } from "./progressSync.v14.js";
 import { PROGRESS_SYNC_V15 } from "./progressSync.v15.js";
+import { DIARY_V1 } from "./diary.v1.js";
 import { RECOMMEND_V1 } from "./recommend.v1.js";
 import { RECOMMEND_V2 } from "./recommend.v2.js";
 import { RECOMMEND_V3 } from "./recommend.v3.js";
@@ -53,4 +54,12 @@ export const RECOMMEND_PROMPTS = {
   [RECOMMEND_V5.version]: RECOMMEND_V5,
   [RECOMMEND_V6.version]: RECOMMEND_V6,
   [RECOMMEND_V7.version]: RECOMMEND_V7,
+} as const;
+
+/** The diary reader's prompt (diary/reader.ts). */
+export const DIARY_PROMPT = DIARY_V1;
+
+/** Every diary prompt by version, for the diary eval. */
+export const DIARY_PROMPTS = {
+  [DIARY_V1.version]: DIARY_V1,
 } as const;

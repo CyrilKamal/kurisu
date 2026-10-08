@@ -33,6 +33,15 @@ export interface ChatDeps extends AgentDeps {
   roles: { agent: ModelRef; escalation: ModelRef | null; recommend: ModelRef };
   /** The recommendation agent's prompt. */
   recommendPrompt: Prompt;
+  /**
+   * Reads a message for reactions to the shows it updated and saves them to the diary, in the
+   * background (see diary/reader.ts). Never throws.
+   */
+  diary?: (
+    userId: string,
+    message: string,
+    committed: { animeId: number; changeId: string }[],
+  ) => void;
 }
 
 /** Earlier messages the model sees for context. */
@@ -199,6 +208,15 @@ export async function handleChatMessage(
       }
       run = second;
     }
+  }
+
+  // Reactions to the shows it updated go to the diary, apart from the writes and the reply.
+  if (run.committed.length > 0) {
+    deps.diary?.(
+      userId,
+      text,
+      run.committed.map((c) => ({ animeId: c.animeId, changeId: c.id })),
+    );
   }
 
   // The progress agent handed a recommendation request over: the recommender answers it,

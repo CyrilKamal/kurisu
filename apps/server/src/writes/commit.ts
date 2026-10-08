@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 
 import { ReauthRequiredError, withMalAccessToken, type TokenStore } from "../auth/tokenStore.js";
 import type { Db } from "../db/client.js";
-import { changes, dropReasons, listEntries, proposals } from "../db/schema.js";
+import { changes, diaryNotes, dropReasons, listEntries, proposals } from "../db/schema.js";
 import { DEFAULT_RETRY, MalApiError, type RetryOptions } from "../mal/client.js";
 import { MalOAuthError } from "../mal/oauth.js";
 import { deleteListStatus, patchListStatus, type MalListStatus } from "../mal/writeClient.js";
@@ -248,8 +248,9 @@ export async function commitProposal(
         .update(changes)
         .set({ undoneByChangeId: row.id })
         .where(eq(changes.id, proposal.undoOfChangeId));
-      // Undoing a drop takes back the reason given for it.
+      // Undoing a drop takes back the reason given for it, and any change its diary note.
       await tx.delete(dropReasons).where(eq(dropReasons.changeId, proposal.undoOfChangeId));
+      await tx.delete(diaryNotes).where(eq(diaryNotes.changeId, proposal.undoOfChangeId));
     }
     if (proposal.dropReason && proposal.dropSaid && result?.status === "dropped") {
       await tx.insert(dropReasons).values({

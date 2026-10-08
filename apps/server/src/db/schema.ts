@@ -354,6 +354,30 @@ export const dropReasons = pgTable(
   (table) => [index("drop_reasons_user_idx").on(table.userId, table.createdAt.desc())],
 );
 
+/**
+ * The user's reactions to shows, in their own words, saved with the change they came with
+ * ("finished frieren, that finale was insane"). Each can be deleted; undoing the change takes
+ * its note back.
+ */
+export const diaryNotes = pgTable(
+  "diary_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    animeId: integer("anime_id")
+      .notNull()
+      .references(() => anime.malId),
+    changeId: uuid("change_id")
+      .unique()
+      .references((): AnyPgColumn => changes.id, { onDelete: "set null" }),
+    text: text("text").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("diary_notes_user_idx").on(table.userId, table.createdAt.desc())],
+);
+
 /** One row per sync attempt, for the "last synced" display, cooldowns and debugging. */
 export const syncRuns = pgTable(
   "sync_runs",

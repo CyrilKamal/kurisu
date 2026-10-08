@@ -45,7 +45,7 @@ export interface Harness {
 export async function startHarness(
   options: Pick<
     BuildAppOptions,
-    "models" | "roles" | "pushOrigins" | "anilist" | "prompt" | "importWriteIntervalMs"
+    "models" | "roles" | "pushOrigins" | "anilist" | "prompt" | "importWriteIntervalMs" | "diary"
   > & {
     /** Extra environment variables, e.g. VAPID keys. */
     env?: Record<string, string>;
@@ -71,6 +71,9 @@ export async function startHarness(
     anilist: { minIntervalMs: 0, retry: { retries: 1, baseDelayMs: 1, maxDelayMs: 5 } },
     // Imports write back to back.
     importWriteIntervalMs: 0,
+    // The diary reads in the background with the agent's model, which would take scripted turns
+    // meant for other messages; tests about the diary turn it on.
+    diary: false,
     ...appOptions,
   });
   await app.ready();
@@ -103,7 +106,7 @@ export async function resetDatabase(db: Db): Promise<void> {
   for (let attempt = 0; ; attempt++) {
     try {
       await db.execute(
-        sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs, taste_genres, drop_reasons, recommendations, anilist_catalog, discovery, discovery_runs, anilist_sequels, list_events, yearly_goals CASCADE`,
+        sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs, taste_genres, drop_reasons, recommendations, anilist_catalog, discovery, discovery_runs, anilist_sequels, list_events, yearly_goals, diary_notes CASCADE`,
       );
       return;
     } catch (err) {

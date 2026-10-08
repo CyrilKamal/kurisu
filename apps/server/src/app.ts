@@ -1,7 +1,7 @@
 import fastifyCookie from "@fastify/cookie";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
-import { CURRENT_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
+import { CURRENT_PROMPT, DIARY_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
 import { IMPORT_V1 } from "./agent/prompts/import.v1.js";
 import { registerImportRoutes } from "./import/routes.js";
 import { resumeImports } from "./import/service.js";
@@ -31,6 +31,8 @@ import type { RetryOptions } from "./mal/client.js";
 import { registerPushRoutes } from "./push/routes.js";
 import { createPushSender } from "./push/send.js";
 import { createListSync } from "./sync/listSync.js";
+import { saveReactionsFor } from "./diary/reader.js";
+import { registerDiaryRoutes } from "./diary/routes.js";
 import { registerStatsRoutes } from "./stats/routes.js";
 import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
@@ -50,6 +52,8 @@ export interface BuildAppOptions {
   pushOrigins?: string[];
   /** Chat's prompt, when tests try one that isn't the app's yet. */
   prompt?: Prompt;
+  /** Whether Chat reads messages for diary reactions (on unless turned off; tests turn it off). */
+  diary?: boolean;
   /** Pause between an import's MAL writes; tests use 0. */
   importWriteIntervalMs?: number;
 }
@@ -203,6 +207,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   registerListRoutes(app, { config, db, listSync, writes: writeDeps });
   registerTasteRoutes(app, { config, db });
   registerStatsRoutes(app, { config, db });
+  registerDiaryRoutes(app, { config, db });
   registerPushRoutes(app, {
     config,
     db,
@@ -210,6 +215,31 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     ...(options.pushOrigins ? { extraOrigins: options.pushOrigins } : {}),
   });
   registerBriefRoutes(app, { ...briefDeps, config });
+  // Diary reactions are read after a message's updates commit, in the background, so the reply
+  // never waits on them. Shutdown waits for any still running.
+  const diaryReads = new Set<Promise<void>>();
+  app.addHook("onClose", async () => {
+    await Promise.allSettled(diaryReads);
+  });
+  const diaryModel = options.roles?.agent ?? configuredRoles.agent;
+  const readDiary = (
+    userId: string,
+    message: string,
+    committed: { animeId: number; changeId: string }[],
+  ) => {
+    const task: Promise<void> = saveReactionsFor(
+      { db, models, model: diaryModel, prompt: DIARY_PROMPT },
+      userId,
+      message,
+      committed,
+    )
+      .then(() => undefined)
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not read diary reactions");
+      })
+      .finally(() => diaryReads.delete(task));
+    diaryReads.add(task);
+  };
   registerChatRoutes(app, {
     config,
     db,
@@ -220,6 +250,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     catalog: (queries) => chatAniList.searchAnime(queries),
     prompt: options.prompt ?? CURRENT_PROMPT,
     recommendPrompt: RECOMMEND_PROMPT,
+    ...(options.diary !== false && { diary: readDiary }),
     roles: {
       agent: options.roles?.agent ?? configuredRoles.agent,
       escalation:
