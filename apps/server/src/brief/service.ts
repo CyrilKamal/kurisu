@@ -30,6 +30,7 @@ import {
   type BriefAlert,
   type BriefItem,
 } from "./build.js";
+import { isSunday, recapPushText, recapText, weeklyRecap, type BriefRecap } from "./recap.js";
 import { BRIEF_SUMMARY_PROMPT, writeSummary, type SummaryResult } from "./summary.js";
 import { briefTiming, localClock } from "./timing.js";
 
@@ -57,6 +58,8 @@ export interface BriefOutcome {
   episodes: number;
   /** Shows that started airing. */
   alerts: number;
+  /** Whether it summed up the week (a Sunday). */
+  recap: boolean;
   push: PushResult;
 }
 
@@ -80,8 +83,8 @@ const NO_PUSH: PushResult = { sent: 0, removed: 0, failed: 0 };
 
 /**
  * Builds and sends one brief: new episodes of the user's Watching shows since the last brief,
- * and shows that started airing (a sequel to one they finished, or one on their Plan to Watch),
- * as a chat message and a push notification. A daily brief happens at most once per local date;
+ * shows that started airing (a sequel to one they finished, or one on their Plan to Watch), and
+ * on Sundays a recap of the week, as a chat message and a push notification. A daily brief happens at most once per local date;
  * a retry picks up where the last attempt stopped and never posts the chat message twice.
  * Throws when AniList is unreachable or every push fails, so the queue retries.
  */
@@ -93,11 +96,21 @@ export async function runBrief(
 ): Promise<BriefOutcome> {
   const { db } = deps;
   const brief = await claim(db, userId, request);
-  if (!brief) return { status: "skipped", briefId: null, episodes: 0, alerts: 0, push: NO_PUSH };
+  if (!brief) {
+    return {
+      status: "skipped",
+      briefId: null,
+      episodes: 0,
+      alerts: 0,
+      recap: false,
+      push: NO_PUSH,
+    };
+  }
 
   if (brief.status === "ready" && brief.items) {
     // A previous attempt saved the chat message but didn't get the push out.
-    return deliver(deps, userId, brief.id, brief.items, brief.alerts, request.kind);
+    const saved = { items: brief.items, alerts: brief.alerts, recap: brief.recap };
+    return deliver(deps, userId, brief.id, saved, request.kind);
   }
 
   try {
@@ -106,28 +119,43 @@ export async function runBrief(
         ? await dailyWindowStart(db, userId, brief.id, now)
         : new Date(now.getTime() - DEFAULT_WINDOW_MS);
     const { items, alerts } = await gather(deps, userId, windowStart, now);
-    const window = { windowStart, windowEnd: now, items, alerts };
+    const localDate =
+      request.kind === "daily"
+        ? request.localDate
+        : localClock(now, await userTimeZone(db, userId)).date;
+    const recap =
+      isSunday(localDate) && (await recapOn(db, userId))
+        ? await weeklyRecap(db, userId, now)
+        : null;
+    const window = { windowStart, windowEnd: now, items, alerts, recap };
 
-    if (items.length === 0 && alerts.length === 0) {
+    if (items.length === 0 && alerts.length === 0 && !recap) {
       await update(db, brief.id, { ...window, status: "empty", error: null });
-      return { status: "empty", briefId: brief.id, episodes: 0, alerts: 0, push: NO_PUSH };
+      return {
+        status: "empty",
+        briefId: brief.id,
+        episodes: 0,
+        alerts: 0,
+        recap: false,
+        push: NO_PUSH,
+      };
     }
 
-    // The model writes the line about new episodes; a brief of only premieres needs no model.
+    // The model writes the line about new episodes; a brief of only premieres, or only the
+    // recap, needs no model.
     const summary =
       items.length > 0
         ? await writeSummary(deps.models, deps.model, items)
-        : alertsOnlySummary(deps.model.ref, alerts);
+        : templateSummary(
+            deps.model.ref,
+            alerts.length > 0 ? alertSummary(alerts) : recapOf(recap),
+          );
     if (summary.rejected) {
       deps.log.warn(
         { briefId: brief.id, reason: summary.rejected },
         "brief summary fell back to the template",
       );
     }
-    const localDate =
-      request.kind === "daily"
-        ? request.localDate
-        : localClock(now, await userTimeZone(db, userId)).date;
     await db.transaction(async (tx) => {
       // Each brief starts its own chat, so a reply to it never lands in an unrelated thread.
       const conversationId = await createConversation(tx, userId, briefTitle(localDate));
@@ -136,7 +164,13 @@ export async function runBrief(
         .values({
           conversationId,
           role: "assistant",
-          content: chatText(summary.text, items, alerts),
+          // A recap-only brief's summary is the recap itself.
+          content: chatText(
+            summary.text,
+            items,
+            alerts,
+            recap && (items.length > 0 || alerts.length > 0) ? recapText(recap) : null,
+          ),
           // A card for each show that started airing, to add it from or see where it is.
           showIds: alerts.map((a) => a.malId).slice(0, MAX_SHOW_CARDS),
         })
@@ -163,14 +197,28 @@ export async function runBrief(
     await update(db, brief.id, { status: "failed", error: errorCode(err) });
     throw err;
   }
-  const saved = await loadSaved(db, brief.id);
-  return deliver(deps, userId, brief.id, saved.items, saved.alerts, request.kind);
+  return deliver(deps, userId, brief.id, await loadSaved(db, brief.id), request.kind);
 }
 
-/** The summary of a brief with only shows that started airing: a template, no model call. */
-function alertsOnlySummary(model: string, alerts: BriefAlert[]): SummaryResult {
+/** A recap's paragraph; only called when the brief has nothing but the recap. */
+function recapOf(recap: BriefRecap | null): string {
+  if (!recap) throw new Error("a brief with nothing in it has no summary");
+  return recapText(recap);
+}
+
+/** Whether the user wants the Sunday recap (on unless they turned it off). */
+async function recapOn(db: Db, userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ on: briefSettings.sundayRecap })
+    .from(briefSettings)
+    .where(eq(briefSettings.userId, userId));
+  return row?.on ?? true;
+}
+
+/** A summary line from a template, for a brief with no new episodes: no model call. */
+function templateSummary(model: string, text: string): SummaryResult {
   return {
-    text: alertSummary(alerts),
+    text,
     source: "template",
     model,
     promptVersion: BRIEF_SUMMARY_PROMPT.version,
@@ -189,12 +237,14 @@ async function deliver(
   deps: BriefDeps,
   userId: string,
   briefId: string,
-  items: BriefItem[],
-  alerts: BriefAlert[],
+  saved: SavedBrief,
   kind: BriefRequest["kind"],
 ): Promise<BriefOutcome> {
+  const { items, alerts, recap } = saved;
   const push = await deps.push.sendToUser(userId, {
-    ...pushText(items, alerts),
+    ...(items.length === 0 && alerts.length === 0 && recap
+      ? recapPushText(recap)
+      : pushText(items, alerts)),
     url: await briefPath(deps.db, briefId),
     tag: "brief",
   });
@@ -211,6 +261,7 @@ async function deliver(
     briefId,
     episodes: episodeCount(items),
     alerts: alerts.length,
+    recap: recap !== null,
     push,
   };
 }
@@ -462,15 +513,18 @@ async function userTimeZone(db: Db, userId: string): Promise<string> {
   return row?.timeZone ?? "UTC";
 }
 
-async function loadSaved(
-  db: Db,
-  briefId: string,
-): Promise<{ items: BriefItem[]; alerts: BriefAlert[] }> {
+interface SavedBrief {
+  items: BriefItem[];
+  alerts: BriefAlert[];
+  recap: BriefRecap | null;
+}
+
+async function loadSaved(db: Db, briefId: string): Promise<SavedBrief> {
   const [row] = await db
-    .select({ items: briefs.items, alerts: briefs.alerts })
+    .select({ items: briefs.items, alerts: briefs.alerts, recap: briefs.recap })
     .from(briefs)
     .where(eq(briefs.id, briefId));
-  return { items: row?.items ?? [], alerts: row?.alerts ?? [] };
+  return { items: row?.items ?? [], alerts: row?.alerts ?? [], recap: row?.recap ?? null };
 }
 
 function errorCode(err: unknown): string {
@@ -511,6 +565,7 @@ export interface BriefSchedule {
     status: (typeof briefs.$inferSelect)["status"];
     episodes: number;
     started: number;
+    recap: boolean;
     at: string;
   } | null;
 }
@@ -535,6 +590,7 @@ export async function briefSchedule(
           status: last.status,
           episodes: episodeCount(last.items ?? []),
           started: last.alerts.length,
+          recap: last.recap !== null,
           at: last.updatedAt.toISOString(),
         }
       : null;

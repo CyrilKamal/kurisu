@@ -1564,3 +1564,24 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - Several edits on MAL between two syncs show as one net change.
 - A sync that read MAL before a kurisu write still overwrites the mirror with the older copy until the next sync. That was already true, and now no event is recorded for it.
 
+## 2026-10-08 — The Sunday recap (Milestone 5)
+**Decision:**
+- **When:** a brief whose local date is a Sunday also sums up the last 7 days, up to the brief, and the year. A daily brief uses its own date; "Send a brief now" uses today's. The `sunday_recap` setting (migration 0022, on by default) turns it off from the Brief page.
+- **What it says:** one paragraph. For example: "This week: 23 episodes (9.2 hours) across 4 shows. Finished Bocchi the Rock! and Frieren. 2026 goal: 18 of 40 shows." Without a goal, the last sentence is the count: "18 shows completed in 2026."
+- **The numbers:** the same ones as the Stats page's last 7 days and this year (`stats/compute.ts`). The recap is stored in `briefs.recap`, so a retried push uses the same numbers.
+- **Where it goes:**
+  - On a Sunday with new episodes or premieres, it ends the brief, after the reply hint, and the push stays about the episodes.
+  - On a Sunday with nothing else, the brief is sent with the recap as its line and the push "Your week: N episodes". No model call is made.
+  - A week with nothing watched or finished has no recap, so a quiet Sunday sends nothing.
+
+**Alternatives:**
+- **A separate weekly push at its own time.** That's a second schedule to manage, and the plan put the recap inside the brief.
+- **A model-written recap.** That's a prompt change and an eval round, for a sentence the numbers fully determine.
+- **The calendar week (Monday to Sunday) instead of the last 7 days.** The brief goes out Sunday morning, so the calendar week would leave out Sunday itself, or count the brief before its day is over. The last 7 days match the Stats page.
+
+**Why:** it reuses the brief's scheduling, delivery and settings, and the Stats page's numbers, so the two always agree.
+
+**Consequences:**
+- A user whose brief is off gets no recap. The Stats page has the same numbers.
+- Brief responses gain `recap` (the test response and `lastDaily`), so the Brief page can say "Sent your week's recap".
+

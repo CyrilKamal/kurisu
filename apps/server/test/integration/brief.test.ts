@@ -232,6 +232,7 @@ describe("settings", () => {
       time: "08:00",
       timeZone: "UTC",
       services: [],
+      sundayRecap: true,
       next: null,
       lastDaily: null,
     });
@@ -355,6 +356,7 @@ describe("POST /brief/test", () => {
       status: "sent",
       episodes: 3,
       started: 0,
+      recap: false,
       push: { sent: 1, removed: 0, failed: 0 },
     });
     // The brief starts its own chat, which tapping the notification opens.
@@ -400,6 +402,7 @@ describe("POST /brief/test", () => {
       status: "empty",
       episodes: 0,
       started: 0,
+      recap: false,
       push: { sent: 0, removed: 0, failed: 0 },
     });
     expect(pushService.received).toHaveLength(0);
@@ -727,6 +730,7 @@ describe("shows that started airing", () => {
       status: "sent",
       episodes: 0,
       started: 2,
+      recap: false,
       push: { sent: 1, removed: 0, failed: 0 },
     });
     expect(models.requests).toHaveLength(0);
@@ -812,6 +816,86 @@ describe("shows that started airing", () => {
     const outcome = await runBrief(deps, userId, { kind: "daily", localDate: today() }, now);
 
     expect([outcome.status, outcome.episodes, outcome.alerts]).toEqual(["sent", 1, 0]);
+  });
+});
+
+describe("the Sunday recap", () => {
+  const SUNDAY = "2026-10-11";
+  const MONDAY = "2026-10-12";
+
+  // These briefs run at the current time, after the edit below (the file's `now` is earlier).
+  beforeEach(async () => {
+    // Nothing new aired; the week had two episodes logged, and there's a goal.
+    anilist.airings = [];
+    const edit = await send("POST", "/list/900001/edit", {
+      episodesWatched: 9,
+      requestId: crypto.randomUUID(),
+    });
+    expect(edit.statusCode).toBe(200);
+    expect((await send("PUT", "/stats/goal", { target: 10 })).statusCode).toBe(200);
+  });
+
+  it("sums up the week on a Sunday, alone, with no model call", async () => {
+    const outcome = await runBrief(deps, userId, { kind: "daily", localDate: SUNDAY }, new Date());
+
+    expect(outcome).toMatchObject({ status: "sent", episodes: 0, alerts: 0, recap: true });
+    expect(models.requests).toHaveLength(0);
+    const [message] = await briefMessages();
+    expect(message).toMatch(
+      /^This week: 2 episodes \(0\.8 hours\) across 1 show\. \d{4} goal: \d+ of 10 shows\.$/,
+    );
+    expect(decryptedPushes()).toEqual([
+      expect.objectContaining({ title: "Your week: 2 episodes" }),
+    ]);
+    const [row] = await h.db.select().from(briefs);
+    expect(row?.recap).toMatchObject({ episodes: 2, minutes: 48, shows: 1, goal: 10 });
+  });
+
+  it("closes a Sunday brief that has new episodes", async () => {
+    models.script(BRIEF.ref, [{ text: "Fixture Watching Show has a new episode." }]);
+    anilist.airings = [{ mediaId: 501, episode: 10, airingAt: hoursAgo(2) }];
+
+    await runBrief(deps, userId, { kind: "daily", localDate: SUNDAY }, new Date());
+
+    const lines = (await briefMessages())[0]?.split("\n") ?? [];
+    expect(lines.slice(0, 5)).toEqual([
+      "Fixture Watching Show has a new episode.",
+      "",
+      "- Fixture Watching Show ep 10 on Crunchyroll",
+      "",
+      `Reply "watched it" once you've caught up on all of these.`,
+    ]);
+    expect(lines.at(-1)).toMatch(/^This week: 2 episodes/);
+    // The notification is about the new episode.
+    expect(decryptedPushes()[0]?.title).toBe("Fixture Watching Show ep 10");
+  });
+
+  it("isn't sent on other days, or when it's turned off", async () => {
+    expect(
+      (await runBrief(deps, userId, { kind: "daily", localDate: MONDAY }, new Date())).status,
+    ).toBe("empty");
+
+    const off = await send("PUT", "/brief/settings", {
+      enabled: true,
+      time: "08:00",
+      timeZone: "UTC",
+      services: ["crunchyroll"],
+      sundayRecap: false,
+    });
+    expect(off.json()).toMatchObject({ sundayRecap: false });
+    expect(
+      (await runBrief(deps, userId, { kind: "daily", localDate: SUNDAY }, new Date())).status,
+    ).toBe("empty");
+    expect(pushService.received).toHaveLength(0);
+
+    // A page that doesn't send the setting leaves it as it was.
+    const kept = await send("PUT", "/brief/settings", {
+      enabled: true,
+      time: "08:00",
+      timeZone: "UTC",
+      services: ["crunchyroll"],
+    });
+    expect(kept.json()).toMatchObject({ sundayRecap: false });
   });
 });
 

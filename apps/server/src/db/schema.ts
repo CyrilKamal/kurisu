@@ -17,6 +17,7 @@ import {
 
 import type { SequelShow, StreamingLink } from "../anilist/client.js";
 import type { BriefAlert, BriefItem } from "../brief/build.js";
+import type { BriefRecap } from "../brief/recap.js";
 import type { ListChange, ListState } from "../writes/normalize.js";
 
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
@@ -235,6 +236,8 @@ export const briefSettings = pgTable("brief_settings", {
     .array()
     .notNull()
     .default(sql`'{}'::text[]`),
+  // On Sundays the brief also sums up the user's week (brief/recap.ts).
+  sundayRecap: boolean("sunday_recap").notNull().default(true),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
 
@@ -277,6 +280,8 @@ export const briefs = pgTable(
       .$type<BriefAlert[]>()
       .notNull()
       .default(sql`'[]'::jsonb`),
+    // A Sunday brief's sum of the week, when it had one.
+    recap: jsonb("recap").$type<BriefRecap>(),
     summary: text("summary"),
     // "model" when the model wrote the summary line, "template" when it fell back.
     summarySource: text("summary_source"),

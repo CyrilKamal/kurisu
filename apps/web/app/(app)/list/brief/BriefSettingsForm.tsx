@@ -24,11 +24,12 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettingsResponse 
   async function save() {
     setBusy(true);
     setMessage(null);
-    const { enabled, time, services } = settings;
+    const { enabled, time, services, sundayRecap } = settings;
     const result = await sendApi("PUT", "/brief/settings", briefSettingsResponseSchema, {
       enabled,
       time,
       services,
+      sundayRecap,
       timeZone: timeZone ?? settings.timeZone,
     });
     setBusy(false);
@@ -50,7 +51,7 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettingsResponse 
       setMessage(
         result.data.status === "empty"
           ? "Nothing new aired in the last 24 hours, so there's nothing to send."
-          : `Sent ${sentText(result.data.episodes, result.data.started)}. It's in Chat too.`,
+          : `Sent ${sentText(result.data.episodes, result.data.started, result.data.recap)}. It's in Chat too.`,
       );
     } else if (!result.ok) {
       setMessage(sendNowError(result.error));
@@ -115,6 +116,23 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettingsResponse 
           </div>
         </fieldset>
 
+        <label className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            checked={settings.sundayRecap}
+            onChange={(e) => {
+              setSettings((s) => ({ ...s, sundayRecap: e.target.checked }));
+            }}
+            className="mt-0.5 size-4"
+          />
+          <span>
+            Sunday recap
+            <span className="block text-zinc-500">
+              On Sundays the brief also sums up your week, with your goal for the year.
+            </span>
+          </span>
+        </label>
+
         {timeZone && <ScheduleStatus saved={saved} />}
 
         <div className="flex flex-wrap gap-2">
@@ -170,19 +188,22 @@ function ScheduleStatus({ saved }: { saved: BriefSettingsResponse }) {
   );
 }
 
-/** "3 new episodes", "1 show that started airing", or both. */
-function sentText(episodes: number, started: number): string {
+/** "3 new episodes", "1 show that started airing", "your week's recap", or a few of them. */
+function sentText(episodes: number, started: number, recap: boolean): string {
   const parts = [
     episodes > 0 ? `${String(episodes)} new episode${episodes === 1 ? "" : "s"}` : null,
     started > 0 ? `${String(started)} show${started === 1 ? "" : "s"} that started airing` : null,
+    recap ? "your week's recap" : null,
   ].filter((p) => p !== null);
-  return parts.length > 0 ? parts.join(" and ") : "0 new episodes";
+  if (parts.length === 0) return "0 new episodes";
+  const last = parts.pop() ?? "";
+  return parts.length > 0 ? `${parts.join(", ")} and ${last}` : last;
 }
 
 function lastBriefText(last: NonNullable<BriefSettingsResponse["lastDaily"]>): string {
   switch (last.status) {
     case "sent":
-      return `sent ${sentText(last.episodes, last.started)}.`;
+      return `sent ${sentText(last.episodes, last.started, last.recap)}.`;
     case "empty":
       return "nothing new had aired, so nothing was sent.";
     case "skipped_late":

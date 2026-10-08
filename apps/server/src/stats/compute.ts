@@ -297,7 +297,7 @@ async function allTime(db: Db, userId: string): Promise<AllTimeStats> {
   };
 }
 
-async function yearStats(
+export async function yearStats(
   db: Db,
   userId: string,
   year: number,
