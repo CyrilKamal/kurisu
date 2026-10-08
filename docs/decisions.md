@@ -1337,3 +1337,36 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
   - Eight of the nine misses are asks from the earlier runs: bsd ep 5, omp 3, Mushoku Tensei, the newest TYBW s4 episode, the Cowboy Bebop rewatch, Hoyuka, the final mha season and Tenjiku arc.
   - The ninth is "clannad" answering "which one?". The model searched AniList only and proposed Plan to Watch, a no-op. It fails the same way with the old search code (4 of 4 reruns), so it isn't this rule.
   - A replay of this run's own searches found one more removed clear match: the model's "Bleach episode 380" had fuzzily matched a TYBW cour (0.636).
+
+## 2026-10-08 — A null tool argument means "not given" in propose_update (Milestone 5)
+**Decision:** Every optional field of Chat's `propose_update` arguments reads `null` as not given: `status`, `episodes_watched`, `episodes_delta`, `score`, `is_rewatching` and `drop_reason`. A small `optionalArg` wrapper in `agent/tools.ts` maps `null` to `undefined` before the field's own check. The schema stays `.strict()`, and `anime_id` is still required. No prompt change.
+
+**Alternatives:**
+- Dropping null fields for every tool in the Gemini provider. That's one place, but the provider would then decide what a tool's arguments mean.
+- Rejecting null, so the model retries. That costs a turn, and the error doesn't say which field was wrong.
+
+**Why:**
+- Flash-Lite sometimes sends `null` for a field it means to leave out. The import reader did it in about 1 of 20 reads of "perfect blue 10/10" (fixed separately in `import/parse.ts`).
+- `z.coerce.number()` reads `null` as 0, and in Chat a 0 is a real write:
+  - A null score on a scored show clears the score. It commits at once when the message has any number in it ("watched ep 5 of frieren").
+  - A null `episodes_watched` with "completed" on a show at 0 episodes completes it at 0 episodes, instead of filling in the total. That commits too.
+  - On a show part-way through, the same null resets progress to 0. That is held (`progress_backwards`), but the Confirm card is wrong.
+  - A null `episodes_delta` next to `episodes_watched` failed as `both_episode_forms`. A null `status`, `is_rewatching` or `drop_reason` failed validation. Both cost the model a retry.
+- It hasn't happened in Chat yet:
+  - 0 of 2,718 recorded `propose_update` calls in the saved eval reports (progress-sync v1–v13, every model) had a null.
+  - The dev DB had no `propose_update` calls.
+  - A replay of all 2,718 through the old and new schemas parsed every one the same.
+
+**Consequences:**
+- The model can't clear a field by sending null. An explicit `score: 0` still clears a score.
+- The recommender's arguments (`recommend/agent.ts`) still use plain `z.coerce`. A null there becomes 0, which their `positive()`/`min(1900)` checks reject, so it fails loudly rather than writing anything.
+- Live, on Flash-Lite with progress-sync v13, all 140 cases, run back to back:
+
+  | Run | Accuracy | Wrong writes | Held adds right | Clarification precision | Clarification recall |
+  | --- | --- | --- | --- | --- | --- |
+  | before (main) | 131/140 | 0/121 | 5/5 | 69.2% | 100% |
+  | **null as not given** | **129/140** | **0/119** | **5/5** | **62.8%** | **100%** |
+
+  - Neither run sent a null.
+  - The fix can't change what the model sees: the tool specs it gets are unchanged, and the schema only runs once it calls `propose_update`.
+  - The two cases that flipped never reached `propose_update`, so they are model noise. "Starting future diary and odd taxi" searched Odd Taxi until the repeat stop; it also failed once on 2026-10-06. "two episodes of kabeneri … and 5 eps of kabeneri" asked instead.
