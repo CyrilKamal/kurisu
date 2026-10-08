@@ -1252,3 +1252,12 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
 - Your 25 cases: still 25/25. Median 12.3 s became 6.1 s (p90 17.9 s became 12.8 s), and the cost per case went from 1.25¢ to 0.54¢.
 - Slower cases now come from Gemini's own response times, or from an update made in the same message.
 - Older prompts still reply in their own turn, since the run only ends early when `present_picks` gets a reply.
+
+## 2026-10-07 — In-app editing and import; Milestone 5 "Your list, in your hands" inserted (Milestone 5)
+**Decision:** This reverses the design doc's goal of "natural-language updates … with no manual list editing". The user can now edit entries on the List screen and import an unstructured list from their notes. Both use the same write path as the agent: a proposal, then `commitProposal`, logged with prior values and undoable. A new Milestone 5 holds this work plus where to watch, sequel and new-season alerts, stats with a Sunday recap and a yearly goal, a watch diary, and "what's good this season". Friends beta moves to 6 (with friend features) and distillation to 7. Manga stays deferred.
+**Alternatives:** Keeping Chat as the only way to change the list. Putting the features into Milestone 4. Building friend features now.
+**Why:** You pointed out that read-only editing was a v1 scope choice, not a rule, and that onboarding from notes is a real need. The safety rule that matters, one logged and undoable write path, still holds. Milestone 4's done-when was met, so this is a new milestone rather than scope creep.
+**Consequences:**
+- The proposal sources gain `user` and `import`.
+- Import needs its own eval with your cases.
+- Every milestone after 4 is renumbered in CLAUDE.md and the design doc.
