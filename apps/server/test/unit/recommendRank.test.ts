@@ -24,6 +24,7 @@ function row(id: number, overrides: Partial<CandidateRow>): CandidateRow {
     mediaType: "tv",
     airingStatus: "finished_airing",
     startYear: 2015,
+    streamingLinks: [],
     ...overrides,
   };
 }
@@ -227,5 +228,36 @@ describe("years", () => {
     expect(ids(rankCandidates(enough, noTaste, { yearTo: 1999 })).sort()).toEqual([1, 2, 6]);
     const recent = rankCandidates([row(7, { startYear: 2021 })], noTaste, { yearFrom: 2022 });
     expect(recent[0]?.facts).toContain("aired 2021, 1 year before the years asked for");
+  });
+});
+
+describe("rankCandidates and where to watch", () => {
+  const netflix = { siteId: 10, site: "Netflix", url: "https://www.netflix.com/title/1" };
+  const crunchyroll = { siteId: 5, site: "Crunchyroll", url: "https://www.crunchyroll.com/x" };
+  const rows = [
+    row(1, { streamingLinks: [netflix], malMean: 7 }),
+    row(2, { streamingLinks: [crunchyroll, netflix], malMean: 8 }),
+    row(3, { streamingLinks: [crunchyroll], malMean: 9 }),
+    row(4, { streamingLinks: [] }),
+  ];
+
+  it("keeps only shows on a service asked for, and never one AniList lists nowhere", () => {
+    expect(ids(rankCandidates(rows, noTaste, { services: ["netflix"] }))).toEqual([2, 1]);
+    expect(ids(rankCandidates(rows, noTaste, { services: ["hidive"] }))).toEqual([]);
+  });
+
+  it("says where each streams among their services and the ones asked for, without reranking", () => {
+    const ranked = rankCandidates(rows, noTaste, {}, ["crunchyroll"]);
+    expect(ranked.map((c) => [c.animeId, c.streamsOn])).toEqual([
+      [3, ["Crunchyroll"]],
+      [2, ["Crunchyroll"]],
+      [4, []],
+      [1, []],
+    ]);
+    const asked = rankCandidates(rows, noTaste, { services: ["netflix"] }, ["crunchyroll"]);
+    expect(asked.map((c) => [c.animeId, c.streamsOn])).toEqual([
+      [2, ["Crunchyroll", "Netflix"]],
+      [1, ["Netflix"]],
+    ]);
   });
 });

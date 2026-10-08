@@ -174,6 +174,11 @@ export const pickViewSchema = z.object({
   episodeMinutes: z.number().int().positive().nullable(),
   /** One line on why it fits. */
   why: z.string(),
+  /**
+   * Where it streams, among the user's services and any the request named, from AniList's
+   * official links: a label like "Crunchyroll" and AniList's https link there (or null).
+   */
+  watchOn: z.array(z.object({ service: z.string(), url: z.string().nullable() })),
 });
 export type PickView = z.infer<typeof pickViewSchema>;
 

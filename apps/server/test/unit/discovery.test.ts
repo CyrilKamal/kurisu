@@ -72,6 +72,7 @@ describe("catalogRowFrom", () => {
         popularity: 300_000,
         isAdult: false,
         prequelMalIds: [],
+        streamingLinks: [{ siteId: 10, site: "Netflix", url: "https://www.netflix.com/title/1" }],
       }),
     ).toMatchObject({
       malId: 437,
@@ -82,6 +83,7 @@ describe("catalogRowFrom", () => {
       episodeMinutes: 81,
       genres: ["Drama", "Suspense", "Adult Cast"],
       score: 8.5,
+      streamingLinks: [{ siteId: 10, site: "Netflix", url: "https://www.netflix.com/title/1" }],
     });
   });
 });

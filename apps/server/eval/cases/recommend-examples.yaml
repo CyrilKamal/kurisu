@@ -35,3 +35,17 @@ cases:
     tags: [example, clarify]
     expect:
       clarify: true
+
+  - id: rec-example-netflix
+    message: anything good on netflix?
+    tags: [example, streaming]
+    services: [crunchyroll]
+    expect:
+      streams_on: [netflix]
+
+  - id: rec-example-my-services
+    message: what can I stream tonight on my services
+    tags: [example, streaming]
+    services: [crunchyroll, hidive]
+    expect:
+      streams_on: [crunchyroll, hidive]

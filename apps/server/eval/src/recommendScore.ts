@@ -1,5 +1,7 @@
 import type { ListStatus } from "@kurisu/shared";
 
+import type { StreamingLink } from "../../src/anilist/client.js";
+import { STREAMING_SERVICES, watchOn } from "../../src/brief/services.js";
 import { NOT_YET_AIRED } from "../../src/mal/client.js";
 import type { RecommendCase } from "./recommendCases.js";
 
@@ -21,6 +23,8 @@ export interface PickedShow {
   airingStatus: string | null;
   /** The year it started airing; null when unknown. */
   startYear: number | null;
+  /** Where it streams, from the frozen AniList links; [] when unknown. */
+  streamingLinks: StreamingLink[];
 }
 
 type Expect = RecommendCase["expect"];
@@ -139,6 +143,15 @@ export function checkPick(
   if (unwanted.length > 0) constraint(`has ${unwanted.join(", ")}`);
   const source = sourceProblem(pick, expect.source);
   if (source) constraint(source);
+  if (expect.streams_on && watchOn(pick.streamingLinks, expect.streams_on).length === 0) {
+    const everywhere = watchOn(
+      pick.streamingLinks,
+      STREAMING_SERVICES.map((s) => s.id),
+    ).map((w) => w.service);
+    constraint(
+      `not on ${expect.streams_on.join("/")} (AniList lists ${everywhere.length > 0 ? everywhere.join(", ") : "none of the services we know"})`,
+    );
+  }
   return violations;
 }
 

@@ -1,0 +1,1 @@
+ALTER TABLE "anilist_catalog" ADD COLUMN "streaming_links" jsonb DEFAULT '[]'::jsonb NOT NULL;

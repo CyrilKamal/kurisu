@@ -584,6 +584,11 @@ export const anilistCatalog = pgTable("anilist_catalog", {
     .array()
     .notNull()
     .default(sql`'{}'::integer[]`),
+  // Enabled official streaming links only, as in anilist_media.
+  streamingLinks: jsonb("streaming_links")
+    .$type<StreamingLink[]>()
+    .notNull()
+    .default(sql`'[]'::jsonb`),
   fetchedAt: timestamptz("fetched_at").notNull().defaultNow(),
 });
 

@@ -109,6 +109,7 @@ export function catalogRowFrom(show: DiscoveredShow & { malId: number }): Catalo
     coverUrl: show.coverUrl?.startsWith("https://") ? show.coverUrl : null,
     startDate: show.startDate,
     prequelMalIds: show.prequelMalIds,
+    streamingLinks: show.streamingLinks,
     fetchedAt: new Date(),
   };
 }

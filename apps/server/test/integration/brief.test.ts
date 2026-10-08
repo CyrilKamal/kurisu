@@ -685,7 +685,7 @@ describe("daily briefs", () => {
 });
 
 describe("airing data", () => {
-  it("is refreshed in the background after a list sync, for Watching and airing shows", async () => {
+  it("is refreshed in the background after a list sync, for Watching, airing and pickable shows", async () => {
     // beforeEach logged in, which synced the list.
     const deadline = Date.now() + 5_000;
     let ids: number[] = [];
@@ -693,11 +693,13 @@ describe("airing data", () => {
       ids = (await h.db.select({ malId: anilistMedia.malId }).from(anilistMedia)).map(
         (r) => r.malId,
       );
-      if (ids.length >= 3) break;
+      if (ids.length >= 5) break;
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    // Both Watching shows, plus the Plan to Watch sequel MAL says hasn't aired yet.
-    expect(ids.sort()).toEqual([900001, 900005, 900007]);
+    // Both Watching shows and the Plan to Watch sequel MAL says hasn't aired yet (airing data),
+    // plus the On hold and rewatching shows the recommender can pick (where to watch). Not the
+    // completed film or the dropped show.
+    expect(ids.sort()).toEqual([900001, 900003, 900005, 900006, 900007]);
   });
 });
 
@@ -705,7 +707,7 @@ describe("split shows", () => {
   it("lists a split show's episodes in MAL's numbering", async () => {
     // Let the background refresh from login finish, then start from an empty cache.
     const deadline = Date.now() + 5_000;
-    while (Date.now() < deadline && (await h.db.select().from(anilistMedia)).length < 3) {
+    while (Date.now() < deadline && (await h.db.select().from(anilistMedia)).length < 5) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     await h.db.delete(anilistMedia);

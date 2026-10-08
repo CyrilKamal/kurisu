@@ -1,0 +1,6136 @@
+{
+  "description": "Where the recommendation eval's shows stream (AniList's enabled official links): the my-list snapshot's Plan to Watch, Watching, On hold and rewatching shows, and the discovery pool's shows. Public show data only. Never re-exported.",
+  "source": "anilist",
+  "frozenAt": "2026-10-08T10:53:07.529Z",
+  "shows": [
+    {
+      "malId": 1,
+      "anilistId": 1,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/cowboy-bebop"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/cowboy-bebop"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B00R2KO8ZE/"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/2052"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/cowboy-bebop"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80001305"
+        }
+      ]
+    },
+    {
+      "malId": 5,
+      "anilistId": 5,
+      "links": []
+    },
+    {
+      "malId": 6,
+      "anilistId": 6,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/trigun"
+        }
+      ]
+    },
+    {
+      "malId": 8,
+      "anilistId": 8,
+      "links": []
+    },
+    {
+      "malId": 19,
+      "anilistId": 19,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.jp/naoki-urasawas-monster/"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81409869"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B003BM4IFM/"
+        }
+      ]
+    },
+    {
+      "malId": 20,
+      "anilistId": 20,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/naruto"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/naruto"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70205012"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/1622/naruto"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.tv/en/play/1005144"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/naruto-1evx2uy83ah"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLDDFkfLheQ9hNru7WoTa26dpn6o9-AEJK"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/series/naruto-dubbed/11802118009"
+        }
+      ]
+    },
+    {
+      "malId": 21,
+      "anilistId": 21,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/one-piece"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/one-piece"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80107103"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/37976"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1bk9icvr331"
+        },
+        {
+          "siteId": 131,
+          "site": "WeTV",
+          "url": "https://wetv.vip/en/play/tnfk3rniubz3m8o"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@onepieceofficial"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/series/one-piece/14153295320"
+        }
+      ]
+    },
+    {
+      "malId": 30,
+      "anilistId": 30,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81033445"
+        },
+        {
+          "siteId": 230,
+          "site": "Criterion Channel",
+          "url": "https://www.criterionchannel.com/series/q9n77HtL/neon-genesis-evangelion"
+        }
+      ]
+    },
+    {
+      "malId": 32,
+      "anilistId": 32,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/60024788"
+        },
+        {
+          "siteId": 230,
+          "site": "Criterion Channel",
+          "url": "https://www.criterionchannel.com/films/0RcqmbNL/neon-genesis-evangelion-the-end-of-evangelion"
+        }
+      ]
+    },
+    {
+      "malId": 33,
+      "anilistId": 33,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/search?q=berserk&jbv=80243876"
+        }
+      ]
+    },
+    {
+      "malId": 57,
+      "anilistId": 57,
+      "links": []
+    },
+    {
+      "malId": 136,
+      "anilistId": 136,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl2SdSro00Nvg38MQUf-5ZL8"
+        }
+      ]
+    },
+    {
+      "malId": 164,
+      "anilistId": 164,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/28630857"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.max.com/movies/e31c2dc2-cb8b-416e-9eda-769be3bb3a6b"
+        }
+      ]
+    },
+    {
+      "malId": 170,
+      "anilistId": 170,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/slam-dunk"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/p4ghq7t64t"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/37934"
+        },
+        {
+          "siteId": 131,
+          "site": "WeTV",
+          "url": "https://wetv.vip/play/iuubflgwnf0fwhr/i0039g7eoz5"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLrx8BnXgzlajHCIzrbBld56peyP2RX5p-"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70024218"
+        }
+      ]
+    },
+    {
+      "malId": 185,
+      "anilistId": 185,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/initial-d"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/initial-d"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JhMJ1XmulIYgeMJw1S3AYAa"
+        },
+        {
+          "siteId": 251,
+          "site": "Bandai Channel",
+          "url": "https://www.b-ch.com/titles/4405/"
+        }
+      ]
+    },
+    {
+      "malId": 186,
+      "anilistId": 186,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jg_IjS0KTi62YpVqxFFtl2t"
+        }
+      ]
+    },
+    {
+      "malId": 199,
+      "anilistId": 199,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/60023642"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.max.com/movies/3deab668-d0a4-4a8d-9bc8-0952a0ad836e"
+        }
+      ]
+    },
+    {
+      "malId": 202,
+      "anilistId": 202,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/wolfs-rain"
+        }
+      ]
+    },
+    {
+      "malId": 227,
+      "anilistId": 227,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/flcl"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/flcl"
+        }
+      ]
+    },
+    {
+      "malId": 249,
+      "anilistId": 249,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/inuyasha"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "http://www.netflix.com/title/70204995"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B0B5W1QLLZ/ref=atv_dp_season_select_s1"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLDDFkfLheQ9he_kx6d1U0_ZFpmU-4L44i"
+        }
+      ]
+    },
+    {
+      "malId": 263,
+      "anilistId": 263,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/hajime-no-ippo-the-fighting"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80995578"
+        },
+        {
+          "siteId": 27,
+          "site": "RetroCrush",
+          "url": "https://www.retrocrush.tv/details/DMR00006769/Hajime-no-Ippo-(Original-Japanese)"
+        }
+      ]
+    },
+    {
+      "malId": 264,
+      "anilistId": 264,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/watch/G4VUQ3VD3/champion-road"
+        }
+      ]
+    },
+    {
+      "malId": 265,
+      "anilistId": 265,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/watch/GN7UD7X7E/mashiba-vs-kimura"
+        }
+      ]
+    },
+    {
+      "malId": 269,
+      "anilistId": 269,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/bleach"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/play/35278?bstar_from=bstar-web.pgc-media-info.0.0"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JhUQ-NvGTp34p7vqZarUZ7Y"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/en-gb/series/bleach/6g48QKlgQdWK"
+        },
+        {
+          "siteId": 210,
+          "site": "Star+",
+          "url": "https://www.starplus.com/series/bleach/6g48QKlgQdWK"
+        }
+      ]
+    },
+    {
+      "malId": 270,
+      "anilistId": 270,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/hellsing"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/hellsing"
+        }
+      ]
+    },
+    {
+      "malId": 287,
+      "anilistId": 287,
+      "links": []
+    },
+    {
+      "malId": 338,
+      "anilistId": 338,
+      "links": [
+        {
+          "siteId": 31,
+          "site": "Crackle",
+          "url": "https://www.crackle.com/watch/10334"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B09KGCTYBG/ref=atv_3p_fre_c_pvsEvL_brws_21_5"
+        }
+      ]
+    },
+    {
+      "malId": 392,
+      "anilistId": 392,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/yu-yu-hakusho-e6f09891-7847-42f5-91eb-1bc17fe8dc5b"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/2272/yu_yu_hakusho"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81005375"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/yu-yu-hakusho"
+        }
+      ]
+    },
+    {
+      "malId": 431,
+      "anilistId": 431,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70028883"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.max.com/movies/a95fecb0-ad4f-4849-a5cb-5e192ca92f03"
+        }
+      ]
+    },
+    {
+      "malId": 437,
+      "anilistId": 437,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/fr/series/GZJH3D8V3/perfect-blue"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://play.hbomax.com/movie/d6f89801-dca7-48d3-9fb7-f4f8c70793af"
+        }
+      ]
+    },
+    {
+      "malId": 467,
+      "anilistId": 467,
+      "links": [
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/ghost-in-the-shell"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70213091"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/television/ghost-in-the-shell-stand-alone-complex-season-1-mary-elizabeth-mcglynn/11079586"
+        }
+      ]
+    },
+    {
+      "malId": 578,
+      "anilistId": 578,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/557010"
+        }
+      ]
+    },
+    {
+      "malId": 801,
+      "anilistId": 801,
+      "links": [
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/ghost-in-the-shell"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70213091"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/television/ghost-in-the-shell-stand-alone-complex-season-2-mary-elizabeth-mcglynn/11079617"
+        }
+      ]
+    },
+    {
+      "malId": 813,
+      "anilistId": 813,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/dragon-ball-z"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/38106"
+        }
+      ]
+    },
+    {
+      "malId": 820,
+      "anilistId": 820,
+      "links": []
+    },
+    {
+      "malId": 949,
+      "anilistId": 949,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GZJH3D8D8/gunbuster"
+        }
+      ]
+    },
+    {
+      "malId": 1002,
+      "anilistId": 1002,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B07ZHM7WL1/"
+        }
+      ]
+    },
+    {
+      "malId": 1292,
+      "anilistId": 1292,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/afro-samurai"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70204947"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/afro-samurai"
+        }
+      ]
+    },
+    {
+      "malId": 1482,
+      "anilistId": 1482,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/d-gray-man"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/dgray-man"
+        }
+      ]
+    },
+    {
+      "malId": 1535,
+      "anilistId": 1535,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/death-note"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70204970"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/1630/death_note"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/Death-Note/dp/B0B6RMGK8Z"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLDDFkfLheQ9hzlWtnCSla1DicLZkllriY"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/television/death-note-subbed-season-1-mamoru-miyano/14733965"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G6QWD3EE6"
+        }
+      ]
+    },
+    {
+      "malId": 1575,
+      "anilistId": 1575,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80065146"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JjAnuR364t-jBwsAaVxuFI-"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/code-geass-1858aace-a7fb-4d6f-b770-61dc121185b4"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/code-geass"
+        }
+      ]
+    },
+    {
+      "malId": 1604,
+      "anilistId": 1604,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/reborn"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/reborn"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/1669/reborn"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/35692"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl0Hvvm1qpOoJRSOiJhj9nnl"
+        }
+      ]
+    },
+    {
+      "malId": 1735,
+      "anilistId": 1735,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/naruto-shippuden"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/naruto-shippuden"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/naruto-shippuden"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80000603"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md3287/"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/play/1005195"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@NARUTO_BORUTO_officialchannel"
+        }
+      ]
+    },
+    {
+      "malId": 2001,
+      "anilistId": 2001,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/gurren-lagann"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/gurren-lagann"
+        }
+      ]
+    },
+    {
+      "malId": 2025,
+      "anilistId": 2025,
+      "links": [
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/35568"
+        }
+      ]
+    },
+    {
+      "malId": 2167,
+      "anilistId": 2167,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/clannad/"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/Clannad/dp/B005IGW5Y0?tag=techblast0f-20"
+        }
+      ]
+    },
+    {
+      "malId": 2251,
+      "anilistId": 2251,
+      "links": []
+    },
+    {
+      "malId": 2402,
+      "anilistId": 2402,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GYNQP722Y/tomorrows-joe"
+        }
+      ]
+    },
+    {
+      "malId": 2904,
+      "anilistId": 2904,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80065146"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JhJi1De2SBVmkdPbKKUHZcg"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/code-geass"
+        }
+      ]
+    },
+    {
+      "malId": 2921,
+      "anilistId": 2921,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/champion-joe-2"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/Bell-Sounds-Off-Devils-Ring/dp/B09HSZVGTK/ref=sr_1_1?keywords=Ashita+no+Joe+2&qid=1637258101&qsid=147-6548211-3023644&s=instant-video&sr=1-1&sres=B09HT35LSG%2CB0974BM7B1"
+        }
+      ]
+    },
+    {
+      "malId": 3002,
+      "anilistId": 3002,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/kaiji"
+        },
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/kaiji-ultimate-survivor"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81409812"
+        }
+      ]
+    },
+    {
+      "malId": 3588,
+      "anilistId": 3588,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/soul-eater"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/soul-eater"
+        }
+      ]
+    },
+    {
+      "malId": 3786,
+      "anilistId": 3786,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B098VW137N/"
+        }
+      ]
+    },
+    {
+      "malId": 4181,
+      "anilistId": 4181,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/clannad-after-story"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B01MY6K92X/ref=atv_dp_season_select_s2?tag=techblast0f-20"
+        }
+      ]
+    },
+    {
+      "malId": 4282,
+      "anilistId": 4282,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-garden-of-sinners/episode-5-paradox-paradigm-763123"
+        }
+      ]
+    },
+    {
+      "malId": 4565,
+      "anilistId": 4565,
+      "links": []
+    },
+    {
+      "malId": 4898,
+      "anilistId": 4898,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "http://movies.netflix.com/WiMovie/Black_Butler/70204955"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/black-butler"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/37646"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/23aiunq6ovx"
+        },
+        {
+          "siteId": 131,
+          "site": "WeTV",
+          "url": "https://wetv.vip/en/play/hahrxme70ossut6"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GYQ43P3E6/black-butler"
+        }
+      ]
+    },
+    {
+      "malId": 5028,
+      "anilistId": 5028,
+      "links": []
+    },
+    {
+      "malId": 5040,
+      "anilistId": 5040,
+      "links": []
+    },
+    {
+      "malId": 5081,
+      "anilistId": 5081,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/bakemonogatari"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80060347"
+        }
+      ]
+    },
+    {
+      "malId": 5114,
+      "anilistId": 5114,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/fullmetal-alchemist-brotherhood"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/fullmetal-alchemist-brotherhood"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/One-All/dp/B002T8C202/ref=sr_1_52/146-1307517-0174061?s=instant-video&rps=1&ie=UTF8&qid=1528858933&sr=1-52&refinements=p_n_theme_browse-bin%3A2650364011%2Cp_85%3A2470955011%2Cp_n_entity_type%3A14069184011%7C14069185011"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70204981"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/s8lu95if3p"
+        }
+      ]
+    },
+    {
+      "malId": 5258,
+      "anilistId": 5258,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80995578"
+        }
+      ]
+    },
+    {
+      "malId": 5630,
+      "anilistId": 5630,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/eden-of-the-east"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/2269/eden_of_the_east"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/eden-of-the-east"
+        }
+      ]
+    },
+    {
+      "malId": 5941,
+      "anilistId": 5941,
+      "links": []
+    },
+    {
+      "malId": 6114,
+      "anilistId": 6114,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G8DHV78Q4/rainbow"
+        }
+      ]
+    },
+    {
+      "malId": 6675,
+      "anilistId": 6675,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/watch?v=9NIor7m_tnI"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70153298"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/movies/283992/redline"
+        }
+      ]
+    },
+    {
+      "malId": 6702,
+      "anilistId": 6702,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/fairy-tail"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLwLSw1_eDZl2VQRIahDF73hnkdPjNRYnu"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/Fairy-Tail-Season-1/dp/B0CHBPDKHT"
+        }
+      ]
+    },
+    {
+      "malId": 7311,
+      "anilistId": 7311,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-disappearance-of-haruhi-suzumiya"
+        }
+      ]
+    },
+    {
+      "malId": 7472,
+      "anilistId": 7472,
+      "links": []
+    },
+    {
+      "malId": 7655,
+      "anilistId": 7655,
+      "links": []
+    },
+    {
+      "malId": 7674,
+      "anilistId": 7674,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/bakuman"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/1982/bakuman"
+        }
+      ]
+    },
+    {
+      "malId": 9253,
+      "anilistId": 9253,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/steinsgate"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/37207"
+        }
+      ]
+    },
+    {
+      "malId": 9260,
+      "anilistId": 9260,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80097748"
+        }
+      ]
+    },
+    {
+      "malId": 9617,
+      "anilistId": 9617,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/movies/k-on-the-movie"
+        }
+      ]
+    },
+    {
+      "malId": 9756,
+      "anilistId": 9756,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/puella-magi-madoka-magica"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/puella-magi-madoka-magica"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70302572"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1wvr4zrsvx9"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/36816"
+        }
+      ]
+    },
+    {
+      "malId": 10087,
+      "anilistId": 10087,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/fatezero"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/fatezero"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70304256"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/fate-zero-y16naz6369?frmrp=play&frmb=album_information&frmrs=album"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35414"
+        }
+      ]
+    },
+    {
+      "malId": 10620,
+      "anilistId": 10620,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-future-diary"
+        }
+      ]
+    },
+    {
+      "malId": 10800,
+      "anilistId": 10800,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/chihayafuru"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/37139"
+        }
+      ]
+    },
+    {
+      "malId": 11061,
+      "anilistId": 11061,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/hunter-x-hunter"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/hunter-x-hunter"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70300472"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/1627/hunter_x_hunter"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.tv/en/play/37603"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLwLSw1_eDZl2SdSro00Nvg38MQUf-5ZL8"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/series/hunter-x-hunter-dubbed/11834349593"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/Hunter-Japanese-English-Subs/dp/B0B5X87G1P"
+        }
+      ]
+    },
+    {
+      "malId": 11111,
+      "anilistId": 11111,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/another"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80241072"
+        }
+      ]
+    },
+    {
+      "malId": 11771,
+      "anilistId": 11771,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/kurokos-basketball"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80063153"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35261"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLhGamQZtJ7K9dCdYvc4OE5oC22FefmTx0"
+        }
+      ]
+    },
+    {
+      "malId": 11981,
+      "anilistId": 11981,
+      "links": []
+    },
+    {
+      "malId": 12189,
+      "anilistId": 12189,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl28iypqyY3tsSz7P1BByLiK"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/hyouka"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/34818"
+        }
+      ]
+    },
+    {
+      "malId": 12355,
+      "anilistId": 12355,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/wolf-children"
+        }
+      ]
+    },
+    {
+      "malId": 13125,
+      "anilistId": 13125,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/shin-sekai-yori-from-the-new-world"
+        }
+      ]
+    },
+    {
+      "malId": 13601,
+      "anilistId": 13601,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/psychopass"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80006146"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/2271/psycho-pass"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/psycho-pass"
+        }
+      ]
+    },
+    {
+      "malId": 14075,
+      "anilistId": 14075,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/blast-of-tempest"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/blast-of-tempest"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl0eNUZD2EZUg4k3YiDheOYF"
+        }
+      ]
+    },
+    {
+      "malId": 14397,
+      "anilistId": 14397,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/chihayafuru"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/37141"
+        }
+      ]
+    },
+    {
+      "malId": 14719,
+      "anilistId": 14719,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80179831"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/1823/jojos_bizarre_adventure"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/jojos-bizarre-adventure"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/jojo's-bizarre-adventure-xga0etu9bl?frmrp=play&frmb=album_information&frmrs=album"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/television/jojos-bizarre-adventure-subbed-season-1-matthew-mercer/14733908"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B0B8NCTBN7/ref=atv_dp_season_select_s1"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/jojos-bizarre-adventure-3f2ffb64-2424-44a5-b229-4371dccb1d6f"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl0CVpnjetepbYfC4ZuePqo6"
+        }
+      ]
+    },
+    {
+      "malId": 15335,
+      "anilistId": 15335,
+      "links": []
+    },
+    {
+      "malId": 16498,
+      "anilistId": 16498,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/attack-on-titan"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/attack-on-titan"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/attack-on-titan"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/xq12ps94l5"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/@attackontitan_officialchannel"
+        }
+      ]
+    },
+    {
+      "malId": 16592,
+      "anilistId": 16592,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/danganronpa-the-animation"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl2oW4bATqEoAh2xpGMTSXKM"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/danganronpa-the-animation"
+        }
+      ]
+    },
+    {
+      "malId": 17074,
+      "anilistId": 17074,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/monogatari-second-season"
+        }
+      ]
+    },
+    {
+      "malId": 17265,
+      "anilistId": 17265,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/log-horizon"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/5b43d845-83b4-4205-ac0b-2daca7acdc1a"
+        }
+      ]
+    },
+    {
+      "malId": 18179,
+      "anilistId": 18179,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/yowapeda"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/yowamushi-pedal"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80061943"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B08FVH5QJ7/"
+        },
+        {
+          "siteId": 31,
+          "site": "Crackle",
+          "url": "https://www.crackle.com/details/31934b5a-dac0-483a-b363-b1179ebce08e/yowamushi-pedal"
+        }
+      ]
+    },
+    {
+      "malId": 18507,
+      "anilistId": 18507,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/free-iwatobi-swim-club"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B072WLY3MN/"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80186018"
+        }
+      ]
+    },
+    {
+      "malId": 18617,
+      "anilistId": 18617,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80159876"
+        },
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/playlist/34089"
+        }
+      ]
+    },
+    {
+      "malId": 18679,
+      "anilistId": 18679,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "http://www.netflix.com/WiMovie/70305217"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/kill-la-kill"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/kill-la-kill"
+        }
+      ]
+    },
+    {
+      "malId": 19647,
+      "anilistId": 19647,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/hajime-no-ippo-the-fighting-rising-"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80995578"
+        }
+      ]
+    },
+    {
+      "malId": 20583,
+      "anilistId": 20464,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/haikyu"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B07WNMBJG2/"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80090673"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1m26il1p739"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jj89wMj2yzRnsY-db5DswlG"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/play/34475"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md28221614"
+        }
+      ]
+    },
+    {
+      "malId": 21843,
+      "anilistId": 20590,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/rage-of-bahamut-genesis"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B00TKLPMNU"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl3wu5wm74-n5Pg_734vHfDk"
+        }
+      ]
+    },
+    {
+      "malId": 22135,
+      "anilistId": 20607,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/ping-pong-the-animation"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35082"
+        }
+      ]
+    },
+    {
+      "malId": 22507,
+      "anilistId": 19613,
+      "links": []
+    },
+    {
+      "malId": 22535,
+      "anilistId": 20623,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80191008"
+        },
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/season/19824"
+        }
+      ]
+    },
+    {
+      "malId": 22729,
+      "anilistId": 20632,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/aldnoahzero"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/aldnoahzero"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80040104"
+        }
+      ]
+    },
+    {
+      "malId": 22789,
+      "anilistId": 20722,
+      "links": []
+    },
+    {
+      "malId": 23273,
+      "anilistId": 20665,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/your-lie-in-april"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/your-lie-in-april"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35121"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80041089"
+        }
+      ]
+    },
+    {
+      "malId": 23283,
+      "anilistId": 20661,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80020759"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/terror-in-resonance"
+        },
+        {
+          "siteId": 249,
+          "site": "OceanVeil",
+          "url": "https://oceanveil.net/anime_titles/368"
+        }
+      ]
+    },
+    {
+      "malId": 24405,
+      "anilistId": 20729,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/world-trigger"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/2061/world_trigger"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80149562"
+        }
+      ]
+    },
+    {
+      "malId": 24415,
+      "anilistId": 20725,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/kurokos-basketball"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80063153"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/34981"
+        }
+      ]
+    },
+    {
+      "malId": 24439,
+      "anilistId": 20727,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80205560"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/34541"
+        }
+      ]
+    },
+    {
+      "malId": 25183,
+      "anilistId": 20773,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/gangsta"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/2053/gangsta"
+        }
+      ]
+    },
+    {
+      "malId": 25777,
+      "anilistId": 20958,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/attack-on-titan"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/attack-on-titan"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/attack-on-titan"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1f7yemxzyr5"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70299043"
+        }
+      ]
+    },
+    {
+      "malId": 25781,
+      "anilistId": 20811,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/attack-on-titan"
+        }
+      ]
+    },
+    {
+      "malId": 26243,
+      "anilistId": 20829,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/seraph-of-the-end-vampire-reign"
+        }
+      ]
+    },
+    {
+      "malId": 27631,
+      "anilistId": 20849,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/god-eater"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/god-eater"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80145805"
+        }
+      ]
+    },
+    {
+      "malId": 27655,
+      "anilistId": 20853,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/aldnoahzero"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/aldnoahzero"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80040104"
+        }
+      ]
+    },
+    {
+      "malId": 28623,
+      "anilistId": 21196,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B078TLSRMJ/"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/kabaneri-of-the-iron-fortress/videos"
+        },
+        {
+          "siteId": 249,
+          "site": "OceanVeil",
+          "url": "https://oceanveil.net/anime_titles/277"
+        }
+      ]
+    },
+    {
+      "malId": 28725,
+      "anilistId": 20968,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/de/title/80077129"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://bili.im/LPWKxic"
+        }
+      ]
+    },
+    {
+      "malId": 28851,
+      "anilistId": 20954,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80223226"
+        }
+      ]
+    },
+    {
+      "malId": 28891,
+      "anilistId": 20992,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/haikyu"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B07X2V2QDS/"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80090673"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/haikyu-c085d06a-48b3-4456-955e-480aef4d8442"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/haikyu!!-second-season-1yycejbuv4p"
+        }
+      ]
+    },
+    {
+      "malId": 28957,
+      "anilistId": 21008,
+      "links": []
+    },
+    {
+      "malId": 28999,
+      "anilistId": 20997,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/charlotte"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/charlotte"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80142917"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35299"
+        }
+      ]
+    },
+    {
+      "malId": 30015,
+      "anilistId": 21049,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/relife"
+        }
+      ]
+    },
+    {
+      "malId": 30187,
+      "anilistId": 21066,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/season/19735"
+        }
+      ]
+    },
+    {
+      "malId": 30230,
+      "anilistId": 21085,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/ace-of-the-diamond"
+        }
+      ]
+    },
+    {
+      "malId": 30484,
+      "anilistId": 21127,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/steinsgate-0"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/37208"
+        }
+      ]
+    },
+    {
+      "malId": 30654,
+      "anilistId": 21170,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/assassination-classroom"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80045948"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/assassination-classroom"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl1QGs4v-QtvNHpC_N8ZjkEs"
+        }
+      ]
+    },
+    {
+      "malId": 31043,
+      "anilistId": 21234,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/erased"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/erased-40cf1997-7291-4764-a80c-c264294fa691"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80114225"
+        }
+      ]
+    },
+    {
+      "malId": 31229,
+      "anilistId": 21269,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl1a-fR7PKtKLE_nzXYzm0MH"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/servamp"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/36982"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/Tsubaki/dp/B0CH9DDVQ7"
+        }
+      ]
+    },
+    {
+      "malId": 31240,
+      "anilistId": 21355,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/rezero-starting-life-in-another-world-"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80131659"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl0_movujO4K0xYOAG9soPjH"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/03f5afe1-1092-45ee-a421-91d0d8413bf0"
+        }
+      ]
+    },
+    {
+      "malId": 31374,
+      "anilistId": 21281,
+      "links": [
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/2319/"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/attack-on-titan-junior-high-0b24339d-360a-48d4-a07d-e97600d49294"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/attack-on-titan-junior-high"
+        }
+      ]
+    },
+    {
+      "malId": 31433,
+      "anilistId": 20628,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://crunchyroll.com/series/GRW4DXNEY"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80987729"
+        }
+      ]
+    },
+    {
+      "malId": 31478,
+      "anilistId": 21311,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/bungo-stray-dogs"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80132126"
+        }
+      ]
+    },
+    {
+      "malId": 31646,
+      "anilistId": 21366,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/march-comes-in-like-a-lion"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80196657"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35908"
+        }
+      ]
+    },
+    {
+      "malId": 31757,
+      "anilistId": 21399,
+      "links": []
+    },
+    {
+      "malId": 31758,
+      "anilistId": 21400,
+      "links": []
+    },
+    {
+      "malId": 31764,
+      "anilistId": 21410,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/alderamin-on-the-sky"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B076B5F6Y9/"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl1tTjHxsEqxY9VXJH-heiAs"
+        }
+      ]
+    },
+    {
+      "malId": 31904,
+      "anilistId": 21445,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/big-order"
+        }
+      ]
+    },
+    {
+      "malId": 31964,
+      "anilistId": 21459,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "http://www.hulu.com/my-hero-academia"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/my-hero-academia"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80135674"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1djwf83pp09"
+        }
+      ]
+    },
+    {
+      "malId": 32182,
+      "anilistId": 21507,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/mob-psycho-100"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80179798"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLpm1VVK4UL15H3VL53aWCCaCk_pkpJ5u-"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/0U3TA8SOFL6VTAQ1E1QSC0SA6D/ref=atv_dp_season_select_s1"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/mob-psycho-100-fc9b8130-e1e3-420b-b28d-a72f0b235069"
+        }
+      ]
+    },
+    {
+      "malId": 32281,
+      "anilistId": 21519,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80161371"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/your-name"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/0LQ7ANJUT17XBYKOFOUCQ1PORE"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://play.max.com/movie/e95b27d7-7fba-4b3b-bed9-a134dd1bc6ba"
+        }
+      ]
+    },
+    {
+      "malId": 32615,
+      "anilistId": 21613,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/saga-of-tanya-the-evil"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JipogV7W74-hbDbYaQx78Oq"
+        }
+      ]
+    },
+    {
+      "malId": 32729,
+      "anilistId": 21647,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/orange"
+        }
+      ]
+    },
+    {
+      "malId": 32827,
+      "anilistId": 21665,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80097594"
+        }
+      ]
+    },
+    {
+      "malId": 32935,
+      "anilistId": 21698,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/haikyu"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1c2ukc6ik4d"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80090673"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JhJSL_Vr_RAi9iQyPk-gHAO"
+        }
+      ]
+    },
+    {
+      "malId": 32998,
+      "anilistId": 21711,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/91-days"
+        }
+      ]
+    },
+    {
+      "malId": 33049,
+      "anilistId": 21718,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81169358"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/id/media/35413"
+        }
+      ]
+    },
+    {
+      "malId": 33050,
+      "anilistId": 21719,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81399559"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/id/media/1003989"
+        }
+      ]
+    },
+    {
+      "malId": 33352,
+      "anilistId": 21827,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80182123"
+        }
+      ]
+    },
+    {
+      "malId": 33889,
+      "anilistId": 87504,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/dances-with-the-dragons"
+        }
+      ]
+    },
+    {
+      "malId": 34437,
+      "anilistId": 97880,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81216714"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/code-geass"
+        }
+      ]
+    },
+    {
+      "malId": 34542,
+      "anilistId": 97922,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B076DPVSW2"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81028433"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G8DHV7E9Q/inuyashiki-last-hero"
+        }
+      ]
+    },
+    {
+      "malId": 34566,
+      "anilistId": 97938,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/boruto-naruto-next-generations"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/boruto-naruto-next-generations"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81080523"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md5978"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/play/1005426"
+        }
+      ]
+    },
+    {
+      "malId": 34572,
+      "anilistId": 97940,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GRE50KV36/black-clover"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/black-clover-f6451467-97a8-4ddf-9ae8-e9e4cbb53fc8"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80238012"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/1000677"
+        }
+      ]
+    },
+    {
+      "malId": 34599,
+      "anilistId": 97986,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B073S2612X"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80193163"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl0-bp4bZ7ER-VQ-973riDyN"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/37179"
+        },
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/season/20003"
+        }
+      ]
+    },
+    {
+      "malId": 34636,
+      "anilistId": 98005,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B073R61J5N"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GMEHMEZ7J/welcome-to-the-ballroom"
+        }
+      ]
+    },
+    {
+      "malId": 34792,
+      "anilistId": 98249,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80238911"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://play.max.com/movie/370e07c9-dc65-4e18-8521-959d83630a30"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35802"
+        }
+      ]
+    },
+    {
+      "malId": 35110,
+      "anilistId": 98884,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/haikyu/haikyu-movies-haikyu-the-movie-talent-and-sense-779531"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81030151"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md83872"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgdWqkc38w1s2ftrvict4zQ"
+        }
+      ]
+    },
+    {
+      "malId": 35111,
+      "anilistId": 98885,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/haikyu/-779529"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81030152"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md82712"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgdWqkc38w1s2ftrvict4zQ"
+        }
+      ]
+    },
+    {
+      "malId": 35120,
+      "anilistId": 98460,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/mx/title/80174974"
+        }
+      ]
+    },
+    {
+      "malId": 35677,
+      "anilistId": 100178,
+      "links": [
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/movies/590745/liz-and-the-blue-bird-subtitled"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/liz-and-the-blue-bird"
+        },
+        {
+          "siteId": 230,
+          "site": "Criterion Channel",
+          "url": "https://www.criterionchannel.com/liz-and-the-blue-bird"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.hbomax.com/movies/liz-and-the-blue-bird/7e9242e1-60e7-435f-9367-6de7acaa9f4f"
+        }
+      ]
+    },
+    {
+      "malId": 35737,
+      "anilistId": 99088,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81281344"
+        }
+      ]
+    },
+    {
+      "malId": 35760,
+      "anilistId": 99147,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/attack-on-titan"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/attack-on-titan"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/attack-on-titan"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/2c19tvbcbux"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70299043"
+        }
+      ]
+    },
+    {
+      "malId": 35838,
+      "anilistId": 99420,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl3llJarYAOOfcLJ3LUcHlxC"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/34725"
+        }
+      ]
+    },
+    {
+      "malId": 35839,
+      "anilistId": 99426,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/a-place-further-than-the-universe"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80995912"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgBf_iGLzsBmPiLZZ-3MffO"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35139"
+        }
+      ]
+    },
+    {
+      "malId": 35848,
+      "anilistId": 99425,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/promare"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.max.com/movies/8b86c65a-92d4-4342-bf56-2056ed8b83c1"
+        }
+      ]
+    },
+    {
+      "malId": 36098,
+      "anilistId": 99750,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81037593"
+        }
+      ]
+    },
+    {
+      "malId": 36474,
+      "anilistId": 100182,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/sword-art-online"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/sword-art-online-alicization"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70302573"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/34574"
+        }
+      ]
+    },
+    {
+      "malId": 36563,
+      "anilistId": 100298,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/megalobox"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/3270/megalobox"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/megalobox"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80987707"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgoFEVBdHozDwI-MCXpDoHK"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://play.max.com/show/ecd0a64b-e3b3-46a9-9b50-29c7b4846acd"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/television/megalobox-subbed-season-1-hiroki-yasumoto/14636669"
+        }
+      ]
+    },
+    {
+      "malId": 36649,
+      "anilistId": 100388,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81218604"
+        }
+      ]
+    },
+    {
+      "malId": 36704,
+      "anilistId": 101117,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "http://www.crunchyroll.com/free-iwatobi-swim-club"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B07VVT27RR/"
+        }
+      ]
+    },
+    {
+      "malId": 36862,
+      "anilistId": 100643,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/movies/made-in-abyss-dawn-of-the-deep-soul"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/movie/made-in-abyss-dawn-of-the-deep-soul-cf4cd681-06a3-4aaf-9f13-ab5137f6a821"
+        }
+      ]
+    },
+    {
+      "malId": 37095,
+      "anilistId": 101432,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81010662"
+        }
+      ]
+    },
+    {
+      "malId": 37105,
+      "anilistId": 100922,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B07FFW6Q7Y"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://netflix.com/jp-en/title/81169530"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GNVHKN94W/grand-blue-dreaming"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLbuF5Onrcu9eIU19Z-bEE5hgmBfAfvkmW"
+        }
+      ]
+    },
+    {
+      "malId": 37379,
+      "anilistId": 101215,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/chihayafuru"
+        },
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/chihayafuru-season-3"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35556"
+        }
+      ]
+    },
+    {
+      "malId": 37515,
+      "anilistId": 101344,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/movies/made-in-abyss-wandering-twilight"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/movie/made-in-abyss-wandering-twilight-a070b76a-a792-432b-a3f9-bebf8b01c2ce"
+        }
+      ]
+    },
+    {
+      "malId": 37520,
+      "anilistId": 101347,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/dororo"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/region/na/detail/0TVO1JG449EFL5TZRWMN0DHHG0"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/dororo-6683bff2-69b8-4893-b370-f6544713b13d"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLxSscENEp7JhK-cSte9aHaz3rs6qc2Eup&si=lgTTA5pL7lelUyrR"
+        }
+      ]
+    },
+    {
+      "malId": 37521,
+      "anilistId": 101348,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/vinland-saga"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81249833"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GEXH3WKK0/vinland-saga"
+        }
+      ]
+    },
+    {
+      "malId": 37525,
+      "anilistId": 101349,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B07YQPR7X3/"
+        },
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/babylon"
+        }
+      ]
+    },
+    {
+      "malId": 37779,
+      "anilistId": 101759,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-promised-neverland"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/the-promised-neverland"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81145640"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/fqzoj5ytxt"
+        }
+      ]
+    },
+    {
+      "malId": 37926,
+      "anilistId": 102926,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/the-ones-within-9afe71d4-c8b9-4dd3-9f79-6c3a52297afa"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B07TVPTFF8/"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl0Teg-jmcUbCFtcbiDHcBi-"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-ones-within"
+        }
+      ]
+    },
+    {
+      "malId": 37936,
+      "anilistId": 107069,
+      "links": [
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md28228714/"
+        }
+      ]
+    },
+    {
+      "malId": 37965,
+      "anilistId": 101903,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/run-with-the-wind"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81145654"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/34907"
+        }
+      ]
+    },
+    {
+      "malId": 37981,
+      "anilistId": 103221,
+      "links": [
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/movies/children-of-the-sea/PPmmokvapG3T"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81208104"
+        }
+      ]
+    },
+    {
+      "malId": 37987,
+      "anilistId": 103047,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81193214"
+        }
+      ]
+    },
+    {
+      "malId": 38000,
+      "anilistId": 101922,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/demon-slayer-kimetsu-no-yaiba"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/demon-slayer-kimetsu-no-yaiba"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81091393"
+        }
+      ]
+    },
+    {
+      "malId": 38080,
+      "anilistId": 103302,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/kono-oto-tomare-sounds-of-life-8d6af21a-d6ff-433f-b031-b43b505e1b29"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/kono-oto-tomare-sounds-of-life"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81328604"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgPrG-3dCO9UbXnD7NJek1-"
+        }
+      ]
+    },
+    {
+      "malId": 38329,
+      "anilistId": 104157,
+      "links": [
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.tv/en/play/34869"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81228006"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GYW4MG9G6/rascal-does-not-dream-of-bunny-girl-senpai"
+        }
+      ]
+    },
+    {
+      "malId": 38408,
+      "anilistId": 104276,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/my-hero-academia"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/my-hero-academia"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B07Z2C245C/"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/19rrhy0311"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80135674"
+        }
+      ]
+    },
+    {
+      "malId": 38475,
+      "anilistId": 104460,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/laid-back-camp"
+        }
+      ]
+    },
+    {
+      "malId": 38524,
+      "anilistId": 104578,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/attack-on-titan"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/attack-on-titan-9c91ffa3-dc20-48bf-8bc5-692e37c76d88"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/attack-on-titan"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70299043"
+        }
+      ]
+    },
+    {
+      "malId": 38731,
+      "anilistId": 105749,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/ace-of-the-diamond"
+        }
+      ]
+    },
+    {
+      "malId": 38883,
+      "anilistId": 106625,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/haikyu"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/11gjb8lbv7x"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80090673"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.tv/en/play/34495"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JhcDltax70U8SLMixaRLsCE"
+        }
+      ]
+    },
+    {
+      "malId": 39166,
+      "anilistId": 124115,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/playlist/19549"
+        }
+      ]
+    },
+    {
+      "malId": 39167,
+      "anilistId": 132420,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/playlist/34086"
+        }
+      ]
+    },
+    {
+      "malId": 39175,
+      "anilistId": 107625,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81400497"
+        }
+      ]
+    },
+    {
+      "malId": 39486,
+      "anilistId": 114129,
+      "links": [
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/1042418/"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/gintama-the-very-final"
+        }
+      ]
+    },
+    {
+      "malId": 39565,
+      "anilistId": 108553,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81398907"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://crunchyroll.com/series/GMTE00094107/my-hero-academia-heroes-rising"
+        }
+      ]
+    },
+    {
+      "malId": 39569,
+      "anilistId": 108577,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://netflix.com/title/81427482"
+        }
+      ]
+    },
+    {
+      "malId": 39587,
+      "anilistId": 108632,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/rezero-starting-life-in-another-world-"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/2ffkws2rd7d"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80131659"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLwLSw1_eDZl2vNHSDbAPDD-nel6lYx7kR"
+        }
+      ]
+    },
+    {
+      "malId": 39701,
+      "anilistId": 108928,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80050063"
+        }
+      ]
+    },
+    {
+      "malId": 39741,
+      "anilistId": 109190,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81208936"
+        }
+      ]
+    },
+    {
+      "malId": 40028,
+      "anilistId": 110277,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/attack-on-titan"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/attack-on-titan-9c91ffa3-dc20-48bf-8bc5-692e37c76d88"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/attack-on-titan"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/26rwd8fpbix"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70299043"
+        }
+      ]
+    },
+    {
+      "malId": 40046,
+      "anilistId": 110350,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/id-invaded"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/id-invaded"
+        }
+      ]
+    },
+    {
+      "malId": 40056,
+      "anilistId": 110353,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/deca-dence-c1fba08f-338c-441b-8f87-abe94f7f6258"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81299341"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/deca-dence"
+        }
+      ]
+    },
+    {
+      "malId": 40059,
+      "anilistId": 110355,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/golden-kamuy"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl1nrqwrDFPpNWO2GkwuYmf1"
+        }
+      ]
+    },
+    {
+      "malId": 40128,
+      "anilistId": 110547,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/arte"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl1-UC4RgrWv8yHKbtrVASbf"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/arte"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/34709"
+        }
+      ]
+    },
+    {
+      "malId": 40221,
+      "anilistId": 115230,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/tower-of-god"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://netflix.com/title/81329313"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/35839"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/tower-of-god-b2623f96-4b19-4b95-9dc4-443f4bfc2fa0"
+        }
+      ]
+    },
+    {
+      "malId": 40456,
+      "anilistId": 112151,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81410810"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/demon-slayer-kimetsu-no-yaiba"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/37817/"
+        }
+      ]
+    },
+    {
+      "malId": 40664,
+      "anilistId": 113024,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/movies/revue-starlight-the-movie"
+        }
+      ]
+    },
+    {
+      "malId": 40682,
+      "anilistId": 113108,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/kingdom"
+        }
+      ]
+    },
+    {
+      "malId": 40729,
+      "anilistId": 113359,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgAzPqskHYtlznaK7Q-JpCS"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/megalobox-21675797-0897-44bf-969a-fe5045296ada"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/megalobox"
+        }
+      ]
+    },
+    {
+      "malId": 40748,
+      "anilistId": 113415,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/jujutsu-kaisen"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81278456"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/igc33vhvex"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/37738"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLxSscENEp7JisDU6GAJuyNpVwDvCm-f3J"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/jujutsu-kaisen-382ec8bf-3650-4cde-94db-ecd18665f9e0"
+        }
+      ]
+    },
+    {
+      "malId": 40776,
+      "anilistId": 113538,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/haikyu"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/11gjb8lbv7x"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80090673"
+        },
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.tv/en/play/34634"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JhcDltax70U8SLMixaRLsCE"
+        }
+      ]
+    },
+    {
+      "malId": 40787,
+      "anilistId": 113596,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/josee-the-tiger-and-the-fish"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81508630"
+        }
+      ]
+    },
+    {
+      "malId": 41025,
+      "anilistId": 114535,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/to-your-eternity"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgxV0mDkMNtd0TczCCvLb-N"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1s4l0ds33fl"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81333467"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.max.com/shows/369ec761-967b-4de3-a466-e879ee3ed6c6"
+        }
+      ]
+    },
+    {
+      "malId": 41120,
+      "anilistId": 114888,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JjK6AR9OjeYkwGCVTgCFEWz"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81039113"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-millionaire-detective-balance-unlimited"
+        }
+      ]
+    },
+    {
+      "malId": 41345,
+      "anilistId": 116005,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/noblesse"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl2cM2gAHFY2dgbAElluhIOx"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.max.com/shows/eaafdac2-d951-4e96-97a8-aa78e0bfc08b"
+        }
+      ]
+    },
+    {
+      "malId": 41457,
+      "anilistId": 116589,
+      "links": [
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/2aef2fzzzvp"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81442047"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GVDHX8DM5/86-eighty-six"
+        }
+      ]
+    },
+    {
+      "malId": 41468,
+      "anilistId": 116673,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/burn-the-witch"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl2w1kwb9Si-CBmmpGA5PY65"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/34678"
+        }
+      ]
+    },
+    {
+      "malId": 42249,
+      "anilistId": 120120,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl3F9AGKbC7iRIGeU2XosgTy"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/tokyo-revengers"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81442520"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/17qqf96eghx"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/1001400"
+        },
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://www.max.com/shows/47f0c251-1a08-4225-b089-acb5ecc6ebf6"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/d45b72d4-3c8d-4961-960a-c0c182890189"
+        }
+      ]
+    },
+    {
+      "malId": 42310,
+      "anilistId": 120377,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81054853"
+        }
+      ]
+    },
+    {
+      "malId": 42941,
+      "anilistId": 124223,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/umamusume-pretty-derby"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/37624/"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jgj79jI0W9KxvoRwfTGyeIw"
+        }
+      ]
+    },
+    {
+      "malId": 43325,
+      "anilistId": 124858,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl23lU3K_aB0k1aPJ93_jdnt"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81335206"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/moriarty-the-patriot"
+        }
+      ]
+    },
+    {
+      "malId": 43629,
+      "anilistId": 125369,
+      "links": []
+    },
+    {
+      "malId": 43690,
+      "anilistId": 125428,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81043571"
+        }
+      ]
+    },
+    {
+      "malId": 43760,
+      "anilistId": 125869,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GJ0H7Q5X9/the-fire-hunter"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1vd3lccf4px"
+        }
+      ]
+    },
+    {
+      "malId": 44074,
+      "anilistId": 126403,
+      "links": [
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md28230742/"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/play/1006275"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/link-click"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLrYKPj7wbjfiyR8PezbT7JehgePKs-Tt6"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/0JQ7WFWMSABUKDJLEH08LTVTKZ"
+        }
+      ]
+    },
+    {
+      "malId": 44940,
+      "anilistId": 127400,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://crunchyroll.com/series/GR757DMKY/world-trigger"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80149562"
+        },
+        {
+          "siteId": 239,
+          "site": "Hoopla",
+          "url": "https://www.hoopladigital.com/television/world-trigger-season-3-brian-doe/15581489"
+        }
+      ]
+    },
+    {
+      "malId": 45649,
+      "anilistId": 128207,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81765372"
+        }
+      ]
+    },
+    {
+      "malId": 46095,
+      "anilistId": 128546,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "http://netflix.com/title/81511893"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/vivy-fluorite-eyes-song-"
+        }
+      ]
+    },
+    {
+      "malId": 46569,
+      "anilistId": 128893,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GJ0H7Q5ZJ/hells-paradise"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81574246"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/hells-paradise-ed1bbbfa-fb32-4b9a-83b8-04a42687ae59"
+        }
+      ]
+    },
+    {
+      "malId": 47164,
+      "anilistId": 129196,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/is-it-wrong-to-try-to-pick-up-girls-in-a-dungeon-iv"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://beta.crunchyroll.com/series/G6DQN9KGR/is-it-wrong-to-try-to-pick-up-girls-in-a-dungeon"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/1060924"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/is-it-wrong-to-try-to-pick-up-girls-in-a-dungeon-fc1b26af-bd07-4034-95e6-a494d8528069"
+        }
+      ]
+    },
+    {
+      "malId": 47194,
+      "anilistId": 129201,
+      "links": [
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/summer-time-rendering/3AHbeFV7Lqvn"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/summer-time-rendering-5e235d03-75bc-4322-9c10-c2e49a1ca26d"
+        },
+        {
+          "siteId": 210,
+          "site": "Star+",
+          "url": "https://www.starplus.com/series/summer-time-rendering/3AHbeFV7Lqvn"
+        }
+      ]
+    },
+    {
+      "malId": 47917,
+      "anilistId": 130003,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://beta.crunchyroll.com/series/GXJHM3P19"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2069564"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81641170"
+        }
+      ]
+    },
+    {
+      "malId": 48375,
+      "anilistId": 130389,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://crunchyroll.com/series/GRMGDGZVR"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/1036717/"
+        }
+      ]
+    },
+    {
+      "malId": 48418,
+      "anilistId": 130590,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GY243NN0R/the-misfit-of-demon-king-academy"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/20gxqr4qdnd"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2072676"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/edb56aca-9c2d-44ea-94a5-f722680b9862"
+        }
+      ]
+    },
+    {
+      "malId": 48453,
+      "anilistId": 109946,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81034907"
+        }
+      ]
+    },
+    {
+      "malId": 48561,
+      "anilistId": 131573,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/jujutsu-kaisen"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/Jujutsu-Kaisen-0/0GTVYMIYD1GSB85O4H2JZWZJK0"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81602834"
+        }
+      ]
+    },
+    {
+      "malId": 48569,
+      "anilistId": 131586,
+      "links": [
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/2aef2fzzzvp"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/1003031/"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81442047"
+        }
+      ]
+    },
+    {
+      "malId": 48580,
+      "anilistId": 131646,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/the-case-study-of-vanitas-1df7cad6-b21c-4635-ac24-a49101556dc5"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/aby6s6oxih"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-case-study-of-vanitas"
+        }
+      ]
+    },
+    {
+      "malId": 48583,
+      "anilistId": 131681,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://crunchyroll.com/series/GR751KNZY"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/attack-on-titan-9c91ffa3-dc20-48bf-8bc5-692e37c76d88"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/70299043"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/1042594"
+        }
+      ]
+    },
+    {
+      "malId": 48702,
+      "anilistId": 132171,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/dance-dance-danseur"
+        }
+      ]
+    },
+    {
+      "malId": 48849,
+      "anilistId": 132126,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/8cce2117-1a21-4ecf-810a-14c9d748d5fc"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jh5cTYOJ44AOGwWLAap7dCU"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/sonny-boy-gg01mac6mx"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/sonny-boy"
+        },
+        {
+          "siteId": 261,
+          "site": "Prime Video",
+          "url": "https://www.primevideo.com/detail/Sonny-Boy/0GXG1CLDR58RDP6RHRE7N8LRWU"
+        }
+      ]
+    },
+    {
+      "malId": 49052,
+      "anilistId": 134732,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/aoashi"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/ja-jp/series/aoashi/27OVvACG0ySD"
+        }
+      ]
+    },
+    {
+      "malId": 49357,
+      "anilistId": 138060,
+      "links": [
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/star-wars-visions/5AiiTRJ7OaKg"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/2bd9a5cd-ab23-40ec-b211-4c87f2e94528"
+        }
+      ]
+    },
+    {
+      "malId": 49387,
+      "anilistId": 136430,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GEXH3WKK0/vinland-saga"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81249833"
+        }
+      ]
+    },
+    {
+      "malId": 49413,
+      "anilistId": 136484,
+      "links": [
+        {
+          "siteId": 45,
+          "site": "Bilibili",
+          "url": "https://www.bilibili.com/bangumi/media/md28230742"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GP5HJ8E81/link-click"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLrYKPj7wbjfjgfK7LIPwsLT282CQoyueA"
+        }
+      ]
+    },
+    {
+      "malId": 49722,
+      "anilistId": 138425,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/movies/teasing-master-takagi-san-the-movie"
+        }
+      ]
+    },
+    {
+      "malId": 50160,
+      "anilistId": 140350,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/kingdom"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/1048782/"
+        }
+      ]
+    },
+    {
+      "malId": 50183,
+      "anilistId": 140499,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81763062"
+        }
+      ]
+    },
+    {
+      "malId": 50265,
+      "anilistId": 140960,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81511410"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/spy-x-family"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/1048837/"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLwLSw1_eDZl1wGMYg5oB3uEns0CZNl6sI"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/65d158d4-443f-44c7-bd2c-eae39f6c60e9"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/yngqr3tli9/"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/spyfamily/fet1h9jqmrAM"
+        }
+      ]
+    },
+    {
+      "malId": 50330,
+      "anilistId": 141249,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GR5VXQ8PR/bungo-stray-dogs"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2073947"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/f7403z4j84"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80132126"
+        }
+      ]
+    },
+    {
+      "malId": 50346,
+      "anilistId": 141391,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/call-of-the-night"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81621036"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/Call-of-the-Night/0KF5WYD9EMI7DIYOVTH56ANAN2"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/call-of-the-night-1263de9f-2a9b-44b5-bfad-d63a83bc7e10"
+        }
+      ]
+    },
+    {
+      "malId": 50608,
+      "anilistId": 142853,
+      "links": [
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/tokyo-revengers/4HFbN55sAh0i"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/tokyo-revengers-1a195a35-e19c-4e36-b609-3b1c451f6ce4"
+        },
+        {
+          "siteId": 210,
+          "site": "Star+",
+          "url": "https://www.starplus.com/series/tokyo-revengers/4HFbN55sAh0i"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/@animetoman"
+        }
+      ]
+    },
+    {
+      "malId": 50613,
+      "anilistId": 142877,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G0XHWM1NK/rurouni-kenshin"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81705252"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/rurouni-kenshin-15531e2a-dffe-4583-bb58-7b853abfddd8"
+        }
+      ]
+    },
+    {
+      "malId": 51371,
+      "anilistId": 146650,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G4PH0WZZ3/shine-on-bakumatsu-bad-boys"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/1051212"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jja-EtlraOv68lG0XwSqGNy"
+        }
+      ]
+    },
+    {
+      "malId": 51495,
+      "anilistId": 146954,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G9VHN9DDX/the-fruit-of-evolution-before-i-knew-it-my-life-had-it-made"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2072737"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JiS5_iewJyAhFz7_L_f1Z6X"
+        }
+      ]
+    },
+    {
+      "malId": 51535,
+      "anilistId": 146984,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/watch/G8WUNMMMW/attack-on-titan-final-season-the-final-chapters-special-1"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/watch/3488e755-bf9c-480e-9fa0-ffc2bf5fa045"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/26rwd8fpbix"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2077856"
+        }
+      ]
+    },
+    {
+      "malId": 51673,
+      "anilistId": 147850,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81749969"
+        }
+      ]
+    },
+    {
+      "malId": 52034,
+      "anilistId": 150672,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/tv/oshi-no-ko"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jhas5i3D5PMB2HNS6Z6HJF2"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2080019"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1jvbmah70pd"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81684733"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/oshi-no-ko-9f96dac7-a7cf-4546-87a5-069cb101f174"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00366791/oshi-no-ko"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/browse/entity-9f96dac7-a7cf-4546-87a5-069cb101f174?season=782c38b7-ad71-48fc-87e4-e6b9ad7f13e4"
+        }
+      ]
+    },
+    {
+      "malId": 52093,
+      "anilistId": 151040,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GXJHM3PK5/trigun-stampede"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2074061"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLxSscENEp7Jj08Pchm_nhtXEDemxfm2KW"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/trigun-stampede-6d97e5bd-78be-4dbd-a473-0b9ba0df2564"
+        }
+      ]
+    },
+    {
+      "malId": 52588,
+      "anilistId": 153288,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GG5H5XQ7D/kaiju-no-8"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/iic8etkxfx"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2107061"
+        }
+      ]
+    },
+    {
+      "malId": 52635,
+      "anilistId": 153406,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G6J0G49DR/tower-of-god"
+        }
+      ]
+    },
+    {
+      "malId": 52742,
+      "anilistId": 153658,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/watch/GD9UE9XZ7/haikyu-the-dumpster-battle"
+        }
+      ]
+    },
+    {
+      "malId": 52807,
+      "anilistId": 153800,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/onepunch-man"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://netflix.com/title/80117291"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/browse/entity-54a25fcf-a472-4d40-9968-13e2957e5abf"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G63K98PZ6"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://bilibili.tv/media/2246170"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLwLSw1_eDZl3oUZb_EHQopJ631it09D00&si=nAPdUF0utaiAtqHO"
+        }
+      ]
+    },
+    {
+      "malId": 52826,
+      "anilistId": 153841,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/season/19080"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/elud8qa5ah"
+        }
+      ]
+    },
+    {
+      "malId": 52991,
+      "anilistId": 154587,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GG5H5XQX4/frieren-beyond-journeys-end"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2090295"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl10YPPR7qDsVf10wZfYnIMK"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81726714"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/frieren-beyond-journeys-end-1d4725f8-06d1-43fb-a077-72143ac5502f"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/0FCJEHY4FXTDVCLZ5NR9A0N42N"
+        }
+      ]
+    },
+    {
+      "malId": 53223,
+      "anilistId": 155227,
+      "links": [
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2097804"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GRWE89KMR/kingdom"
+        }
+      ]
+    },
+    {
+      "malId": 53411,
+      "anilistId": 155907,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GG5H5X3DE/buddy-daddies"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/region/fe/detail/Buddy-Daddies/0IDTHCY95ZOV51BLMULDUZ96Z3"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/kr-en/title/81680129"
+        }
+      ]
+    },
+    {
+      "malId": 53613,
+      "anilistId": 157198,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G3KHEV04J/dead-mount-death-play"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2079244"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/playlist?list=PLxSscENEp7JiRY-B9_WFmAsqQzJvtBhQd"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81686706"
+        }
+      ]
+    },
+    {
+      "malId": 53879,
+      "anilistId": 158926,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GNVHKN903/ron-kamonohashis-forbidden-deductions"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2092885"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1q5sugk8qwp"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JiAloVDlPwhb4Cu2UOjyZwp"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/id-en/title/81726765"
+        }
+      ]
+    },
+    {
+      "malId": 54492,
+      "anilistId": 161645,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G3KHEVDJ7/the-apothecary-diaries"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81712068"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/the-apothecary-diaries-d7b5390e-b8cb-4cc3-ba7c-7ed570355d7d"
+        }
+      ]
+    },
+    {
+      "malId": 54789,
+      "anilistId": 163139,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G6NQ5DWZ6/my-hero-academia"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2106937"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/b4859a95-39ba-4051-a550-256c42e70a1d"
+        }
+      ]
+    },
+    {
+      "malId": 54790,
+      "anilistId": 162983,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GMEHME7XV/undead-murder-farce"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jgye3e1_USJ1KdATNxP9svZ"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2086366"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/不死少女的谋杀闹剧-2023-262ty56l6pt?lang=zh_cn&sh_pltf=4"
+        }
+      ]
+    },
+    {
+      "malId": 54865,
+      "anilistId": 163146,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G4PH0WEKE/blue-lock"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2118081"
+        }
+      ]
+    },
+    {
+      "malId": 54898,
+      "anilistId": 163263,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GR5VXQ8PR/bungo-stray-dogs"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2086241"
+        }
+      ]
+    },
+    {
+      "malId": 54918,
+      "anilistId": 163329,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@animetoman"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/tokyo-revengers/4HFbN55sAh0i"
+        },
+        {
+          "siteId": 210,
+          "site": "Star+",
+          "url": "https://www.starplus.com/series/tokyo-revengers/4HFbN55sAh0i"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/tokyo-revengers-1a195a35-e19c-4e36-b609-3b1c451f6ce4"
+        }
+      ]
+    },
+    {
+      "malId": 55318,
+      "anilistId": 165171,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/bb33d0c2-b077-4bc0-a549-d2ca27d4afa8"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/medalist/4LgC0zEd5JEx"
+        }
+      ]
+    },
+    {
+      "malId": 55357,
+      "anilistId": 165253,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GXJHM3P19/bocchi-the-rock"
+        }
+      ]
+    },
+    {
+      "malId": 55644,
+      "anilistId": 162670,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GYEXQKJG6/dr-stone"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81046193"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgOJnHWhu4PB9hzHwHgj228"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2079139"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/21wd697vqxt"
+        }
+      ]
+    },
+    {
+      "malId": 55772,
+      "anilistId": 166521,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GY8DWQN5Y/golden-kamuy"
+        }
+      ]
+    },
+    {
+      "malId": 55848,
+      "anilistId": 166710,
+      "links": [
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://play.max.com/show/69167cda-e92c-4408-91d7-2eb6e8f56a6f"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/0ea77e4b-00ec-45ab-bcb3-555f8e024e22"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jh3bhDq-EYeXx6Seif0sN2m"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2111077"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/17anfy9hpax"
+        }
+      ]
+    },
+    {
+      "malId": 55866,
+      "anilistId": 166794,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GEXH3W2V7/a-sign-of-affection"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2095969"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl14kD6iz4eILaU9kceG6UZL"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81748453"
+        }
+      ]
+    },
+    {
+      "malId": 56038,
+      "anilistId": 167336,
+      "links": [
+        {
+          "siteId": 211,
+          "site": "Max",
+          "url": "https://play.max.com/show/7479ef42-c1ac-4473-854e-5a5c35894e35"
+        },
+        {
+          "siteId": 28,
+          "site": "Adult Swim",
+          "url": "https://www.adultswim.com/videos/lazarus"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/a47ec22b-79c9-4e65-9407-2f73778eca4b"
+        }
+      ]
+    },
+    {
+      "malId": 56063,
+      "anilistId": 167420,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GNVHKNPW1/nierautomata-ver11a"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2073689"
+        }
+      ]
+    },
+    {
+      "malId": 56784,
+      "anilistId": 169755,
+      "links": [
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/bleach-thousand-year-blood-war/4Afet1Q421gy"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/bleach-thousand-year-blood-war-02a3c8c0-4f1d-4610-bbb4-5b8e9468d7b1"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JgOSk5QmPX6aolSUsXgCMc-"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2115714"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/2ecnk500q89"
+        }
+      ]
+    },
+    {
+      "malId": 57181,
+      "anilistId": 170942,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81663323"
+        }
+      ]
+    },
+    {
+      "malId": 57555,
+      "anilistId": 171627,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GNVHKN92K/chainsaw-man--the-movie-reze-arc"
+        }
+      ]
+    },
+    {
+      "malId": 57592,
+      "anilistId": 172019,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GYEXQKJG6/dr-stone"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2123789"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1dffgf4eftx"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7Jj4AHW3_HqDp39-puRHVfNA"
+        }
+      ]
+    },
+    {
+      "malId": 57647,
+      "anilistId": 172420,
+      "links": []
+    },
+    {
+      "malId": 57658,
+      "anilistId": 172463,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GRDV0019R/jujutsu-kaisen"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/12ujg5r4dm1"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2288197"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLxSscENEp7JhRHMXloduRBZmrGlDW5gmC"
+        }
+      ]
+    },
+    {
+      "malId": 58125,
+      "anilistId": 174788,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/Look-Back/0SEK25JW9CENJH4OE9H2R27PQG"
+        }
+      ]
+    },
+    {
+      "malId": 58222,
+      "anilistId": 175199,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/watch/G7PU3DWNQ/given-the-movie-to-the-sea"
+        }
+      ]
+    },
+    {
+      "malId": 58919,
+      "anilistId": 177687,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81785821"
+        }
+      ]
+    },
+    {
+      "malId": 59027,
+      "anilistId": 177937,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G4PH0WXVJ/spy-x-family"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/65d158d4-443f-44c7-bd2c-eae39f6c60e9"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2246006"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl1wGMYg5oB3uEns0CZNl6sI"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1c33lict9th"
+        }
+      ]
+    },
+    {
+      "malId": 59192,
+      "anilistId": 178788,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G8DHV7809/demon-slayer-kimetsu-no-yaiba-infinity-castle-i"
+        }
+      ]
+    },
+    {
+      "malId": 59193,
+      "anilistId": 178789,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G24H1N3MP/mushoku-tensei-jobless-reincarnation"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/ds3kartbap"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl1LMA6zhohDzfoV-XXFxS9Z"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/2411609"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/80987039"
+        }
+      ]
+    },
+    {
+      "malId": 59636,
+      "anilistId": 180516,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B0F1RY7C41"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/82030222"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLhGamQZtJ7K9aElhFk89DyndS6JDvLh7z"
+        },
+        {
+          "siteId": 30,
+          "site": "Tubi TV",
+          "url": "https://tubitv.com/series/300018619/uma-musume-cinderella-gray"
+        }
+      ]
+    },
+    {
+      "malId": 59654,
+      "anilistId": 192809,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/watch/GE00365925JAJP/jujutsu-kaisen-hidden-inventory--premature-death--the-movie"
+        }
+      ]
+    },
+    {
+      "malId": 59708,
+      "anilistId": 180745,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GRVN8MNQY/classroom-of-the-elite"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1edtask2t9x"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/2342498"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl3d2XXHoyqobEAMz2g0nBc0"
+        }
+      ]
+    },
+    {
+      "malId": 59983,
+      "anilistId": 182300,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GW4HM7WK9/wistoria-wand-and-sword"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl37QJE0NTvUiONsuDJH6IMD"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2342649"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81900358"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/yzy3wofgnt"
+        }
+      ]
+    },
+    {
+      "malId": 59986,
+      "anilistId": 182309,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GNVHKN94W/grand-blue-dreaming"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLbuF5Onrcu9euvzKp4BbWaV1NJYw2PoDT"
+        }
+      ]
+    },
+    {
+      "malId": 60022,
+      "anilistId": 182469,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81947352"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/watch/G14UVQ5D5/one-piece-fan-letter"
+        }
+      ]
+    },
+    {
+      "malId": 60636,
+      "anilistId": 185874,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/@official_bleach"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/bleach-thousand-year-blood-war-02a3c8c0-4f1d-4610-bbb4-5b8e9468d7b1"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/bleach-thousand-year-blood-war/4Afet1Q421gy"
+        }
+      ]
+    },
+    {
+      "malId": 61200,
+      "anilistId": 187921,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/RecordofRagnarok"
+        }
+      ]
+    },
+    {
+      "malId": 61335,
+      "anilistId": 189275,
+      "links": [
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/bb33d0c2-b077-4bc0-a549-d2ca27d4afa8"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/medalist/4LgC0zEd5JEx"
+        }
+      ]
+    },
+    {
+      "malId": 61469,
+      "anilistId": 210482,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/82116553"
+        }
+      ]
+    },
+    {
+      "malId": 61483,
+      "anilistId": 190569,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00378078/jaadugar-a-witch-in-mongolia"
+        }
+      ]
+    },
+    {
+      "malId": 61517,
+      "anilistId": 190840,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/@kingdom-anime"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GRWE89KMR/kingdom"
+        }
+      ]
+    },
+    {
+      "malId": 61603,
+      "anilistId": 191788,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/aoashi"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLYavYYpKm3cc"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1627dg47zxl"
+        }
+      ]
+    },
+    {
+      "malId": 61930,
+      "anilistId": 195240,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLhGamQZtJ7K9aElhFk89DyndS6JDvLh7z"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/82030222"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.primevideo.com/detail/0K6S3ADL4O8MDCRV79NL5OOMVD"
+        }
+      ]
+    },
+    {
+      "malId": 61952,
+      "anilistId": 166475,
+      "links": []
+    },
+    {
+      "malId": 61967,
+      "anilistId": 195604,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GRE50KV36/black-clover"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432940"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/qchxviq611"
+        }
+      ]
+    },
+    {
+      "malId": 62001,
+      "anilistId": 195600,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://crunchyroll.com/series/GT00371630/daemons-of-the-shadow-realm"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1tmesonumnx"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2342276"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/82719204"
+        }
+      ]
+    },
+    {
+      "malId": 62277,
+      "anilistId": 197474,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@gintama_channel_official"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/82968180"
+        }
+      ]
+    },
+    {
+      "malId": 62513,
+      "anilistId": 198946,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G8DHV78ZM/clevatess"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2413934"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/clevatess-ii-2026-161wl58egqp?lang=en_us"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLDvQscScOUXg"
+        }
+      ]
+    },
+    {
+      "malId": 62542,
+      "anilistId": 199111,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GNVHKN94W/grand-blue-dreaming"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2414407"
+        }
+      ]
+    },
+    {
+      "malId": 63130,
+      "anilistId": 204356,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G6NQ5DWZ6/my-hero-academia"
+        }
+      ]
+    },
+    {
+      "malId": 63375,
+      "anilistId": 206914,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B0GKZDKSJW"
+        },
+        {
+          "siteId": 261,
+          "site": "Prime Video",
+          "url": "https://www.primevideo.com/detail/0LW570H4NYAE6XSCD8I7KZMVNH"
+        }
+      ]
+    }
+  ]
+}

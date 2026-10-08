@@ -184,6 +184,7 @@ const pick = (fields: Partial<PickedShow> = {}): PickedShow => ({
   genres: ["Slice of Life"],
   airingStatus: "finished_airing",
   startYear: 2015,
+  streamingLinks: [],
   ...fields,
 });
 
@@ -423,5 +424,58 @@ describe("aggregateRecommend", () => {
       errors: 0,
     });
     expect(metrics.costPerCaseUsd).toBeCloseTo(0.02);
+  });
+});
+
+describe("streams_on", () => {
+  const netflix = { siteId: 10, site: "Netflix", url: "https://www.netflix.com/title/1" };
+  const crunchyroll = { siteId: 5, site: "Crunchyroll", url: "https://www.crunchyroll.com/x" };
+  const messages = (p: PickedShow, e: RecommendCase["expect"]) =>
+    checkPick(p, e, new Set()).map((v) => v.message);
+
+  it("needs every pick on one of the services, by the frozen links", () => {
+    const onNetflix = expectOf({ streams_on: ["netflix"] });
+    expect(messages(pick({ streamingLinks: [netflix, crunchyroll] }), onNetflix)).toEqual([]);
+    expect(messages(pick({ streamingLinks: [crunchyroll] }), onNetflix)).toEqual([
+      "not on netflix (AniList lists Crunchyroll)",
+    ]);
+    expect(messages(pick(), onNetflix)).toEqual([
+      "not on netflix (AniList lists none of the services we know)",
+    ]);
+    expect(
+      messages(
+        pick({ streamingLinks: [crunchyroll] }),
+        expectOf({ streams_on: ["netflix", "crunchyroll"] }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("needs known service ids, and the frozen links for streams_on", () => {
+    const bad = load({
+      "recommend-bad.yaml": `snapshot: my-list
+cases:
+  - id: rec-bad
+    message: on funimation?
+    services: [funimation]
+    expect: {}
+`,
+    });
+    expect(bad.errors.map((e) => e.message)).toEqual([
+      expect.stringContaining("cases.0.services.0"),
+    ]);
+    rmSync(dir ?? "", { recursive: true, force: true });
+    const unfrozen = load({
+      "recommend-streams.yaml": `snapshot: my-list
+cases:
+  - id: rec-netflix
+    message: anything on netflix?
+    services: [crunchyroll]
+    expect:
+      streams_on: [netflix]
+`,
+    });
+    expect(unfrozen.errors.map((e) => e.message)).toEqual([
+      "streams_on needs the frozen streaming links: run pnpm eval:streaming.",
+    ]);
   });
 });

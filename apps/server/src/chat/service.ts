@@ -3,9 +3,13 @@ import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
 import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
 import { runAgent, type AgentDeps, type Prompt, type RunResult } from "../agent/runAgent.js";
 import type { Db, Executor } from "../db/client.js";
+import { watchOn } from "../brief/services.js";
 import {
   agentRuns,
+  anilistCatalog,
+  anilistMedia,
   anime,
+  briefSettings,
   briefs,
   changes,
   chatMessages,
@@ -544,7 +548,10 @@ export async function loadShowCards(
   );
 }
 
-/** Each message's recommended shows, as cards, in the order they were picked. */
+/**
+ * Each message's recommended shows, as cards, in the order they were picked, with where each
+ * streams among the user's services and any the request named ("something on Netflix").
+ */
 async function loadPicks(
   db: Db,
   userId: string,
@@ -552,7 +559,11 @@ async function loadPicks(
 ): Promise<Map<string, PickView[]>> {
   if (messageIds.length === 0) return new Map();
   const rows = await db
-    .select({ messageId: recommendations.chatMessageId, picks: recommendations.picks })
+    .select({
+      messageId: recommendations.chatMessageId,
+      picks: recommendations.picks,
+      constraints: recommendations.constraints,
+    })
     .from(recommendations)
     .where(
       and(eq(recommendations.userId, userId), inArray(recommendations.chatMessageId, messageIds)),
@@ -568,15 +579,32 @@ async function loadPicks(
       episodeMinutes: anime.episodeMinutes,
       status: listEntries.status,
       episodesWatched: listEntries.numEpisodesWatched,
+      // A list show's links are in the AniList cache; a new show's came with the discovery pool.
+      listLinks: anilistMedia.streamingLinks,
+      poolLinks: anilistCatalog.streamingLinks,
     })
     .from(anime)
     .leftJoin(
       listEntries,
       and(eq(listEntries.animeId, anime.malId), eq(listEntries.userId, userId)),
     )
+    .leftJoin(anilistMedia, eq(anilistMedia.malId, anime.malId))
+    .leftJoin(anilistCatalog, eq(anilistCatalog.malId, anime.malId))
     .where(inArray(anime.malId, ids));
+  const [settings] = await db
+    .select({ services: briefSettings.services })
+    .from(briefSettings)
+    .where(eq(briefSettings.userId, userId));
+  const theirs = settings?.services ?? [];
   const byId = new Map(
-    shows.map((s) => [s.animeId, { ...s, episodesWatched: s.episodesWatched ?? 0 }]),
+    shows.map(({ listLinks, poolLinks, ...s }) => [
+      s.animeId,
+      {
+        ...s,
+        episodesWatched: s.episodesWatched ?? 0,
+        links: [...(listLinks ?? []), ...(poolLinks ?? [])],
+      },
+    ]),
   );
   return new Map(
     rows.flatMap((r) =>
@@ -585,14 +613,25 @@ async function loadPicks(
             [
               r.messageId,
               r.picks.flatMap((p) => {
-                const show = byId.get(p.animeId);
-                return show ? [{ ...show, why: p.why }] : [];
+                const found = byId.get(p.animeId);
+                if (!found) return [];
+                const { links, ...show } = found;
+                const services = [...theirs, ...askedServices(r.constraints, p.animeId)];
+                return [{ ...show, why: p.why, watchOn: watchOn(links, services) }];
               }),
             ] as const,
           ]
         : [],
     ),
   );
+}
+
+/** The streaming services the search a pick came from asked for (stored with the picks). */
+function askedServices(constraints: Record<string, unknown>, animeId: number): string[] {
+  const search = constraints[String(animeId)];
+  if (typeof search !== "object" || search === null || !("services" in search)) return [];
+  const { services } = search;
+  return Array.isArray(services) ? services.filter((s) => typeof s === "string") : [];
 }
 
 /** The user's most recent committed changes, newest first. */

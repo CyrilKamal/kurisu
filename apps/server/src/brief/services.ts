@@ -1,7 +1,10 @@
+import type { StreamingLink } from "../anilist/client.js";
+
 /**
  * The streaming services a user can pick, and the AniList site ids each one covers. The ids and
  * labels mirror STREAMING_SERVICES in @kurisu/shared (a contract test keeps them equal). The
- * brief only ever names a service from this list, so an unknown site can't show up in it.
+ * brief and the recommendations only ever name a service from this list, so an unknown site
+ * can't show up in either.
  */
 export const STREAMING_SERVICES = [
   { id: "crunchyroll", label: "Crunchyroll", anilistSiteIds: [5] },
@@ -31,4 +34,25 @@ export function siteLabels(serviceIds: readonly string[]): Map<number, string> {
     for (const siteId of service.anilistSiteIds) labels.set(siteId, service.label);
   }
   return labels;
+}
+
+/** One of these services that a show streams on, with AniList's link to it there. */
+export interface WatchOn {
+  service: string;
+  /** Null unless AniList's link is https. */
+  url: string | null;
+}
+
+/**
+ * Where a show streams among these services, in the order of STREAMING_SERVICES: from AniList's
+ * official links only, so a show AniList lists nowhere they have gets [] (never a guess).
+ */
+export function watchOn(links: readonly StreamingLink[], serviceIds: readonly string[]): WatchOn[] {
+  return STREAMING_SERVICES.flatMap((service) => {
+    if (!serviceIds.includes(service.id)) return [];
+    const sites: readonly number[] = service.anilistSiteIds;
+    const link = links.find((l) => sites.includes(l.siteId));
+    if (!link) return [];
+    return [{ service: service.label, url: link.url.startsWith("https://") ? link.url : null }];
+  });
 }

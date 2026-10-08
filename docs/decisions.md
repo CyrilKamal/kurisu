@@ -1416,3 +1416,54 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 **Consequences:**
 - Two runs after the fixes: 55/55 and 54/55 rows right (the Uzumaki misread), 0 wrong pre-checked of 29–30.
 - Both fixes live in import only; Chat's search is unchanged.
+
+## 2026-10-08 — Where to watch: AniList links already cached, on cards for your services (Milestone 5)
+**Decision:**
+- **Data:** a list show's streaming links are its `anilist_media` row, the same AniList data the brief uses. After a sync, the shows the recommender can pick (Plan to Watch, Watching, On hold, rewatches) are refetched when their row is over a week old. A pool show's links come with the discovery build, in a new `anilist_catalog.streaming_links` column (migration 0019).
+- **Recommender:** `find_candidates` takes `services` ("on Netflix" → `["netflix"]`) or `on_my_services` (the Brief page's services). It keeps only shows AniList lists on one of them, and never loosens it. Each candidate says where it streams among the user's services and the ones asked for (`streams_on`). Services filter only; they never change the ranking.
+- **Cards:** a pick card names the user's services, plus any the request asked for, that AniList lists the show on. Each name links to AniList's https link for that service. A show AniList lists nowhere they have gets nothing, as the brief does.
+- **Eval:** a case's `services` (the user's, for that case) and an `expect.streams_on` label, checked against `snapshots/streaming.json`. That file is AniList's links for the snapshot's pickable shows and the pool's, frozen once with `pnpm eval:streaming`.
+
+**Alternatives:**
+- A new `anime_streaming` table refreshed weekly (the plan). It would duplicate the links `anilist_media` already holds, from the same AniList query.
+- Ranking shows on the user's services higher when they didn't ask. That's not something they asked for, and it would change every recommendation's ranking.
+- Naming every service AniList lists. The design says to name only the user's services.
+- Adding the links to `details.json` with an `eval:recommend-data` flag (the plan). That file is MAL's data from the dev database, while these links are AniList's, fetched live, so they get their own file like `airing.json`.
+
+**Why:** the links, their site-id mapping (`brief/services.ts`) and the refresh path already existed for the brief. Filtering without reranking keeps "where to watch" out of every other request.
+
+**Consequences:**
+- Right after a first sync, links arrive with the background refresh (seconds). Until then, a services search finds only pool shows.
+- A service AniList doesn't map to one the app knows (iQIYI, Hoopla) can't be checked. The recommender says so instead of guessing.
+- Links can be up to a week old, or older if the user doesn't sync. Licenses change slowly, and the brief refreshes Watching shows every 6 hours anyway.
+
+## 2026-10-08 — recommend.v7 for where to watch; progress-sync.v14 tried and not made current (Milestone 5)
+**Decision:**
+- **recommend.v7 becomes current.** It maps "on Netflix" to `services` (the service ids are listed in the prompt) and "on my services" to `on_my_services`. It never loosens the services. For a service the app can't check, it says which ones it can. The pick's line doesn't repeat where the show streams, since the card shows it.
+- **progress-sync stays at v13.** v14 added one sentence: asking what's good on a streaming service is asking what to watch, so it goes to `recommend_shows`. It fixed the handoff but cost ordinary updates, so it isn't current.
+
+**Alternatives:**
+- Keeping recommend.v6. The tool's own schema got v6 through both format examples (2/2), but v6 has no rule for a service the app can't check, and none against loosening the service.
+- Making v14 current for the handoff. On v13, "any movies on netflix" never reached the recommender (0/2). The progress agent answered it itself ("I don't have access to Netflix catalogs"). v14 handed it off 3/3, with 12/12 across four phrasings.
+- An example-only version (v15, not in this PR). It adds "any movies on Netflix?" to the examples of asking what to watch, with no new sentence. It's untested, because the Gemini prepaid credits ran out mid-check.
+
+**Why:**
+- v14 on the full update eval (Flash-Lite, 140 cases): one run got 130/140 with 1 wrong write (1/124). "I haven't finished made in abyss yet" became +1 episode, which completed the show. That case had passed all 22 earlier runs, v4–v13.
+- Side by side, the same day: v13 got 131/140, 0/121 wrong writes; v14 got 129/140, 0/120.
+- Across v14's three full runs, cases v13 passes in all five of its runs failed:
+
+  | Case | v13 | v14 |
+  | --- | --- | --- |
+  | "gonna start clannad" | 0/5 failed | 3/3 failed |
+  | "culling game" | 0/5 | 2/3 |
+  | "Just watched MHA more" | 0/5 | 2/3 |
+  | "Watched Wistoria Season 2 episode 12" | 0/5 | 1/3 |
+  | "I haven't finished made in abyss yet" | 0/5 | 1/3 (the wrong write) |
+
+  One sentence about streaming shifted how Flash-Lite reads ordinary updates. No wrong write is worth a smoother handoff.
+
+**Consequences:**
+- Recommendation eval, recommend.v7 behind progress-sync.v13, every case (Cyril's 25 plus 7 format examples, 2 of them new for streaming): 32/32. 92/92 picks within the labels, genre fit 97%, median 4.5 s, $0.006 a case.
+- "Anything good on netflix?", "what should i watch on crunchyroll" and "something on hulu tonight" reach the recommender on v13 (7/7, in throwaway probes and the format example). "Any movies on netflix" doesn't (0/2), and "anything good on iqiyi?" reaches it 1/4 of the time. Both get a safe reply, with no guess and no write.
+- Next, once the credits are topped up: test v15 the same way. First the five cases above ×3 and the probes, then a full run side by side with v13.
+- `pnpm eval:recommend --agent-prompt progress-sync@N` runs the recommendation cases behind another progress prompt.

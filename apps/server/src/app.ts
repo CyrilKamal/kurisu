@@ -5,7 +5,12 @@ import { CURRENT_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
 import { IMPORT_V1 } from "./agent/prompts/import.v1.js";
 import { registerImportRoutes } from "./import/routes.js";
 import { resumeImports } from "./import/service.js";
-import { airingCandidateIds, refreshAiring } from "./anilist/cache.js";
+import {
+  airingCandidateIds,
+  recommendableIds,
+  refreshAiring,
+  STREAMING_MAX_AGE_MS,
+} from "./anilist/cache.js";
 import { refreshDiscovery } from "./recommend/discovery.js";
 import { refreshTaste } from "./taste/profile.js";
 import { createAniListClient } from "./anilist/client.js";
@@ -93,6 +98,17 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
           { err: { name: (err as Error).name } },
           "could not refresh taste or airing data after sync",
         );
+      })
+      // Where the shows the recommender can pick stream (the same AniList rows, kept a week).
+      .then(async () => {
+        await refreshAiring(
+          { db, anilist: syncAniList, log: app.log },
+          await recommendableIds(db, userId),
+          { maxAgeMs: STREAMING_MAX_AGE_MS },
+        );
+      })
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh where to watch");
       })
       // Shows new to the user, for recommendations: at most daily, and never in the way of the
       // airing data above. It records its own failures.
