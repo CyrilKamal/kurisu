@@ -413,3 +413,108 @@ export const tasteResponseSchema = z.object({
   dropReasons: z.array(dropReasonViewSchema),
 });
 export type TasteResponse = z.infer<typeof tasteResponseSchema>;
+
+/** The most a pasted import may hold, in characters. */
+export const MAX_IMPORT_CHARS = 20_000;
+
+/** POST /imports: notes to import, pasted as they are. */
+export const importCreateRequestSchema = z
+  .object({ text: z.string().trim().min(1).max(MAX_IMPORT_CHARS) })
+  .strict();
+
+export const IMPORT_STATUSES = [
+  "parsing",
+  "review",
+  "running",
+  "done",
+  "undoing",
+  "undone",
+  "failed",
+] as const;
+export type ImportStatus = (typeof IMPORT_STATUSES)[number];
+
+/** How a line of notes compares with the list; the review screen's groups. */
+export const IMPORT_GROUPS = [
+  "add",
+  "update",
+  "up_to_date",
+  "disagree",
+  "which_one",
+  "not_found",
+  "not_a_show",
+] as const;
+export type ImportGroup = (typeof IMPORT_GROUPS)[number];
+
+export const IMPORT_ITEM_STATUSES = [
+  "pending",
+  "committed",
+  "failed",
+  "skipped",
+  "undone",
+  "undo_failed",
+] as const;
+
+export const IMPORT_RESOLUTIONS = ["keep_mal", "use_notes"] as const;
+
+const listStateSchema = z.object({
+  status: listStatusSchema,
+  episodesWatched: z.number().int().nonnegative(),
+  score: z.number().int().min(0).max(10),
+  isRewatching: z.boolean(),
+});
+
+/** One show from the notes, and what the import will do with it. */
+export const importItemViewSchema = z.object({
+  id: z.uuid(),
+  lineNo: z.number().int().positive(),
+  line: z.string(),
+  /** The user's own words about this show. */
+  said: z.string(),
+  /** The name as written; null for a line that isn't about a show. */
+  title: z.string().nullable(),
+  group: z.enum(IMPORT_GROUPS),
+  /** The matched (or picked) show. */
+  show: showCardSchema.nullable(),
+  /** For "which one?": the shows it could be. */
+  candidates: z.array(showCardSchema),
+  /** The list entry as it was when grouped; null if the show isn't on the list. */
+  malState: listStateSchema.nullable(),
+  /** What will be written if checked (for a disagreement, the notes' version). */
+  change: listChangeSchema.nullable(),
+  note: z.string().nullable(),
+  checked: z.boolean(),
+  resolution: z.enum(IMPORT_RESOLUTIONS).nullable(),
+  status: z.enum(IMPORT_ITEM_STATUSES),
+  error: z.string().nullable(),
+});
+export type ImportItemView = z.infer<typeof importItemViewSchema>;
+
+export const importViewSchema = z.object({
+  id: z.uuid(),
+  status: z.enum(IMPORT_STATUSES),
+  error: z.string().nullable(),
+  createdAt: z.iso.datetime(),
+  items: z.array(importItemViewSchema),
+});
+export type ImportView = z.infer<typeof importViewSchema>;
+
+/** POST /imports, GET /imports/:id, POST /imports/:id/run and /undo. */
+export const importResponseSchema = z.object({ import: importViewSchema });
+/** GET /imports/latest: the newest import, if any. */
+export const latestImportResponseSchema = z.object({ import: importViewSchema.nullable() });
+
+/** PATCH /imports/:id/items/:itemId: the user's answer for one row. */
+export const importItemPatchSchema = z
+  .object({
+    checked: z.boolean().optional(),
+    /** Picks one of a "which one?" row's candidates; null takes the pick back. */
+    animeId: z.number().int().positive().nullable().optional(),
+    resolution: z.enum(IMPORT_RESOLUTIONS).optional(),
+  })
+  .strict();
+export const importItemResponseSchema = z.object({ item: importItemViewSchema });
+
+/** Why an import request didn't go through. */
+export const IMPORT_ERRORS = ["not_found", "not_ready", "busy", "invalid"] as const;
+export type ImportError = (typeof IMPORT_ERRORS)[number];
+export const importErrorResponseSchema = z.object({ error: z.enum(IMPORT_ERRORS) });

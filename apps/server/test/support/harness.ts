@@ -43,7 +43,10 @@ export interface Harness {
 }
 
 export async function startHarness(
-  options: Pick<BuildAppOptions, "models" | "roles" | "pushOrigins" | "anilist" | "prompt"> & {
+  options: Pick<
+    BuildAppOptions,
+    "models" | "roles" | "pushOrigins" | "anilist" | "prompt" | "importWriteIntervalMs"
+  > & {
     /** Extra environment variables, e.g. VAPID keys. */
     env?: Record<string, string>;
   } = {},
@@ -66,6 +69,8 @@ export async function startHarness(
     // No spacing between AniList requests and quick retries, so background refreshes after
     // each login never pile up.
     anilist: { minIntervalMs: 0, retry: { retries: 1, baseDelayMs: 1, maxDelayMs: 5 } },
+    // Imports write back to back.
+    importWriteIntervalMs: 0,
     ...appOptions,
   });
   await app.ready();
