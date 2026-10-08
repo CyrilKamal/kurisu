@@ -82,12 +82,11 @@ describe("editing an entry on the List screen", () => {
       source: "user",
       isUndo: false,
     });
-    expect(h.fakeMal.patchRequests).toEqual([
-      {
-        animeId: WATCHING,
-        form: expect.objectContaining({ num_watched_episodes: "9", score: "8" }),
-      },
-    ]);
+    expect(h.fakeMal.patchRequests.map((r) => r.animeId)).toEqual([WATCHING]);
+    expect(h.fakeMal.patchRequests[0]?.form).toMatchObject({
+      num_watched_episodes: "9",
+      score: "8",
+    });
     expect(await entry(WATCHING)).toMatchObject({ numEpisodesWatched: 9, score: 8 });
     const [proposal] = await h.db.select().from(proposals);
     expect(proposal).toMatchObject({ source: "user", runId: null, status: "committed" });
