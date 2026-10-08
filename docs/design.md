@@ -8,7 +8,7 @@ A personal agent that runs your anime and manga life through conversation: you t
 
 **Goals**
 
-- Natural-language progress updates that write to MAL correctly, with no manual list editing.
+- Natural-language progress updates that write to MAL correctly, plus in-app editing and importing from your notes, all through the same logged, undoable write path.
 - A daily morning brief of new episodes for shows on your list, delivered by push notification.
 - Recommendations drawn from your own backlog first, then from shows new to you that fit your taste, not generic popularity.
 - Measurable reliability: a tool-call eval set with tracked accuracy.
@@ -22,7 +22,7 @@ A personal agent that runs your anime and manga life through conversation: you t
 
 ## User experience
 
-Three flows cover v1; progress sync is the core and ships first.
+Four flows; progress sync is the core and shipped first.
 
 **1. Progress sync.** The user types something like "finished Apothecary ep 7, dropping the isekai one." The agent resolves each title against the user's list, shows the proposed changes, and writes them to MAL. Clear matches write immediately with an undo; ambiguous ones ("the isekai one" matching three shows) ask first.
 
@@ -30,7 +30,9 @@ Three flows cover v1; progress sync is the core and ships first.
 
 **3. What to watch.** The user asks for something with constraints ("40 minutes, something chill"). The agent picks from Plan to Watch and in-progress shows, and from shows new to the user that fans of their favorites like or that top the genres they rate highest (found on AniList). It weighs runtime, airing status and the user's recent ratings and drops, puts their own list first when it fits about as well, and explains each pick in one line. A new show can be added to Plan to Watch from its card, with the user's confirmation.
 
-The app has two screens: **Chat** for talking to the agent, and **List** showing the mirrored MAL list with a change log, so every agent write is visible and reversible.
+**4. Your list.** The user can also edit any entry on the List screen, or paste an unstructured list from their notes ("frieren 10/10, finished jjk s2, dropped csm ep 5") and import it. The agent reads each line, code matches it to a show and sorts it into one review screen (add, update, already up to date, notes and MAL disagree, which one?, couldn't find) with adds and clear updates pre-checked; the user answers the "?" rows and taps Import once, and writes go out in the background with one undo for the whole import. Around the list: where to watch on the user's services, alerts when a sequel or new season starts, stats with a Sunday recap and a yearly goal, a diary of reactions, and what's good this season.
+
+The app has two screens: **Chat** for talking to the agent, and **List** showing the mirrored MAL list with a change log, so every write, by the agent, the user or an import, is visible and reversible.
 
 ## Architecture
 
@@ -101,5 +103,6 @@ The biggest risk is data sourcing, not the agent: MAL has no episode-level sched
 2. Progress-sync agent with the eval harness and first 150 test cases.
 3. Morning brief with web push.
 4. Recommendations and taste memory.
-5. Invite a handful of friends; add their failures to the eval set.
-6. Stretch: distill the parsing step into a fine-tuned small open model (1–3B) trained on labeled update messages, served locally. Compare it with Flash-Lite on accuracy, latency and cost.
+5. Your list, in your hands: in-app editing, import from notes, where to watch, sequel alerts, stats and recap, diary, what's good this season.
+6. Invite a handful of friends, with friend features (taste match, activity); add their failures to the eval set.
+7. Stretch: distill the parsing step into a fine-tuned small open model (1–3B) trained on labeled update messages, served locally. Compare it with Flash-Lite on accuracy, latency and cost.
