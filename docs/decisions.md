@@ -1337,3 +1337,30 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
   - Eight of the nine misses are asks from the earlier runs: bsd ep 5, omp 3, Mushoku Tensei, the newest TYBW s4 episode, the Cowboy Bebop rewatch, Hoyuka, the final mha season and Tenjiku arc.
   - The ninth is "clannad" answering "which one?". The model searched AniList only and proposed Plan to Watch, a no-op. It fails the same way with the old search code (4 of 4 reruns), so it isn't this rule.
   - A replay of this run's own searches found one more removed clear match: the model's "Bleach episode 380" had fuzzily matched a TYBW cour (0.636).
+
+## 2026-10-08 — A reading that contradicts itself is never pre-checked; a null from the reader means not given (Milestone 5)
+**Decision:**
+- **Reading:** a `null` field in `report_items` means the line doesn't give it. zod's coerce had turned `episodes_watched: null` into 0 (`parse.ts`).
+- **Your rule, wider:** a score with no status word means watched. A show not on the list, or on Plan to Watch on it, becomes Completed, pre-checked. An episode count of 0 next to the score is dropped.
+- **Held:** these readings become a "?" row with only a note, and nothing writes them, not even "Use my notes":
+  - a reading that would leave a show at Plan to Watch with the notes' score or episodes;
+  - one that says finished short of the last episode: ep 0, or ep 3 of 12 when MAL knows the count.
+
+**Alternatives:**
+- A prompt change (import.v2) telling the model to leave fields out.
+- Holding the score rows as "?" rows (you chose Completed).
+- Offering a tap on the held rows.
+
+**Why:** The import eval's wrong pre-checked row ("perfect blue 10/10" added as Plan to Watch with a score) didn't come from the model's status.
+- In 30 captured reads, the model never said plan to watch. Once it sent `episodes_watched: null`, which became 0 and skipped the score rule.
+- The same null made "finished bocchi the rock 9/10" a pre-checked Completed at 0 of 12.
+
+Nulls are rare and random, so the fix is in code, and the guard catches any reading that says two things at once, however it arises.
+
+**Consequences:**
+- No prompt change: `import@1` stays.
+- A Plan to Watch show on your list with a score in your notes now becomes Completed (it used to stay Plan to Watch with the score).
+- "Finished X ep 3" of a 12-episode show is no longer pre-checked as Completed at 3 of 12.
+- Held rows can't be imported from the review; they're fixed on the List screen.
+- The import eval compares only the fields a case lists, so it didn't flag Completed at 0. Unit tests (a grid of readings and list states) now cover these rows.
+- Chat's `propose_update` has the same coerce; that's a separate task.
