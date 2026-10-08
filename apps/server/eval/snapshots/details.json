@@ -14,7 +14,8 @@
         "Space"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.75
+      "malMean": 8.75,
+      "startDate": "1998-04-03"
     },
     {
       "malId": 6,
@@ -26,7 +27,8 @@
         "Shounen"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.22
+      "malMean": 8.22,
+      "startDate": "1998-04-01"
     },
     {
       "malId": 8,
@@ -37,7 +39,8 @@
         "Shounen"
       ],
       "episodeMinutes": 23,
-      "malMean": 6.97
+      "malMean": 6.97,
+      "startDate": "2004-09-30"
     },
     {
       "malId": 19,
@@ -50,7 +53,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.9
+      "malMean": 8.9,
+      "startDate": "2004-04-07"
     },
     {
       "malId": 20,
@@ -62,7 +66,8 @@
         "Shounen"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.03
+      "malMean": 8.03,
+      "startDate": "2002-10-03"
     },
     {
       "malId": 21,
@@ -73,7 +78,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.72
+      "malMean": 8.72,
+      "startDate": "1999-10-20"
     },
     {
       "malId": 57,
@@ -83,7 +89,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.29
+      "malMean": 8.29,
+      "startDate": "2004-10-07"
     },
     {
       "malId": 121,
@@ -97,7 +104,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.12
+      "malMean": 8.12,
+      "startDate": "2003-10-04"
     },
     {
       "malId": 205,
@@ -109,7 +117,8 @@
         "Samurai"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.52
+      "malMean": 8.52,
+      "startDate": "2004-05-20"
     },
     {
       "malId": 227,
@@ -123,7 +132,8 @@
         "Suspense"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.04
+      "malMean": 8.04,
+      "startDate": "2000-04-26"
     },
     {
       "malId": 249,
@@ -139,7 +149,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.88
+      "malMean": 7.88,
+      "startDate": "2000-10-16"
     },
     {
       "malId": 263,
@@ -149,7 +160,8 @@
         "Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.78
+      "malMean": 8.78,
+      "startDate": "2000-10-04"
     },
     {
       "malId": 269,
@@ -160,7 +172,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8
+      "malMean": 8,
+      "startDate": "2004-10-05"
     },
     {
       "malId": 270,
@@ -174,7 +187,8 @@
         "Vampire"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.5
+      "malMean": 7.5,
+      "startDate": "2001-10-11"
     },
     {
       "malId": 392,
@@ -186,7 +200,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.46
+      "malMean": 8.46,
+      "startDate": "1992-10-10"
     },
     {
       "malId": 1292,
@@ -197,7 +212,8 @@
         "Samurai"
       ],
       "episodeMinutes": 26,
-      "malMean": 7.38
+      "malMean": 7.38,
+      "startDate": "2007-05-03"
     },
     {
       "malId": 1535,
@@ -208,7 +224,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.62
+      "malMean": 8.62,
+      "startDate": "2006-10-04"
     },
     {
       "malId": 1575,
@@ -222,7 +239,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.71
+      "malMean": 8.71,
+      "startDate": "2006-10-06"
     },
     {
       "malId": 1604,
@@ -234,7 +252,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.12
+      "malMean": 8.12,
+      "startDate": "2006-10-07"
     },
     {
       "malId": 1735,
@@ -246,7 +265,8 @@
         "Shounen"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.29
+      "malMean": 8.29,
+      "startDate": "2007-02-15"
     },
     {
       "malId": 2001,
@@ -257,7 +277,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.65
+      "malMean": 8.65,
+      "startDate": "2007-04-01"
     },
     {
       "malId": 2025,
@@ -267,7 +288,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.04
+      "malMean": 8.04,
+      "startDate": "2007-04-06"
     },
     {
       "malId": 2167,
@@ -277,7 +299,8 @@
         "School"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.99
+      "malMean": 7.99,
+      "startDate": "2007-10-05"
     },
     {
       "malId": 2402,
@@ -288,7 +311,8 @@
         "Sports"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.39
+      "malMean": 8.39,
+      "startDate": "1970-04-01"
     },
     {
       "malId": 2904,
@@ -301,7 +325,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.92
+      "malMean": 8.92,
+      "startDate": "2008-04-06"
     },
     {
       "malId": 3002,
@@ -314,7 +339,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.25
+      "malMean": 8.25,
+      "startDate": "2007-10-03"
     },
     {
       "malId": 3588,
@@ -326,7 +352,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.86
+      "malMean": 7.86,
+      "startDate": "2008-04-07"
     },
     {
       "malId": 4181,
@@ -335,7 +362,8 @@
         "Romance"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.93
+      "malMean": 8.93,
+      "startDate": "2008-10-03"
     },
     {
       "malId": 5081,
@@ -346,7 +374,8 @@
         "Vampire"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.32
+      "malMean": 8.32,
+      "startDate": "2009-07-03"
     },
     {
       "malId": 6114,
@@ -358,7 +387,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.46
+      "malMean": 8.46,
+      "startDate": "2010-04-07"
     },
     {
       "malId": 7674,
@@ -370,7 +400,8 @@
         "Shounen"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.17
+      "malMean": 8.17,
+      "startDate": "2010-10-02"
     },
     {
       "malId": 9253,
@@ -382,7 +413,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 9.07
+      "malMean": 9.07,
+      "startDate": "2011-04-06"
     },
     {
       "malId": 10087,
@@ -392,7 +424,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 27,
-      "malMean": 8.26
+      "malMean": 8.26,
+      "startDate": "2011-10-02"
     },
     {
       "malId": 10620,
@@ -407,7 +440,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.37
+      "malMean": 7.37,
+      "startDate": "2011-10-09"
     },
     {
       "malId": 11061,
@@ -418,7 +452,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 9.03
+      "malMean": 9.03,
+      "startDate": "2011-10-02"
     },
     {
       "malId": 11111,
@@ -429,7 +464,8 @@
         "School"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.46
+      "malMean": 7.46,
+      "startDate": "2012-01-10"
     },
     {
       "malId": 11757,
@@ -441,7 +477,8 @@
         "Video Game"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.23
+      "malMean": 7.23,
+      "startDate": "2012-07-08"
     },
     {
       "malId": 12189,
@@ -451,7 +488,8 @@
         "Slice of Life"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.04
+      "malMean": 8.04,
+      "startDate": "2012-04-23"
     },
     {
       "malId": 13601,
@@ -465,7 +503,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.32
+      "malMean": 8.32,
+      "startDate": "2012-10-12"
     },
     {
       "malId": 14075,
@@ -479,7 +518,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.88
+      "malMean": 7.88,
+      "startDate": "2012-10-05"
     },
     {
       "malId": 14513,
@@ -490,7 +530,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8
+      "malMean": 8,
+      "startDate": "2012-10-07"
     },
     {
       "malId": 14719,
@@ -503,7 +544,8 @@
         "Vampire"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.87
+      "malMean": 7.87,
+      "startDate": "2012-10-06"
     },
     {
       "malId": 16498,
@@ -518,7 +560,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.58
+      "malMean": 8.58,
+      "startDate": "2013-04-07"
     },
     {
       "malId": 16592,
@@ -532,7 +575,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.19
+      "malMean": 7.19,
+      "startDate": "2013-07-05"
     },
     {
       "malId": 17074,
@@ -544,7 +588,8 @@
         "Vampire"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.76
+      "malMean": 8.76,
+      "startDate": "2013-07-07"
     },
     {
       "malId": 17265,
@@ -556,7 +601,8 @@
         "Video Game"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.89
+      "malMean": 7.89,
+      "startDate": "2013-10-05"
     },
     {
       "malId": 18115,
@@ -567,7 +613,8 @@
         "Shounen"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.2
+      "malMean": 8.2,
+      "startDate": "2013-10-06"
     },
     {
       "malId": 18179,
@@ -577,7 +624,8 @@
         "Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.92
+      "malMean": 7.92,
+      "startDate": "2013-10-08"
     },
     {
       "malId": 19815,
@@ -589,7 +637,8 @@
         "Strategy Game"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.03
+      "malMean": 8.03,
+      "startDate": "2014-04-09"
     },
     {
       "malId": 20507,
@@ -600,7 +649,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.94
+      "malMean": 7.94,
+      "startDate": "2014-01-05"
     },
     {
       "malId": 20583,
@@ -611,7 +661,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.43
+      "malMean": 8.43,
+      "startDate": "2014-04-06"
     },
     {
       "malId": 20785,
@@ -624,7 +675,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.36
+      "malMean": 7.36,
+      "startDate": "2014-04-06"
     },
     {
       "malId": 20899,
@@ -635,7 +687,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.11
+      "malMean": 8.11,
+      "startDate": "2014-04-05"
     },
     {
       "malId": 21843,
@@ -645,7 +698,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.61
+      "malMean": 7.61,
+      "startDate": "2014-10-06"
     },
     {
       "malId": 21881,
@@ -657,7 +711,8 @@
         "Video Game"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.72
+      "malMean": 6.72,
+      "startDate": "2014-07-05"
     },
     {
       "malId": 22199,
@@ -668,7 +723,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.48
+      "malMean": 7.48,
+      "startDate": "2014-07-07"
     },
     {
       "malId": 22319,
@@ -683,7 +739,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.79
+      "malMean": 7.79,
+      "startDate": "2014-07-04"
     },
     {
       "malId": 22535,
@@ -697,7 +754,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.32
+      "malMean": 8.32,
+      "startDate": "2014-10-09"
     },
     {
       "malId": 23273,
@@ -711,7 +769,8 @@
         "Shounen"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.64
+      "malMean": 8.64,
+      "startDate": "2014-10-10"
     },
     {
       "malId": 23283,
@@ -722,7 +781,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.08
+      "malMean": 8.08,
+      "startDate": "2014-07-11"
     },
     {
       "malId": 23755,
@@ -733,7 +793,8 @@
         "Shounen"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.59
+      "malMean": 7.59,
+      "startDate": "2014-10-05"
     },
     {
       "malId": 24405,
@@ -743,7 +804,8 @@
         "Shounen"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.59
+      "malMean": 7.59,
+      "startDate": "2014-10-05"
     },
     {
       "malId": 24439,
@@ -756,7 +818,8 @@
         "Vampire"
       ],
       "episodeMinutes": 26,
-      "malMean": 7.59
+      "malMean": 7.59,
+      "startDate": "2015-04-05"
     },
     {
       "malId": 24833,
@@ -767,7 +830,8 @@
         "Shounen"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.07
+      "malMean": 8.07,
+      "startDate": "2015-01-10"
     },
     {
       "malId": 25183,
@@ -779,7 +843,8 @@
         "Seinen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.42
+      "malMean": 7.42,
+      "startDate": "2015-07-02"
     },
     {
       "malId": 25777,
@@ -793,7 +858,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.54
+      "malMean": 8.54,
+      "startDate": "2017-04-01"
     },
     {
       "malId": 26055,
@@ -804,7 +870,8 @@
         "Super Power"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.44
+      "malMean": 8.44,
+      "startDate": "2015-01-10"
     },
     {
       "malId": 26243,
@@ -817,7 +884,8 @@
         "Vampire"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.49
+      "malMean": 7.49,
+      "startDate": "2015-04-04"
     },
     {
       "malId": 27631,
@@ -828,7 +896,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.17
+      "malMean": 7.17,
+      "startDate": "2015-07-12"
     },
     {
       "malId": 27899,
@@ -843,7 +912,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.03
+      "malMean": 7.03,
+      "startDate": "2015-01-09"
     },
     {
       "malId": 28121,
@@ -853,7 +923,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.52
+      "malMean": 7.52,
+      "startDate": "2015-04-04"
     },
     {
       "malId": 28223,
@@ -866,7 +937,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.13
+      "malMean": 8.13,
+      "startDate": "2015-01-10"
     },
     {
       "malId": 28623,
@@ -880,7 +952,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.29
+      "malMean": 7.29,
+      "startDate": "2016-04-08"
     },
     {
       "malId": 28851,
@@ -890,7 +963,8 @@
         "Shounen"
       ],
       "episodeMinutes": 130,
-      "malMean": 8.93
+      "malMean": 8.93,
+      "startDate": "2016-09-17"
     },
     {
       "malId": 28891,
@@ -901,7 +975,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.61
+      "malMean": 8.61,
+      "startDate": "2015-10-04"
     },
     {
       "malId": 28999,
@@ -911,7 +986,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.76
+      "malMean": 7.76,
+      "startDate": "2015-07-05"
     },
     {
       "malId": 30187,
@@ -921,7 +997,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.41
+      "malMean": 7.41,
+      "startDate": "2015-10-08"
     },
     {
       "malId": 30276,
@@ -934,7 +1011,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.47
+      "malMean": 8.47,
+      "startDate": "2015-10-05"
     },
     {
       "malId": 30503,
@@ -945,7 +1023,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.14
+      "malMean": 8.14,
+      "startDate": "2015-10-03"
     },
     {
       "malId": 30654,
@@ -956,7 +1035,8 @@
         "Shounen"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.46
+      "malMean": 8.46,
+      "startDate": "2016-01-08"
     },
     {
       "malId": 31043,
@@ -968,7 +1048,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.31
+      "malMean": 8.31,
+      "startDate": "2016-01-08"
     },
     {
       "malId": 31229,
@@ -979,7 +1060,8 @@
         "Vampire"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.87
+      "malMean": 6.87,
+      "startDate": "2016-07-05"
     },
     {
       "malId": 31240,
@@ -992,7 +1074,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.25
+      "malMean": 8.25,
+      "startDate": "2016-04-04"
     },
     {
       "malId": 31478,
@@ -1006,7 +1089,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.8
+      "malMean": 7.8,
+      "startDate": "2016-04-07"
     },
     {
       "malId": 31741,
@@ -1017,7 +1101,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.83
+      "malMean": 7.83,
+      "startDate": "2016-04-16"
     },
     {
       "malId": 31798,
@@ -1027,7 +1112,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.36
+      "malMean": 7.36,
+      "startDate": "2016-04-09"
     },
     {
       "malId": 31904,
@@ -1037,7 +1123,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 5.35
+      "malMean": 5.35,
+      "startDate": "2016-04-16"
     },
     {
       "malId": 31933,
@@ -1048,7 +1135,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.51
+      "malMean": 8.51,
+      "startDate": "2016-04-02"
     },
     {
       "malId": 31964,
@@ -1059,7 +1147,8 @@
         "Super Power"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.82
+      "malMean": 7.82,
+      "startDate": "2016-04-03"
     },
     {
       "malId": 32182,
@@ -1069,7 +1158,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.49
+      "malMean": 8.49,
+      "startDate": "2016-07-11"
     },
     {
       "malId": 32281,
@@ -1078,7 +1168,8 @@
         "Drama"
       ],
       "episodeMinutes": 107,
-      "malMean": 8.82
+      "malMean": 8.82,
+      "startDate": "2016-08-26"
     },
     {
       "malId": 32729,
@@ -1092,7 +1183,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.63
+      "malMean": 7.63,
+      "startDate": "2016-07-04"
     },
     {
       "malId": 32867,
@@ -1106,7 +1198,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.16
+      "malMean": 8.16,
+      "startDate": "2016-10-06"
     },
     {
       "malId": 32935,
@@ -1117,7 +1210,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.77
+      "malMean": 8.77,
+      "startDate": "2016-10-08"
     },
     {
       "malId": 32998,
@@ -1130,7 +1224,8 @@
         "Suspense"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.82
+      "malMean": 7.82,
+      "startDate": "2016-07-09"
     },
     {
       "malId": 33486,
@@ -1141,7 +1236,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.04
+      "malMean": 8.04,
+      "startDate": "2017-04-01"
     },
     {
       "malId": 33889,
@@ -1152,7 +1248,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 5.8
+      "malMean": 5.8,
+      "startDate": "2018-04-06"
     },
     {
       "malId": 33926,
@@ -1161,7 +1258,8 @@
         "Video Game"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.85
+      "malMean": 7.85,
+      "startDate": "2017-04-07"
     },
     {
       "malId": 34134,
@@ -1174,7 +1272,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.52
+      "malMean": 7.52,
+      "startDate": "2019-04-10"
     },
     {
       "malId": 34542,
@@ -1188,7 +1287,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.62
+      "malMean": 7.62,
+      "startDate": "2017-10-13"
     },
     {
       "malId": 34566,
@@ -1200,7 +1300,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 5.97
+      "malMean": 5.97,
+      "startDate": "2017-04-05"
     },
     {
       "malId": 34572,
@@ -1210,7 +1311,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.14
+      "malMean": 8.14,
+      "startDate": "2017-10-03"
     },
     {
       "malId": 34577,
@@ -1221,7 +1323,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.52
+      "malMean": 7.52,
+      "startDate": "2018-01-13"
     },
     {
       "malId": 34599,
@@ -1234,7 +1337,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.62
+      "malMean": 8.62,
+      "startDate": "2017-07-07"
     },
     {
       "malId": 35120,
@@ -1248,7 +1352,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.74
+      "malMean": 7.74,
+      "startDate": "2018-01-05"
     },
     {
       "malId": 35507,
@@ -1259,7 +1364,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.82
+      "malMean": 7.82,
+      "startDate": "2017-07-12"
     },
     {
       "malId": 35737,
@@ -1273,7 +1379,8 @@
         "Suspense"
       ],
       "episodeMinutes": 61,
-      "malMean": 8.44
+      "malMean": 8.44,
+      "startDate": "2023-10-26"
     },
     {
       "malId": 35760,
@@ -1287,7 +1394,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.65
+      "malMean": 8.65,
+      "startDate": "2018-07-23"
     },
     {
       "malId": 35790,
@@ -1299,7 +1407,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.89
+      "malMean": 7.89,
+      "startDate": "2019-01-09"
     },
     {
       "malId": 35839,
@@ -1310,7 +1419,8 @@
         "Drama"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.5
+      "malMean": 8.5,
+      "startDate": "2018-01-02"
     },
     {
       "malId": 36456,
@@ -1321,7 +1431,8 @@
         "Super Power"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.97
+      "malMean": 7.97,
+      "startDate": "2018-04-07"
     },
     {
       "malId": 36474,
@@ -1332,7 +1443,8 @@
         "Video Game"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.58
+      "malMean": 7.58,
+      "startDate": "2018-10-07"
     },
     {
       "malId": 36563,
@@ -1343,7 +1455,8 @@
         "Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.87
+      "malMean": 7.87,
+      "startDate": "2018-04-06"
     },
     {
       "malId": 36649,
@@ -1358,7 +1471,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.45
+      "malMean": 8.45,
+      "startDate": "2018-07-06"
     },
     {
       "malId": 37105,
@@ -1369,7 +1483,8 @@
         "Seinen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.45
+      "malMean": 8.45,
+      "startDate": "2018-07-14"
     },
     {
       "malId": 37347,
@@ -1379,7 +1494,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.24
+      "malMean": 7.24,
+      "startDate": "2019-07-13"
     },
     {
       "malId": 37349,
@@ -1390,7 +1506,8 @@
         "Gore"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.41
+      "malMean": 7.41,
+      "startDate": "2018-10-07"
     },
     {
       "malId": 37407,
@@ -1400,7 +1517,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 118,
-      "malMean": 7.53
+      "malMean": 7.53,
+      "startDate": "2018-08-17"
     },
     {
       "malId": 37510,
@@ -1410,7 +1528,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.78
+      "malMean": 8.78,
+      "startDate": "2019-01-07"
     },
     {
       "malId": 37520,
@@ -1424,7 +1543,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.26
+      "malMean": 8.26,
+      "startDate": "2019-01-07"
     },
     {
       "malId": 37521,
@@ -1437,7 +1557,8 @@
         "Seinen"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.78
+      "malMean": 8.78,
+      "startDate": "2019-07-08"
     },
     {
       "malId": 37525,
@@ -1449,7 +1570,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.73
+      "malMean": 6.73,
+      "startDate": "2019-10-07"
     },
     {
       "malId": 37779,
@@ -1461,7 +1583,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.46
+      "malMean": 8.46,
+      "startDate": "2019-01-11"
     },
     {
       "malId": 37926,
@@ -1472,7 +1595,8 @@
         "Video Game"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.87
+      "malMean": 6.87,
+      "startDate": "2019-07-07"
     },
     {
       "malId": 37932,
@@ -1481,7 +1605,8 @@
         "Video Game"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.88
+      "malMean": 7.88,
+      "startDate": "2020-09-25"
     },
     {
       "malId": 37936,
@@ -1492,7 +1617,8 @@
         "Martial Arts"
       ],
       "episodeMinutes": 26,
-      "malMean": 7.85
+      "malMean": 7.85,
+      "startDate": "2020-07-26"
     },
     {
       "malId": 37991,
@@ -1504,7 +1630,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.58
+      "malMean": 8.58,
+      "startDate": "2018-10-06"
     },
     {
       "malId": 38000,
@@ -1516,7 +1643,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.39
+      "malMean": 8.39,
+      "startDate": "2019-04-06"
     },
     {
       "malId": 38003,
@@ -1530,7 +1658,8 @@
         "Super Power"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.19
+      "malMean": 8.19,
+      "startDate": "2019-04-12"
     },
     {
       "malId": 38408,
@@ -1541,7 +1670,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.86
+      "malMean": 7.86,
+      "startDate": "2019-10-12"
     },
     {
       "malId": 38524,
@@ -1555,7 +1685,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 9.05
+      "malMean": 9.05,
+      "startDate": "2019-04-29"
     },
     {
       "malId": 38594,
@@ -1566,7 +1697,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 95,
-      "malMean": 7.62
+      "malMean": 7.62,
+      "startDate": "2019-06-21"
     },
     {
       "malId": 38656,
@@ -1580,7 +1712,8 @@
         "Suspense"
       ],
       "episodeMinutes": 26,
-      "malMean": 7.2
+      "malMean": 7.2,
+      "startDate": "2020-01-04"
     },
     {
       "malId": 38671,
@@ -1592,7 +1725,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.72
+      "malMean": 7.72,
+      "startDate": "2019-07-06"
     },
     {
       "malId": 38691,
@@ -1602,7 +1736,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.26
+      "malMean": 8.26,
+      "startDate": "2019-07-05"
     },
     {
       "malId": 38826,
@@ -1613,7 +1748,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 112,
-      "malMean": 8.27
+      "malMean": 8.27,
+      "startDate": "2019-07-19"
     },
     {
       "malId": 38883,
@@ -1624,7 +1760,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.37
+      "malMean": 8.37,
+      "startDate": "2020-01-11"
     },
     {
       "malId": 39198,
@@ -1639,7 +1776,8 @@
         "Suspense"
       ],
       "episodeMinutes": 28,
-      "malMean": 8.07
+      "malMean": 8.07,
+      "startDate": "2019-07-03"
     },
     {
       "malId": 39463,
@@ -1651,7 +1789,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.94
+      "malMean": 6.94,
+      "startDate": "2020-04-05"
     },
     {
       "malId": 39535,
@@ -1664,7 +1803,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.31
+      "malMean": 8.31,
+      "startDate": "2021-01-11"
     },
     {
       "malId": 39587,
@@ -1677,7 +1817,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.32
+      "malMean": 8.32,
+      "startDate": "2020-07-08"
     },
     {
       "malId": 39617,
@@ -1689,7 +1830,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 5.23
+      "malMean": 5.23,
+      "startDate": "2021-01-08"
     },
     {
       "malId": 39701,
@@ -1700,7 +1842,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.47
+      "malMean": 6.47,
+      "startDate": "2019-10-09"
     },
     {
       "malId": 40028,
@@ -1714,7 +1857,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.79
+      "malMean": 8.79,
+      "startDate": "2020-12-07"
     },
     {
       "malId": 40052,
@@ -1726,7 +1870,8 @@
         "Organized Crime"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.18
+      "malMean": 8.18,
+      "startDate": "2020-07-09"
     },
     {
       "malId": 40056,
@@ -1736,7 +1881,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.35
+      "malMean": 7.35,
+      "startDate": "2020-07-08"
     },
     {
       "malId": 40221,
@@ -1748,7 +1894,8 @@
         "Mystery"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.55
+      "malMean": 7.55,
+      "startDate": "2020-04-02"
     },
     {
       "malId": 40333,
@@ -1761,7 +1908,8 @@
         "Suspense"
       ],
       "episodeMinutes": 29,
-      "malMean": 5.66
+      "malMean": 5.66,
+      "startDate": "2024-09-28"
     },
     {
       "malId": 40356,
@@ -1773,7 +1921,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.53
+      "malMean": 6.53,
+      "startDate": "2022-04-06"
     },
     {
       "malId": 40454,
@@ -1783,7 +1932,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.47
+      "malMean": 7.47,
+      "startDate": "2020-10-03"
     },
     {
       "malId": 40456,
@@ -1794,7 +1944,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 117,
-      "malMean": 8.53
+      "malMean": 8.53,
+      "startDate": "2020-10-16"
     },
     {
       "malId": 40496,
@@ -1805,7 +1956,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.29
+      "malMean": 7.29,
+      "startDate": "2020-07-04"
     },
     {
       "malId": 40497,
@@ -1818,7 +1970,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.27
+      "malMean": 7.27,
+      "startDate": "2020-10-04"
     },
     {
       "malId": 40532,
@@ -1829,7 +1982,8 @@
         "Racing"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.24
+      "malMean": 7.24,
+      "startDate": "2020-04-10"
     },
     {
       "malId": 40748,
@@ -1841,7 +1995,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.49
+      "malMean": 8.49,
+      "startDate": "2020-10-03"
     },
     {
       "malId": 40776,
@@ -1852,7 +2007,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.56
+      "malMean": 8.56,
+      "startDate": "2020-10-03"
     },
     {
       "malId": 40834,
@@ -1861,7 +2017,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.48
+      "malMean": 8.48,
+      "startDate": "2021-10-15"
     },
     {
       "malId": 40852,
@@ -1871,7 +2028,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.15
+      "malMean": 8.15,
+      "startDate": "2021-01-14"
     },
     {
       "malId": 40904,
@@ -1882,7 +2040,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 26,
-      "malMean": 7.38
+      "malMean": 7.38,
+      "startDate": "2021-07-03"
     },
     {
       "malId": 40908,
@@ -1895,7 +2054,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.35
+      "malMean": 7.35,
+      "startDate": "2021-01-10"
     },
     {
       "malId": 40911,
@@ -1909,7 +2069,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.17
+      "malMean": 8.17,
+      "startDate": "2020-10-11"
     },
     {
       "malId": 40956,
@@ -1921,7 +2082,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.82
+      "malMean": 7.82,
+      "startDate": "2020-07-04"
     },
     {
       "malId": 40964,
@@ -1930,7 +2092,8 @@
         "Mecha"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.35
+      "malMean": 6.35,
+      "startDate": "2021-01-09"
     },
     {
       "malId": 41025,
@@ -1941,7 +2104,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.35
+      "malMean": 8.35,
+      "startDate": "2021-04-12"
     },
     {
       "malId": 41120,
@@ -1951,7 +2115,8 @@
         "Mystery"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.5
+      "malMean": 7.5,
+      "startDate": "2020-04-10"
     },
     {
       "malId": 41345,
@@ -1962,7 +2127,8 @@
         "Vampire"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.9
+      "malMean": 6.9,
+      "startDate": "2020-10-08"
     },
     {
       "malId": 41353,
@@ -1973,7 +2139,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.07
+      "malMean": 7.07,
+      "startDate": "2020-07-06"
     },
     {
       "malId": 41433,
@@ -1985,7 +2152,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.56
+      "malMean": 7.56,
+      "startDate": "2020-10-08"
     },
     {
       "malId": 41457,
@@ -1996,7 +2164,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.36
+      "malMean": 8.36,
+      "startDate": "2021-04-11"
     },
     {
       "malId": 41467,
@@ -2007,7 +2176,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.97
+      "malMean": 8.97,
+      "startDate": "2022-10-11"
     },
     {
       "malId": 41468,
@@ -2017,7 +2187,8 @@
         "Shounen"
       ],
       "episodeMinutes": 21,
-      "malMean": 7.14
+      "malMean": 7.14,
+      "startDate": "2020-10-02"
     },
     {
       "malId": 41587,
@@ -2028,7 +2199,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.35
+      "malMean": 7.35,
+      "startDate": "2021-03-27"
     },
     {
       "malId": 41619,
@@ -2039,7 +2211,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.17
+      "malMean": 7.17,
+      "startDate": "2020-10-04"
     },
     {
       "malId": 42192,
@@ -2052,7 +2225,8 @@
         "Space"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.24
+      "malMean": 7.24,
+      "startDate": "2021-04-11"
     },
     {
       "malId": 42205,
@@ -2063,7 +2237,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.91
+      "malMean": 6.91,
+      "startDate": "2021-04-01"
     },
     {
       "malId": 42249,
@@ -2075,7 +2250,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.8
+      "malMean": 7.8,
+      "startDate": "2021-04-11"
     },
     {
       "malId": 42307,
@@ -2086,7 +2262,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.16
+      "malMean": 6.16,
+      "startDate": "2021-04-10"
     },
     {
       "malId": 42544,
@@ -2097,7 +2274,8 @@
         "Historical"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.08
+      "malMean": 7.08,
+      "startDate": "2021-10-03"
     },
     {
       "malId": 42627,
@@ -2109,7 +2287,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.24
+      "malMean": 6.24,
+      "startDate": "2021-07-01"
     },
     {
       "malId": 42923,
@@ -2118,7 +2297,8 @@
         "Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.99
+      "malMean": 7.99,
+      "startDate": "2021-01-10"
     },
     {
       "malId": 43299,
@@ -2129,7 +2309,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.53
+      "malMean": 7.53,
+      "startDate": "2021-01-13"
     },
     {
       "malId": 43325,
@@ -2143,7 +2324,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.29
+      "malMean": 8.29,
+      "startDate": "2021-04-04"
     },
     {
       "malId": 43523,
@@ -2155,7 +2337,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.71
+      "malMean": 7.71,
+      "startDate": "2021-07-07"
     },
     {
       "malId": 43629,
@@ -2165,7 +2348,8 @@
         "Supernatural"
       ],
       "episodeMinutes": null,
-      "malMean": null
+      "malMean": null,
+      "startDate": null
     },
     {
       "malId": 43690,
@@ -2178,7 +2362,8 @@
         "Suspense"
       ],
       "episodeMinutes": 25,
-      "malMean": 6.67
+      "malMean": 6.67,
+      "startDate": "2021-02-25"
     },
     {
       "malId": 43760,
@@ -2188,7 +2373,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.33
+      "malMean": 6.33,
+      "startDate": "2023-01-14"
     },
     {
       "malId": 43814,
@@ -2201,7 +2387,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.74
+      "malMean": 6.74,
+      "startDate": "2021-07-13"
     },
     {
       "malId": 44074,
@@ -2214,7 +2401,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.69
+      "malMean": 8.69,
+      "startDate": "2021-04-30"
     },
     {
       "malId": 44511,
@@ -2226,7 +2414,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.42
+      "malMean": 8.42,
+      "startDate": "2022-10-12"
     },
     {
       "malId": 44961,
@@ -2240,7 +2429,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.01
+      "malMean": 6.01,
+      "startDate": "2021-10-08"
     },
     {
       "malId": 45560,
@@ -2253,7 +2443,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.62
+      "malMean": 6.62,
+      "startDate": "2022-01-06"
     },
     {
       "malId": 45576,
@@ -2266,7 +2457,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.59
+      "malMean": 8.59,
+      "startDate": "2021-10-04"
     },
     {
       "malId": 46095,
@@ -2278,7 +2470,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.37
+      "malMean": 8.37,
+      "startDate": "2021-04-03"
     },
     {
       "malId": 46352,
@@ -2289,7 +2482,8 @@
         "Visual Arts"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.79
+      "malMean": 7.79,
+      "startDate": "2021-10-02"
     },
     {
       "malId": 46569,
@@ -2303,7 +2497,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.08
+      "malMean": 8.08,
+      "startDate": "2023-04-01"
     },
     {
       "malId": 47160,
@@ -2314,7 +2509,8 @@
         "Gore"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.21
+      "malMean": 7.21,
+      "startDate": "2023-10-06"
     },
     {
       "malId": 47161,
@@ -2325,7 +2521,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.22
+      "malMean": 6.22,
+      "startDate": "2022-01-08"
     },
     {
       "malId": 47164,
@@ -2335,7 +2532,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.75
+      "malMean": 7.75,
+      "startDate": "2022-07-23"
     },
     {
       "malId": 47194,
@@ -2347,7 +2545,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.46
+      "malMean": 8.46,
+      "startDate": "2022-04-15"
     },
     {
       "malId": 47790,
@@ -2361,7 +2560,8 @@
         "Romance"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.3
+      "malMean": 7.3,
+      "startDate": "2021-10-06"
     },
     {
       "malId": 47917,
@@ -2371,7 +2571,8 @@
         "Music"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.72
+      "malMean": 8.72,
+      "startDate": "2022-10-09"
     },
     {
       "malId": 48316,
@@ -2383,7 +2584,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.21
+      "malMean": 8.21,
+      "startDate": "2022-10-05"
     },
     {
       "malId": 48375,
@@ -2394,7 +2596,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 71,
-      "malMean": 7.65
+      "malMean": 7.65,
+      "startDate": "2021-12-31"
     },
     {
       "malId": 48414,
@@ -2405,7 +2608,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.14
+      "malMean": 7.14,
+      "startDate": "2022-01-11"
     },
     {
       "malId": 48417,
@@ -2416,7 +2620,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.82
+      "malMean": 6.82,
+      "startDate": "2023-01-08"
     },
     {
       "malId": 48418,
@@ -2427,7 +2632,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.49
+      "malMean": 6.49,
+      "startDate": "2024-04-12"
     },
     {
       "malId": 48556,
@@ -2439,7 +2645,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.16
+      "malMean": 7.16,
+      "startDate": "2021-10-06"
     },
     {
       "malId": 48569,
@@ -2450,7 +2657,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.73
+      "malMean": 8.73,
+      "startDate": "2021-10-03"
     },
     {
       "malId": 48580,
@@ -2464,7 +2672,8 @@
         "Vampire"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.9
+      "malMean": 7.9,
+      "startDate": "2021-07-03"
     },
     {
       "malId": 48583,
@@ -2478,7 +2687,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.78
+      "malMean": 8.78,
+      "startDate": "2022-01-10"
     },
     {
       "malId": 48661,
@@ -2489,7 +2699,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.04
+      "malMean": 8.04,
+      "startDate": "2021-12-01"
     },
     {
       "malId": 48761,
@@ -2501,7 +2712,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.89
+      "malMean": 6.89,
+      "startDate": "2021-10-09"
     },
     {
       "malId": 48776,
@@ -2510,7 +2722,8 @@
         "Strategy Game"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.4
+      "malMean": 6.4,
+      "startDate": "2021-10-10"
     },
     {
       "malId": 48849,
@@ -2521,7 +2734,8 @@
         "Super Power"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.86
+      "malMean": 7.86,
+      "startDate": "2021-07-16"
     },
     {
       "malId": 49052,
@@ -2531,7 +2745,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.15
+      "malMean": 8.15,
+      "startDate": "2022-04-09"
     },
     {
       "malId": 49114,
@@ -2545,7 +2760,8 @@
         "Vampire"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.19
+      "malMean": 8.19,
+      "startDate": "2022-01-15"
     },
     {
       "malId": 49154,
@@ -2555,7 +2771,8 @@
         "Organized Crime"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.16
+      "malMean": 7.16,
+      "startDate": "2023-01-09"
     },
     {
       "malId": 49357,
@@ -2567,7 +2784,8 @@
         "Space"
       ],
       "episodeMinutes": 16,
-      "malMean": 7.08
+      "malMean": 7.08,
+      "startDate": "2021-09-22"
     },
     {
       "malId": 49387,
@@ -2580,7 +2798,8 @@
         "Seinen"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.83
+      "malMean": 8.83,
+      "startDate": "2023-01-10"
     },
     {
       "malId": 49413,
@@ -2593,7 +2812,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.62
+      "malMean": 8.62,
+      "startDate": "2023-07-14"
     },
     {
       "malId": 49596,
@@ -2603,7 +2823,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.09
+      "malMean": 8.09,
+      "startDate": "2022-10-09"
     },
     {
       "malId": 49613,
@@ -2614,7 +2835,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.52
+      "malMean": 7.52,
+      "startDate": "2024-01-06"
     },
     {
       "malId": 49709,
@@ -2625,7 +2847,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.11
+      "malMean": 8.11,
+      "startDate": "2022-10-23"
     },
     {
       "malId": 49733,
@@ -2638,7 +2861,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.81
+      "malMean": 7.81,
+      "startDate": "2022-04-27"
     },
     {
       "malId": 49818,
@@ -2651,7 +2875,8 @@
         "Suspense"
       ],
       "episodeMinutes": 35,
-      "malMean": 8.61
+      "malMean": 8.61,
+      "startDate": "2025-06-28"
     },
     {
       "malId": 49828,
@@ -2662,7 +2887,8 @@
         "Space"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.84
+      "malMean": 7.84,
+      "startDate": "2022-10-02"
     },
     {
       "malId": 49889,
@@ -2674,7 +2900,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.84
+      "malMean": 7.84,
+      "startDate": "2024-01-08"
     },
     {
       "malId": 49918,
@@ -2685,7 +2912,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.21
+      "malMean": 8.21,
+      "startDate": "2022-10-01"
     },
     {
       "malId": 49969,
@@ -2695,7 +2923,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.07
+      "malMean": 6.07,
+      "startDate": "2022-01-10"
     },
     {
       "malId": 50002,
@@ -2708,7 +2937,8 @@
         "Space"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.41
+      "malMean": 7.41,
+      "startDate": "2023-04-02"
     },
     {
       "malId": 50172,
@@ -2718,7 +2948,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.72
+      "malMean": 8.72,
+      "startDate": "2022-10-06"
     },
     {
       "malId": 50204,
@@ -2728,7 +2959,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.33
+      "malMean": 6.33,
+      "startDate": "2022-01-06"
     },
     {
       "malId": 50265,
@@ -2741,7 +2973,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.4
+      "malMean": 8.4,
+      "startDate": "2022-04-09"
     },
     {
       "malId": 50273,
@@ -2753,7 +2986,8 @@
         "Suspense"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.7
+      "malMean": 7.7,
+      "startDate": "2022-04-06"
     },
     {
       "malId": 50330,
@@ -2767,7 +3001,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.41
+      "malMean": 8.41,
+      "startDate": "2023-01-04"
     },
     {
       "malId": 50346,
@@ -2778,7 +3013,8 @@
         "Vampire"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.94
+      "malMean": 7.94,
+      "startDate": "2022-07-08"
     },
     {
       "malId": 50380,
@@ -2790,7 +3026,8 @@
         "Showbiz"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.08
+      "malMean": 8.08,
+      "startDate": "2022-04-05"
     },
     {
       "malId": 50602,
@@ -2802,7 +3039,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.19
+      "malMean": 8.19,
+      "startDate": "2022-10-01"
     },
     {
       "malId": 50608,
@@ -2814,7 +3052,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.61
+      "malMean": 7.61,
+      "startDate": "2023-01-08"
     },
     {
       "malId": 50613,
@@ -2825,7 +3064,8 @@
         "Shounen"
       ],
       "episodeMinutes": 22,
-      "malMean": 7.62
+      "malMean": 7.62,
+      "startDate": "2023-07-07"
     },
     {
       "malId": 50709,
@@ -2833,7 +3073,8 @@
         "Action"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.14
+      "malMean": 8.14,
+      "startDate": "2022-07-02"
     },
     {
       "malId": 50713,
@@ -2846,7 +3087,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.05
+      "malMean": 7.05,
+      "startDate": "2024-04-05"
     },
     {
       "malId": 50932,
@@ -2858,7 +3100,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.08
+      "malMean": 7.08,
+      "startDate": "2023-01-07"
     },
     {
       "malId": 51009,
@@ -2870,7 +3113,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.69
+      "malMean": 8.69,
+      "startDate": "2023-07-06"
     },
     {
       "malId": 51019,
@@ -2881,7 +3125,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 28,
-      "malMean": 8.14
+      "malMean": 8.14,
+      "startDate": "2023-04-09"
     },
     {
       "malId": 51096,
@@ -2892,7 +3137,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.03
+      "malMean": 8.03,
+      "startDate": "2022-07-04"
     },
     {
       "malId": 51105,
@@ -2902,7 +3148,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.56
+      "malMean": 7.56,
+      "startDate": "2023-01-08"
     },
     {
       "malId": 51179,
@@ -2915,7 +3162,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.18
+      "malMean": 8.18,
+      "startDate": "2023-07-10"
     },
     {
       "malId": 51180,
@@ -2926,7 +3174,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.91
+      "malMean": 7.91,
+      "startDate": "2024-01-03"
     },
     {
       "malId": 51297,
@@ -2936,7 +3185,8 @@
         "Shounen"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.56
+      "malMean": 7.56,
+      "startDate": "2023-10-01"
     },
     {
       "malId": 51367,
@@ -2947,7 +3197,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.03
+      "malMean": 8.03,
+      "startDate": "2022-09-01"
     },
     {
       "malId": 51368,
@@ -2960,7 +3211,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.04
+      "malMean": 7.04,
+      "startDate": "2022-07-12"
     },
     {
       "malId": 51371,
@@ -2970,7 +3222,8 @@
         "Samurai"
       ],
       "episodeMinutes": 24,
-      "malMean": 5.98
+      "malMean": 5.98,
+      "startDate": "2022-07-08"
     },
     {
       "malId": 51495,
@@ -2982,7 +3235,8 @@
         "Romance"
       ],
       "episodeMinutes": 24,
-      "malMean": 5.49
+      "malMean": 5.49,
+      "startDate": "2023-01-14"
     },
     {
       "malId": 51535,
@@ -2996,7 +3250,8 @@
         "Suspense"
       ],
       "episodeMinutes": 73,
-      "malMean": 8.86
+      "malMean": 8.86,
+      "startDate": "2023-03-04"
     },
     {
       "malId": 51553,
@@ -3005,7 +3260,8 @@
         "Seinen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.47
+      "malMean": 8.47,
+      "startDate": "2026-04-06"
     },
     {
       "malId": 51673,
@@ -3016,7 +3272,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.59
+      "malMean": 6.59,
+      "startDate": "2024-01-10"
     },
     {
       "malId": 51711,
@@ -3026,7 +3283,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.36
+      "malMean": 6.36,
+      "startDate": "2023-01-06"
     },
     {
       "malId": 51818,
@@ -3038,7 +3296,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.73
+      "malMean": 7.73,
+      "startDate": "2025-04-05"
     },
     {
       "malId": 52034,
@@ -3050,7 +3309,8 @@
         "Showbiz"
       ],
       "episodeMinutes": 31,
-      "malMean": 8.52
+      "malMean": 8.52,
+      "startDate": "2023-04-12"
     },
     {
       "malId": 52211,
@@ -3064,7 +3324,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.6
+      "malMean": 7.6,
+      "startDate": "2023-04-08"
     },
     {
       "malId": 52215,
@@ -3074,7 +3335,8 @@
         "Seinen"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.72
+      "malMean": 8.72,
+      "startDate": "2024-10-05"
     },
     {
       "malId": 52299,
@@ -3086,7 +3348,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.13
+      "malMean": 8.13,
+      "startDate": "2024-01-07"
     },
     {
       "malId": 52347,
@@ -3098,7 +3361,8 @@
         "Video Game"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.1
+      "malMean": 8.1,
+      "startDate": "2023-10-01"
     },
     {
       "malId": 52588,
@@ -3112,7 +3376,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.19
+      "malMean": 8.19,
+      "startDate": "2024-04-13"
     },
     {
       "malId": 52635,
@@ -3124,7 +3389,8 @@
         "Mystery"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.65
+      "malMean": 6.65,
+      "startDate": "2024-07-07"
     },
     {
       "malId": 52657,
@@ -3133,7 +3399,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 23,
-      "malMean": 7.42
+      "malMean": 7.42,
+      "startDate": "2023-04-14"
     },
     {
       "malId": 52701,
@@ -3145,7 +3412,8 @@
         "Seinen"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.58
+      "malMean": 8.58,
+      "startDate": "2024-01-04"
     },
     {
       "malId": 52741,
@@ -3156,7 +3424,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.73
+      "malMean": 7.73,
+      "startDate": "2023-10-07"
     },
     {
       "malId": 52807,
@@ -3169,7 +3438,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 4.77
+      "malMean": 4.77,
+      "startDate": "2025-10-12"
     },
     {
       "malId": 52816,
@@ -3181,7 +3451,8 @@
         "Seinen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.46
+      "malMean": 7.46,
+      "startDate": "2024-01-12"
     },
     {
       "malId": 52991,
@@ -3193,7 +3464,8 @@
         "Shounen"
       ],
       "episodeMinutes": 25,
-      "malMean": 9.25
+      "malMean": 9.25,
+      "startDate": "2023-09-29"
     },
     {
       "malId": 53199,
@@ -3204,7 +3476,8 @@
         "Space"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.88
+      "malMean": 7.88,
+      "startDate": "2023-04-09"
     },
     {
       "malId": 53273,
@@ -3215,7 +3488,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.5
+      "malMean": 8.5,
+      "startDate": "2022-12-01"
     },
     {
       "malId": 53393,
@@ -3226,7 +3500,8 @@
         "Seinen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.2
+      "malMean": 8.2,
+      "startDate": "2023-04-01"
     },
     {
       "malId": 53411,
@@ -3237,7 +3512,8 @@
         "Organized Crime"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.09
+      "malMean": 8.09,
+      "startDate": "2023-01-07"
     },
     {
       "malId": 53439,
@@ -3247,7 +3523,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.72
+      "malMean": 6.72,
+      "startDate": "2023-10-05"
     },
     {
       "malId": 53447,
@@ -3256,7 +3533,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.66
+      "malMean": 8.66,
+      "startDate": "2025-04-06"
     },
     {
       "malId": 53613,
@@ -3268,7 +3546,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.25
+      "malMean": 7.25,
+      "startDate": "2023-04-11"
     },
     {
       "malId": 53770,
@@ -3279,7 +3558,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.29
+      "malMean": 7.29,
+      "startDate": "2024-04-07"
     },
     {
       "malId": 53887,
@@ -3291,7 +3571,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.05
+      "malMean": 8.05,
+      "startDate": "2023-10-07"
     },
     {
       "malId": 53998,
@@ -3302,7 +3583,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.7
+      "malMean": 8.7,
+      "startDate": "2023-07-08"
     },
     {
       "malId": 54112,
@@ -3314,7 +3596,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.69
+      "malMean": 7.69,
+      "startDate": "2023-07-09"
     },
     {
       "malId": 54449,
@@ -3326,7 +3609,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.74
+      "malMean": 6.74,
+      "startDate": "2024-01-03"
     },
     {
       "malId": 54492,
@@ -3337,7 +3621,8 @@
         "Mystery"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.84
+      "malMean": 8.84,
+      "startDate": "2023-10-22"
     },
     {
       "malId": 54595,
@@ -3349,7 +3634,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.24
+      "malMean": 8.24,
+      "startDate": "2023-10-04"
     },
     {
       "malId": 54703,
@@ -3360,7 +3646,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.42
+      "malMean": 7.42,
+      "startDate": "2025-10-04"
     },
     {
       "malId": 54724,
@@ -3372,7 +3659,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.78
+      "malMean": 7.78,
+      "startDate": "2024-07-06"
     },
     {
       "malId": 54789,
@@ -3383,7 +3671,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.15
+      "malMean": 8.15,
+      "startDate": "2024-05-04"
     },
     {
       "malId": 54865,
@@ -3393,7 +3682,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.49
+      "malMean": 7.49,
+      "startDate": "2024-10-06"
     },
     {
       "malId": 54869,
@@ -3403,7 +3693,8 @@
         "Organized Crime"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.12
+      "malMean": 7.12,
+      "startDate": "2024-01-08"
     },
     {
       "malId": 54898,
@@ -3418,7 +3709,8 @@
         "Vampire"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.6
+      "malMean": 8.6,
+      "startDate": "2023-07-12"
     },
     {
       "malId": 54900,
@@ -3428,7 +3720,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.7
+      "malMean": 7.7,
+      "startDate": "2024-04-05"
     },
     {
       "malId": 54918,
@@ -3440,7 +3733,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.81
+      "malMean": 7.81,
+      "startDate": "2023-10-04"
     },
     {
       "malId": 55644,
@@ -3450,7 +3744,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.3
+      "malMean": 8.3,
+      "startDate": "2023-10-12"
     },
     {
       "malId": 55701,
@@ -3461,7 +3756,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 30,
-      "malMean": 7.99
+      "malMean": 7.99,
+      "startDate": "2024-05-12"
     },
     {
       "malId": 55791,
@@ -3472,7 +3768,8 @@
         "Showbiz"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.5
+      "malMean": 8.5,
+      "startDate": "2024-07-03"
     },
     {
       "malId": 55813,
@@ -3486,7 +3783,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.77
+      "malMean": 7.77,
+      "startDate": "2024-01-06"
     },
     {
       "malId": 55825,
@@ -3500,7 +3798,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.15
+      "malMean": 8.15,
+      "startDate": "2026-01-11"
     },
     {
       "malId": 55848,
@@ -3511,7 +3810,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.35
+      "malMean": 6.35,
+      "startDate": "2024-07-06"
     },
     {
       "malId": 55888,
@@ -3524,7 +3824,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.37
+      "malMean": 8.37,
+      "startDate": "2024-04-08"
     },
     {
       "malId": 56009,
@@ -3534,7 +3835,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 28,
-      "malMean": 8.12
+      "malMean": 8.12,
+      "startDate": "2026-01-03"
     },
     {
       "malId": 56038,
@@ -3543,7 +3845,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.19
+      "malMean": 7.19,
+      "startDate": "2025-04-06"
     },
     {
       "malId": 56063,
@@ -3553,7 +3856,8 @@
         "Sci-Fi"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.06
+      "malMean": 8.06,
+      "startDate": "2024-07-05"
     },
     {
       "malId": 56285,
@@ -3565,7 +3869,8 @@
         "Super Power"
       ],
       "episodeMinutes": 23,
-      "malMean": 6.51
+      "malMean": 6.51,
+      "startDate": "2024-02-11"
     },
     {
       "malId": 56690,
@@ -3577,7 +3882,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.53
+      "malMean": 6.53,
+      "startDate": "2024-04-05"
     },
     {
       "malId": 56784,
@@ -3588,7 +3894,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.67
+      "malMean": 8.67,
+      "startDate": "2024-10-05"
     },
     {
       "malId": 57184,
@@ -3600,7 +3907,8 @@
         "Organized Crime"
       ],
       "episodeMinutes": 22,
-      "malMean": 6.81
+      "malMean": 6.81,
+      "startDate": "2024-02-23"
     },
     {
       "malId": 57334,
@@ -3611,7 +3919,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.38
+      "malMean": 8.38,
+      "startDate": "2024-10-04"
     },
     {
       "malId": 57555,
@@ -3623,7 +3932,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 100,
-      "malMean": 9.05
+      "malMean": 9.05,
+      "startDate": "2025-09-19"
     },
     {
       "malId": 57658,
@@ -3633,7 +3943,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.58
+      "malMean": 8.58,
+      "startDate": "2026-01-09"
     },
     {
       "malId": 57892,
@@ -3644,7 +3955,8 @@
         "Isekai"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.46
+      "malMean": 6.46,
+      "startDate": "2024-07-05"
     },
     {
       "malId": 58059,
@@ -3655,7 +3967,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.85
+      "malMean": 7.85,
+      "startDate": "2024-07-07"
     },
     {
       "malId": 58567,
@@ -3667,7 +3980,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.49
+      "malMean": 8.49,
+      "startDate": "2025-01-05"
     },
     {
       "malId": 58572,
@@ -3679,7 +3993,8 @@
         "Video Game"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.25
+      "malMean": 8.25,
+      "startDate": "2024-10-13"
     },
     {
       "malId": 58811,
@@ -3690,7 +4005,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.87
+      "malMean": 6.87,
+      "startDate": "2025-07-11"
     },
     {
       "malId": 58913,
@@ -3700,7 +4016,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.02
+      "malMean": 8.02,
+      "startDate": "2025-07-06"
     },
     {
       "malId": 58939,
@@ -3712,7 +4029,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.58
+      "malMean": 7.58,
+      "startDate": "2025-01-11"
     },
     {
       "malId": 59027,
@@ -3724,7 +4042,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.21
+      "malMean": 8.21,
+      "startDate": "2025-10-04"
     },
     {
       "malId": 59062,
@@ -3734,7 +4053,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.2
+      "malMean": 8.2,
+      "startDate": "2025-07-06"
     },
     {
       "malId": 59160,
@@ -3744,7 +4064,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.63
+      "malMean": 7.63,
+      "startDate": "2025-04-04"
     },
     {
       "malId": 59177,
@@ -3758,7 +4079,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.78
+      "malMean": 7.78,
+      "startDate": "2025-07-19"
     },
     {
       "malId": 59189,
@@ -3769,7 +4091,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.06
+      "malMean": 7.06,
+      "startDate": "2025-04-13"
     },
     {
       "malId": 59192,
@@ -3781,7 +4104,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 155,
-      "malMean": 8.65
+      "malMean": 8.65,
+      "startDate": "2025-07-18"
     },
     {
       "malId": 59193,
@@ -3794,7 +4118,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.69
+      "malMean": 8.69,
+      "startDate": "2026-07-06"
     },
     {
       "malId": 59205,
@@ -3803,7 +4128,8 @@
         "Fantasy"
       ],
       "episodeMinutes": 26,
-      "malMean": 7.79
+      "malMean": 7.79,
+      "startDate": "2025-07-02"
     },
     {
       "malId": 59229,
@@ -3815,7 +4141,8 @@
         "Urban Fantasy"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.1
+      "malMean": 8.1,
+      "startDate": "2026-01-10"
     },
     {
       "malId": 59708,
@@ -3826,7 +4153,8 @@
         "Suspense"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.82
+      "malMean": 7.82,
+      "startDate": "2026-04-01"
     },
     {
       "malId": 59978,
@@ -3837,7 +4165,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.84
+      "malMean": 8.84,
+      "startDate": "2026-01-16"
     },
     {
       "malId": 59983,
@@ -3848,7 +4177,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.17
+      "malMean": 8.17,
+      "startDate": "2026-04-12"
     },
     {
       "malId": 59989,
@@ -3860,7 +4190,8 @@
         "Mystery"
       ],
       "episodeMinutes": 24,
-      "malMean": 6.88
+      "malMean": 6.88,
+      "startDate": "2024-10-06"
     },
     {
       "malId": 60058,
@@ -3871,7 +4202,8 @@
         "Showbiz"
       ],
       "episodeMinutes": 27,
-      "malMean": 8.67
+      "malMean": 8.67,
+      "startDate": "2026-01-14"
     },
     {
       "malId": 60098,
@@ -3882,7 +4214,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.71
+      "malMean": 8.71,
+      "startDate": "2025-10-04"
     },
     {
       "malId": 60146,
@@ -3892,7 +4225,8 @@
         "Reincarnation"
       ],
       "episodeMinutes": 23,
-      "malMean": 6.22
+      "malMean": 6.22,
+      "startDate": "2025-04-02"
     },
     {
       "malId": 60285,
@@ -3904,7 +4238,8 @@
         "Shounen"
       ],
       "episodeMinutes": 25,
-      "malMean": 7.9
+      "malMean": 7.9,
+      "startDate": "2025-07-15"
     },
     {
       "malId": 60489,
@@ -3916,7 +4251,8 @@
         "Time Travel"
       ],
       "episodeMinutes": 26,
-      "malMean": 8.74
+      "malMean": 8.74,
+      "startDate": "2025-06-28"
     },
     {
       "malId": 60543,
@@ -3927,7 +4263,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.37
+      "malMean": 8.37,
+      "startDate": "2025-07-04"
     },
     {
       "malId": 60593,
@@ -3937,7 +4274,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.57
+      "malMean": 7.57,
+      "startDate": "2025-04-07"
     },
     {
       "malId": 60636,
@@ -3948,7 +4286,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 25,
-      "malMean": 9.01
+      "malMean": 9.01,
+      "startDate": "2026-07-25"
     },
     {
       "malId": 61200,
@@ -3961,7 +4300,8 @@
         "Seinen"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.62
+      "malMean": 7.62,
+      "startDate": "2025-12-10"
     },
     {
       "malId": 61469,
@@ -3976,7 +4316,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 27,
-      "malMean": 9.05
+      "malMean": 9.05,
+      "startDate": "2026-03-19"
     },
     {
       "malId": 61603,
@@ -3986,7 +4327,8 @@
         "Team Sports"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.1
+      "malMean": 8.1,
+      "startDate": "2026-10-04"
     },
     {
       "malId": 61942,
@@ -3996,7 +4338,8 @@
         "Super Power"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.4
+      "malMean": 7.4,
+      "startDate": "2026-01-05"
     },
     {
       "malId": 61967,
@@ -4006,7 +4349,8 @@
         "Shounen"
       ],
       "episodeMinutes": 24,
-      "malMean": 8.83
+      "malMean": 8.83,
+      "startDate": "2026-10-03"
     },
     {
       "malId": 62001,
@@ -4017,7 +4361,8 @@
         "Supernatural"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.8
+      "malMean": 7.8,
+      "startDate": "2026-04-04"
     },
     {
       "malId": 62513,
@@ -4027,7 +4372,8 @@
         "School"
       ],
       "episodeMinutes": 24,
-      "malMean": 7.83
+      "malMean": 7.83,
+      "startDate": "2026-07-08"
     },
     {
       "malId": 63130,
@@ -4038,7 +4384,8 @@
         "Super Power"
       ],
       "episodeMinutes": 23,
-      "malMean": 8.09
+      "malMean": 8.09,
+      "startDate": "2026-05-02"
     },
     {
       "malId": 63375,
@@ -4047,7 +4394,8 @@
         "Military"
       ],
       "episodeMinutes": 25,
-      "malMean": 8.52
+      "malMean": 8.52,
+      "startDate": "2026-04-07"
     }
   ]
 }

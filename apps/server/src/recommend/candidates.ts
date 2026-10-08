@@ -21,7 +21,29 @@ export const POOLS = ["plan_to_watch", "in_progress", "queued", "new"] as const;
  * outros make a few minutes' difference).
  */
 export const TIME_GRACE_MINUTES = 5;
+/** Likewise, shows that started airing up to this many years outside the years asked for. */
+export const YEAR_GRACE = 2;
 const FULL_SET_OF_PICKS = 3;
+
+/** "Old" or "classic" means before this year (the user's rule). */
+export const OLD_BEFORE_YEAR = 2000;
+/** "Recent", "newer" or "latest" means the last this-many years, this year included. */
+export const RECENT_YEARS = 5;
+export const ERAS = ["old", "recent"] as const;
+export type Era = (typeof ERAS)[number];
+
+/** The years an era covers, as of this year. */
+export function eraYears(era: Era, thisYear: number): { yearFrom?: number; yearTo?: number } {
+  return era === "old"
+    ? { yearTo: OLD_BEFORE_YEAR - 1 }
+    : { yearFrom: thisYear - RECENT_YEARS + 1 };
+}
+
+/** The year in a full or partial date like "2019-04-06", "2019-04" or "2019". */
+export function startYearOf(date: string | null): number | null {
+  const year = date ? Number(/^(\d{4})/.exec(date)?.[1]) : NaN;
+  return Number.isFinite(year) ? year : null;
+}
 
 /** What the user asked for, as the recommendation agent read it from their message. */
 export interface Constraints {
@@ -34,6 +56,9 @@ export interface Constraints {
   /** None of these genres. */
   genresNone?: string[];
   mediaTypes?: string[];
+  /** The first and last years the show may have started airing in. */
+  yearFrom?: number;
+  yearTo?: number;
   /** Where to look; all four by default. "Continue something" is in_progress only. */
   from?: Pool[];
 }
@@ -53,6 +78,8 @@ export interface CandidateRow {
   malMean: number | null;
   mediaType: string | null;
   airingStatus: string | null;
+  /** The year it started airing; null when unknown. */
+  startYear: number | null;
   /** For a new show: how strongly AniList points at it for this user (see discovery.ts). */
   strength?: number;
   /** For a new show: the user's favorites whose fans like it. */
@@ -74,6 +101,8 @@ export interface Candidate extends CandidateRow {
   episodesThatFit: number | null;
   /** How far each episode runs over the available minutes, for a show offered in the grace. */
   minutesOver: number | null;
+  /** How many years outside the years asked for it started airing, for a show in the grace. */
+  yearsOff: number | null;
   score: number;
   /** Plain facts behind the ranking, for the model to explain picks with. */
   facts: string[];
@@ -118,9 +147,9 @@ const MAX_DISCOVERY_STRENGTH = 2;
  * ranks them: taste fit (their genre affinities), the community score, a boost for their own
  * list, a nudge for shows already under way, queued or airing, how strongly AniList points at a
  * new show, and penalties for genres they drop and, if they've dropped shows for being too long,
- * long shows. Shows that fit the time come first; when fewer than a full set of picks fit, shows
- * up to TIME_GRACE_MINUTES over follow them. Pure, so the ranking is unit-tested apart from the
- * database.
+ * long shows. Shows that fit the time and years come first; when fewer than a full set of picks
+ * fit, shows up to TIME_GRACE_MINUTES over or YEAR_GRACE years outside follow them. Pure, so the
+ * ranking is unit-tested apart from the database.
  */
 export function rankCandidates(
   rows: CandidateRow[],
@@ -134,7 +163,9 @@ export function rankCandidates(
   const tooLongDrops = taste.dropCategories.get("too_long") ?? 0;
 
   const candidates: Candidate[] = [];
-  const overTime: Candidate[] = [];
+  // Shows just outside the time or the years asked for.
+  const nearMisses: Candidate[] = [];
+  const yearsAsked = constraints.yearFrom !== undefined || constraints.yearTo !== undefined;
   for (const row of rows) {
     const pool = poolOf(row);
     if (!pool || !pools.has(pool)) continue;
@@ -159,6 +190,15 @@ export function rankCandidates(
         episodesThatFit = Math.floor(constraints.availableMinutes / row.episodeMinutes);
         if (episodesLeft !== null) episodesThatFit = Math.min(episodesThatFit, episodesLeft);
       }
+    }
+    let yearsOff: number | null = null;
+    if (yearsAsked) {
+      if (row.startYear === null) continue;
+      const before = constraints.yearFrom === undefined ? 0 : constraints.yearFrom - row.startYear;
+      const after = constraints.yearTo === undefined ? 0 : row.startYear - constraints.yearTo;
+      const off = Math.max(before, after, 0);
+      if (off > YEAR_GRACE) continue;
+      if (off > 0) yearsOff = off;
     }
 
     const facts: string[] = [];
@@ -226,27 +266,36 @@ export function rankCandidates(
         `runs ${String(minutesOver)} min over your time (${String(row.episodeMinutes)} ${unit})`,
       );
     }
+    if (yearsAsked && row.startYear !== null) {
+      const side = constraints.yearFrom !== undefined && row.startYear < constraints.yearFrom;
+      facts.push(
+        yearsOff === null
+          ? `aired ${String(row.startYear)}`
+          : `aired ${String(row.startYear)}, ${String(yearsOff)} year${yearsOff === 1 ? "" : "s"} ${side ? "before" : "after"} the years asked for`,
+      );
+    }
 
-    (minutesOver === null ? candidates : overTime).push({
+    (minutesOver === null && yearsOff === null ? candidates : nearMisses).push({
       ...row,
       pool,
       episodesLeft,
       episodesThatFit,
       minutesOver,
+      yearsOff,
       score: round(tasteFit + quality + progressBoost + dropPenalty + lengthPenalty),
       facts,
     });
   }
   const best = (a: Candidate, b: Candidate) => b.score - a.score || a.title.localeCompare(b.title);
   candidates.sort(best);
-  // Shows that run over the time only fill in when too few fit.
+  // Shows just outside the time or the years only fill in when too few fit.
   if (candidates.length >= FULL_SET_OF_PICKS) return candidates;
-  return [...candidates, ...overTime.sort(best)];
+  return [...candidates, ...nearMisses.sort(best)];
 }
 
 /** The user's Plan to Watch and in-progress entries with their details. */
 export async function candidateRows(db: Db, userId: string): Promise<CandidateRow[]> {
-  return db
+  const rows = await db
     .select({
       animeId: anime.malId,
       title: anime.title,
@@ -260,6 +309,7 @@ export async function candidateRows(db: Db, userId: string): Promise<CandidateRo
       malMean: anime.malMean,
       mediaType: anime.mediaType,
       airingStatus: anime.airingStatus,
+      startDate: anime.startDate,
     })
     .from(listEntries)
     .innerJoin(anime, eq(anime.malId, listEntries.animeId))
@@ -269,6 +319,7 @@ export async function candidateRows(db: Db, userId: string): Promise<CandidateRo
         sql`(${listEntries.status} in ('plan_to_watch', 'watching', 'on_hold') or ${listEntries.isRewatching})`,
       ),
     );
+  return rows.map(({ startDate, ...row }) => ({ ...row, startYear: startYearOf(startDate) }));
 }
 
 /**
@@ -287,6 +338,7 @@ export async function discoveryRows(db: Db, userId: string): Promise<CandidateRo
       anilistScore: anilistCatalog.score,
       mediaType: anilistCatalog.mediaType,
       airingStatus: anilistCatalog.airingStatus,
+      startDate: anilistCatalog.startDate,
       strength: discovery.strength,
       because: discovery.because,
       prequelsDone: sql<boolean>`NOT EXISTS (
@@ -304,8 +356,9 @@ export async function discoveryRows(db: Db, userId: string): Promise<CandidateRo
       and(eq(listEntries.userId, userId), eq(listEntries.animeId, discovery.malId)),
     )
     .where(and(eq(discovery.userId, userId), sql`${listEntries.animeId} IS NULL`));
-  return rows.map((r) => ({
+  return rows.map(({ startDate, ...r }) => ({
     ...r,
+    startYear: startYearOf(startDate),
     status: null,
     isRewatching: false,
     episodesWatched: 0,

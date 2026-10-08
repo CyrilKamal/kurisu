@@ -114,7 +114,12 @@ cases:
     expect(result.errors).toEqual([]);
     expect(result.cases.map((c) => c.case.id)).toEqual(["rec-movie", "rec-anything"]);
     expect([...(result.cases[0]?.mustNot ?? [])]).toEqual([2, 11, 10]);
-    expect(result.cases[1]?.case.expect).toEqual({ picks: true, source: "any", must_not: [] });
+    expect(result.cases[1]?.case.expect).toEqual({
+      picks: true,
+      clarify: false,
+      source: "any",
+      must_not: [],
+    });
   });
 
   it("rejects misspelled or unknown genres, unknown shows and repeated ids", () => {
@@ -160,6 +165,7 @@ cases:
 
 const expectOf = (fields: Partial<RecommendCase["expect"]> = {}): RecommendCase["expect"] => ({
   picks: true,
+  clarify: false,
   source: "any",
   must_not: [],
   ...fields,
@@ -177,6 +183,7 @@ const pick = (fields: Partial<PickedShow> = {}): PickedShow => ({
   episodeMinutes: 24,
   genres: ["Slice of Life"],
   airingStatus: "finished_airing",
+  startYear: 2015,
   ...fields,
 });
 
@@ -320,8 +327,76 @@ describe("grace minutes", () => {
     ]);
     const outOfOrder = scoreRecommendCase(run({ picks: shows(24, 16) }), labels, new Set());
     expect(outOfOrder.violations.map((v) => v.message)).toEqual([
-      "fits the time but came after a show that runs over",
+      "fits the request but came after a show that's a little off",
     ]);
+  });
+});
+
+describe("years", () => {
+  const years = (...startYears: number[]) =>
+    startYears.map((y, i) => pick({ animeId: i + 1, startYear: y }));
+  const labels = expectOf({ year_from: 1990, year_to: 1999, grace_years: 2 });
+
+  it("allows years a little outside, after the ones inside", () => {
+    expect(
+      scoreRecommendCase(run({ picks: years(1995, 1998, 2001) }), labels, new Set()).correct,
+    ).toBe(true);
+  });
+
+  it("fails years past the grace, unknown years, and order mix-ups", () => {
+    const messages = (picks: PickedShow[], e = labels) =>
+      scoreRecommendCase(run({ picks }), e, new Set()).violations.map((v) => v.message);
+    expect(messages(years(1995, 2003))).toEqual([
+      "aired 2003, outside 1990-1999 plus 2 years of grace",
+    ]);
+    expect(messages([pick({ startYear: null })])).toEqual(["air year unknown"]);
+    expect(messages(years(2000, 1995))).toEqual([
+      "fits the request but came after a show that's a little off",
+    ]);
+    expect(messages(years(2023), expectOf({ year_from: 2022 }))).toEqual([]);
+    expect(messages(years(2021), expectOf({ year_from: 2022 }))).toEqual([
+      "aired 2021, outside 2022 on",
+    ]);
+  });
+
+  it("rejects grace without years, and a backwards range", () => {
+    const result = load({
+      "recommend-years.yaml": `snapshot: my-list
+cases:
+  - id: rec-a
+    message: old stuff
+    expect:
+      grace_years: 2
+  - id: rec-b
+    message: backwards
+    expect:
+      year_from: 2010
+      year_to: 2000
+`,
+    });
+    expect(result.errors.map((e) => e.message)).toEqual([
+      "grace_years needs year_from or year_to.",
+      "year_from is after year_to.",
+    ]);
+  });
+});
+
+describe("clarify", () => {
+  const asks = expectOf({ clarify: true });
+  it("is right when the recommender asks instead of picking", () => {
+    expect(
+      scoreRecommendCase(
+        run({ picks: [], reply: "New to you, or recently aired?" }),
+        asks,
+        new Set(),
+      ).correct,
+    ).toBe(true);
+    expect(scoreRecommendCase(run(), asks, new Set()).reasons).toEqual([
+      "picked shows instead of asking",
+    ]);
+    expect(
+      scoreRecommendCase(run({ picks: [], reply: "Nothing fits." }), asks, new Set()).reasons,
+    ).toEqual(["didn't ask"]);
   });
 });
 

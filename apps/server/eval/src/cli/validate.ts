@@ -51,6 +51,11 @@ if (verbose) {
         : `≤${String(e.max_episode_minutes)} min` +
           (e.grace_minutes === undefined ? "" : ` (+${String(e.grace_minutes)} grace)`),
       e.max_episodes_left === undefined ? null : `≤${String(e.max_episodes_left)} eps left`,
+      e.year_from === undefined && e.year_to === undefined
+        ? null
+        : `aired ${e.year_from === undefined ? "" : String(e.year_from)}-${e.year_to === undefined ? "" : String(e.year_to)}` +
+          (e.grace_years === undefined ? "" : ` (+${String(e.grace_years)} grace)`),
+      e.clarify ? "asks" : null,
       e.genres_any ? `any of ${e.genres_any.join(", ")}` : null,
       e.genres_none ? `none of ${e.genres_none.join(", ")}` : null,
       e.must_not.length ? `never ${e.must_not.join(", ")}` : null,

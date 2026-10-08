@@ -34,6 +34,7 @@ import {
   resolveRoles,
 } from "../../../src/llm/modelConfig.js";
 import { runRecommender } from "../../../src/recommend/agent.js";
+import { startYearOf } from "../../../src/recommend/candidates.js";
 import { loadAiring } from "../airing.js";
 import { frozenCatalogSearch, loadCatalog } from "../catalog.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
@@ -217,6 +218,7 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
             episodeMinutes: anime.episodeMinutes,
             genres: anime.genres,
             airingStatus: anime.airingStatus,
+            startDate: anime.startDate,
             status: listEntries.status,
             isRewatching: listEntries.isRewatching,
           })
@@ -241,6 +243,7 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
       episodeMinutes: row?.episodeMinutes ?? null,
       genres: row?.genres ?? [],
       airingStatus: row?.airingStatus ?? null,
+      startYear: startYearOf(row?.startDate ?? null),
     };
   });
 

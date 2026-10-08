@@ -21,3 +21,17 @@ cases:
     tags: [example, new]
     expect:
       source: new
+
+  - id: rec-example-90s
+    message: any good 90s anime?
+    tags: [example, years]
+    expect:
+      year_from: 1990
+      year_to: 1999
+      grace_years: 2
+
+  - id: rec-example-new-unclear
+    message: can you recommend some new anime
+    tags: [example, clarify]
+    expect:
+      clarify: true
