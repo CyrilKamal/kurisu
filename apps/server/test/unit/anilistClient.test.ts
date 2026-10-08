@@ -7,7 +7,13 @@ import {
   type AniListClient,
 } from "../../src/anilist/client.js";
 import { animeRowFromAniList } from "../../src/anilist/catalog.js";
-import { airingMedia, catalogMedia, FakeAniList } from "../support/fakeAniList.js";
+import {
+  airingMedia,
+  catalogMedia,
+  FakeAniList,
+  relatedShow,
+  streamingLink,
+} from "../support/fakeAniList.js";
 import { FakeHttpServer } from "../support/fakeHttp.js";
 
 let fake: FakeAniList;
@@ -391,6 +397,40 @@ describe("searchAnime", () => {
   it("sends no request without a title", async () => {
     expect(await client.searchAnime(["  "])).toEqual([]);
     expect(fake.requests).toHaveLength(0);
+  });
+});
+
+describe("sequelsOf", () => {
+  it("keeps anime sequels with where they stream, once each, by the earlier show's MAL id", async () => {
+    fake.relations.set(100, [
+      relatedShow("SEQUEL", 2001, 200, "Show Season 2", {
+        externalLinks: [
+          streamingLink(5, "Crunchyroll", "https://cr.example/2001"),
+          { ...streamingLink(10, "Netflix", "https://nf.example/2001"), isDisabled: true },
+        ],
+      }),
+      relatedShow("PREQUEL", 2000, 99, "Show Zero"),
+      relatedShow("SIDE_STORY", 2002, 201, "Show OVA"),
+      relatedShow("SEQUEL", 2003, null, "Show Manga", { type: "MANGA" }),
+      // A part of the same MAL entry (AniList splits it) isn't a sequel of it.
+      relatedShow("SEQUEL", 2004, 100, "Show Part 2"),
+    ]);
+    fake.relations.set(300, []);
+
+    const sequels = await client.sequelsOf([100, 300, 400]);
+
+    expect([...sequels.keys()].sort()).toEqual([100, 300]);
+    expect(sequels.get(300)).toEqual([]);
+    expect(sequels.get(100)).toEqual([
+      expect.objectContaining({
+        anilistId: 2001,
+        malId: 200,
+        title: "Show Season 2",
+        status: "RELEASING",
+        isAdult: false,
+        streamingLinks: [{ siteId: 5, site: "Crunchyroll", url: "https://cr.example/2001" }],
+      }),
+    ]);
   });
 });
 

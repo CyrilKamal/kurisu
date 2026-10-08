@@ -11,6 +11,7 @@ import {
   refreshAiring,
   STREAMING_MAX_AGE_MS,
 } from "./anilist/cache.js";
+import { completedIds, refreshSequels } from "./anilist/sequels.js";
 import { refreshDiscovery } from "./recommend/discovery.js";
 import { refreshTaste } from "./taste/profile.js";
 import { createAniListClient } from "./anilist/client.js";
@@ -109,6 +110,14 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       })
       .catch((err: unknown) => {
         app.log.warn({ err: { name: (err as Error).name } }, "could not refresh where to watch");
+      })
+      // What follows each show they completed, so the brief can say when a sequel starts airing
+      // (kept a week; the brief refreshes it too).
+      .then(async () => {
+        await refreshSequels({ db, anilist: syncAniList }, await completedIds(db, userId));
+      })
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh sequels");
       })
       // Shows new to the user, for recommendations: at most daily, and never in the way of the
       // airing data above. It records its own failures.

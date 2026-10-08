@@ -43,16 +43,26 @@ const CARD =
   "flex w-full items-start gap-3 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-left text-sm dark:border-zinc-800 dark:bg-zinc-900";
 
 /**
- * A show the agent named. When the reply asks the user to choose, the card is a button that
- * answers with the show's exact title.
+ * A show the agent (or a brief) named. When the reply asks the user to choose, the card is a
+ * button that answers with the show's exact title. Otherwise a show that isn't on the list can
+ * have an Add button, which asks Chat to add it (and Chat then asks to confirm, as every add does).
  */
-export function ShowCard({ show, onChoose }: { show: ShowCardData; onChoose?: () => void }) {
-  const body = (title: React.ReactNode) => (
+export function ShowCard({
+  show,
+  onChoose,
+  onAdd,
+}: {
+  show: ShowCardData;
+  onChoose?: () => void;
+  onAdd?: () => void;
+}) {
+  const body = (title: React.ReactNode, below?: React.ReactNode) => (
     <>
       <Cover url={show.pictureUrl} />
       <div className="min-w-0">
         {title}
         <p className="text-xs text-zinc-500">{showDetails(show)}</p>
+        {below}
       </div>
     </>
   );
@@ -80,6 +90,15 @@ export function ShowCard({ show, onChoose }: { show: ShowCardData; onChoose?: ()
         >
           {show.title}
         </a>,
+        onAdd && (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="mt-2 h-8 rounded-md border border-zinc-300 px-2.5 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          >
+            Add to Plan to Watch
+          </button>
+        ),
       )}
     </div>
   );

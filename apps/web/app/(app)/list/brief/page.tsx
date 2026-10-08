@@ -27,8 +27,9 @@ export default async function BriefPage() {
         </Link>
       </header>
       <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-        Once a day, a notification lists new episodes of the shows you&apos;re watching. Tap it to
-        open Chat, where you can reply &ldquo;watched it&rdquo;.
+        Once a day, a notification lists new episodes of the shows you&apos;re watching, and says
+        when a sequel to a show you finished, or a show on your Plan to Watch, starts airing. Tap it
+        to open Chat, where you can reply &ldquo;watched it&rdquo;.
       </p>
       <Notifications publicKey={push.publicKey} />
       <BriefSettingsForm initial={settings} />

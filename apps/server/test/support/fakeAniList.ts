@@ -44,6 +44,12 @@ export interface FakeDetailedMedia extends FakeCatalogMedia {
   externalLinks?: FakeAniListMedia["externalLinks"];
 }
 
+/** One AniList relation from a show to another, as the sequels query returns it. */
+export interface FakeRelation {
+  relationType: string;
+  node: FakeCatalogMedia & { type: string; externalLinks: FakeAniListMedia["externalLinks"] };
+}
+
 export interface FakeAiring {
   mediaId: number;
   episode: number;
@@ -74,6 +80,8 @@ export class FakeAniList {
   fans = new Map<number, number[]>();
   /** Shows the top-rated lists and detail lookups know. */
   detailed: FakeDetailedMedia[] = [];
+  /** Each show's relations to other shows, by its MAL id. */
+  relations = new Map<number, FakeRelation[]>();
   airings: FakeAiring[] = [];
   readonly requests: GraphQlBody[] = [];
   private readonly failures: { status: number; headers?: Record<string, string> }[] = [];
@@ -119,6 +127,7 @@ export class FakeAniList {
     this.catalog = [];
     this.fans = new Map();
     this.detailed = [];
+    this.relations = new Map();
     this.airings = [];
     this.requests.length = 0;
     this.failures.length = 0;
@@ -204,6 +213,19 @@ export class FakeAniList {
         .sort((a, b) => a.airingAt - b.airingAt);
       const { items, hasNextPage } = paginate(matches, page);
       return { Page: { pageInfo: { hasNextPage }, airingSchedules: items } };
+    }
+    if (body.query.includes("relationType")) {
+      const known = ids.filter((id) => this.relations.has(id));
+      const { items, hasNextPage } = paginate(known, page);
+      return {
+        Page: {
+          pageInfo: { hasNextPage },
+          media: items.map((idMal) => ({
+            idMal,
+            relations: { edges: this.relations.get(idMal) ?? [] },
+          })),
+        },
+      };
     }
     const matches = this.media.filter((m) => m.idMal !== null && ids.includes(m.idMal));
     const { items, hasNextPage } = paginate(matches, page);
@@ -296,4 +318,23 @@ export function streamingLink(
   url: string,
 ): FakeAniListMedia["externalLinks"][number] {
   return { siteId, site, url, type: "STREAMING", isDisabled: false };
+}
+
+/** A relation to a TV show that's airing, for tests that don't care about the details. */
+export function relatedShow(
+  relationType: string,
+  id: number,
+  idMal: number | null,
+  romaji: string,
+  overrides: Partial<FakeRelation["node"]> = {},
+): FakeRelation {
+  return {
+    relationType,
+    node: {
+      ...catalogMedia(id, idMal, romaji, { status: "RELEASING" }),
+      type: "ANIME",
+      externalLinks: [],
+      ...overrides,
+    },
+  };
 }

@@ -90,6 +90,12 @@ export interface DiscoveredShow extends CatalogShow {
   streamingLinks: StreamingLink[];
 }
 
+/** A show that follows another (AniList's SEQUEL relation), with where it streams. */
+export interface SequelShow extends CatalogShow {
+  isAdult: boolean;
+  streamingLinks: StreamingLink[];
+}
+
 /** One "fans also liked" link: a show AniList users recommend to fans of a seed show. */
 export interface FanRecommendation {
   seedMalId: number;
@@ -122,6 +128,11 @@ export interface AniListClient {
   topRated(lists: TopList[]): Promise<Map<string, number[]>>;
   /** Full details of these shows, by AniList id. Ids AniList doesn't know are missing. */
   showDetails(anilistIds: number[]): Promise<DiscoveredShow[]>;
+  /**
+   * The anime that follow each of these MAL entries (AniList's SEQUEL relations), by MAL id.
+   * Ids AniList doesn't know are missing; a known show with no sequel maps to [].
+   */
+  sequelsOf(malIds: number[]): Promise<Map<number, SequelShow[]>>;
 }
 
 /** A non-2xx response from AniList. */
@@ -306,6 +317,21 @@ const DETAILS_QUERY = `query ($ids: [Int], $page: Int) {
   }
 }`;
 
+const SEQUELS_QUERY = `query ($ids: [Int], $page: Int) {
+  Page(page: $page, perPage: 50) {
+    pageInfo { hasNextPage }
+    media(idMal_in: $ids, type: ANIME) {
+      idMal
+      relations {
+        edges {
+          relationType
+          node { type ${SEARCH_FIELDS} externalLinks { siteId site url type isDisabled } }
+        }
+      }
+    }
+  }
+}`;
+
 const detailsSchema = z.object({
   Page: z.object({
     pageInfo: z.object({ hasNextPage: z.boolean().nullish() }),
@@ -345,6 +371,29 @@ const detailsSchema = z.object({
 });
 
 const pageInfoSchema = z.object({ hasNextPage: z.boolean().nullish() });
+
+const sequelsPageSchema = z.object({
+  Page: z.object({
+    pageInfo: pageInfoSchema,
+    media: z.array(
+      z.object({
+        idMal: z.number().int().positive().nullish(),
+        relations: z
+          .object({
+            edges: z.array(
+              z.object({
+                relationType: z.string().nullish(),
+                node: searchMediaSchema
+                  .extend({ type: z.string().nullish(), externalLinks: externalLinksSchema })
+                  .nullish(),
+              }),
+            ),
+          })
+          .nullish(),
+      }),
+    ),
+  }),
+});
 
 const mediaPageSchema = z.object({
   Page: z.object({
@@ -536,6 +585,34 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
         ),
         streamingLinks: streamingLinks([m]),
       }));
+    },
+
+    async sequelsOf(malIds) {
+      const media = await paged(malIds, SEQUELS_QUERY, {}, sequelsPageSchema, (data) => ({
+        items: data.Page.media,
+        hasNextPage: data.Page.pageInfo.hasNextPage === true,
+      }));
+      const out = new Map<number, SequelShow[]>();
+      for (const m of media) {
+        if (!m.idMal) continue;
+        const prequel = m.idMal;
+        const found = out.get(prequel) ?? [];
+        for (const edge of m.relations?.edges ?? []) {
+          const node = edge.node;
+          // One part of a show AniList splits is the sequel of another part of the same MAL entry.
+          if (edge.relationType !== "SEQUEL" || node?.type !== "ANIME" || node.idMal === prequel) {
+            continue;
+          }
+          if (found.some((s) => s.anilistId === node.id)) continue;
+          found.push({
+            ...toCatalogShow(node),
+            isAdult: node.isAdult === true,
+            streamingLinks: streamingLinks([node]),
+          });
+        }
+        out.set(prequel, found);
+      }
+      return out;
     },
   };
 }

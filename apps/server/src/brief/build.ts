@@ -1,5 +1,5 @@
 import type { StreamingLink } from "../anilist/client.js";
-import { siteLabels } from "./services.js";
+import { siteLabels, watchOn } from "./services.js";
 
 /** One show in a brief: its new episodes, and where the user can watch them. */
 export interface BriefItem {
@@ -11,6 +11,18 @@ export interface BriefItem {
   finale: boolean;
   episodesWatched: number;
   /** Labels of the user's own services that list this show; empty when none match. */
+  services: string[];
+}
+
+/** A show that started airing in the brief's window. */
+export interface BriefAlert {
+  malId: number;
+  title: string;
+  /** A sequel to a show they completed, or a show on their Plan to Watch. */
+  kind: "sequel_started" | "ptw_started";
+  /** For a sequel: the title of the show they finished that it follows. */
+  after: string | null;
+  /** Labels of the user's own services that list it; empty when none match. */
   services: string[];
 }
 
@@ -73,6 +85,61 @@ export function buildBriefItems(input: BriefInput): BriefItem[] {
     });
 }
 
+/** What a brief's alerts come from: shows that could start airing for the user. */
+export interface AlertInput {
+  /** Plan to Watch shows that are airing or about to. */
+  ptw: { malId: number; title: string }[];
+  /** Sequels to shows they completed, not on their list. */
+  sequels: { malId: number; title: string; after: string }[];
+  /** Episodes that aired in the brief's window, by MAL id, in MAL's numbering. */
+  aired: { malId: number; episode: number; airedAt: Date }[];
+  /** Each show's official streaming links, by MAL id. */
+  links: Map<number, StreamingLink[]>;
+  /** The streaming service ids the user picked. */
+  services: readonly string[];
+}
+
+/**
+ * Shows whose first episode aired in the window, in the order they premiered. A later episode
+ * isn't news, since the premiere was. A show that is both on Plan to Watch and a sequel counts
+ * once, as Plan to Watch.
+ */
+export function buildBriefAlerts(input: AlertInput): BriefAlert[] {
+  const premiered = new Map<number, number>();
+  for (const aired of input.aired) {
+    if (aired.episode !== 1) continue;
+    const time = aired.airedAt.getTime();
+    premiered.set(aired.malId, Math.min(premiered.get(aired.malId) ?? time, time));
+  }
+  const where = (malId: number) =>
+    watchOn(input.links.get(malId) ?? [], input.services).map((w) => w.service);
+
+  const alerts = new Map<number, BriefAlert>();
+  for (const show of input.ptw) {
+    if (!premiered.has(show.malId)) continue;
+    alerts.set(show.malId, {
+      malId: show.malId,
+      title: show.title,
+      kind: "ptw_started",
+      after: null,
+      services: where(show.malId),
+    });
+  }
+  for (const show of input.sequels) {
+    if (!premiered.has(show.malId) || alerts.has(show.malId)) continue;
+    alerts.set(show.malId, {
+      malId: show.malId,
+      title: show.title,
+      kind: "sequel_started",
+      after: show.after,
+      services: where(show.malId),
+    });
+  }
+  return [...alerts.values()].sort(
+    (a, b) => (premiered.get(a.malId) ?? 0) - (premiered.get(b.malId) ?? 0),
+  );
+}
+
 /** "ep 12", "eps 11–12", "eps 1–3, 5". */
 export function episodesLabel(episodes: number[]): string {
   return `${episodes.length === 1 ? "ep" : "eps"} ${episodeRanges(episodes)}`;
@@ -100,6 +167,13 @@ export function episodeCount(items: BriefItem[]): number {
   return items.reduce((sum, item) => sum + item.episodes.length, 0);
 }
 
+/** The summary line of a brief with no new episodes, only shows that started airing. */
+export function alertSummary(alerts: BriefAlert[]): string {
+  const [only] = alerts;
+  if (alerts.length === 1 && only) return `${only.title} started airing.`;
+  return `${String(alerts.length)} shows you follow started airing.`;
+}
+
 /** The fallback summary line, when the model doesn't write one. */
 export function templateSummary(items: BriefItem[]): string {
   const [only] = items;
@@ -124,12 +198,39 @@ export function itemLine(item: BriefItem): string {
   ].join("");
 }
 
-/** The last line of every brief in chat: how to reply. */
+/** The line under a brief's new episodes: how to reply. */
 export const BRIEF_REPLY_HINT = `Reply "watched it" once you've caught up on all of these.`;
 
-/** The brief as a chat message: the summary line, one line per show, then the reply hint. */
-export function chatText(summary: string, items: BriefItem[]): string {
-  return [summary, "", ...items.map(itemLine), "", BRIEF_REPLY_HINT].join("\n");
+/** The heading over the shows that started airing, in a brief that also has new episodes. */
+export const ALERTS_HEADING = "Started airing:";
+
+/**
+ * One line per show that started airing, e.g. "- Dandadan Season 2. You finished Dandadan. On
+ * Crunchyroll." The heading or the summary says they started airing.
+ */
+export function alertLine(alert: BriefAlert): string {
+  const why =
+    alert.kind === "ptw_started"
+      ? " It's on your Plan to Watch."
+      : alert.after
+        ? ` You finished ${alert.after}.`
+        : "";
+  const where = alert.services.length > 0 ? ` On ${alert.services.join(" or ")}.` : "";
+  return `- ${alert.title}.${why}${where}`;
+}
+
+/**
+ * The brief as a chat message: the summary line, one line per show with new episodes and the
+ * reply hint, then the shows that started airing. The hint sits right under the episodes it's
+ * about; "watched it" never covers a show that only started airing.
+ */
+export function chatText(summary: string, items: BriefItem[], alerts: BriefAlert[] = []): string {
+  const lines = [summary];
+  if (items.length > 0) lines.push("", ...items.map(itemLine), "", BRIEF_REPLY_HINT);
+  if (alerts.length > 0) {
+    lines.push("", ...(items.length > 0 ? [ALERTS_HEADING] : []), ...alerts.map(alertLine));
+  }
+  return lines.join("\n");
 }
 
 /** The title of a brief's chat, from the user's local date: "Brief, Oct 6". */
@@ -170,13 +271,19 @@ export function parseBriefText(text: string): { title: string; episodes: number[
 const PUSH_BODY_SHOWS = 4;
 
 /** The notification: short enough for a lock screen. */
-export function pushText(items: BriefItem[]): { title: string; body: string } {
+export function pushText(
+  items: BriefItem[],
+  alerts: BriefAlert[] = [],
+): { title: string; body: string } {
+  if (items.length === 0) return alertPushText(alerts);
+  const started =
+    alerts.length > 0 ? `Started airing: ${alerts.map((a) => a.title).join(", ")}. ` : "";
   const [only] = items;
   if (items.length === 1 && only) {
     const where = only.services.length > 0 ? `On ${only.services.join(" or ")}. ` : "";
     return {
       title: `${only.title} ${episodesLabel(only.episodes)}${only.premiere ? " (premiere)" : ""}`,
-      body: `${where}Tap to open the chat.`,
+      body: `${where}${started}Tap to open the chat.`,
     };
   }
   const shown = items.slice(0, PUSH_BODY_SHOWS).map((item) => {
@@ -184,8 +291,30 @@ export function pushText(items: BriefItem[]): { title: string; body: string } {
     return `${item.title} ${eps}${item.premiere ? " (premiere)" : ""}`;
   });
   const more = items.length - shown.length;
+  const body = [...shown, ...(more > 0 ? [`+${String(more)} more`] : [])].join(" · ");
   return {
     title: `${String(episodeCount(items))} new episodes`,
+    body: started ? `${body}. ${started.trim()}` : body,
+  };
+}
+
+/** The notification for a brief with only shows that started airing. */
+function alertPushText(alerts: BriefAlert[]): { title: string; body: string } {
+  const [only] = alerts;
+  if (alerts.length === 1 && only) {
+    const why =
+      only.kind === "ptw_started"
+        ? "It's on your Plan to Watch. "
+        : only.after
+          ? `You finished ${only.after}. `
+          : "";
+    const where = only.services.length > 0 ? `On ${only.services.join(" or ")}. ` : "";
+    return { title: `${only.title} started airing`, body: `${why}${where}Tap to open the chat.` };
+  }
+  const shown = alerts.slice(0, PUSH_BODY_SHOWS).map((a) => a.title);
+  const more = alerts.length - shown.length;
+  return {
+    title: `${String(alerts.length)} shows started airing`,
     body: [...shown, ...(more > 0 ? [`+${String(more)} more`] : [])].join(" · "),
   };
 }

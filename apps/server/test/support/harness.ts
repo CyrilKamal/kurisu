@@ -103,7 +103,7 @@ export async function resetDatabase(db: Db): Promise<void> {
   for (let attempt = 0; ; attempt++) {
     try {
       await db.execute(
-        sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs, taste_genres, drop_reasons, recommendations, anilist_catalog, discovery, discovery_runs CASCADE`,
+        sql`TRUNCATE users, sessions, mal_tokens, oauth_states, anime, list_entries, sync_runs, proposals, changes, agent_runs, agent_run_steps, conversations, chat_messages, anilist_media, push_subscriptions, brief_settings, briefs, taste_genres, drop_reasons, recommendations, anilist_catalog, discovery, discovery_runs, anilist_sequels CASCADE`,
       );
       return;
     } catch (err) {

@@ -50,7 +50,7 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettingsResponse 
       setMessage(
         result.data.status === "empty"
           ? "Nothing new aired in the last 24 hours, so there's nothing to send."
-          : `Sent ${String(result.data.episodes)} new episode${result.data.episodes === 1 ? "" : "s"}. It's in Chat too.`,
+          : `Sent ${sentText(result.data.episodes, result.data.started)}. It's in Chat too.`,
       );
     } else if (!result.ok) {
       setMessage(sendNowError(result.error));
@@ -170,10 +170,19 @@ function ScheduleStatus({ saved }: { saved: BriefSettingsResponse }) {
   );
 }
 
+/** "3 new episodes", "1 show that started airing", or both. */
+function sentText(episodes: number, started: number): string {
+  const parts = [
+    episodes > 0 ? `${String(episodes)} new episode${episodes === 1 ? "" : "s"}` : null,
+    started > 0 ? `${String(started)} show${started === 1 ? "" : "s"} that started airing` : null,
+  ].filter((p) => p !== null);
+  return parts.length > 0 ? parts.join(" and ") : "0 new episodes";
+}
+
 function lastBriefText(last: NonNullable<BriefSettingsResponse["lastDaily"]>): string {
   switch (last.status) {
     case "sent":
-      return `sent ${String(last.episodes)} new episode${last.episodes === 1 ? "" : "s"}.`;
+      return `sent ${sentText(last.episodes, last.started)}.`;
     case "empty":
       return "nothing new had aired, so nothing was sent.";
     case "skipped_late":

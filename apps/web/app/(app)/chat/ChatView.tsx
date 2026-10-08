@@ -216,6 +216,15 @@ export function ChatView({
                           void send(show.title);
                         },
                       })}
+                    // A show that isn't on the list, named without a question (a brief's new
+                    // season), is added through Chat, which asks you to confirm it.
+                    {...(!message.asksToChoose &&
+                      show.status === null &&
+                      !sending && {
+                        onAdd: () => {
+                          void send(`Add ${show.title} to my Plan to Watch`);
+                        },
+                      })}
                   />
                 ))}
                 {message.pending.map((proposal) => (

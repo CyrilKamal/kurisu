@@ -1498,3 +1498,32 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
   All of v15's 9 misses are cases that also fail on v13 runs ("omp 3", Mushoku Tensei, TYBW s4's newest episode, Cowboy Bebop again, Hoyuka, Future Diary and Odd Taxi, the final MHA season, "gonna start clannad", Tenjiku arc). Each misses by asking or doing nothing; none writes anything wrong. The Clannad follow-up and "culling game" passed.
 - Cost: about $1.35 of evals in all for this version.
 - **Next:** the diary's prompt change (PR 6) builds on v15.
+
+## 2026-10-08 — The brief says when a sequel or a Plan to Watch show starts airing (Milestone 5)
+**Decision:**
+- **What counts:** a show whose first episode aired in the brief's window. That's either a Plan to Watch show MAL says is airing or about to, or a sequel to a show the user completed. A sequel comes from AniList's SEQUEL relations, must be a TV, TV short or ONA series, and must not be on the list in any status.
+  - The same `airedBetween` request that finds new episodes finds the premieres.
+  - For list shows, "first episode" is MAL's ep 1, so a later part of a show AniList splits isn't a premiere.
+- **Sequel data:** relations are cached a week in a shared `anilist_sequels` table, keyed by the earlier show's MAL id (migration 0020). A sync and the brief refresh it. If the refresh fails, the brief uses the cached relations and still sends the episodes.
+- **The brief:**
+  - Premieres are stored in `briefs.alerts`, apart from `items`, so "watched it" still covers only the episodes.
+  - In Chat they come after the reply hint, under "Started airing:".
+  - A day with only premieres is sent, with a template line and no model call.
+  - The push names them.
+  - Each premiere gets a show card. A sequel that isn't on the list has an Add button, which sends "Add X to my Plan to Watch" to Chat. Chat then asks to confirm, as every add does.
+- **The Brief page:** its responses (`/brief/test`, `lastDaily`) gain a `started` count, and the page's wording covers premieres.
+
+**Alternatives:**
+- **A `season_alerts` table with a sent flag (the plan), and a `sequel_announced` kind.**
+  - Briefs' windows don't overlap, so a premiere lands in exactly one brief, as an episode does. A sent flag would be a second record of the same thing.
+  - Announcements were left out, because the done-when asks about starting to air.
+- **Detecting a premiere from AniList's start date or a status change.** `airedBetween` is what the brief already trusts for episodes, and ep 1 in the window is exact.
+- **Movie and special sequels.** They have no airing schedule to say when they come out, so they're left out for now.
+- **Having the model write the line for a premieres-only day.** That's a prompt change, which needs an eval round. The template is enough for one or two shows.
+
+**Why:** it reuses what the brief already has: the window, the airing request, the services and the show cards. Premieres stay apart from the episodes the brief-reply rules depend on.
+
+**Consequences:**
+- A premiere is missed when no brief covered its time, as an episode is: the brief was off, or the 48-hour cap. Test briefs (the last 24 hours) can repeat one, as they repeat episodes.
+- Only completed shows' sequels count, not those of dropped or on-hold shows.
+- The relations cost about one AniList request per 50 completed shows a week. The query was tried against AniList with 50 shows per page.

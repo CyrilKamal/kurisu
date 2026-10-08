@@ -15,6 +15,8 @@ import {
 } from "../../src/brief/service.js";
 import {
   anilistMedia,
+  anilistSequels,
+  anime,
   briefs,
   briefSettings,
   chatMessages,
@@ -27,7 +29,7 @@ import { parseModelRef } from "../../src/llm/modelConfig.js";
 import type { LlmMessage } from "../../src/llm/types.js";
 import { createPushSender, generateVapidKeys } from "../../src/push/send.js";
 import { fixtureList } from "../fixtures/animeList.js";
-import { airingMedia, FakeAniList } from "../support/fakeAniList.js";
+import { airingMedia, FakeAniList, relatedShow, streamingLink } from "../support/fakeAniList.js";
 import { FakePushService, type FakeBrowser } from "../support/fakePushService.js";
 import {
   backgroundSettled,
@@ -352,6 +354,7 @@ describe("POST /brief/test", () => {
     expect(res.json()).toEqual({
       status: "sent",
       episodes: 3,
+      started: 0,
       push: { sent: 1, removed: 0, failed: 0 },
     });
     // The brief starts its own chat, which tapping the notification opens.
@@ -396,6 +399,7 @@ describe("POST /brief/test", () => {
     expect((await send("POST", "/brief/test")).json()).toEqual({
       status: "empty",
       episodes: 0,
+      started: 0,
       push: { sent: 0, removed: 0, failed: 0 },
     });
     expect(pushService.received).toHaveLength(0);
@@ -681,6 +685,133 @@ describe("daily briefs", () => {
     expect(pushService.received).toHaveLength(0);
     const [row] = await h.db.select().from(briefs);
     expect(row?.status).toBe("empty");
+  });
+});
+
+describe("shows that started airing", () => {
+  const today = () => now.toISOString().slice(0, 10);
+  const PLANNED = 900005; // the fixture's Plan to Watch show, not aired yet on MAL
+  const FINISHED = 900006; // completed (and being rewatched)
+  const SEQUEL = 800300; // its sequel, not on the list
+  const PAUSED = 900003; // on hold, so already on the list
+
+  beforeEach(async () => {
+    // The Plan to Watch show premiered on AniList, and so did a sequel of a finished show.
+    anilist.media.push(airingMedia(505, PLANNED));
+    anilist.relations.set(FINISHED, [
+      relatedShow("SEQUEL", 7300, SEQUEL, "Fixture Rewatch Show 2", {
+        externalLinks: [streamingLink(5, "Crunchyroll", "https://cr.example/7300")],
+      }),
+      // Not news: a movie has no first episode to air, and a show they have is on the list.
+      relatedShow("SEQUEL", 7301, 800301, "Fixture Rewatch Movie", { format: "MOVIE" }),
+      relatedShow("SEQUEL", 7302, PAUSED, "Fixture Paused Show"),
+      relatedShow("SIDE_STORY", 7303, 800303, "Fixture Rewatch OVA"),
+    ]);
+    // Login cached AniList's earlier answers; the brief asks again.
+    await h.db.delete(anilistMedia).where(eq(anilistMedia.malId, PLANNED));
+    await h.db.delete(anilistSequels);
+    anilist.airings = [
+      { mediaId: 505, episode: 1, airingAt: hoursAgo(6) },
+      { mediaId: 7300, episode: 1, airingAt: hoursAgo(4) },
+      { mediaId: 7300, episode: 2, airingAt: hoursAgo(3) },
+      { mediaId: 7301, episode: 1, airingAt: hoursAgo(3) },
+      { mediaId: 7302, episode: 1, airingAt: hoursAgo(3) },
+      { mediaId: 7303, episode: 1, airingAt: hoursAgo(3) },
+    ];
+  });
+
+  it("sends a brief of premieres alone, with a card for each, and no model call", async () => {
+    const res = await send("POST", "/brief/test");
+
+    expect(res.json()).toEqual({
+      status: "sent",
+      episodes: 0,
+      started: 2,
+      push: { sent: 1, removed: 0, failed: 0 },
+    });
+    expect(models.requests).toHaveLength(0);
+    expect(decryptedPushes()).toEqual([
+      expect.objectContaining({
+        title: "2 shows started airing",
+        body: "Fixture Unannounced Sequel · Fixture Rewatch Show 2",
+      }),
+    ]);
+    expect(await briefMessages()).toEqual([
+      [
+        "2 shows you follow started airing.",
+        "",
+        "- Fixture Unannounced Sequel. It's on your Plan to Watch. On Crunchyroll.",
+        "- Fixture Rewatch Show 2. You finished Fixture Rewatch Show. On Crunchyroll.",
+      ].join("\n"),
+    ]);
+
+    // The sequel has a row to show it by, and to add it from; its card says it's not on the list.
+    const [row] = await h.db.select().from(anime).where(eq(anime.malId, SEQUEL));
+    expect(row?.title).toBe("Fixture Rewatch Show 2");
+    const thread = (await send("GET", `/chat/conversations/${(await briefChat()).id}`)).json<{
+      messages: { shows: { animeId: number; status: string | null }[]; asksToChoose: boolean }[];
+    }>();
+    expect(thread.messages[0]?.shows.map((show) => [show.animeId, show.status])).toEqual([
+      [PLANNED, "plan_to_watch"],
+      [SEQUEL, null],
+    ]);
+    expect(thread.messages[0]?.asksToChoose).toBe(false);
+  });
+
+  it("lists them after new episodes, and says each one once", async () => {
+    models.script(BRIEF.ref, [{ text: "Fixture Watching Show has a new episode." }]);
+    anilist.airings.push({ mediaId: 501, episode: 8, airingAt: hoursAgo(2) });
+    const dayOne = new Date(now.getTime() - 24 * 3600_000);
+    const dayThree = new Date(now.getTime() + 24 * 3600_000);
+
+    const runs = [
+      await runBrief(deps, userId, { kind: "daily", localDate: "day-1" }, dayOne),
+      await runBrief(deps, userId, { kind: "daily", localDate: today() }, now),
+      await runBrief(deps, userId, { kind: "daily", localDate: "day-3" }, dayThree),
+    ];
+
+    // Everything aired between day one and today: it's all in today's brief, and only there.
+    expect(runs.map((r) => [r.status, r.episodes, r.alerts])).toEqual([
+      ["empty", 0, 0],
+      ["sent", 1, 2],
+      ["empty", 0, 0],
+    ]);
+    expect(await briefMessages()).toEqual([
+      [
+        "Fixture Watching Show has a new episode.",
+        "",
+        "- Fixture Watching Show ep 8 on Crunchyroll",
+        "",
+        `Reply "watched it" once you've caught up on all of these.`,
+        "",
+        "Started airing:",
+        "- Fixture Unannounced Sequel. It's on your Plan to Watch. On Crunchyroll.",
+        "- Fixture Rewatch Show 2. You finished Fixture Rewatch Show. On Crunchyroll.",
+      ].join("\n"),
+    ]);
+    expect(decryptedPushes().map((p) => [p.title, p.body])).toEqual([
+      [
+        "Fixture Watching Show ep 8",
+        "On Crunchyroll. Started airing: Fixture Unannounced Sequel, Fixture Rewatch Show 2. Tap to open the chat.",
+      ],
+    ]);
+    const [sent] = await h.db.select().from(briefs).where(eq(briefs.status, "sent"));
+    expect(sent?.alerts.map((a) => [a.malId, a.kind])).toEqual([
+      [PLANNED, "ptw_started"],
+      [SEQUEL, "sequel_started"],
+    ]);
+  });
+
+  it("still sends the episodes when AniList can't say what follows a show", async () => {
+    models.script(BRIEF.ref, [{ text: "Fixture Watching Show has a new episode." }]);
+    anilist.relations = new Map();
+    anilist.airings = [{ mediaId: 501, episode: 8, airingAt: hoursAgo(2) }];
+    // The sequels request fails; the rest go through.
+    anilist.failNext(503, 2);
+
+    const outcome = await runBrief(deps, userId, { kind: "daily", localDate: today() }, now);
+
+    expect([outcome.status, outcome.episodes, outcome.alerts]).toEqual(["sent", 1, 0]);
   });
 });
 
