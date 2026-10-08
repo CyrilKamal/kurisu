@@ -442,6 +442,49 @@ export const changes = pgTable(
   (table) => [index("changes_user_committed_idx").on(table.userId, table.committedAt.desc())],
 );
 
+export const listEventKind = pgEnum("list_event_kind", ["added", "updated", "removed"]);
+
+/**
+ * Changes made to the list outside kurisu (on MAL's site or another app), found by a sync that
+ * compares MAL's list with the mirror (stats/events.ts). kurisu's own writes are in `changes`,
+ * and they leave nothing for a sync to find, since a commit writes MAL's answer into the mirror.
+ */
+export const listEvents = pgTable(
+  "list_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    animeId: integer("anime_id")
+      .notNull()
+      .references(() => anime.malId),
+    kind: listEventKind("kind").notNull(),
+    // Prior values of exactly the fields that changed; empty when it was added.
+    before: jsonb("before").$type<ListChange>().notNull(),
+    // New values of those fields; empty when it was removed.
+    after: jsonb("after").$type<ListChange>().notNull(),
+    // When MAL says the entry changed; for a removal, when the sync noticed.
+    at: timestamptz("at").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("list_events_user_at_idx").on(table.userId, table.at.desc())],
+);
+
+/** A user's goal for a year: how many shows to complete in it. */
+export const yearlyGoals = pgTable(
+  "yearly_goals",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    year: integer("year").notNull(),
+    target: integer("target").notNull(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.year] })],
+);
+
 export const chatRole = pgEnum("chat_role", ["user", "assistant"]);
 export const agentOutcome = pgEnum("agent_outcome", [
   "committed",

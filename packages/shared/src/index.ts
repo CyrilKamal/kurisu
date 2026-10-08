@@ -426,6 +426,64 @@ export const tasteResponseSchema = z.object({
 });
 export type TasteResponse = z.infer<typeof tasteResponseSchema>;
 
+const count = z.number().int().nonnegative();
+const shownShow = z.object({ animeId: z.number().int().positive(), title: z.string() });
+
+/**
+ * GET /stats: what the user watched. All time from the list; this year's completions by MAL's
+ * finish date (or, without one, the day kurisu or a sync saw the show completed); the last 7
+ * days from kurisu's changes and the changes a sync found on MAL.
+ */
+export const statsResponseSchema = z.object({
+  /** The user's time zone (from the brief settings), which "this year" follows. */
+  timeZone: z.string(),
+  allTime: z.object({
+    shows: count,
+    byStatus: z.object({
+      watching: count,
+      completed: count,
+      on_hold: count,
+      dropped: count,
+      plan_to_watch: count,
+    }),
+    episodes: count,
+    /** Minutes watched, for shows whose episode length MAL knows. */
+    minutes: count,
+    /** Shows with episodes watched whose episode length MAL doesn't know. */
+    unknownLength: count,
+    meanScore: z.number().nullable(),
+    scored: count,
+    /** How many shows got each score, 1 to 10. */
+    scores: z.array(count).length(10),
+    topGenres: z.array(z.object({ genre: z.string(), shows: count })),
+  }),
+  year: z.object({
+    year: z.number().int(),
+    completed: count,
+    /** Completions per month, January first. */
+    byMonth: z.array(count).length(12),
+    /** Shows to complete this year; null when there's no goal. */
+    goal: z.number().int().positive().nullable(),
+    /** The latest completions, newest first, with their date as MAL writes dates. */
+    recent: z.array(shownShow.extend({ on: z.string() })),
+  }),
+  week: z.object({
+    from: z.iso.datetime(),
+    to: z.iso.datetime(),
+    episodes: count,
+    minutes: count,
+    shows: count,
+    finished: z.array(shownShow),
+  }),
+});
+export type StatsResponse = z.infer<typeof statsResponseSchema>;
+
+/** PUT /stats/goal: this year's goal, in shows completed; null clears it. */
+export const goalRequestSchema = z.object({
+  target: z.number().int().min(1).max(1000).nullable(),
+});
+export type GoalRequest = z.infer<typeof goalRequestSchema>;
+
 /** The most a pasted import may hold, in characters. */
 export const MAX_IMPORT_CHARS = 20_000;
 
