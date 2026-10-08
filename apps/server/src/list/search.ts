@@ -4,7 +4,7 @@ import type { Db } from "../db/client.js";
 import { anime, listEntries } from "../db/schema.js";
 import { NOT_YET_AIRED } from "../mal/client.js";
 import type { ListStatus } from "../writes/normalize.js";
-import { usersWords, type UsersWords } from "./grounding.js";
+import { usersWords, wordsInName, type UsersWords } from "./grounding.js";
 import { matchesSeason, normalizeName, seasonRef, type SeasonRef } from "./seasons.js";
 
 /** Below this, a name isn't considered a match at all. */
@@ -278,6 +278,9 @@ async function scoredPool(
  * their words rearranged, or they name the show, or another season of it and the code picks this
  * one (see grounded). The model reading "the eater one" as "Soul Eater" is its guess, not the
  * user's words, so it waits for them.
+ *
+ * And whoever wrote the query, its words must be in the show's name (see nameHasWords): a fuzzy
+ * score alone doesn't make "perfect blue" mean Blue Period.
  */
 export function markClear<S extends ListStatus | null>(
   pool: ScoredEntry<S>[],
@@ -345,6 +348,7 @@ export function markClear<S extends ListStatus | null>(
     if (!found || (!isUsersWords(query) && contested.has(found.id))) continue;
     if (guessesOnly && !found.byExactName) continue;
     if (words && !isUsersWords(query) && !grounded(pool, found, query, words)) continue;
+    if (!nameHasWords(pool, found.id, query)) continue;
     if (found.by === "unique" || !clearBy.has(found.id)) clearBy.set(found.id, found.by);
   }
   return pool.map((e) => {
@@ -397,6 +401,22 @@ function grounded(
     (other) =>
       (other === entry || seasonsOfOneShow(other, entry)) &&
       other.names.some((n) => words.names(n, numbered ? ref : undefined)),
+  );
+}
+
+/**
+ * Whether every word of the query, season words aside, is in one name of the entry or of another
+ * season of it ("jjk s2" reaches season 2 through season 1's "JJK"). This holds for the user's
+ * own words too: "perfect blue" scores 0.6+ against "Blue Period" and nothing else comes close,
+ * but "perfect" isn't in that name, so it isn't the show they mean. A close spelling of a word
+ * of the name still counts ("kabeneri" for "Kabaneri"); see wordsInName.
+ */
+function nameHasWords(pool: AnyEntry[], id: number, query: string): boolean {
+  const entry = pool.find((e) => e.animeId === id);
+  if (!entry) return false;
+  return pool.some(
+    (e) =>
+      (e === entry || seasonsOfOneShow(e, entry)) && e.names.some((n) => wordsInName(query, n)),
   );
 }
 

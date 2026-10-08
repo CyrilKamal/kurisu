@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { usersWords } from "../../src/list/grounding.js";
+import { usersWords, wordsInName } from "../../src/list/grounding.js";
 import { seasonMarkers } from "../../src/list/seasons.js";
 
 describe("seasonMarkers", () => {
@@ -59,5 +59,37 @@ describe("usersWords", () => {
     expect(usersWords(["bsd s4 ep 2"]).names("BSD", s4)).toBe(true);
     expect(usersWords(["bsd ep 2"]).names("BSD", s4)).toBe(false);
     expect(usersWords(["bsd ep 2", "tog s4"]).names("BSD", s4)).toBe(false);
+  });
+});
+
+describe("wordsInName", () => {
+  it("needs every word as written in the name, season words aside", () => {
+    expect(wordsInName("frieren", "Sousou no Frieren")).toBe(true);
+    expect(wordsInName("Kusuriya", "Kusuriya no Hitorigoto")).toBe(true);
+    expect(wordsInName("jjk s2", "JJK")).toBe(true);
+    expect(wordsInName("mushoku tensei iii", "Mushoku Tensei")).toBe(true);
+    expect(wordsInName("tower of god second season", "Tower of God")).toBe(true);
+    expect(wordsInName("bocchi the rock", "Bocchi the Rock!")).toBe(true);
+    expect(wordsInName("perfect blue", "Blue Period")).toBe(false);
+  });
+
+  it("takes a close spelling of a word of the name, not a different word", () => {
+    expect(wordsInName("frieran", "Sousou no Frieren")).toBe(true);
+    expect(wordsInName("the watchin show", "The Watching Show")).toBe(true);
+    expect(wordsInName("Gangster", "Gangsta.")).toBe(true);
+    expect(wordsInName("kabeneri", "Kabaneri of the Iron Fortress")).toBe(true);
+    expect(wordsInName("hoyuka", "Hyouka")).toBe(false);
+    expect(wordsInName("ping ping", "The Suffering Pariah Kaiji")).toBe(false);
+  });
+
+  it("takes a few of the name's words run together as one", () => {
+    expect(wordsInName("rezero", "Re:Zero kara Hajimeru Isekai Seikatsu")).toBe(true);
+    expect(wordsInName("jojos bizarre adventure", "JoJo's Bizarre Adventure")).toBe(true);
+    expect(wordsInName("kaijuu 8gou", "Kaijuu 8-gou")).toBe(true);
+  });
+
+  it("needs a title of season words only as written", () => {
+    expect(wordsInName("86", "86: Eighty Six")).toBe(true);
+    expect(wordsInName("86", "Kaijuu 8-gou")).toBe(false);
   });
 });

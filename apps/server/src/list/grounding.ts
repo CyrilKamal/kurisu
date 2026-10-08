@@ -1,4 +1,4 @@
-import { normalizeName, seasonMarkers, type SeasonRef } from "./seasons.js";
+import { isSeasonWord, normalizeName, seasonMarkers, type SeasonRef } from "./seasons.js";
 
 /**
  * Everyday words that could be a title's initials. A message saying "the" or "lol" isn't naming
@@ -17,6 +17,58 @@ const ARTICLES = new Set(["the", "a", "an"]);
 
 /** Titles of at least this many words can be named by their initials ("ylia", "mha", "cote"). */
 const MIN_INITIALS = 3;
+
+/** Up to this many of a name's words, run together, also count as one word (see wordsInName). */
+const MAX_JOINED = 3;
+
+/**
+ * A word spelled this close to a word of the name counts as that word: trigram similarity, as
+ * pg_trgm computes it. "kabeneri"/"kabaneri" is 0.50 and "frieran"/"frieren" 0.45, while
+ * "perfect"/"period" is 0.25 and "hoyuka"/"hyouka" 0.27.
+ */
+const CLOSE_SPELLING = 0.45;
+
+/**
+ * Whether every word of a title as written is in this name, season words aside ("jjk s2" in
+ * "JJK"). A fuzzy score alone isn't enough: "perfect blue" scores well against "Blue Period", but
+ * "perfect" isn't in that name. A nickname that's part of the name ("frieren", "kusuriya")
+ * passes, and so does a close spelling of one of its words ("Gangster" for "Gangsta.").
+ * Punctuation splits a name's words, so a word may also be a few of them run together ("rezero"
+ * for "Re:Zero", "jojos" for "JoJo's"). A title of season words only ("86") needs all of them.
+ */
+export function wordsInName(title: string, name: string): boolean {
+  const words = normalizeName(name).split(" ");
+  const nameWords = new Set<string>();
+  for (let i = 0; i < words.length; i++) {
+    for (let k = 1; k <= MAX_JOINED && i + k <= words.length; k++) {
+      nameWords.add(words.slice(i, i + k).join(""));
+    }
+  }
+  const written = normalizeName(title)
+    .split(" ")
+    .filter((word) => word.length > 0);
+  const showWords = written.filter((word) => !isSeasonWord(word));
+  return (showWords.length > 0 ? showWords : written).every(
+    (word) =>
+      nameWords.has(word) ||
+      [...nameWords].some((nameWord) => wordSimilarity(word, nameWord) >= CLOSE_SPELLING),
+  );
+}
+
+/** pg_trgm's similarity for two single words: shared trigrams over all trigrams. */
+function wordSimilarity(a: string, b: string): number {
+  const trigrams = (word: string) => {
+    const padded = `  ${word} `;
+    const found = new Set<string>();
+    for (let i = 0; i + 3 <= padded.length; i++) found.add(padded.slice(i, i + 3));
+    return found;
+  };
+  const ta = trigrams(a);
+  const tb = trigrams(b);
+  let shared = 0;
+  for (const t of ta) if (tb.has(t)) shared++;
+  return shared / (ta.size + tb.size - shared);
+}
 
 /**
  * The user's own words in one agent run: their message, their earlier messages in the chat, and

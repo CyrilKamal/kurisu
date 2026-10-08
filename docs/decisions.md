@@ -1299,3 +1299,41 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
 **Consequences:**
 - A typo or a different spelling becomes a "?" row instead of a match.
 - Chat's search has the same loose match. That's tracked as a separate task, since changing it needs the full update eval.
+
+## 2026-10-07 — A clear match needs your words in the show's name, in Chat too (Milestone 5)
+**Decision:** This extends "Import eval, and a clear import match needs the title's words in the show's name" to every search, and refines "A clear match must be grounded in your words".
+- **One rule in search.** The clear-match rule (`markClear`) now also needs every word of the query, season words aside, in one name of the show, or of another season of it ("jjk s2" reaches season 2 through season 1's "JJK"). It holds for your own words too, so it covers Chat's `search_my_list`, `search_anime` and import alike.
+- **What counts as a word of the name:**
+  - one of its words;
+  - a few of its words run together ("rezero" for "Re:Zero", "jojos" for "JoJo's");
+  - a close spelling of one of its words: trigram similarity 0.45 or more. "Gangster" for Gangsta. is 0.55 and "kabeneri" for Kabaneri is 0.50, but "perfect" for "period" is 0.25 and "hoyuka" for Hyouka is 0.27.
+- **Import uses the same `wordsInName`,** now in `src/list/grounding.ts`. A close spelling in your notes is therefore pre-checked too. This reverses the earlier consequence that a typo in notes becomes a "?" row (your call).
+- No prompt change.
+
+**Alternatives:**
+- Guarding only Chat's tool layer.
+- Strict words, where every typo asks. You chose this first, but the replay below showed it turned two of your labeled write cases ("Finally picked up Gangster", "kabeneri") into questions.
+- Checking only the name that matched best, as import did.
+
+**Why:**
+- "perfect blue" scores 0.615 against Blue Period and nothing else comes close, so it was a unique clear match. #65's grounding rule doesn't check your own words.
+- A scripted Chat run of "finished perfect blue 10/10" (Perfect Blue isn't on the list) committed a score of 10 to Blue Period.
+- Live on Flash-Lite (15 runs of three wordings), search marked Blue Period clear every time. The model happened to search AniList and offer to add Perfect Blue instead, but nothing in code stopped the write.
+
+**Consequences:**
+- **Free replay** of the 536 searches recorded in the last 3 full Flash-Lite runs. The only clear matches the rule removes:
+  - Blue Period for "perfect blue" (all 3 runs).
+  - Kaiji: Ultimate Survivor in the "started ping ping" case. Its synonym "The Suffering Pariah Kaiji" scored 0.6 there (all 3 runs; never written).
+  - Zetsuen no Tempest for "blast of the tempest", because of the extra "the". That case expects no write.
+- **The live probe after the fix:** Blue Period was never clear (0 of 15 runs, down from 15 of 15), and nothing was written to it.
+- A word that's neither in the name nor spelled close to one makes the agent ask: a stray "the", or "hoyuka" for Hyouka.
+- Live, on Flash-Lite with progress-sync v13, all 140 cases:
+
+  | Run | Accuracy | Wrong writes | Clarification precision | Clarification recall |
+  | --- | --- | --- | --- | --- |
+  | before (#65's run and the 2 runs before it) | 133–136/140 | 0–1 | 67.5–74.3% | 96.3–100% |
+  | **with this rule** | **131/140** | **0/121** | **69.2%** | **100%** |
+
+  - Eight of the nine misses are asks from the earlier runs: bsd ep 5, omp 3, Mushoku Tensei, the newest TYBW s4 episode, the Cowboy Bebop rewatch, Hoyuka, the final mha season and Tenjiku arc.
+  - The ninth is "clannad" answering "which one?". The model searched AniList only and proposed Plan to Watch, a no-op. It fails the same way with the old search code (4 of 4 reruns), so it isn't this rule.
+  - A replay of this run's own searches found one more removed clear match: the model's "Bleach episode 380" had fuzzily matched a TYBW cour (0.636).
