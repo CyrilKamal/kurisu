@@ -238,6 +238,14 @@ describe("checkPick", () => {
     expect(messages(pick(), expectOf({ source: "in_progress" }))).toEqual([
       "constraint: not a show in progress",
     ]);
+    const queued = pick({ status: "watching", episodesWatched: 0 });
+    expect(messages(queued, expectOf({ source: "in_progress" }))).toEqual([]);
+    expect(messages(queued, expectOf({ source: "started" }))).toEqual([
+      "constraint: not a show you've started",
+    ]);
+    expect(
+      messages(pick({ status: "watching", episodesWatched: 9 }), expectOf({ source: "started" })),
+    ).toEqual([]);
   });
 
   it("flags picks that couldn't be recommended at all", () => {
@@ -291,6 +299,29 @@ describe("scoreRecommendCase", () => {
     expect(
       scoreRecommendCase(run({ picks: [] }), expectOf({ picks: false }), new Set()).correct,
     ).toBe(true);
+  });
+});
+
+describe("grace minutes", () => {
+  const labels = expectOf({ max_episode_minutes: 20, grace_minutes: 5 });
+  const shows = (...minutes: number[]) =>
+    minutes.map((m, i) => pick({ animeId: i + 1, episodeMinutes: m }));
+
+  it("allows shows a little over the limit, after the ones that fit", () => {
+    expect(scoreRecommendCase(run({ picks: shows(16, 18, 24) }), labels, new Set()).correct).toBe(
+      true,
+    );
+  });
+
+  it("fails shows past the grace, and ones that fit placed after ones that run over", () => {
+    const tooLong = scoreRecommendCase(run({ picks: shows(16, 26) }), labels, new Set());
+    expect(tooLong.violations.map((v) => v.message)).toEqual([
+      "26-minute episodes, over 20 plus 5 minutes of grace",
+    ]);
+    const outOfOrder = scoreRecommendCase(run({ picks: shows(24, 16) }), labels, new Set());
+    expect(outOfOrder.violations.map((v) => v.message)).toEqual([
+      "fits the time but came after a show that runs over",
+    ]);
   });
 });
 
