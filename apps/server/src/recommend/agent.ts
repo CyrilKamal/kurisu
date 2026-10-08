@@ -101,7 +101,7 @@ const TOOL_SPECS: ToolSpec[] = [
   },
   {
     name: "present_picks",
-    description: `Show up to ${String(MAX_PICKS)} picks, best first, each with a one-line reason. Only anime_id values find_candidates returned.`,
+    description: `Show up to ${String(MAX_PICKS)} picks, best first, each with a one-line reason, and the one short sentence shown above them. Only anime_id values find_candidates returned.`,
     parameters: {
       type: "object",
       properties: {
@@ -113,8 +113,9 @@ const TOOL_SPECS: ToolSpec[] = [
             required: ["anime_id", "why"],
           },
         },
+        reply: { type: "string", description: "One short sentence shown above the cards" },
       },
-      required: ["picks"],
+      required: ["picks", "reply"],
     },
   },
 ];
@@ -138,8 +139,13 @@ const presentArgs = z
     picks: z
       .array(z.object({ anime_id: z.coerce.number().int().positive(), why: z.string() }).strict())
       .min(1),
+    // Prompts before v6 reply in a turn of their own instead.
+    reply: z.string().optional(),
   })
   .strict();
+
+/** The longest reply shown above the cards. */
+const MAX_REPLY = 240;
 
 interface RecContext {
   db: Db;
@@ -149,6 +155,8 @@ interface RecContext {
   genres: string[] | null;
   tasteFresh: boolean;
   picks: Pick[];
+  /** The sentence above the picks, when present_picks gave one. */
+  reply: string | null;
   recommendationId: string | null;
   runId: string;
 }
@@ -183,6 +191,7 @@ export async function runRecommender(
     genres: null,
     tasteFresh: false,
     picks: [],
+    reply: null,
     recommendationId: null,
     runId: run.id,
   };
@@ -205,13 +214,14 @@ export async function runRecommender(
     messages,
     maxTurns: MAX_TURNS,
     execute: (call) => execute(ctx, call),
-    shouldStop: () => false,
+    // Picks shown with their sentence end the run: no extra model turn just to say it.
+    shouldStop: () => ctx.picks.length > 0 && ctx.reply !== null,
   });
 
   let error = loop.error;
   let reply = loop.reply;
   if (reply === null && error === null) {
-    if (ctx.picks.length > 0) reply = "Here's what I'd watch.";
+    if (ctx.picks.length > 0) reply = ctx.reply ?? "Here's what I'd watch.";
     else error = "max_turns";
   }
   const text = reply ?? "";
@@ -387,6 +397,8 @@ async function presentPicksTool(ctx: RecContext, raw: unknown): Promise<ToolOutc
     .onConflictDoUpdate({ target: recommendations.runId, set: { picks, constraints } })
     .returning({ id: recommendations.id });
   ctx.picks = picks;
+  const reply = args.data.reply?.replace(/\s+/g, " ").trim();
+  ctx.reply = reply ? reply.slice(0, MAX_REPLY) : null;
   ctx.recommendationId = row?.id ?? null;
   return {
     result: {

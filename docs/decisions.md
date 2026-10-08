@@ -1232,3 +1232,23 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
 - New labels: `year_from`, `year_to`, `grace_years`, and `clarify` for "should ask".
 - Your 25 cases stay 25/25 on v5.
 - "any new anime?" on its own doesn't reach the recommender: the progress agent answers it with an offer. Handing it over would need a progress-sync change and a full eval run.
+
+## 2026-10-07 — Faster recommendations: low thinking, and the reply rides on present_picks; recommend.v6 (Milestone 4)
+**Decision:**
+- **Thinking level per role:** `config/models.json` gains a `thinking` section, a Gemini thinking level per role. The recommender runs on `low`; every other role keeps its model's default. `ChatRequest.thinking` reaches Gemini as `thinkingConfig.thinkingLevel`, the supported setting since thinking budgets are deprecated.
+- **No extra turn:** `present_picks` takes the one-sentence reply, and showing picks ends the run. Prompt `recommend.v6` passes it there instead of answering in a turn of its own.
+
+**Alternatives:**
+- Flash-Lite as the recommender (cheaper, but no measured result yet).
+- `minimal` thinking (not tried).
+- Skipping the progress agent for plain recommendation requests (it takes only about 0.7 s).
+- Streaming the reply to the screen.
+
+**Why:**
+- Your real recommendations took 16–18 s. Most of it was the recommender's second model call: 1,200–1,600 output tokens, almost all of them thinking, to write about 150 tokens of picks.
+- A third call of about 2 s only wrote the reply sentence.
+
+**Consequences:**
+- Your 25 cases: still 25/25. Median 12.3 s became 6.1 s (p90 17.9 s became 12.8 s), and the cost per case went from 1.25¢ to 0.54¢.
+- Slower cases now come from Gemini's own response times, or from an update made in the same message.
+- Older prompts still reply in their own turn, since the run only ends early when `present_picks` gets a reply.

@@ -7,6 +7,7 @@
  *   pnpm eval:recommend --case rec-movie-tonight --limit 5
  *   pnpm eval:recommend --model gemini:gemini-3.5-flash-lite   a different recommender model
  *   pnpm eval:recommend --prompt recommend@3                 compare another recommender prompt
+ *   pnpm eval:recommend --thinking low                       the recommender's thinking level
  *
  * Needs Docker (a throwaway Postgres) and the frozen data from pnpm eval:recommend-data. Taste is
  * neutral here (the snapshot has no scores), so this measures following the request, not taste.
@@ -33,6 +34,7 @@ import {
   parseModelRef,
   resolveRoles,
 } from "../../../src/llm/modelConfig.js";
+import { THINKING_LEVELS } from "../../../src/llm/types.js";
 import { runRecommender } from "../../../src/recommend/agent.js";
 import { startYearOf } from "../../../src/recommend/candidates.js";
 import { loadAiring } from "../airing.js";
@@ -64,6 +66,7 @@ const { values } = parseArgs({
     limit: { type: "string" },
     rpm: { type: "string" },
     prompt: { type: "string" },
+    thinking: { type: "string" },
   },
 });
 
@@ -82,7 +85,13 @@ const roles = resolveRoles(modelsFile, {
   ...(process.env.AGENT_MODEL ? { agent: process.env.AGENT_MODEL } : {}),
   ...(process.env.RECOMMEND_MODEL ? { recommend: process.env.RECOMMEND_MODEL } : {}),
 });
-const recommendRef = values.model ? parseModelRef(values.model) : roles.recommend;
+const thinking = THINKING_LEVELS.find((level) => level === values.thinking);
+if (values.thinking !== undefined && !thinking) {
+  console.error(`--thinking must be one of ${THINKING_LEVELS.join(", ")}.`);
+  process.exit(1);
+}
+const configuredRecommend = values.model ? parseModelRef(values.model) : roles.recommend;
+const recommendRef = thinking ? { ...configuredRecommend, thinking } : configuredRecommend;
 const agentRef = values["agent-model"] ? parseModelRef(values["agent-model"]) : roles.agent;
 const client = createModelClient({
   geminiApiKey: nonEmpty(process.env.GEMINI_API_KEY),
@@ -124,7 +133,7 @@ const poolIds = new Set(pool.shows.map((s) => s.malId));
 const snapshots = new Map<string, Snapshot>();
 
 console.log(
-  `Recommendation eval: ${String(selected.length)} cases; ${agentRef.ref} (${CURRENT_PROMPT.version}) hands off to ${recommendRef.ref} (${RECOMMEND_PROMPT.version})`,
+  `Recommendation eval: ${String(selected.length)} cases; ${agentRef.ref} (${CURRENT_PROMPT.version}) hands off to ${recommendRef.ref}${recommendRef.thinking ? `, thinking ${recommendRef.thinking}` : ""} (${RECOMMEND_PROMPT.version})`,
 );
 if (rpm !== null)
   console.log(`At most ${String(rpm)} model calls a minute (waiting is left out of latency).`);
@@ -157,6 +166,7 @@ try {
         agentModel: agentRef.ref,
         agentPrompt: CURRENT_PROMPT.version,
         recommendModel: recommendRef.ref,
+        recommendThinking: recommendRef.thinking ?? null,
         recommendPrompt: RECOMMEND_PROMPT.version,
         ranAt: new Date().toISOString(),
         metrics,

@@ -48,6 +48,21 @@ describe("resolveRoles", () => {
   });
 });
 
+describe("thinking levels", () => {
+  it("attach to the roles config/models.json gives one", () => {
+    const roles = resolveRoles({ ...file, thinking: { recommend: "low" } }, {});
+    expect(roles.recommend).toEqual({
+      provider: "gemini",
+      model: "b",
+      ref: "gemini:b",
+      thinking: "low",
+    });
+    expect(roles.agent.thinking).toBeUndefined();
+    // The price is still the model's.
+    expect(roles.recommend.ref).toBe("gemini:b");
+  });
+});
+
 describe("costUsd", () => {
   it("prices exact refs and provider wildcards, and admits unknown ones", () => {
     const usage = { inputTokens: 1_000_000, outputTokens: 200_000 };

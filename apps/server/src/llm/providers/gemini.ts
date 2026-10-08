@@ -5,6 +5,7 @@ import {
   ApiError,
   FunctionCallingConfigMode,
   GoogleGenAI,
+  ThinkingLevel as GeminiThinkingLevel,
   type Content,
   type Part,
 } from "@google/genai";
@@ -16,8 +17,16 @@ import {
   type ChatResponse,
   type LlmMessage,
   type ModelProvider,
+  type ThinkingLevel,
   type ToolCall,
 } from "../types.js";
+
+const GEMINI_THINKING: Record<ThinkingLevel, GeminiThinkingLevel> = {
+  minimal: GeminiThinkingLevel.MINIMAL,
+  low: GeminiThinkingLevel.LOW,
+  medium: GeminiThinkingLevel.MEDIUM,
+  high: GeminiThinkingLevel.HIGH,
+};
 
 export interface GeminiOptions {
   apiKey: string;
@@ -54,8 +63,12 @@ export function createGeminiProvider(options: GeminiOptions): ModelProvider {
           contents: toContents(request.messages),
           config: {
             // No temperature, top_p, top_k or thinking budget: newer Gemini models answer them with
-            // a 400, so each model's own defaults apply.
+            // a 400, so each model's own defaults apply. A thinking level is the supported way to
+            // trade thinking for speed.
             systemInstruction: request.system,
+            ...(request.thinking && {
+              thinkingConfig: { thinkingLevel: GEMINI_THINKING[request.thinking] },
+            }),
             tools: [
               {
                 functionDeclarations: request.tools.map((tool) => ({
