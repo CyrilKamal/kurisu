@@ -10,6 +10,7 @@ import { loadCatalog } from "../catalog.js";
 import { loadImportCases } from "../importCases.js";
 import { loadRecommendCases } from "../recommendCases.js";
 import { loadDetails, loadDiscovery } from "../recommendData.js";
+import { loadSeason } from "../season.js";
 import { loadStreaming } from "../streaming.js";
 
 const verbose = process.argv.includes("--verbose");
@@ -20,6 +21,7 @@ const recommend = loadRecommendCases(
   undefined,
   undefined,
   loadStreaming(),
+  loadSeason(),
 );
 errors.push(...recommend.errors);
 warnings.push(...recommend.warnings);

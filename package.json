@@ -28,6 +28,7 @@
     "eval:diary": "pnpm --filter @kurisu/server eval:diary",
     "eval:recommend-data": "pnpm --filter @kurisu/server eval:recommend-data",
     "eval:streaming": "pnpm --filter @kurisu/server eval:streaming",
+    "eval:season": "pnpm --filter @kurisu/server eval:season",
     "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",
     "eval": "pnpm --filter @kurisu/server eval"
   },

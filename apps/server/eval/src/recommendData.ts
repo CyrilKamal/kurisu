@@ -43,7 +43,7 @@ export const detailsFreezeSchema = z
   .strict();
 export type DetailsFreeze = z.infer<typeof detailsFreezeSchema>;
 
-const poolShowSchema = z
+export const poolShowSchema = z
   .object({
     malId: z.number().int().positive(),
     anilistId: z.number().int().positive(),

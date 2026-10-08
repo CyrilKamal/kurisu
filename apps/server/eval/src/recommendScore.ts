@@ -143,6 +143,9 @@ export function checkPick(
   if (unwanted.length > 0) constraint(`has ${unwanted.join(", ")}`);
   const source = sourceProblem(pick, expect.source);
   if (source) constraint(source);
+  if (expect.airing_now && pick.airingStatus !== "currently_airing") {
+    constraint(`not airing now (${pick.airingStatus ?? "airing unknown"})`);
+  }
   if (expect.streams_on && watchOn(pick.streamingLinks, expect.streams_on).length === 0) {
     const everywhere = watchOn(
       pick.streamingLinks,

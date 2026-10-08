@@ -82,6 +82,11 @@ export class FakeAniList {
   detailed: FakeDetailedMedia[] = [];
   /** Each show's relations to other shows, by its MAL id. */
   relations = new Map<number, FakeRelation[]>();
+  /**
+   * Season lineups, most popular first, as AniList ids: keyed "FALL 2026", or "SUMMER 2026
+   * airing" for a season's shows still airing.
+   */
+  lineups = new Map<string, number[]>();
   airings: FakeAiring[] = [];
   readonly requests: GraphQlBody[] = [];
   private readonly failures: { status: number; headers?: Record<string, string> }[] = [];
@@ -128,6 +133,7 @@ export class FakeAniList {
     this.fans = new Map();
     this.detailed = [];
     this.relations = new Map();
+    this.lineups = new Map();
     this.airings = [];
     this.requests.length = 0;
     this.failures.length = 0;
@@ -158,6 +164,20 @@ export class FakeAniList {
           })),
         },
       };
+    }
+    if (body.query.includes("seasonYear")) {
+      // One aliased page per season: "s0: Page(...) { media(type: ANIME, season: FALL, ...".
+      const pages: Record<string, { media: { id: number }[] }> = {};
+      for (const match of body.query.matchAll(/(s\d+): Page\([^)]*\) \{ media\(([^)]*)\)/g)) {
+        const [, alias = "", filters = ""] = match;
+        const season = /season: (\w+)/.exec(filters)?.[1] ?? "";
+        const year = /seasonYear: (\d+)/.exec(filters)?.[1] ?? "";
+        const airing = filters.includes("status: RELEASING") ? " airing" : "";
+        pages[alias] = {
+          media: (this.lineups.get(`${season} ${year}${airing}`) ?? []).map((id) => ({ id })),
+        };
+      }
+      return pages;
     }
     if (body.query.includes("popularity_greater")) {
       // One aliased page per list: "l0: Page(...) { media(type: ANIME, genre_in: [...], ...) ...".

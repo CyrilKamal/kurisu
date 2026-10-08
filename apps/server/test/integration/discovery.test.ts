@@ -11,10 +11,12 @@ import {
   briefSettings,
   discovery,
   discoveryRuns,
+  seasonShows,
   users,
 } from "../../src/db/schema.js";
 import { parseModelRef } from "../../src/llm/modelConfig.js";
 import { refreshDiscovery } from "../../src/recommend/discovery.js";
+import { seasonOf } from "../../src/recommend/season.js";
 import { fixtureList } from "../fixtures/animeList.js";
 import { airingMedia, detailedMedia, FakeAniList, streamingLink } from "../support/fakeAniList.js";
 import {
@@ -38,6 +40,9 @@ const MOVIE = 800005; // a top-rated movie
 const CALM_2 = 800006; // the sequel to CALM, which the user hasn't seen
 const PAUSED = 900003; // already on the list (on hold)
 const NETFLIX_URL = "https://www.netflix.com/title/5003";
+// What's airing now, by MAL id.
+const AIRING_HIT = 800101;
+const UNSEEN_SEQUEL = 800102; // follows a show the user hasn't completed
 const CRUNCHYROLL_URL = "https://www.crunchyroll.com/series/calm";
 
 const models = new ScriptedModels();
@@ -99,7 +104,20 @@ beforeEach(async () => {
       relations: { edges: [{ relationType: "PREQUEL", node: { idMal: CALM, type: "ANIME" } }] },
     }),
     detailedMedia(7007, PAUSED, "Fixture Paused Show"),
+    // What's airing this season (a genre the user's taste lists never ask for).
+    detailedMedia(7101, AIRING_HIT, "Airing Hit", { status: "RELEASING", genres: ["Sports"] }),
+    detailedMedia(7102, UNSEEN_SEQUEL, "Airing Sequel", {
+      status: "RELEASING",
+      genres: ["Sports"],
+      relations: { edges: [{ relationType: "PREQUEL", node: { idMal: 800199, type: "ANIME" } }] },
+    }),
+    detailedMedia(7103, 800103, "Starts Next Week", {
+      status: "NOT_YET_RELEASED",
+      genres: ["Sports"],
+    }),
   ];
+  const now = seasonOf(new Date());
+  anilist.lineups.set(`${now.season} ${String(now.year)}`, [7101, 7102, 7103]);
   models.reset();
   const result = await login(h);
   cookie = result.sessionCookie ?? "";
@@ -322,5 +340,75 @@ describe("where to watch", () => {
     await ask("something on my services");
 
     expect(feedback.error).toBe("no_services");
+  });
+});
+
+describe("what's airing now", () => {
+  it("keeps this season's lineup, and offers airing shows new to the user only when asked", async () => {
+    // Built in the background after the login's sync; a show that hasn't started is left out.
+    const lineup = await h.db.select().from(seasonShows);
+    expect(lineup.map((s) => [s.malId, s.rank])).toEqual([
+      [AIRING_HIT, 1],
+      [UNSEEN_SEQUEL, 2],
+    ]);
+
+    let offered: { anime_id: number; list: string; facts: string[] }[] = [];
+    models.script(AGENT.ref, [{ toolCalls: [{ name: "recommend_shows", arguments: {} }] }]);
+    models.script(RECOMMEND.ref, [
+      { toolCalls: [{ name: "find_candidates", arguments: { airing_now: true } }] },
+      (req) => {
+        offered = lastToolResult(req).candidates as typeof offered;
+        return {
+          toolCalls: [
+            {
+              name: "present_picks",
+              arguments: {
+                picks: [{ anime_id: AIRING_HIT, why: "The season's biggest show." }],
+                reply: "Here's what's good this season.",
+              },
+            },
+          ],
+        };
+      },
+    ]);
+
+    const res = await h.app.inject({
+      method: "POST",
+      url: "/chat/messages",
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+      payload: { text: "what's good this season?" },
+    });
+
+    // Not the sequel to a show they haven't seen, and nothing that isn't airing.
+    expect(offered.map((c) => c.anime_id)).toEqual([AIRING_HIT]);
+    expect(offered[0]).toMatchObject({ list: "new" });
+    expect(offered[0]?.facts).toContain("#1 most popular show airing now");
+    const reply = contract.chatThreadResponseSchema.parse(res.json()).messages.at(-1);
+    expect(reply?.picks.map((p) => [p.animeId, p.title, p.status])).toEqual([
+      [AIRING_HIT, "Airing Hit", null],
+    ]);
+  });
+
+  it("leaves the season's shows out of other requests", async () => {
+    let offered: { anime_id: number }[] = [];
+    models.script(AGENT.ref, [{ toolCalls: [{ name: "recommend_shows", arguments: {} }] }]);
+    models.script(RECOMMEND.ref, [
+      { toolCalls: [{ name: "find_candidates", arguments: {} }] },
+      (req) => {
+        offered = lastToolResult(req).candidates as typeof offered;
+        return { text: "Nothing for now." };
+      },
+    ]);
+
+    await h.app.inject({
+      method: "POST",
+      url: "/chat/messages",
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+      payload: { text: "what should I watch?" },
+    });
+
+    expect(offered.map((c) => c.anime_id)).not.toContain(AIRING_HIT);
   });
 });

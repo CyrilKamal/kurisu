@@ -400,6 +400,23 @@ describe("searchAnime", () => {
   });
 });
 
+describe("seasonLineup", () => {
+  it("asks for each season's series, most popular first, in one request", async () => {
+    fake.lineups.set("FALL 2026", [11, 12]);
+    fake.lineups.set("SUMMER 2026 airing", [21]);
+
+    const lineups = await client.seasonLineup([
+      { season: "FALL", year: 2026 },
+      { season: "SUMMER", year: 2026, airing: true },
+    ]);
+
+    expect(lineups).toEqual([[11, 12], [21]]);
+    expect(fake.requests).toHaveLength(1);
+    expect(fake.requests[0]?.query).toContain("isAdult: false");
+    expect(fake.requests[0]?.query).toContain("format_in: [TV, TV_SHORT, ONA]");
+  });
+});
+
 describe("sequelsOf", () => {
   it("keeps anime sequels with where they stream, once each, by the earlier show's MAL id", async () => {
     fake.relations.set(100, [

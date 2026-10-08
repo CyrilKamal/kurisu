@@ -261,3 +261,25 @@ describe("rankCandidates and where to watch", () => {
     ]);
   });
 });
+
+describe("rankCandidates and what's airing now", () => {
+  it("keeps only shows airing now, and says how popular a season show is", () => {
+    const rows = [
+      row(1, { airingStatus: "currently_airing" }),
+      row(2, { airingStatus: "finished_airing" }),
+      row(3, {
+        status: null,
+        airingStatus: "currently_airing",
+        malMean: null,
+        anilistScore: 8.2,
+        strength: 2,
+        because: [],
+        seasonRank: 1,
+      }),
+    ];
+    const airing = rankCandidates(rows, noTaste, { airingNow: true });
+    expect(ids(airing).sort()).toEqual([1, 3]);
+    expect(airing.find((c) => c.animeId === 3)?.facts).toContain("#1 most popular show airing now");
+    expect(ids(rankCandidates(rows, noTaste, {})).sort()).toEqual([1, 2, 3]);
+  });
+});

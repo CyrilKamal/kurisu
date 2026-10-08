@@ -1,0 +1,2063 @@
+{
+  "description": "What was airing (this season's series and last season's still airing, most popular first), frozen for the recommendation eval's 'this season' cases. Public show data only. Never re-exported.",
+  "source": "anilist",
+  "season": "2026 FALL",
+  "frozenAt": "2026-10-08T22:51:44.572Z",
+  "shows": [
+    {
+      "malId": 61987,
+      "anilistId": 195516,
+      "title": "Kusuriya no Hitorigoto 3rd Season",
+      "titleEn": "The Apothecary Diaries Season 3",
+      "titleJa": "薬屋のひとりごと 第3期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Drama",
+        "Mystery",
+        "Medical",
+        "Detective",
+        "Historical",
+        "Seinen"
+      ],
+      "score": 8.5,
+      "popularity": 91541,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx195516-MJpUZlOberqH.jpg",
+      "startDate": "2026-10-02",
+      "prequelMalIds": [
+        58514
+      ],
+      "rank": 1,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G3KHEVDJ7/the-apothecary-diaries"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/us/title/81712068"
+        }
+      ]
+    },
+    {
+      "malId": 61967,
+      "anilistId": 195604,
+      "title": "Black Clover 2nd Season",
+      "titleEn": "Black Clover Season 2",
+      "titleJa": "ブラッククローバー 第2期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Shounen"
+      ],
+      "score": 8.6,
+      "popularity": 83951,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx195604-tSZcfKbVqSEG.jpg",
+      "startDate": "2026-10-03",
+      "prequelMalIds": [
+        34572
+      ],
+      "rank": 2,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GRE50KV36/black-clover"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432940"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/qchxviq611"
+        }
+      ]
+    },
+    {
+      "malId": 53913,
+      "anilistId": 159042,
+      "title": "Tensei Shitara Ken Deshita 2nd Season",
+      "titleEn": "Reincarnated as a Sword Season 2",
+      "titleJa": "転生したら剣でした 第2期",
+      "synonyms": [
+        "Reincarnated as a Sword II",
+        "I Became the Sword by Transmigrating 2",
+        "TenKen 2",
+        "TENKEN - Reincarnato in una spada"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 23,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Reincarnation",
+        "Isekai",
+        "CGDCT",
+        "Gore"
+      ],
+      "score": 7.5,
+      "popularity": 47060,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx159042-GGFwlDskc5vR.png",
+      "startDate": "2026-10-01",
+      "prequelMalIds": [
+        49891
+      ],
+      "rank": 3,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/season/39506"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/gp/video/detail/B0HLCHQS6T"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1v4ebkyoz21"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLcSpWjb7H0lk"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432099"
+        }
+      ]
+    },
+    {
+      "malId": 61323,
+      "anilistId": 189123,
+      "title": "Ao no Hako Season 2",
+      "titleEn": "Blue Box Season 2",
+      "titleJa": "アオのハコ Season２",
+      "synonyms": [
+        "Ao no Hako 2nd Season"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Romance",
+        "Slice of Life",
+        "Sports",
+        "School",
+        "Iyashikei",
+        "Shounen"
+      ],
+      "score": 8,
+      "popularity": 43731,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx189123-0secXELIhkIW.jpg",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [
+        57181
+      ],
+      "rank": 4,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81663323"
+        }
+      ]
+    },
+    {
+      "malId": 61469,
+      "anilistId": 210482,
+      "title": "JoJo no Kimyou na Bouken: Steel Ball Run - 2nd & 3rd STAGE",
+      "titleEn": "STEEL BALL RUN JoJo's Bizarre Adventure 2nd - 3rd STAGE",
+      "titleJa": "ジョジョの奇妙な冒険 スティール・ボール・ラン 2nd＆3rd STAGE",
+      "synonyms": [
+        "JoJo's Bizarre Adventure: Part 7–Steel Ball Run",
+        "SBR"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 11,
+      "episodeMinutes": null,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Mystery",
+        "Supernatural",
+        "Super Power",
+        "Adult Cast"
+      ],
+      "score": 8.5,
+      "popularity": 38813,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx210482-P1VNKbqdJ6Zj.jpg",
+      "startDate": "2026-09-25",
+      "prequelMalIds": [
+        61469
+      ],
+      "rank": 5,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/82116553"
+        }
+      ]
+    },
+    {
+      "malId": 59088,
+      "anilistId": 178083,
+      "title": "Tokyo Revengers: Santen Sensou-hen",
+      "titleEn": "Tokyo Revengers: War of the Three Titans Arc",
+      "titleJa": "東京リベンジャーズ 三天戦争編",
+      "synonyms": [
+        "Tokyo Revengers (Sequel)"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 13,
+      "episodeMinutes": null,
+      "genres": [
+        "Action",
+        "Drama",
+        "Romance",
+        "Supernatural",
+        "Delinquents",
+        "Shounen"
+      ],
+      "score": 7.6,
+      "popularity": 31728,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx178083-bg7pg6TCHwtG.jpg",
+      "startDate": "2026-10-03",
+      "prequelMalIds": [
+        54918
+      ],
+      "rank": 6,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@animetoman"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/1a195a35-e19c-4e36-b609-3b1c451f6ce4"
+        }
+      ]
+    },
+    {
+      "malId": 64340,
+      "anilistId": 212888,
+      "title": "Tempal: Item no Chikara",
+      "titleEn": "Overgeared",
+      "titleJa": "テムパル～アイテムの力～",
+      "synonyms": [
+        "Temppal",
+        "Tempal - Item no Chikara"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Video Game",
+        "Gag Humor",
+        "Shounen",
+        "Adult Cast"
+      ],
+      "score": 7.5,
+      "popularity": 31601,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx212888-NhyvqPt5aIuJ.jpg",
+      "startDate": "2026-09-27",
+      "prequelMalIds": [],
+      "rank": 7,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384004"
+        }
+      ]
+    },
+    {
+      "malId": 64534,
+      "anilistId": 213805,
+      "title": "Koori no Jouheki 2nd Season",
+      "titleEn": "The Ramparts of Ice Season 2",
+      "titleJa": "氷の城壁 第2期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 25,
+      "genres": [
+        "Comedy",
+        "Drama",
+        "Romance",
+        "Slice of Life",
+        "School",
+        "Shoujo",
+        "Love Polygon"
+      ],
+      "score": 8.2,
+      "popularity": 30138,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx213805-Nokui3uWlIlw.png",
+      "startDate": "2026-10-01",
+      "prequelMalIds": [
+        60852
+      ],
+      "rank": 8,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/82031882"
+        }
+      ]
+    },
+    {
+      "malId": 61578,
+      "anilistId": 191656,
+      "title": "Seitokai ni mo Ana wa Aru!",
+      "titleEn": "Even the Student Council Has Its Holes!",
+      "titleJa": "生徒会にも穴はある！",
+      "synonyms": [
+        "NamaAnaru"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Comedy",
+        "Ecchi",
+        "Slice of Life",
+        "Gag Humor",
+        "School"
+      ],
+      "score": 7.2,
+      "popularity": 30119,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx191656-xFHtxM8SUTdU.png",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [],
+      "rank": 9,
+      "links": [
+        {
+          "siteId": 249,
+          "site": "OceanVeil",
+          "url": "https://oceanveil.net/anime_titles/542"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2433041"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/28ki6pjn6a1"
+        }
+      ]
+    },
+    {
+      "malId": 57612,
+      "anilistId": 172192,
+      "title": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+      "titleEn": "A Returner's Magic Should be Special Season 2",
+      "titleJa": "帰還者の魔法は特別です 第2期",
+      "synonyms": [
+        "Gwihwanjaui Mabeobeun",
+        "Teukbyeolhaeya Hamnida"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": null,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "score": 6.8,
+      "popularity": 25038,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx172192-W7P5xEUaxF3y.jpg",
+      "startDate": "2026-10-08",
+      "prequelMalIds": [
+        54852
+      ],
+      "rank": 10,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GEXH3W207/a-returners-magic-should-be-special"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432495"
+        }
+      ]
+    },
+    {
+      "malId": 63293,
+      "anilistId": 205909,
+      "title": "Hotaru no Yomeiri",
+      "titleEn": "Firefly Wedding",
+      "titleJa": "ホタルの嫁入り",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": null,
+      "genres": [
+        "Drama",
+        "Romance",
+        "Josei",
+        "Historical"
+      ],
+      "score": 6.2,
+      "popularity": 23424,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx205909-DM0fAzNQulod.jpg",
+      "startDate": "2026-10-09",
+      "prequelMalIds": [],
+      "rank": 11,
+      "links": []
+    },
+    {
+      "malId": 52480,
+      "anilistId": 152677,
+      "title": "Tantei wa mou, Shindeiru. Season 2",
+      "titleEn": "The Detective Is Already Dead Season 2",
+      "titleJa": "探偵はもう、死んでいる。Season2",
+      "synonyms": [
+        "The Detective Is Already Dead Season 2",
+        "La detective esta muerta. 2",
+        "Tanmoshi 2"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 13,
+      "episodeMinutes": null,
+      "genres": [
+        "Comedy",
+        "Drama",
+        "Mystery",
+        "Romance",
+        "Supernatural",
+        "Detective"
+      ],
+      "score": 7.3,
+      "popularity": 23232,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx152677-gtJbgjE94lCN.png",
+      "startDate": "2026-10-07",
+      "prequelMalIds": [
+        46471
+      ],
+      "rank": 12,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/the-detective-is-already-dead"
+        }
+      ]
+    },
+    {
+      "malId": 60601,
+      "anilistId": 185756,
+      "title": "Tensei Kizoku, Kantei Skill de Nariagaru 3rd Season",
+      "titleEn": "As a Reincarnated Aristocrat, I'll Use My Appraisal Skill to Rise in the World Season 3",
+      "titleJa": "転生貴族、鑑定スキルで成り上がる 第3期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Adventure",
+        "Fantasy",
+        "Isekai"
+      ],
+      "score": 7.1,
+      "popularity": 22921,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx185756-xPCl0RyQ7fXD.jpg",
+      "startDate": "2026-09-27",
+      "prequelMalIds": [
+        59131
+      ],
+      "rank": 13,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GG5H5XQMD/as-a-reincarnated-aristocrat-ill-use-my-appraisal-skill-to-rise-in-the-world"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/onlibp0le1"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432255"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLfEwGegYhFGY"
+        }
+      ]
+    },
+    {
+      "malId": 61603,
+      "anilistId": 191788,
+      "title": "Aoashi 2nd Season",
+      "titleEn": "Aoashi Season 2",
+      "titleJa": "アオアシ 第2期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 24,
+      "episodeMinutes": 24,
+      "genres": [
+        "Sports",
+        "Seinen"
+      ],
+      "score": 7.8,
+      "popularity": 21469,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx191788-XC6F24LdX6a4.jpg",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [
+        49052
+      ],
+      "rank": 14,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/aoashi"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLYavYYpKm3cc"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1627dg47zxl"
+        }
+      ]
+    },
+    {
+      "malId": 63140,
+      "anilistId": 204389,
+      "title": "Yasei no Last Boss ga Arawareta! 2nd Season",
+      "titleEn": "A Wild Last Boss Appeared! Season 2",
+      "titleJa": "野生のラスボスが現れた！ 第2期",
+      "synonyms": [],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Isekai"
+      ],
+      "score": 7.2,
+      "popularity": 19500,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx204389-jCoFCeTthDMy.jpg",
+      "startDate": "2026-09-26",
+      "prequelMalIds": [
+        59644
+      ],
+      "rank": 15,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00361955/a-wild-last-boss-appeared"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLbuF5Onrcu9fs9Jo_IR9nZ7WrulQuDup-"
+        }
+      ]
+    },
+    {
+      "malId": 63431,
+      "anilistId": 207329,
+      "title": "Tsuihou Sareta Cheat Fuyo Majutsushi wa Kimama na Second Life wo Ouka Suru.: Ore wa Buki dake ja Naku, Arayuru Mono ni \"Kyouka Point\" wo Fuyo Dekiru shi, Ore no Ishi de Itsudemo Kouka wo Kaijo Dekiru kedo, Nokotta Hitotachi Daijoubu?",
+      "titleEn": "The Laid-Off Cheat-Granting Mage Enjoys a Second Lease on Life",
+      "titleJa": "追放されたチート付与魔術師は気ままなセカンドライフを謳歌する。　～俺は武器だけじゃなく、あらゆるものに『強化ポイント』を付与できるし、俺の意思でいつでも効果を解除できるけど、残った人たち大丈夫？～",
+      "synonyms": [
+        "The Exiled Cheating Magician Enjoys an Unrestrained Second Life.: I Can Give \"Strengthening Points\" Not Only to Weapons, But Also to Everything, and I Can Unlock the Effect at Any Time of My Will, But are the Rest Okay?",
+        "Chii-Fuyo",
+        "The Laid-Off Cheat-Granting Mage Enjoys a New Life"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Slice of Life",
+        "Urban Fantasy",
+        "Gag Humor"
+      ],
+      "score": 7.2,
+      "popularity": 18977,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b207329-6VPeZIDfF4Sr.png",
+      "startDate": "2026-10-07",
+      "prequelMalIds": [],
+      "rank": 16,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384016/"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLcCDyXGi-y_w"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432178"
+        }
+      ]
+    },
+    {
+      "malId": 63509,
+      "anilistId": 208025,
+      "title": "Dark Summoner to Dekiteiru",
+      "titleEn": "I'm Dating a Dark Summoner",
+      "titleJa": "ダークサモナーとデキている",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 12,
+      "genres": [
+        "Comedy",
+        "Ecchi",
+        "Fantasy",
+        "Romance",
+        "Gag Humor"
+      ],
+      "score": 6.7,
+      "popularity": 18436,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx208025-JKvqWNr8rz8l.jpg",
+      "startDate": "2026-10-05",
+      "prequelMalIds": [],
+      "rank": 17,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/season/39541"
+        }
+      ]
+    },
+    {
+      "malId": 63409,
+      "anilistId": 207191,
+      "title": "Doumo, Suki na Hito ni Horegusuri wo Irai Sareta Majo desu.",
+      "titleEn": "Hello, I am a Witch and my Crush Wants me to Make a Love Potion!",
+      "titleJa": "どうも、好きな人に惚れ薬を依頼された魔女です。",
+      "synonyms": [
+        "Hi, I'm a Witch, and My Crush Wants Me to Make a Love Potion",
+        "I'm a witch who's crush requested a love potion",
+        "Horemajo"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Fantasy",
+        "Romance",
+        "Josei",
+        "Medical"
+      ],
+      "score": 6.9,
+      "popularity": 17908,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx207191-VgkIzfH92WoZ.jpg",
+      "startDate": "2026-10-05",
+      "prequelMalIds": [],
+      "rank": 18,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00378072/hello-i-am-a-witch-and-my-crush-wants-me-to-make-a-love-potion"
+        }
+      ]
+    },
+    {
+      "malId": 60948,
+      "anilistId": 186541,
+      "title": "Mezametara Saikyou Soubi to Uchuusen-mochi datta node, Ikkodate Mezashite Youhei to shite Jiyuu ni Ikitai",
+      "titleEn": "Reborn as a Space Mercenary: I Woke Up Piloting the Strongest Starship!",
+      "titleJa": "目覚めたら最強装備と宇宙船持ちだったので、一戸建て目指して傭兵として自由に生きたい",
+      "synonyms": [
+        "Saikyosoubi"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Drama",
+        "Mecha",
+        "Romance",
+        "Sci-Fi",
+        "Isekai",
+        "Space"
+      ],
+      "score": 6.8,
+      "popularity": 17552,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx186541-caYpLsLmbCh7.jpg",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [],
+      "rank": 19,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384006/reborn-as-a-space-mercenary-i-woke-up-piloting-the-strongest-starship"
+        }
+      ]
+    },
+    {
+      "malId": 56733,
+      "anilistId": 169581,
+      "title": "Magical★Explorer: Eroge no Yuujin Chara ni Tensei Shitakedo, Game Chishiki Tsukatte Jiyuu ni Ikiru",
+      "titleEn": "Magical Explorer",
+      "titleJa": "マジカル★エクスプローラー　エロゲの友人キャラに転生したけど、ゲーム知識使って自由に生きる",
+      "synonyms": [
+        "Magical Explorer: Reborn as a Side Character in a Fantasy Dating Sim",
+        "Majieku"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 13,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Ecchi",
+        "Fantasy",
+        "Romance",
+        "Reincarnation",
+        "Isekai"
+      ],
+      "score": 6.9,
+      "popularity": 16059,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx169581-UlAviVH36Hxi.png",
+      "startDate": "2026-09-26",
+      "prequelMalIds": [],
+      "rank": 20,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384003/magical-explorer"
+        }
+      ]
+    },
+    {
+      "malId": 63098,
+      "anilistId": 204011,
+      "title": "PSYЯEN",
+      "titleEn": "PSYREN",
+      "titleJa": "PSYREN -サイレン-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Sci-Fi",
+        "Shounen",
+        "Super Power"
+      ],
+      "score": 7.1,
+      "popularity": 16029,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx204011-j45RZoqYbdZK.jpg",
+      "startDate": "2026-10-05",
+      "prequelMalIds": [],
+      "rank": 21,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00371866/psyren"
+        }
+      ]
+    },
+    {
+      "malId": 63181,
+      "anilistId": 204650,
+      "title": "Tougen Anki: Nikko・Kegon no Taki-hen",
+      "titleEn": "TOUGEN ANKI: Nikko Kegon Falls Arc",
+      "titleJa": "桃源暗鬼 日光・華厳の滝編",
+      "synonyms": [
+        "Tougen Anki Season 2"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Mystery",
+        "Supernatural",
+        "Shounen"
+      ],
+      "score": 7.1,
+      "popularity": 15970,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx204650-cAQOzQ84Lwk8.png",
+      "startDate": "2026-10-02",
+      "prequelMalIds": [
+        58811
+      ],
+      "rank": 22,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@tougen_anki"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GP5HJ84D2/tougen-anki"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2431878"
+        },
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B0FCM3YGCQ"
+        },
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81969861"
+        }
+      ]
+    },
+    {
+      "malId": 63382,
+      "anilistId": 206949,
+      "title": "Kyouran Reijou Nia Liston",
+      "titleEn": "Nia Liston: The Merciless Maiden",
+      "titleJa": "凶乱令嬢ニア・リストン",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 25,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Reincarnation"
+      ],
+      "score": 7.4,
+      "popularity": 15692,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx206949-4HYI3YuP0eLI.png",
+      "startDate": "2026-10-06",
+      "prequelMalIds": [],
+      "rank": 23,
+      "links": [
+        {
+          "siteId": 20,
+          "site": "HIDIVE",
+          "url": "https://www.hidive.com/season/39540"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2433665"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/tvod2397yt"
+        }
+      ]
+    },
+    {
+      "malId": 63801,
+      "anilistId": 209872,
+      "title": "Ranma 1/2 (2024) 3rd Season",
+      "titleEn": "Ranma1/2 (2024) Season 3",
+      "titleJa": "らんま1/2 (2024) 第3期",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Romance",
+        "Martial Arts",
+        "Love Polygon",
+        "School"
+      ],
+      "score": 7.6,
+      "popularity": 14786,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx209872-RBeVPqwejHFp.jpg",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [
+        60564
+      ],
+      "rank": 24,
+      "links": [
+        {
+          "siteId": 10,
+          "site": "Netflix",
+          "url": "https://www.netflix.com/title/81171925"
+        }
+      ]
+    },
+    {
+      "malId": 63754,
+      "anilistId": 209502,
+      "title": "Shiotaiou no Satou-san ga Ore ni dake Amai",
+      "titleEn": "The Cold Sato-san is Only Sweet to Me",
+      "titleJa": "塩対応の佐藤さんが俺にだけ甘い",
+      "synonyms": [
+        "ShioAma"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Comedy",
+        "Romance"
+      ],
+      "score": 6.7,
+      "popularity": 14192,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx209502-C81oN8M4Smlo.jpg",
+      "startDate": "2026-10-06",
+      "prequelMalIds": [],
+      "rank": 25,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384014/the-cold-sato-san-is-only-sweet-to-me"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2433556"
+        }
+      ]
+    },
+    {
+      "malId": 62922,
+      "anilistId": 202250,
+      "title": "Kashita Maryoku wa [Revo Barai] de Kyousei Choushuu",
+      "titleEn": "Magic Repo Man: Dumped by My Party, I’ll Cash In With a Cute Support Fairy to Become the Strongest!",
+      "titleJa": "貸した魔力は【リボ払い】で強制徴収",
+      "synonyms": [
+        "Kashita Maryoku wa [Revo Barai] de Kyousei Choushuu ~Youzumi to Party Tsuihou sareta Ore wa, Kawaii Support Yousei to Issho ni Toritateta Maryoku wo Unyou shite Saikyou wo Mezasu.",
+        "Maryoku Revo"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 23,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "score": 6,
+      "popularity": 13993,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx202250-mpm2cvr92Au2.jpg",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [],
+      "rank": 26,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00385867/magic-repo-man-dumped-by-my-party-ill-cash-in-with-a-cute-support-fairy-to-become-the-strongest"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432615"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLAzayY4fPdjw"
+        }
+      ]
+    },
+    {
+      "malId": 61153,
+      "anilistId": 187402,
+      "title": "Tensei shita Dai Seijo wa, Seijo de Aru Koto wo Hita Kakusu",
+      "titleEn": "A Tale of the Secret Saint",
+      "titleJa": "転生した大聖女は、聖女であることをひた隠す",
+      "synonyms": [
+        "Daiseijo"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Reincarnation"
+      ],
+      "score": 6.7,
+      "popularity": 13616,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187402-ReKkLwFmMV3q.jpg",
+      "startDate": "2026-10-03",
+      "prequelMalIds": [],
+      "rank": 27,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00371633"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2431959"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLFsBVQsxttbw"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/1tnlbxdm3vt"
+        }
+      ]
+    },
+    {
+      "malId": 63337,
+      "anilistId": 206401,
+      "title": "FX Senshi Kurumi-chan",
+      "titleEn": "FX Fighter Kurumi-chan",
+      "titleJa": "FX戦士くるみちゃん",
+      "synonyms": [
+        "Kurumi si Pejuang Forex"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Drama",
+        "Slice of Life",
+        "Seinen",
+        "Educational",
+        "Adult Cast"
+      ],
+      "score": 6.9,
+      "popularity": 13273,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx206401-8cAebkI0i8BA.png",
+      "startDate": "2026-10-01",
+      "prequelMalIds": [],
+      "rank": 28,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://crunchyroll.com/series/GT00384001/fx-fighter-kurumi-chan"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLTQxh5nM9A2w"
+        }
+      ]
+    },
+    {
+      "malId": 63712,
+      "anilistId": 209219,
+      "title": "Tensei Goblin Dakedo Shitsumon Aru?",
+      "titleEn": "So What's Wrong with Getting Reborn as a Goblin?",
+      "titleJa": "転生ゴブリンだけど質問ある？",
+      "synonyms": [
+        "Tengobu"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Drama",
+        "Fantasy",
+        "Romance",
+        "Reincarnation"
+      ],
+      "score": 6.7,
+      "popularity": 12921,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx209219-3yhKlRx0LX3p.jpg",
+      "startDate": "2026-10-05",
+      "prequelMalIds": [],
+      "rank": 29,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384010/so-whats-wrong-with-getting-reborn-as-a-goblin"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLYld27spJ0aA"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2433441"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/ffeb3x9fd5"
+        }
+      ]
+    },
+    {
+      "malId": 58518,
+      "anilistId": 176314,
+      "title": "Sasaki to Pii-chan Season 2",
+      "titleEn": "Sasaki and Peeps Season 2",
+      "titleJa": "佐々木とピーちゃん シーズン２",
+      "synonyms": [
+        "Sasaki to Pii-chan 2nd Season",
+        "SasaPii 2"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Comedy",
+        "Fantasy",
+        "Mahou Shoujo",
+        "Urban Fantasy",
+        "Isekai"
+      ],
+      "score": 6.8,
+      "popularity": 12007,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx176314-lpvca6vjmkeO.jpg",
+      "startDate": "2026-10-07",
+      "prequelMalIds": [
+        52482
+      ],
+      "rank": 30,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/G5PHNM935/sasaki-and-peeps"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2412591"
+        }
+      ]
+    },
+    {
+      "malId": 64254,
+      "anilistId": 212503,
+      "title": "Hyouken no Majutsushi ga Sekai wo Suberu II",
+      "titleEn": "The Iceblade Sorcerer Shall Rule the World II",
+      "titleJa": "冰剣の魔術師が世界を統べるⅡ",
+      "synonyms": [
+        "The Iceblade Sorcerer Shall Rule the World Season 2"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": null,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "School",
+        "Crossdressing"
+      ],
+      "score": null,
+      "popularity": 11982,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx212503-sXBpRZr96c4e.jpg",
+      "startDate": "2026-10-09",
+      "prequelMalIds": [
+        51711
+      ],
+      "rank": 31,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GDKHZEP21/the-iceblade-sorcerer-shall-rule-the-world"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432333"
+        }
+      ]
+    },
+    {
+      "malId": 59787,
+      "anilistId": 180894,
+      "title": "Romelia Senki: Maou wo Taoshita nochi mo Jinrui Yabasou dakara Guntai Soshiki Shita",
+      "titleEn": "Romelia War Chronicle",
+      "titleJa": "ロメリア戦記 〜魔王を倒した後も人類やばそうだから軍隊組織した〜",
+      "synonyms": [
+        "A History of the Romelia"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy"
+      ],
+      "score": 6.8,
+      "popularity": 10527,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx180894-o3pz4DWFm3je.png",
+      "startDate": "2026-10-03",
+      "prequelMalIds": [],
+      "rank": 32,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@anime.romeliasenki"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384007/romelia-war-chronicle"
+        }
+      ]
+    },
+    {
+      "malId": 64131,
+      "anilistId": 211877,
+      "title": "Kanojo no Tomodachi",
+      "titleEn": "My Girlfriend's Friend",
+      "titleJa": "彼女の友達",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 12,
+      "genres": [
+        "Drama",
+        "Ecchi",
+        "Romance",
+        "Seinen"
+      ],
+      "score": 5,
+      "popularity": 9970,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx211877-yWQ2r7XmWvG6.jpg",
+      "startDate": "2026-10-05",
+      "prequelMalIds": [],
+      "rank": 33,
+      "links": []
+    },
+    {
+      "malId": 64084,
+      "anilistId": 211778,
+      "title": "Sekai Saikyou no Majo, Hajimemashita",
+      "titleEn": "The World's Strongest Witch",
+      "titleJa": "世界最強の魔女、始めました",
+      "synonyms": [
+        "Sekai Saikyou no Majo, Hajimemashita: Watashi dake \"Kouryaku Site\" wo Mireru Sekai de Jiyuu ni Ikimasu",
+        "Sekamajo"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Fantasy",
+        "Parody",
+        "CGDCT"
+      ],
+      "score": 6.6,
+      "popularity": 9307,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx211778-0MXK5HqVFBYH.jpg",
+      "startDate": "2026-10-07",
+      "prequelMalIds": [],
+      "rank": 34,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00384009/the-worlds-strongest-witch"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/en/media/2432827"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLLJ_VmZxSJuY"
+        }
+      ]
+    },
+    {
+      "malId": 59204,
+      "anilistId": 178868,
+      "title": "Magic Knight Rayearth (2026)",
+      "titleEn": "Magic Knight Rayearth (2026)",
+      "titleJa": "魔法騎士レイアース (2026)",
+      "synonyms": [
+        "Magical Knight Rayearth New Project"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": null,
+      "genres": [
+        "Adventure",
+        "Fantasy",
+        "Mahou Shoujo",
+        "Mecha",
+        "Shoujo",
+        "Isekai",
+        "Super Power"
+      ],
+      "score": 6.5,
+      "popularity": 9166,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx178868-mfp0HIHNJNAm.jpg",
+      "startDate": "2026-10-07",
+      "prequelMalIds": [],
+      "rank": 35,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLVs8KIyueUjWQEJ83sa8kpo4jIjWh_aWT"
+        },
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00383994/magic-knight-rayearth-2026"
+        }
+      ]
+    },
+    {
+      "malId": 62753,
+      "anilistId": 200455,
+      "title": "Yowaki MAX Reijou Nano ni, Ratsuwan Konyakusha-sama no Kake ni Notte Shimatta",
+      "titleEn": "Even Though I'm a Super Timid Noble Girl, I Accepted the Bet From My Cunning Fiancé",
+      "titleJa": "弱気MAX令嬢なのに、辣腕婚約者様の賭けに乗ってしまった",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 24,
+      "genres": [
+        "Comedy",
+        "Fantasy",
+        "Romance",
+        "Isekai",
+        "Reincarnation",
+        "Villainess",
+        "Shoujo"
+      ],
+      "score": 6.6,
+      "popularity": 9043,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx200455-P3XStRQMJ7Di.png",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [],
+      "rank": 36,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00365562"
+        }
+      ]
+    },
+    {
+      "malId": 62524,
+      "anilistId": 199007,
+      "title": "#Zombie Sagashitemasu",
+      "titleEn": "#I'm Looking For a Zombie",
+      "titleJa": "#ゾンビさがしてます",
+      "synonyms": [
+        "Zommasu"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 12,
+      "episodeMinutes": 23,
+      "genres": [
+        "Action",
+        "Comedy",
+        "Horror",
+        "Mystery",
+        "Supernatural",
+        "Survival",
+        "CGDCT",
+        "Shounen"
+      ],
+      "score": 6,
+      "popularity": 8393,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx199007-8R1HsnflnHJE.jpg",
+      "startDate": "2026-10-03",
+      "prequelMalIds": [],
+      "rank": 37,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00383996/im-looking-for-a-zombie"
+        }
+      ]
+    },
+    {
+      "malId": 63751,
+      "anilistId": 209499,
+      "title": "TANK CHAIR: Sensha Isu",
+      "titleEn": "TANK CHAIR",
+      "titleJa": "TANK CHAIR-戦車椅子-",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 25,
+      "genres": [
+        "Action",
+        "Sci-Fi",
+        "Super Power"
+      ],
+      "score": 6,
+      "popularity": 6504,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx209499-S0sWFrCpft85.jpg",
+      "startDate": "2026-10-04",
+      "prequelMalIds": [],
+      "rank": 38,
+      "links": [
+        {
+          "siteId": 261,
+          "site": "Prime Video",
+          "url": "https://www.primevideo.com/detail/0FYBTVJ1JB731K9U0XDE7U20F1"
+        }
+      ]
+    },
+    {
+      "malId": 54344,
+      "anilistId": 160803,
+      "title": "Mahou Shoujo Ikusei Keikaku: restart",
+      "titleEn": "MAGICAL GIRL RAISING PROJECT restart",
+      "titleJa": "魔法少女育成計画 restart",
+      "synonyms": [
+        "MahoIku"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Mahou Shoujo",
+        "Suspense"
+      ],
+      "score": 5.9,
+      "popularity": 6489,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx160803-Rcr3IvhE7q9c.png",
+      "startDate": "2026-10-06",
+      "prequelMalIds": [
+        33003
+      ],
+      "rank": 39,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@mahoiku2official"
+        },
+        {
+          "siteId": 249,
+          "site": "OceanVeil",
+          "url": "https://oceanveil.net/anime_titles/544"
+        }
+      ]
+    },
+    {
+      "malId": 61140,
+      "anilistId": 187316,
+      "title": "Gensou Suikoden",
+      "titleEn": null,
+      "titleJa": "幻想水滸伝",
+      "synonyms": [
+        "Suikoden: The Anime"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 23,
+      "episodeMinutes": null,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "score": 6,
+      "popularity": 5734,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187316-jucYCojVTjSY.jpg",
+      "startDate": "2026-10-03",
+      "prequelMalIds": [],
+      "rank": 40,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLVEC_1AvVqqE"
+        }
+      ]
+    },
+    {
+      "malId": 63381,
+      "anilistId": 206774,
+      "title": "Mouse Cursor de Genjitsu wo Sousa Dekiru You ni Natta node, Onnanoko wo Ippai Click Shimasu",
+      "titleEn": "Now That I Can Control Reality With A Mouse Cursor, I'm Gonna Click Away On The Girls!",
+      "titleJa": "マウスカーソルで現実を操作できるようになったので、女の子をいっぱいクリックしまーす",
+      "synonyms": [
+        "Click Me All Over",
+        "Mouse Cursor, I'm Gonna Click Away On The Girls!"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 8,
+      "episodeMinutes": 6,
+      "genres": [
+        "Ecchi",
+        "Romance",
+        "Supernatural",
+        "School"
+      ],
+      "score": 5,
+      "popularity": 5580,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx206774-gXVdrySlLY6y.jpg",
+      "startDate": "2026-10-05",
+      "prequelMalIds": [],
+      "rank": 41,
+      "links": []
+    },
+    {
+      "malId": 64326,
+      "anilistId": 212799,
+      "title": "Marronnier Oukoku no Shichinin no Kishi",
+      "titleEn": "The Seven Knights of the Marronnier Kingdom",
+      "titleJa": "マロニエ王国の七人の騎士",
+      "synonyms": [
+        "Siedmiu Rycerzy Królestwa Marronnier",
+        "Os Sete Cavaleiros do Reino Marronnier"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 20,
+      "episodeMinutes": 25,
+      "genres": [
+        "Comedy",
+        "Fantasy",
+        "Romance",
+        "Josei"
+      ],
+      "score": 6.1,
+      "popularity": 5350,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx212799-n7WDdic7IL1z.png",
+      "startDate": "2026-10-03",
+      "prequelMalIds": [],
+      "rank": 42,
+      "links": [
+        {
+          "siteId": 21,
+          "site": "Amazon Prime Video",
+          "url": "https://www.amazon.com/dp/B0HG6N5R36"
+        }
+      ]
+    },
+    {
+      "malId": 60636,
+      "anilistId": 185874,
+      "title": "BLEACH: Sennen Kessen-hen - Kashin-tan",
+      "titleEn": "BLEACH: Thousand-Year Blood War - The Calamity",
+      "titleJa": "BLEACH 千年血戦篇-禍進譚-",
+      "synonyms": [
+        "BLEACH: Thousand-Year Blood War Part 4",
+        "BLEACH: Thousand-Year Blood War The Final Season",
+        "BLEACH TYBW"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 10,
+      "episodeMinutes": null,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Supernatural",
+        "Shounen",
+        "Super Power",
+        "Urban Fantasy"
+      ],
+      "score": 8.9,
+      "popularity": 91791,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx185874-aU3e6tBT6wwA.jpg",
+      "startDate": "2026-07-25",
+      "prequelMalIds": [
+        56784
+      ],
+      "rank": 43,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://youtube.com/@official_bleach"
+        },
+        {
+          "siteId": 7,
+          "site": "Hulu",
+          "url": "https://www.hulu.com/series/bleach-thousand-year-blood-war-02a3c8c0-4f1d-4610-bbb4-5b8e9468d7b1"
+        },
+        {
+          "siteId": 118,
+          "site": "Disney Plus",
+          "url": "https://www.disneyplus.com/series/bleach-thousand-year-blood-war/4Afet1Q421gy"
+        }
+      ]
+    },
+    {
+      "malId": 59741,
+      "anilistId": 180136,
+      "title": "Tsuihou Sareta Tensei Juukishi wa Game Chishiki de Musou Suru",
+      "titleEn": "The Exiled Heavy Knight Knows How to Game the System",
+      "titleJa": "追放された転生重騎士はゲーム知識で無双する",
+      "synonyms": [
+        "The Exiled Reincarnated Heavy Knight Is Unrivaled in Game Knowledge",
+        "Juukishi",
+        "Kesatria Kelas Berat Tereinkarnasi yang Diasingkan Jadi Tanpa Tanding Dengan Pengetahuan Gimnya"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 26,
+      "episodeMinutes": 24,
+      "genres": [
+        "Action",
+        "Fantasy",
+        "Isekai",
+        "Reincarnation",
+        "Gore"
+      ],
+      "score": 6.7,
+      "popularity": 67797,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx180136-gtMTCRlOD4OE.jpg",
+      "startDate": "2026-07-03",
+      "prequelMalIds": [],
+      "rank": 44,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00378018/the-exiled-heavy-knight-knows-how-to-game-the-system"
+        },
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLwLSw1_eDZl3yq1oZEC8iNCwgMsg0NmIZ"
+        },
+        {
+          "siteId": 119,
+          "site": "Bilibili TV",
+          "url": "https://www.bilibili.tv/media/2411725"
+        },
+        {
+          "siteId": 122,
+          "site": "iQ",
+          "url": "https://www.iq.com/album/a5a0t3nwm1"
+        }
+      ]
+    },
+    {
+      "malId": 63061,
+      "anilistId": 203490,
+      "title": "Uchi no Otouto-domo ga Sumimasen",
+      "titleEn": "Please Excuse My Younger Brothers",
+      "titleJa": "うちの弟どもがすみません",
+      "synonyms": [
+        "Sorry About My Little Brothers",
+        "UchiOto"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 24,
+      "episodeMinutes": 24,
+      "genres": [
+        "Comedy",
+        "Romance",
+        "Slice of Life",
+        "Shoujo"
+      ],
+      "score": 6.8,
+      "popularity": 11535,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx203490-YQXiymUiDQNA.jpg",
+      "startDate": "2026-07-04",
+      "prequelMalIds": [],
+      "rank": 45,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00371926/"
+        }
+      ]
+    },
+    {
+      "malId": 63489,
+      "anilistId": 207809,
+      "title": "Sora wa Akai Kawa no Hotori",
+      "titleEn": "Red River",
+      "titleJa": "天は赤い河のほとり",
+      "synonyms": [
+        "Anatolia Story"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 24,
+      "episodeMinutes": 23,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Romance",
+        "Shoujo",
+        "Historical",
+        "Isekai"
+      ],
+      "score": 6.2,
+      "popularity": 11335,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx207809-cpS7CAyjN7iP.jpg",
+      "startDate": "2026-07-08",
+      "prequelMalIds": [],
+      "rank": 46,
+      "links": [
+        {
+          "siteId": 5,
+          "site": "Crunchyroll",
+          "url": "https://www.crunchyroll.com/series/GT00378099/red-river"
+        }
+      ]
+    },
+    {
+      "malId": 64718,
+      "anilistId": 214703,
+      "title": "Ghost Meets Gal!",
+      "titleEn": null,
+      "titleJa": "ごーすと・みーつ・ぎゃる！",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 2,
+      "genres": [
+        "Comedy",
+        "Fantasy"
+      ],
+      "score": 5.3,
+      "popularity": 1319,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx214703-iXoaVH6UkiZd.png",
+      "startDate": "2026-09-05",
+      "prequelMalIds": [],
+      "rank": 47,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLMeyOW8qY3fA"
+        }
+      ]
+    },
+    {
+      "malId": 64435,
+      "anilistId": 213359,
+      "title": "Yami Shibai 17",
+      "titleEn": "Theatre of Darkness: Yamishibai 17",
+      "titleJa": "闇芝居 十七期",
+      "synonyms": [
+        "Yamishibai: Japanese Ghost Stories Seventeenth Season"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": null,
+      "genres": [
+        "Horror",
+        "Supernatural"
+      ],
+      "score": null,
+      "popularity": 502,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx213359-VDIZoZHMA0LI.jpg",
+      "startDate": "2026-07-13",
+      "prequelMalIds": [
+        63087
+      ],
+      "rank": 48,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@yamishibai_ch"
+        }
+      ]
+    },
+    {
+      "malId": 64378,
+      "anilistId": 213506,
+      "title": "Hokuto no Ken: Kenou-gun Zako-tachi no Banka Part 2",
+      "titleEn": null,
+      "titleJa": "北斗の拳 拳王軍ザコたちの挽歌 第2クール",
+      "synonyms": [],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 4,
+      "genres": [
+        "Comedy"
+      ],
+      "score": null,
+      "popularity": 340,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx213506-vr9kwJjMvXV8.jpg",
+      "startDate": "2026-07-06",
+      "prequelMalIds": [
+        62987
+      ],
+      "rank": 49,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLcPnuVJ3jm6A"
+        }
+      ]
+    },
+    {
+      "malId": 64210,
+      "anilistId": 212308,
+      "title": "Pan no Akachan (TV)",
+      "titleEn": null,
+      "titleJa": "パンの赤ちゃん",
+      "synonyms": [
+        "Babies of Bread",
+        "Hey! Pan no Akachan"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 2,
+      "genres": [
+        "Comedy",
+        "Anthropomorphic",
+        "Gourmet"
+      ],
+      "score": null,
+      "popularity": 244,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx212308-HUdh20Djd7cm.jpg",
+      "startDate": "2026-07-04",
+      "prequelMalIds": [],
+      "rank": 50,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@パンの赤ちゃん"
+        }
+      ]
+    },
+    {
+      "malId": 64725,
+      "anilistId": 214855,
+      "title": "Fate/Grand Order: Fujimaru Ritsuka wa Wakaranai Season 4",
+      "titleEn": null,
+      "titleJa": "Fate/Grand Order 藤丸立香はわからない Season4",
+      "synonyms": [
+        "Fate/Grand Order: You've Lost Ritsuka Fujimaru Season 4"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 2,
+      "genres": [
+        "Comedy"
+      ],
+      "score": null,
+      "popularity": 211,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b214855-PbAsjXJq3NB7.jpg",
+      "startDate": "2026-08-07",
+      "prequelMalIds": [
+        62149
+      ],
+      "rank": 51,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLkybqduWZGqtDqXo4rBp1M0jMfCOaS0cr"
+        }
+      ]
+    },
+    {
+      "malId": 64325,
+      "anilistId": 213427,
+      "title": "Pie no Mi: Oshi no Mori e Youkoso!",
+      "titleEn": null,
+      "titleJa": "パイの実 おしの森へようこそ！",
+      "synonyms": [],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 8,
+      "episodeMinutes": 2,
+      "genres": [
+        "Comedy",
+        "Gourmet"
+      ],
+      "score": null,
+      "popularity": 74,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx213427-lRj8vpcMoPLG.png",
+      "startDate": "2026-06-22",
+      "prequelMalIds": [],
+      "rank": 52,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/playlist?list=PLMnA-T8YHkf0"
+        }
+      ]
+    },
+    {
+      "malId": 64578,
+      "anilistId": 213426,
+      "title": "Chikyuu Daisuki! Kikkun",
+      "titleEn": null,
+      "titleJa": "地球大好き！きっくん",
+      "synonyms": [
+        "Earth Loving Kikkun!"
+      ],
+      "mediaType": "tv",
+      "airingStatus": "currently_airing",
+      "numEpisodes": 52,
+      "episodeMinutes": 2,
+      "genres": [
+        "Sci-Fi"
+      ],
+      "score": null,
+      "popularity": 69,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx213426-6CWFD7ZbHbQJ.png",
+      "startDate": "2026-07-01",
+      "prequelMalIds": [],
+      "rank": 53,
+      "links": []
+    },
+    {
+      "malId": 64873,
+      "anilistId": 216643,
+      "title": "Matsuken Anime: Kore Seibaishite mo Ii desu ka?",
+      "titleEn": null,
+      "titleJa": "マツケンアニメ~コレ成敗してもいいですか？～",
+      "synonyms": [
+        "Matsuken Anime: Can I Pass Judgment on This?"
+      ],
+      "mediaType": "ona",
+      "airingStatus": "currently_airing",
+      "numEpisodes": null,
+      "episodeMinutes": 2,
+      "genres": [
+        "Music"
+      ],
+      "score": null,
+      "popularity": 31,
+      "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx216643-QwcfobjfgC8f.jpg",
+      "startDate": "2026-08-29",
+      "prequelMalIds": [],
+      "rank": 54,
+      "links": [
+        {
+          "siteId": 13,
+          "site": "YouTube",
+          "url": "https://www.youtube.com/@matsuken_anime"
+        }
+      ]
+    }
+  ]
+}
