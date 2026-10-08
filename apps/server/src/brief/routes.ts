@@ -100,6 +100,7 @@ export function registerBriefRoutes(
       return {
         status: outcome.status === "empty" ? "empty" : "sent",
         episodes: outcome.episodes,
+        started: outcome.alerts,
         push: outcome.push,
       };
     } catch (err) {

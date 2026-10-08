@@ -15,8 +15,8 @@ import {
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
-import type { StreamingLink } from "../anilist/client.js";
-import type { BriefItem } from "../brief/build.js";
+import type { SequelShow, StreamingLink } from "../anilist/client.js";
+import type { BriefAlert, BriefItem } from "../brief/build.js";
 import type { ListChange, ListState } from "../writes/normalize.js";
 
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true });
@@ -184,6 +184,22 @@ export const anilistMedia = pgTable(
 );
 
 /**
+ * The anime that follow each show (AniList's SEQUEL relations), keyed by the earlier show's MAL
+ * id. Shared by all users; refetched weekly for the shows a user completed (anilist/sequels.ts),
+ * so the brief can say when one starts airing.
+ */
+export const anilistSequels = pgTable("anilist_sequels", {
+  malId: integer("mal_id")
+    .primaryKey()
+    .references(() => anime.malId, { onDelete: "cascade" }),
+  sequels: jsonb("sequels")
+    .$type<SequelShow[]>()
+    .notNull()
+    .default(sql`'[]'::jsonb`),
+  fetchedAt: timestamptz("fetched_at").notNull(),
+});
+
+/**
  * A browser's Web Push subscription. The endpoint is a capability URL at the browser's push
  * service, so it's never logged.
  */
@@ -255,6 +271,12 @@ export const briefs = pgTable(
     windowStart: timestamptz("window_start"),
     windowEnd: timestamptz("window_end"),
     items: jsonb("items").$type<BriefItem[]>(),
+    // Shows that started airing in the window: a sequel to one they finished, or one on their
+    // Plan to Watch.
+    alerts: jsonb("alerts")
+      .$type<BriefAlert[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     summary: text("summary"),
     // "model" when the model wrote the summary line, "template" when it fell back.
     summarySource: text("summary_source"),

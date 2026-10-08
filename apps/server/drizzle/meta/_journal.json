@@ -141,6 +141,13 @@
       "when": 1791456291055,
       "tag": "0019_catalog_streaming_links",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791461329823,
+      "tag": "0020_season_alerts",
+      "breakpoints": true
     }
   ]
 }

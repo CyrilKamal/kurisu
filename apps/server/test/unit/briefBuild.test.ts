@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  alertLine,
+  alertSummary,
+  buildBriefAlerts,
   buildBriefItems,
   chatText,
   episodesLabel,
@@ -8,6 +11,7 @@ import {
   parseBriefText,
   pushText,
   templateSummary,
+  type BriefAlert,
   type BriefInput,
   type BriefItem,
 } from "../../src/brief/build.js";
@@ -197,5 +201,140 @@ describe("parseBriefText", () => {
   it("ignores text that isn't a brief", () => {
     expect(parseBriefText("- Frieren ep 12")).toEqual([]);
     expect(parseBriefText("Which season of Frieren do you mean?")).toEqual([]);
+  });
+});
+
+describe("buildBriefAlerts", () => {
+  const shows = {
+    ptw: [
+      { malId: 20, title: "Kaiju No. 8 Season 2" },
+      { malId: 21, title: "Already Airing Show" },
+    ],
+    sequels: [
+      { malId: 30, title: "Dandadan Season 2", after: "Dandadan" },
+      { malId: 20, title: "Kaiju No. 8 Season 2", after: "Kaiju No. 8" },
+    ],
+    services: ["crunchyroll"],
+  };
+
+  it("names shows whose first episode aired, in the order they premiered", () => {
+    const alerts = buildBriefAlerts({
+      ...shows,
+      aired: [
+        { malId: 30, episode: 1, airedAt: at(2) },
+        { malId: 20, episode: 1, airedAt: at(5) },
+        // Already airing: a later episode isn't news.
+        { malId: 21, episode: 6, airedAt: at(3) },
+        // Not a show the user follows.
+        { malId: 99, episode: 1, airedAt: at(1) },
+      ],
+      links: new Map([[30, [netflix, crunchyroll]]]),
+    });
+    expect(alerts).toEqual([
+      {
+        malId: 30,
+        title: "Dandadan Season 2",
+        kind: "sequel_started",
+        after: "Dandadan",
+        services: ["Crunchyroll"],
+      },
+      // On Plan to Watch and a sequel too: it counts once, as Plan to Watch.
+      {
+        malId: 20,
+        title: "Kaiju No. 8 Season 2",
+        kind: "ptw_started",
+        after: null,
+        services: [],
+      },
+    ]);
+  });
+
+  it("is empty when nothing premiered", () => {
+    expect(buildBriefAlerts({ ...shows, aired: [], links: new Map() })).toEqual([]);
+  });
+});
+
+describe("briefs with shows that started airing", () => {
+  const sequel: BriefAlert = {
+    malId: 30,
+    title: "Dandadan Season 2",
+    kind: "sequel_started",
+    after: "Dandadan",
+    services: ["Crunchyroll"],
+  };
+  const planned: BriefAlert = {
+    malId: 20,
+    title: "Kaiju No. 8 Season 2",
+    kind: "ptw_started",
+    after: null,
+    services: [],
+  };
+  const item: BriefItem = {
+    malId: 1,
+    title: "Frieren",
+    episodes: [12],
+    premiere: false,
+    finale: false,
+    episodesWatched: 11,
+    services: ["Crunchyroll"],
+  };
+
+  it("says why each one matters and where to watch it", () => {
+    expect(alertLine(sequel)).toBe("- Dandadan Season 2. You finished Dandadan. On Crunchyroll.");
+    expect(alertLine(planned)).toBe("- Kaiju No. 8 Season 2. It's on your Plan to Watch.");
+    expect(alertSummary([sequel])).toBe("Dandadan Season 2 started airing.");
+    expect(alertSummary([sequel, planned])).toBe("2 shows you follow started airing.");
+  });
+
+  it("puts them after the episodes and their reply hint, which they aren't part of", () => {
+    const text = chatText("Frieren has a new episode.", [item], [sequel, planned]);
+    expect(text).toBe(
+      [
+        "Frieren has a new episode.",
+        "",
+        "- Frieren ep 12 on Crunchyroll",
+        "",
+        `Reply "watched it" once you've caught up on all of these.`,
+        "",
+        "Started airing:",
+        "- Dandadan Season 2. You finished Dandadan. On Crunchyroll.",
+        "- Kaiju No. 8 Season 2. It's on your Plan to Watch.",
+      ].join("\n"),
+    );
+    // Reading a brief back only finds its episodes.
+    expect(parseBriefText(text)).toEqual([{ title: "Frieren", episodes: [12] }]);
+    // With no episodes, there's nothing to reply "watched it" to.
+    expect(chatText("Dandadan Season 2 started airing.", [], [sequel])).toBe(
+      [
+        "Dandadan Season 2 started airing.",
+        "",
+        "- Dandadan Season 2. You finished Dandadan. On Crunchyroll.",
+      ].join("\n"),
+    );
+  });
+
+  it("notifies about them, alone or with new episodes", () => {
+    expect(pushText([], [sequel])).toEqual({
+      title: "Dandadan Season 2 started airing",
+      body: "You finished Dandadan. On Crunchyroll. Tap to open the chat.",
+    });
+    expect(pushText([], [planned])).toEqual({
+      title: "Kaiju No. 8 Season 2 started airing",
+      body: "It's on your Plan to Watch. Tap to open the chat.",
+    });
+    expect(pushText([], [sequel, planned])).toEqual({
+      title: "2 shows started airing",
+      body: "Dandadan Season 2 · Kaiju No. 8 Season 2",
+    });
+    expect(pushText([item], [sequel])).toEqual({
+      title: "Frieren ep 12",
+      body: "On Crunchyroll. Started airing: Dandadan Season 2. Tap to open the chat.",
+    });
+    expect(
+      pushText([item, { ...item, malId: 2, title: "Dandadan", episodes: [5] }], [planned]),
+    ).toEqual({
+      title: "2 new episodes",
+      body: "Frieren 12 · Dandadan 5. Started airing: Kaiju No. 8 Season 2.",
+    });
   });
 });

@@ -349,16 +349,23 @@ export const briefSettingsResponseSchema = briefSettingsSchema.extend({
       localDate: z.string(),
       status: z.enum(["building", "ready", "sent", "empty", "skipped_late", "failed"]),
       episodes: z.number().int().nonnegative(),
+      /** Shows it said started airing: sequels to ones the user finished, Plan to Watch shows. */
+      started: z.number().int().nonnegative(),
       at: z.iso.datetime({ offset: true }),
     })
     .nullable(),
 });
 export type BriefSettingsResponse = z.infer<typeof briefSettingsResponseSchema>;
 
-/** POST /brief/test: a brief of the last 24 hours, sent now. "empty" means nothing aired. */
+/**
+ * POST /brief/test: a brief of the last 24 hours, sent now. "empty" means nothing aired: no new
+ * episodes, and nothing the user follows started airing.
+ */
 export const briefTestResponseSchema = z.object({
   status: z.enum(["sent", "empty"]),
   episodes: z.number().int().nonnegative(),
+  /** Shows that started airing: sequels to ones the user finished, Plan to Watch shows. */
+  started: z.number().int().nonnegative(),
   push: pushTestResponseSchema,
 });
 export type BriefTestResponse = z.infer<typeof briefTestResponseSchema>;
