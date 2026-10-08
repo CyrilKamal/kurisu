@@ -35,6 +35,8 @@ export const recommendCaseSchema = z
         media_types: z.array(z.enum(MEDIA_TYPES)).min(1).optional(),
         /** Every pick's episodes (or the movie) are at most this many minutes. */
         max_episode_minutes: z.number().int().positive().optional(),
+        /** Every pick has at most this many episodes left to watch: "something I can finish". */
+        max_episodes_left: z.number().int().positive().optional(),
         /** Picks should have at least one of these genres (a mood). Scored as genre fit. */
         genres_any: z.array(z.string().min(1)).min(1).optional(),
         /** No pick has any of these genres. */
