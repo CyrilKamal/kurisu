@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { decide, groupMatched } from "../../src/import/classify.js";
-import { itemsFrom, MAX_IMPORT_LINES, noteLines } from "../../src/import/parse.js";
+import { itemsFrom, MAX_IMPORT_LINES, noteLines, parseReport } from "../../src/import/parse.js";
 import type { SearchCandidate } from "../../src/list/search.js";
-import type { EntryState } from "../../src/writes/normalize.js";
+import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
+import type { EntryState, RequestedChange } from "../../src/writes/normalize.js";
 
 function entry(fields: Partial<EntryState> = {}): EntryState {
   return {
@@ -104,6 +105,137 @@ describe("groupMatched: a show on the list", () => {
       change: null,
       note: "The notes say ep 20, but it has 12.",
     });
+  });
+});
+
+describe("groupMatched: a score with no status means watched (your rule)", () => {
+  const planned = entry({ status: "plan_to_watch", episodesWatched: 0, numEpisodes: 74 });
+
+  it("adds it as Completed even when the reading has a stray 0 episodes", () => {
+    // "perfect blue 10/10", read with episodes_watched: null (see the parse tests).
+    expect(groupMatched({ episodesWatched: 0, score: 10 }, 1, null)).toEqual({
+      group: "add",
+      malState: null,
+      change: { status: "completed", episodesWatched: 1, score: 10 },
+      note: null,
+      checked: true,
+    });
+  });
+
+  it("marks a Plan to Watch show on the list Completed, not a scored Plan to Watch", () => {
+    for (const notes of [{ score: 9 }, { episodesWatched: 0, score: 9 }]) {
+      expect(groupMatched(notes, 74, planned)).toMatchObject({
+        group: "update",
+        change: { status: "completed", episodesWatched: 74, score: 9 },
+        checked: true,
+      });
+    }
+  });
+
+  it("still asks before replacing a score MAL has", () => {
+    expect(groupMatched({ score: 9 }, 74, { ...planned, score: 7 })).toMatchObject({
+      group: "disagree",
+      change: { status: "completed", episodesWatched: 74, score: 9 },
+      checked: false,
+    });
+  });
+
+  it("only scores a show already started", () => {
+    expect(groupMatched({ score: 8 }, 12, entry())).toMatchObject({
+      group: "update",
+      change: { score: 8 },
+      checked: true,
+    });
+  });
+});
+
+describe("groupMatched: a reading that contradicts itself", () => {
+  const planned = entry({ status: "plan_to_watch", episodesWatched: 0 });
+
+  it("holds Plan to Watch with a score or episodes, with only a note", () => {
+    const cases: [RequestedChange, EntryState | null, string][] = [
+      [{ status: "plan_to_watch", score: 10 }, null, "but also give a score"],
+      [{ status: "plan_to_watch", episodesWatched: 3 }, null, "but also give episodes watched"],
+      [{ status: "plan_to_watch", episodesWatched: 3 }, planned, "but also give episodes watched"],
+      [{ status: "plan_to_watch", score: 8 }, entry(), "but also give a score"],
+    ];
+    for (const [notes, onList, why] of cases) {
+      const grouped = groupMatched(notes, 12, onList);
+      expect(grouped).toMatchObject({ group: "disagree", change: null, checked: false });
+      expect(grouped.note).toContain(why);
+    }
+  });
+
+  it("holds a show the notes say is finished short of its last episode", () => {
+    // "finished bocchi the rock 9/10", read with episodes_watched: null, on Plan to Watch at 0.
+    expect(
+      groupMatched({ status: "completed", episodesWatched: 0, score: 9 }, 12, planned),
+    ).toEqual({
+      group: "disagree",
+      malState: { status: "plan_to_watch", episodesWatched: 0, score: 0, isRewatching: false },
+      change: null,
+      note: "The notes say finished, but with no episodes watched.",
+      checked: false,
+    });
+    expect(groupMatched({ status: "completed", episodesWatched: 0 }, null, null)).toMatchObject({
+      group: "disagree",
+      change: null,
+      checked: false,
+    });
+    // "finished X ep 3" could mean up to ep 3.
+    for (const onList of [null, planned, entry({ episodesWatched: 2 })]) {
+      expect(groupMatched({ status: "completed", episodesWatched: 3 }, 12, onList)).toMatchObject({
+        group: "disagree",
+        change: null,
+        note: "The notes say finished, but at ep 3 of 12.",
+        checked: false,
+      });
+    }
+    // All of them, or a show whose length MAL doesn't know, is fine.
+    expect(groupMatched({ status: "completed", episodesWatched: 12 }, 12, null).group).toBe("add");
+    expect(groupMatched({ status: "completed", episodesWatched: 3 }, null, null).group).toBe("add");
+  });
+
+  it("never pre-checks a row that ends Plan to Watch with the notes' score or episodes, or finished short", () => {
+    const statuses = [undefined, ...MAL_LIST_STATUSES];
+    const entries: (EntryState | null)[] = [
+      null,
+      ...MAL_LIST_STATUSES.map((status) =>
+        entry({
+          status,
+          episodesWatched: status === "completed" ? 12 : status === "plan_to_watch" ? 0 : 2,
+        }),
+      ),
+    ];
+    let prechecked = 0;
+    for (const status of statuses) {
+      for (const episodesWatched of [undefined, 0, 3]) {
+        for (const score of [undefined, 9]) {
+          const notes: RequestedChange = {
+            ...(status !== undefined && { status }),
+            ...(episodesWatched !== undefined && { episodesWatched }),
+            ...(score !== undefined && { score }),
+          };
+          for (const onList of entries) {
+            const grouped = groupMatched(notes, 12, onList);
+            if (!grouped.checked || !grouped.change) continue;
+            prechecked++;
+            const after = {
+              status: grouped.change.status ?? onList?.status ?? "plan_to_watch",
+              episodesWatched: grouped.change.episodesWatched ?? onList?.episodesWatched ?? 0,
+            };
+            const label = JSON.stringify({ notes, onList: onList?.status ?? null });
+            if (after.status === "plan_to_watch") {
+              expect(notes.score, label).toBeUndefined();
+              expect(after.episodesWatched, label).toBe(0);
+            }
+            if (after.status === "completed") expect(after.episodesWatched, label).toBe(12);
+          }
+        }
+      }
+    }
+    // The grid does reach pre-checked rows, so the checks above ran.
+    expect(prechecked).toBeGreaterThan(20);
   });
 });
 
@@ -242,6 +374,61 @@ describe("noteLines and itemsFrom", () => {
         unread: true,
       },
     ]);
+  });
+
+  it("reads a null from the model as not given, never as 0", () => {
+    // Two real readings (import@1 on Flash-Lite) that sent episodes_watched: null.
+    const lines = [
+      { lineNo: 3, text: "finished bocchi the rock 9/10" },
+      { lineNo: 4, text: "perfect blue 10/10" },
+    ];
+    const reported = parseReport({
+      items: [
+        {
+          line: 3,
+          said: "finished bocchi the rock 9/10",
+          score: 9,
+          title: "bocchi the rock",
+          status: "completed",
+          episodes_watched: null,
+        },
+        {
+          line: 4,
+          said: "perfect blue 10/10",
+          score: 10,
+          title: "perfect blue",
+          episodes_watched: null,
+        },
+      ],
+    });
+    const [bocchi, perfectBlue] = itemsFrom(lines, reported ?? []);
+    expect(bocchi?.notes).toEqual({ status: "completed", score: 9 });
+    expect(perfectBlue?.notes).toEqual({ score: 10 });
+
+    // So each row is the one the notes mean, not Plan to Watch with a score or Completed at 0.
+    const planned = entry({ status: "plan_to_watch", episodesWatched: 0 });
+    expect(groupMatched(bocchi?.notes ?? {}, 12, planned)).toMatchObject({
+      group: "update",
+      change: { status: "completed", episodesWatched: 12, score: 9 },
+      checked: true,
+    });
+    expect(groupMatched(perfectBlue?.notes ?? {}, 1, null)).toMatchObject({
+      group: "add",
+      change: { status: "completed", episodesWatched: 1, score: 10 },
+      checked: true,
+    });
+  });
+
+  it("doesn't reject a call over a null field, but still rejects a bad one", () => {
+    expect(
+      parseReport({
+        items: [
+          { line: 1, said: null, title: "monster", status: null, score: null, rewatching: null },
+        ],
+      }),
+    ).toEqual([{ line: 1, title: "monster" }]);
+    expect(parseReport({ items: [{ line: 1, title: "monster", score: 11 }] })).toBeNull();
+    expect(parseReport({ items: null })).toBeNull();
   });
 
   it("falls back to the whole line when the model's words aren't really in it", () => {

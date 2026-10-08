@@ -68,12 +68,58 @@ function invalidNote(error: string, notes: RequestedChange, total: number | null
 }
 
 /**
+ * A score with no status means the show was watched (the user's rule), so a show that isn't on
+ * the list, or sits at Plan to Watch on it, is marked Completed. An episode count of 0 next to
+ * the score is a misread (watched none, yet rated it), so it's dropped.
+ */
+function scoreMeansWatched(notes: RequestedChange, entry: EntryState | null): RequestedChange {
+  if (notes.score === undefined || notes.status !== undefined) return notes;
+  if (notes.episodesWatched !== undefined && notes.episodesWatched !== 0) return notes;
+  if (entry && (entry.status !== "plan_to_watch" || notes.isRewatching !== undefined)) return notes;
+  return { status: "completed", score: notes.score };
+}
+
+/**
+ * Why a reading contradicts itself, or null: a score or episodes watched for a show it would
+ * leave at Plan to Watch, or a show it says is finished short of its last episode ("finished
+ * ep 3" of 12 could mean up to ep 3). Such a row is never written from the review, so neither
+ * half is guessed.
+ */
+function contradiction(
+  notes: RequestedChange,
+  after: { status: ListStatus; episodesWatched: number },
+  total: number | null,
+): string | null {
+  if (after.status === "plan_to_watch") {
+    if (notes.score !== undefined) return "The notes say plan to watch, but also give a score.";
+    if ((notes.episodesWatched ?? 0) > 0) {
+      return "The notes say plan to watch, but also give episodes watched.";
+    }
+  }
+  const finishedAt = notes.status === "completed" ? notes.episodesWatched : undefined;
+  if (after.status === "completed" && finishedAt !== undefined) {
+    if (finishedAt === 0) return "The notes say finished, but with no episodes watched.";
+    if (total !== null && finishedAt < total) {
+      return `The notes say finished, but at ep ${String(finishedAt)} of ${String(total)}.`;
+    }
+  }
+  return null;
+}
+
+function held(malState: ListState | null, note: string): Grouped {
+  return { group: "disagree", malState, change: null, note, checked: false };
+}
+
+/**
  * Sorts a matched show into a group (the user's rules):
- * - not on the list: an add, pre-checked. A score with no status means it was watched, so it's
- *   added as Completed.
+ * - a score with no status means it was watched: a show not on the list, or on Plan to Watch on
+ *   it, is marked Completed.
+ * - not on the list: an add, pre-checked.
  * - on the list, and the notes only move it forward: an update, pre-checked.
  * - on the list, and the notes would lower progress, change a finished show, contradict the
  *   status or replace a different score: a disagreement, which keeps MAL unless the user taps.
+ * - a reading that contradicts itself (Plan to Watch with a score or episodes, finished short of
+ *   the last episode): a disagreement with only a note, which nothing writes.
  * - nothing to change: already up to date.
  */
 export function groupMatched(
@@ -88,38 +134,37 @@ export function groupMatched(
       ...(notes.episodesWatched !== undefined && { episodesWatched: notes.episodesWatched }),
       ...(notes.score !== undefined && { score: notes.score }),
     };
-    const requested: RequestedChange =
-      rest.status === undefined && rest.score !== undefined && rest.episodesWatched === undefined
-        ? { ...rest, status: "completed" }
-        : rest;
+    const requested = scoreMeansWatched(rest, null);
     const added = addChange(numEpisodes, requested);
-    if (!added.ok) {
-      return {
-        group: "disagree",
-        malState: null,
-        change: null,
-        note: invalidNote(added.error, notes, numEpisodes),
-        checked: false,
-      };
-    }
+    if (!added.ok) return held(null, invalidNote(added.error, requested, numEpisodes));
+    const after = {
+      status: added.change.status ?? "plan_to_watch",
+      episodesWatched: added.change.episodesWatched ?? 0,
+    };
+    const why = contradiction(requested, after, numEpisodes);
+    if (why) return held(null, why);
     return { group: "add", malState: null, change: added.change, note: null, checked: true };
   }
 
   const malState = stateOf(entry);
-  const normalized = normalizeChange(entry, notes);
+  const read = scoreMeansWatched(notes, entry);
+  const normalized = normalizeChange(entry, read);
   if (!normalized.ok) {
-    return {
-      group: "disagree",
-      malState,
-      change: null,
-      note: invalidNote(normalized.error, notes, entry.numEpisodes),
-      checked: false,
-    };
+    return held(malState, invalidNote(normalized.error, read, entry.numEpisodes));
   }
   const change = normalized.change;
   if (Object.keys(change).length === 0) {
     return { group: "up_to_date", malState, change: null, note: null, checked: false };
   }
+  const why = contradiction(
+    read,
+    {
+      status: change.status ?? entry.status,
+      episodesWatched: change.episodesWatched ?? entry.episodesWatched,
+    },
+    entry.numEpisodes,
+  );
+  if (why) return held(malState, why);
   const lowersProgress =
     change.episodesWatched !== undefined && change.episodesWatched < entry.episodesWatched;
   const changesFinished =

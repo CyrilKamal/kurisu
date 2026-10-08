@@ -54,18 +54,36 @@ export function noteLines(text: string): NoteLine[] {
     .slice(0, MAX_IMPORT_LINES);
 }
 
-const itemSchema = z.object({
-  line: z.coerce.number().int(),
-  said: z.string().optional(),
-  title: z.string().optional(),
-  not_a_show: z.boolean().optional(),
-  status: z.enum(MAL_LIST_STATUSES).optional(),
-  episodes_watched: z.coerce.number().int().min(0).optional(),
-  score: z.coerce.number().int().min(1).max(10).optional(),
-  rewatching: z.boolean().optional(),
-});
+/**
+ * The model sometimes sends null for a field the line doesn't give ("episodes_watched": null).
+ * That means not given: coercing it would make it 0, and a 0 is something the line never said.
+ */
+function withoutNulls(value: unknown): unknown {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return value;
+  return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== null));
+}
+
+const itemSchema = z.preprocess(
+  withoutNulls,
+  z.object({
+    line: z.coerce.number().int(),
+    said: z.string().optional(),
+    title: z.string().optional(),
+    not_a_show: z.boolean().optional(),
+    status: z.enum(MAL_LIST_STATUSES).optional(),
+    episodes_watched: z.coerce.number().int().min(0).optional(),
+    score: z.coerce.number().int().min(1).max(10).optional(),
+    rewatching: z.boolean().optional(),
+  }),
+);
 const reportArgs = z.object({ items: z.array(itemSchema) });
 type ReportedItem = z.infer<typeof itemSchema>;
+
+/** The items in a report_items call, or null if its arguments don't hold up. */
+export function parseReport(args: unknown): ReportedItem[] | null {
+  const parsed = reportArgs.safeParse(args);
+  return parsed.success ? parsed.data.items : null;
+}
 
 const REPORT_TOOL: ToolSpec = {
   name: "report_items",
@@ -182,14 +200,14 @@ async function readChunk(
         error: "unknown_tool",
       });
     }
-    const args = reportArgs.safeParse(call.arguments);
-    if (!args.success) {
+    const reported = parseReport(call.arguments);
+    if (!reported) {
       return Promise.resolve({
         result: { error: "invalid_arguments", message: "Pass items: one per show, as described." },
         error: "invalid_arguments",
       });
     }
-    state.reported = args.data.items;
+    state.reported = reported;
     return Promise.resolve({ result: { status: "ok" } });
   };
 
