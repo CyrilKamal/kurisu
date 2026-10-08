@@ -176,17 +176,21 @@ const searchArgs = z
   .object({ queries: z.array(z.string()).optional(), query: z.string().optional() })
   .transform((a) => [...(a.queries ?? []), ...(a.query ? [a.query] : [])]);
 const getEntryArgs = z.object({ anime_id: animeId });
+// Models sometimes send null for a field they mean to leave out. Null is "not given": z.coerce
+// would make it 0, which clears a score or resets progress.
+const optionalArg = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === null ? undefined : value), schema.optional());
 // Strict: a misspelled field ("Episodes_watched") is an error the model can fix, not a field
 // silently dropped from the change.
-const proposeArgs = z
+export const proposeArgs = z
   .object({
     anime_id: animeId,
-    status: z.enum(MAL_LIST_STATUSES).optional(),
-    episodes_watched: z.coerce.number().int().nonnegative().optional(),
-    episodes_delta: z.coerce.number().int().optional(),
-    score: z.coerce.number().int().min(0).max(10).optional(),
-    is_rewatching: z.boolean().optional(),
-    drop_reason: z.enum(DROP_CATEGORIES).optional(),
+    status: optionalArg(z.enum(MAL_LIST_STATUSES)),
+    episodes_watched: optionalArg(z.coerce.number().int().nonnegative()),
+    episodes_delta: optionalArg(z.coerce.number().int()),
+    score: optionalArg(z.coerce.number().int().min(0).max(10)),
+    is_rewatching: optionalArg(z.boolean()),
+    drop_reason: optionalArg(z.enum(DROP_CATEGORIES)),
   })
   .strict();
 const commitArgs = z.object({ proposal_id: z.uuid() });
