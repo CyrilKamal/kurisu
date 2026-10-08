@@ -1467,3 +1467,34 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - "Anything good on netflix?", "what should i watch on crunchyroll" and "something on hulu tonight" reach the recommender on v13 (7/7, in throwaway probes and the format example). "Any movies on netflix" doesn't (0/2), and "anything good on iqiyi?" reaches it 1/4 of the time. Both get a safe reply, with no guess and no write.
 - Next, once the credits are topped up: test v15 the same way. First the five cases above ×3 and the probes, then a full run side by side with v13.
 - `pnpm eval:recommend --agent-prompt progress-sync@N` runs the recommendation cases behind another progress prompt.
+
+## 2026-10-08 — progress-sync.v15: "gonna start X" on the list is episode 1; "any movies on Netflix?" is asking what to watch (Milestone 5)
+**Decision:** progress-sync.v15 becomes current, with two changes from v13:
+- **"Gonna start X":** "going to start X" and "gonna start X" mean Plan to Watch only when `on_your_list` is null, so the show isn't on the list. For a show on the list, Plan to Watch included, they mean episode 1, like "started X". Another session diagnosed this; Cyril approved the wording.
+- **Streaming questions:** "any movies on Netflix?" joins the examples of asking what to watch. It's one more example in the existing list, not a sentence of its own as in v14 (see "recommend.v7 for where to watch; progress-sync.v14 tried and not made current" above).
+
+**Alternatives:**
+- **Reword only the note on `search_anime` results.** That's a prompt change in effect, but `--prompt` can't compare it against v13.
+- **Reinterpret "gonna start" in `propose_update`.** That would let the server decide a write, which an earlier decision ruled out.
+- **Ship the two changes as separate versions.** That costs a second round of evals. Both went into one version, with the plan to split them if the full run regressed. It didn't.
+
+**Why:**
+- **"Gonna start X":** v13 has two lines that clash on the same phrase, and the model dropped the "isn't on their list" condition. After "gonna start clannad", "clannad" proposed Plan to Watch for a show already there: 1/10 right on v13, 6/6 on v12. That failure is safe (nothing is written), but it's wrong.
+- **Streaming questions:** on v13, "any movies on netflix" was answered by the progress agent itself ("I don't have access to Netflix catalogs") 2 of 2 times.
+
+**Consequences:**
+- **Targeted checks (Flash-Lite):**
+  - The Clannad follow-up: 10/10 right.
+  - The five cases v14 broke, 3 runs each: Wistoria, MHA and Made in Abyss 3/3 each, "gonna start clannad" 2/3, "culling game" 1/3. 0 wrong writes.
+  - Those last two run side by side, 6 runs each: v13 got 5/6 and 4/6, v15 got 4/6 and 5/6. Both cases are flaky on v13 too now. Their misses are asks, not writes.
+  - Streaming probes behind v15: "any movies on netflix" 3/3 reach the recommender (0/2 on v13), "anything good on netflix?" 3/3, and "anything good on iqiyi?" 3/3 (1/4 on v13).
+- **Full update eval, all 140 cases on Flash-Lite, side by side:**
+
+  | Prompt | Right | Wrong writes | Clarification precision | Clarification recall |
+  | --- | --- | --- | --- | --- |
+  | v13 | 129/140 | 0/120 | 62.8% | 100% |
+  | **v15** | **131/140** | **0/123** | **70.3%** | **96.3%** |
+
+  All of v15's 9 misses are cases that also fail on v13 runs ("omp 3", Mushoku Tensei, TYBW s4's newest episode, Cowboy Bebop again, Hoyuka, Future Diary and Odd Taxi, the final MHA season, "gonna start clannad", Tenjiku arc). Each misses by asking or doing nothing; none writes anything wrong. The Clannad follow-up and "culling game" passed.
+- Cost: about $1.35 of evals in all for this version.
+- **Next:** the diary's prompt change (PR 6) builds on v15.
