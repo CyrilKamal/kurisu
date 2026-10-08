@@ -616,3 +616,96 @@ export const discoveryRuns = pgTable("discovery_runs", {
   // A short error code when the last attempt failed; the earlier pool stays.
   error: text("error"),
 });
+
+export const importStatus = pgEnum("import_status", [
+  "parsing",
+  "review",
+  "running",
+  "done",
+  "undoing",
+  "undone",
+  "failed",
+]);
+// How a line of notes compares with the list: what the review screen groups it under.
+export const importGroup = pgEnum("import_group", [
+  "add",
+  "update",
+  "up_to_date",
+  "disagree",
+  "which_one",
+  "not_found",
+  "not_a_show",
+]);
+export const importItemStatus = pgEnum("import_item_status", [
+  "pending",
+  "committed",
+  "failed",
+  "skipped",
+  "undone",
+  "undo_failed",
+]);
+
+/**
+ * A list pasted from the user's notes: read by the model, matched and grouped in code, reviewed
+ * by the user, then written in the background through the single write path.
+ */
+export const imports = pgTable(
+  "imports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // The notes as pasted.
+    text: text("text").notNull(),
+    status: importStatus("status").notNull().default("parsing"),
+    // A short error code when parsing or a run failed as a whole.
+    error: text("error"),
+    // The agent run that read the notes, for the logs.
+    runId: uuid("run_id").references((): AnyPgColumn => agentRuns.id),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  },
+  (table) => [index("imports_user_created_idx").on(table.userId, table.createdAt.desc())],
+);
+
+/** One show mentioned in the notes, and what the import will do with it. */
+export const importItems = pgTable(
+  "import_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    importId: uuid("import_id")
+      .notNull()
+      .references(() => imports.id, { onDelete: "cascade" }),
+    // Order in the notes: the line, then the show's place on it.
+    lineNo: integer("line_no").notNull(),
+    position: integer("position").notNull(),
+    // The whole line, and the user's own words about this show in it.
+    line: text("line").notNull(),
+    said: text("said").notNull(),
+    // The show's name exactly as written.
+    title: text("title").notNull(),
+    // What the notes say about it, as read (before matching).
+    notes: jsonb("notes").$type<ListChange>().notNull(),
+    group: importGroup("group").notNull(),
+    // For "which one?": the shows it could be, best first.
+    candidates: integer("candidates")
+      .array()
+      .notNull()
+      .default(sql`'{}'::integer[]`),
+    animeId: integer("anime_id"),
+    // The list entry when grouped, so a run can tell if it changed since the review.
+    malState: jsonb("mal_state").$type<ListState>(),
+    // What will be written: the normalized change, or for a disagreement the notes' version.
+    change: jsonb("change").$type<ListChange>(),
+    // A short reason shown with the row, e.g. "ep 40 is past the end (28)".
+    note: text("note"),
+    checked: boolean("checked").notNull().default(false),
+    // For a disagreement: keep_mal (the default) or use_notes.
+    resolution: text("resolution"),
+    proposalId: uuid("proposal_id").references((): AnyPgColumn => proposals.id),
+    status: importItemStatus("status").notNull().default("pending"),
+    error: text("error"),
+  },
+  (table) => [index("import_items_import_idx").on(table.importId, table.lineNo, table.position)],
+);

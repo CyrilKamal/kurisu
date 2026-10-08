@@ -2,6 +2,9 @@ import fastifyCookie from "@fastify/cookie";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { CURRENT_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
+import { IMPORT_V1 } from "./agent/prompts/import.v1.js";
+import { registerImportRoutes } from "./import/routes.js";
+import { resumeImports } from "./import/service.js";
 import { airingCandidateIds, refreshAiring } from "./anilist/cache.js";
 import { refreshDiscovery } from "./recommend/discovery.js";
 import { refreshTaste } from "./taste/profile.js";
@@ -40,6 +43,8 @@ export interface BuildAppOptions {
   pushOrigins?: string[];
   /** Chat's prompt, when tests try one that isn't the app's yet. */
   prompt?: Prompt;
+  /** Pause between an import's MAL writes; tests use 0. */
+  importWriteIntervalMs?: number;
 }
 
 /** Builds the HTTP app without listening, so tests can drive it with `app.inject`. */
@@ -196,6 +201,28 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
           : options.roles.escalation,
       recommend: options.roles?.recommend ?? configuredRoles.recommend,
     },
+  });
+
+  const importDeps = {
+    db,
+    models,
+    model: options.roles?.agent ?? configuredRoles.agent,
+    prompt: IMPORT_V1,
+    catalog: (queries: string[]) => chatAniList.searchAnime(queries),
+    writes: writeDeps,
+    // MAL's limits are undocumented: about one write a second.
+    writeIntervalMs: options.importWriteIntervalMs ?? 1000,
+    log: (message: string, err?: unknown) => {
+      app.log.error({ err }, message);
+    },
+  };
+  registerImportRoutes(app, { ...importDeps, config });
+  app.addHook("onReady", async () => {
+    try {
+      await resumeImports(importDeps);
+    } catch (err) {
+      app.log.warn({ err }, "could not resume imports");
+    }
   });
 
   return app;
