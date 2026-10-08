@@ -4,7 +4,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { agentRuns, anime, changes, listEntries, proposals, users } from "../../src/db/schema.js";
-import { searchMyList } from "../../src/list/search.js";
+import { CLEAR_MARGIN, CLEAR_MATCH, searchMyList } from "../../src/list/search.js";
 import { commitProposal, createMalListWriter, type ListWriter } from "../../src/writes/commit.js";
 import { proposeUpdate, type ProposeInput } from "../../src/writes/propose.js";
 import { cancelProposal, undoChange } from "../../src/writes/undo.js";
@@ -434,6 +434,28 @@ describe("search_my_list", () => {
     expect(await clearOf(["stray dogs"])).toEqual([[920014, "only_in_progress"]]);
     expect(await clearOf(["stray dogs 5"])).toEqual([[920015, "unique"]]);
     expect(await clearOf(["Stray Dogs 4th season"])).toEqual([[920014, "unique"]]);
+  });
+
+  it("needs the query's words in the name, not only a high score", async () => {
+    await addShows([
+      { id: 46352, title: "Blue Period", status: "completed" },
+      {
+        id: 52991,
+        title: "Sousou no Frieren",
+        titleEn: "Frieren: Beyond Journey's End",
+        status: "completed",
+      },
+    ]);
+    // Perfect Blue isn't on the list; Blue Period scores above CLEAR_MATCH and nothing is close.
+    const [blue, ...rest] = await searchMyList(h.db, userId, ["perfect blue"], {
+      userText: "finished perfect blue 10/10",
+      groundIn: ["finished perfect blue 10/10"],
+    });
+    expect(blue).toMatchObject({ animeId: 46352, clear: false });
+    expect(blue?.matchScore).toBeGreaterThanOrEqual(CLEAR_MATCH);
+    expect(rest.every((c) => (blue?.matchScore ?? 0) - c.matchScore >= CLEAR_MARGIN)).toBe(true);
+    // A nickname that's part of the name still is.
+    expect(await clearOf(["frieren"])).toEqual([[52991, "unique"]]);
   });
 
   it("judges each query on its own when one search covers several shows", async () => {

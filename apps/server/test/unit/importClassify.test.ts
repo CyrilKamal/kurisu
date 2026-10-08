@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { decide, groupMatched, wordsInName } from "../../src/import/classify.js";
+import { decide, groupMatched } from "../../src/import/classify.js";
 import { itemsFrom, MAX_IMPORT_LINES, noteLines } from "../../src/import/parse.js";
 import type { SearchCandidate } from "../../src/list/search.js";
 import type { EntryState } from "../../src/writes/normalize.js";
@@ -158,16 +158,7 @@ describe("decide", () => {
   });
 });
 
-describe("wordsInName", () => {
-  it("needs every word as written in the name, season words aside", () => {
-    expect(wordsInName("frieren", "Sousou no Frieren")).toBe(true);
-    expect(wordsInName("Kusuriya", "Kusuriya no Hitorigoto")).toBe(true);
-    expect(wordsInName("jjk s2", "JJK")).toBe(true);
-    expect(wordsInName("bocchi the rock", "Bocchi the Rock!")).toBe(true);
-    expect(wordsInName("perfect blue", "Blue Period")).toBe(false);
-    expect(wordsInName("frieran", "Sousou no Frieren")).toBe(false);
-  });
-
+describe("decide and the title's words", () => {
   it("keeps a fuzzy match whose words aren't all in the name from being clear", () => {
     const blue = candidate(1, {
       clear: true,
@@ -178,6 +169,19 @@ describe("wordsInName", () => {
     expect(decide([blue], { score: 10 }, "perfect blue")).toEqual({
       kind: "several",
       candidates: [1],
+    });
+  });
+
+  it("finds a show by a close spelling of its name, as Chat does", () => {
+    const kabaneri = candidate(1, {
+      clear: true,
+      clearBy: "unique",
+      title: "Koutetsujou no Kabaneri",
+      matchedName: "Kabaneri of the Iron Fortress",
+    });
+    expect(decide([kabaneri], { episodesWatched: 7 }, "kabeneri")).toEqual({
+      kind: "found",
+      animeId: 1,
     });
   });
 });

@@ -622,6 +622,59 @@ describe("markClear", () => {
     });
   });
 
+  describe("the query's words are in the name", () => {
+    const clearFor = (pool: ScoredEntry[], query: string, message = query) =>
+      markClear(pool, [query], { userText: message, groundIn: [message] })
+        .filter((c) => c.clear)
+        .map((c) => c.animeId);
+
+    it("a fuzzy score alone doesn't make the user's words mean a show", () => {
+      // Perfect Blue isn't on the list; "perfect blue" scores 0.615 against Blue Period.
+      const blue = [
+        entry(46352, 0.615, { names: ["Blue Period", "ブルーピリオド"] }),
+        entry(49596, 0.4, { names: ["Blue Lock"] }),
+      ];
+      expect(clearFor(blue, "perfect blue", "finished perfect blue 10/10")).toEqual([]);
+      // Without the user's messages, the same.
+      expect(markClear(blue, ["perfect blue"]).some((c) => c.clear)).toBe(false);
+    });
+
+    it("keeps nicknames that are part of a name, synonyms and joined-up words", () => {
+      const kusuriya = [
+        entry(1, 0.7, { names: ["Kusuriya no Hitorigoto", "The Apothecary Diaries"] }),
+      ];
+      expect(clearFor(kusuriya, "kusuriya")).toEqual([1]);
+      const frieren = [
+        entry(52991, 0.7, { names: ["Sousou no Frieren", "Frieren: Beyond Journey's End"] }),
+      ];
+      expect(clearFor(frieren, "frieren")).toEqual([52991]);
+      expect(clearFor(frieren, "frieren beyond journeys end")).toEqual([52991]);
+      const rezero = [entry(31240, 0.7, { names: ["Re:Zero kara Hajimeru Isekai Seikatsu"] })];
+      expect(clearFor(rezero, "rezero")).toEqual([31240]);
+      const synonym = [entry(2, 0.95, { names: ["Bungou Stray Dogs", "BSD"] })];
+      expect(clearFor(synonym, "bsd")).toEqual([2]);
+    });
+
+    it("a season can be reached through another season's name", () => {
+      // "JJK" is only season 1's synonym; the number picks season 2.
+      const jjk = [
+        entry(40748, 0.9, { names: ["Jujutsu Kaisen", "JJK"] }),
+        entry(51009, 0.9, { names: ["Jujutsu Kaisen 2nd Season"] }),
+      ];
+      expect(clearFor(jjk, "jjk s2")).toEqual([51009]);
+      // A show that only resembles one of them gets nothing from it.
+      const pool = [...jjk, entry(3, 0.95, { names: ["Jujutsu Kaitei"] })];
+      expect(clearFor(pool, "jujutsu kaitei 2")).toEqual([]);
+    });
+
+    it("a close spelling counts, a different word doesn't", () => {
+      const frieren = [entry(52991, 0.8, { names: ["Sousou no Frieren"] })];
+      expect(clearFor(frieren, "frieran", "watched ep 5 of frieran")).toEqual([52991]);
+      const hyouka = [entry(12189, 0.7, { names: ["Hyouka"] })];
+      expect(clearFor(hyouka, "hoyuka", "started hoyuka")).toEqual([]);
+    });
+  });
+
   it("judges each query on its own, so one search can cover several shows", () => {
     const pool = [
       entry(1, [1, 0.3], { names: ["World Trigger"], exact: [true, false] }),

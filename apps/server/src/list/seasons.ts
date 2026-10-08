@@ -26,6 +26,18 @@ export function normalizeName(text: string): string {
     .trim();
 }
 
+/**
+ * Whether a word says which season or part, not which show: "s2", "season", "2nd", "part", "2",
+ * "second", "iii", "final".
+ */
+export function isSeasonWord(word: string): boolean {
+  return (
+    /^(?:s\d{1,2}|seasons?|part|cour|\d{1,2}(?:st|nd|rd|th)?|final)$/.test(word) ||
+    Object.hasOwn(ROMAN, word) ||
+    Object.hasOwn(ORDINAL_WORDS, word)
+  );
+}
+
 export function seasonRef(text: string): SeasonRef {
   const t = normalizeName(text)
     .replace(/\b(?:ep|eps|episode|episodes)\s+\d+\b/g, " ")

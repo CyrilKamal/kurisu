@@ -709,6 +709,32 @@ describe("matches grounded in the user's words", () => {
     expect(unsaid.outcome).toBe("needs_confirmation");
     expect(h.fakeMal.patchRequests).toHaveLength(1);
   });
+
+  it("holds a show the user's words only resemble, even when nothing else matches", async () => {
+    const BLUE_PERIOD = 46352;
+    await addShows([
+      { malId: BLUE_PERIOD, title: "Blue Period", status: "completed", episodes: 12 },
+    ]);
+    let found: ReturnType<typeof firstResult>;
+    models.script(LITE.ref, [
+      // Perfect Blue isn't on the list; "perfect blue" scores 0.6+ against "Blue Period".
+      search("perfect blue"),
+      (req) => {
+        found = firstResult(req);
+        return { toolCalls: [propose(BLUE_PERIOD, { status: "completed", score: 10 })] };
+      },
+      commitAll,
+      { text: "Confirm Blue Period." },
+    ]);
+
+    const result = await run("finished perfect blue 10/10");
+
+    expect(found).toEqual(expect.objectContaining({ anime_id: BLUE_PERIOD, clear_match: false }));
+    expect(h.fakeMal.patchRequests).toEqual([]);
+    expect(result.pending.map((p) => [p.animeId, p.confirmationReason])).toEqual([
+      [BLUE_PERIOD, "ambiguous_match"],
+    ]);
+  });
 });
 
 describe("chat API", () => {

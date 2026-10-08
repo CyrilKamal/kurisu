@@ -3,7 +3,7 @@ import { rememberShows } from "../anilist/catalog.js";
 import { MAX_SEARCH_QUERIES } from "../anilist/client.js";
 import type { Db } from "../db/client.js";
 import { searchCatalog, searchMyList, type SearchCandidate } from "../list/search.js";
-import { normalizeName } from "../list/seasons.js";
+import { wordsInName } from "../list/grounding.js";
 import {
   normalizeChange,
   type EntryState,
@@ -146,23 +146,6 @@ function progressOnly(notes: RequestedChange): boolean {
     notes.isRewatching === undefined &&
     (notes.status === undefined || notes.status === "watching" || notes.status === "completed")
   );
-}
-
-/** Words that say which season or part, not which show: "s2", "season", "2nd", "part", "2". */
-const SEASON_WORD =
-  /^(?:s\d{1,2}|season|seasons|part|cour|\d{1,2}(?:st|nd|rd|th)?|second|third|fourth|fifth|sixth|final)$/;
-
-/**
- * Whether every word the user wrote for the title is in the show's name (season words aside).
- * A fuzzy score alone isn't enough: "perfect blue" scores well against "Blue Period", but
- * "perfect" isn't in that name. A nickname that's part of the name ("frieren", "kusuriya") passes.
- */
-export function wordsInName(title: string, name: string): boolean {
-  const nameWords = new Set(normalizeName(name).split(" "));
-  return normalizeName(title)
-    .split(" ")
-    .filter((word) => word.length > 0 && !SEASON_WORD.test(word))
-    .every((word) => nameWords.has(word));
 }
 
 /**
