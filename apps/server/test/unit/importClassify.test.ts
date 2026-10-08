@@ -1,0 +1,224 @@
+import { describe, expect, it } from "vitest";
+
+import { decide, groupMatched } from "../../src/import/classify.js";
+import { itemsFrom, MAX_IMPORT_LINES, noteLines } from "../../src/import/parse.js";
+import type { SearchCandidate } from "../../src/list/search.js";
+import type { EntryState } from "../../src/writes/normalize.js";
+
+function entry(fields: Partial<EntryState> = {}): EntryState {
+  return {
+    status: "watching",
+    episodesWatched: 5,
+    numEpisodes: 12,
+    score: 0,
+    isRewatching: false,
+    ...fields,
+  };
+}
+
+describe("groupMatched: a show not on the list", () => {
+  it("is an add, pre-checked, to Plan to Watch when the notes give nothing else", () => {
+    expect(groupMatched({}, 12, null)).toEqual({
+      group: "add",
+      malState: null,
+      change: { status: "plan_to_watch" },
+      note: null,
+      checked: true,
+    });
+  });
+
+  it("adds a show with only a score as Completed (your rule)", () => {
+    expect(groupMatched({ score: 10 }, 28, null)).toMatchObject({
+      group: "add",
+      change: { status: "completed", episodesWatched: 28, score: 10 },
+      checked: true,
+    });
+  });
+
+  it("adds progress as Watching, and can't add past the last episode", () => {
+    expect(groupMatched({ episodesWatched: 3 }, 12, null).change).toEqual({
+      status: "watching",
+      episodesWatched: 3,
+    });
+    expect(groupMatched({ episodesWatched: 40 }, 28, null)).toMatchObject({
+      group: "disagree",
+      change: null,
+      note: "The notes say ep 40, but it has 28.",
+      checked: false,
+    });
+  });
+});
+
+describe("groupMatched: a show on the list", () => {
+  it("is up to date when the notes change nothing", () => {
+    expect(groupMatched({ episodesWatched: 5 }, 12, entry())).toMatchObject({
+      group: "up_to_date",
+      change: null,
+      checked: false,
+    });
+  });
+
+  it("is an update, pre-checked, when the notes only move it forward", () => {
+    expect(groupMatched({ episodesWatched: 8 }, 12, entry())).toMatchObject({
+      group: "update",
+      malState: { status: "watching", episodesWatched: 5, score: 0, isRewatching: false },
+      change: { episodesWatched: 8 },
+      checked: true,
+    });
+    expect(
+      groupMatched({ status: "completed" }, 12, entry({ status: "plan_to_watch" })),
+    ).toMatchObject({ group: "update", change: { status: "completed", episodesWatched: 12 } });
+    expect(groupMatched({ status: "watching" }, 12, entry({ status: "on_hold" })).group).toBe(
+      "update",
+    );
+    // A score where MAL has none, even on a finished show.
+    expect(
+      groupMatched({ score: 9 }, 12, entry({ status: "completed", episodesWatched: 12 })),
+    ).toMatchObject({ group: "update", change: { score: 9 } });
+  });
+
+  it("asks, keeping MAL, when the notes lower progress", () => {
+    expect(groupMatched({ episodesWatched: 3 }, 12, entry())).toMatchObject({
+      group: "disagree",
+      change: { episodesWatched: 3 },
+      checked: false,
+    });
+  });
+
+  it("asks before changing a finished show", () => {
+    const finished = entry({ status: "completed", episodesWatched: 12 });
+    expect(groupMatched({ status: "dropped" }, 12, finished).group).toBe("disagree");
+    expect(groupMatched({ isRewatching: true }, 12, finished).group).toBe("disagree");
+  });
+
+  it("asks when the notes contradict the status or the score", () => {
+    expect(groupMatched({ status: "dropped" }, 12, entry()).group).toBe("disagree");
+    expect(groupMatched({ status: "plan_to_watch" }, 12, entry()).group).toBe("disagree");
+    expect(groupMatched({ score: 6 }, 12, entry({ score: 8 })).group).toBe("disagree");
+    expect(groupMatched({ score: 8 }, 12, entry({ score: 8 })).group).toBe("up_to_date");
+  });
+
+  it("notes numbers that don't fit the show", () => {
+    expect(groupMatched({ episodesWatched: 20 }, 12, entry())).toMatchObject({
+      group: "disagree",
+      change: null,
+      note: "The notes say ep 20, but it has 12.",
+    });
+  });
+});
+
+function candidate(
+  animeId: number,
+  fields: Partial<SearchCandidate<"watching" | null>> = {},
+): SearchCandidate<"watching" | null> {
+  return {
+    animeId,
+    title: `Show ${String(animeId)}`,
+    titleEn: null,
+    mediaType: "tv",
+    numEpisodes: 12,
+    status: null,
+    episodesWatched: 0,
+    score: 0,
+    isRewatching: false,
+    airingStatus: "finished_airing",
+    matchScore: 0.9,
+    matchedName: `Show ${String(animeId)}`,
+    clear: false,
+    clearBy: null,
+    ...fields,
+  };
+}
+
+describe("decide", () => {
+  it("finds a show only when exactly one is clear", () => {
+    expect(decide([candidate(1, { clear: true, clearBy: "unique" }), candidate(2)], {})).toEqual({
+      kind: "found",
+      animeId: 1,
+    });
+    expect(decide([candidate(1), candidate(2)], {})).toEqual({
+      kind: "several",
+      candidates: [1, 2],
+    });
+    expect(decide([], {})).toEqual({ kind: "none" });
+  });
+
+  it("takes the one in progress only for forward progress", () => {
+    const inProgress = [candidate(1, { clear: true, clearBy: "only_in_progress" }), candidate(2)];
+    expect(decide(inProgress, { episodesWatched: 6 }).kind).toBe("found");
+    expect(decide(inProgress, { score: 8 }).kind).toBe("several");
+    expect(decide(inProgress, { status: "dropped" }).kind).toBe("several");
+  });
+
+  it("offers at most five", () => {
+    const many = [1, 2, 3, 4, 5, 6, 7].map((id) => candidate(id));
+    expect(decide(many, {})).toEqual({ kind: "several", candidates: [1, 2, 3, 4, 5] });
+  });
+});
+
+describe("noteLines and itemsFrom", () => {
+  it("keeps the pasted line numbers, skipping blanks", () => {
+    expect(noteLines("frieren\n\n  - jjk s2 \r\n")).toEqual([
+      { lineNo: 1, text: "frieren" },
+      { lineNo: 3, text: "- jjk s2" },
+    ]);
+    const long = Array.from({ length: MAX_IMPORT_LINES + 5 }, (_, i) => `show ${String(i)}`);
+    expect(noteLines(long.join("\n"))).toHaveLength(MAX_IMPORT_LINES);
+  });
+
+  it("splits a line's shows, keeps the user's words, and never drops a line", () => {
+    const lines = [
+      { lineNo: 1, text: "finished frieren 10/10, dropped csm at ep 5" },
+      { lineNo: 2, text: "ANIME 2024" },
+      { lineNo: 3, text: "monster" },
+    ];
+    const items = itemsFrom(lines, [
+      { line: 1, said: "finished frieren 10/10", title: "frieren", status: "completed", score: 10 },
+      {
+        line: 1,
+        said: "dropped CSM at ep 5",
+        title: "csm",
+        status: "dropped",
+        episodes_watched: 5,
+      },
+      { line: 2, not_a_show: true },
+      // Line 3 isn't reported at all.
+    ]);
+    expect(items).toEqual([
+      {
+        lineNo: 1,
+        position: 0,
+        line: lines[0]?.text,
+        said: "finished frieren 10/10",
+        title: "frieren",
+        notes: { status: "completed", score: 10 },
+      },
+      {
+        lineNo: 1,
+        position: 1,
+        line: lines[0]?.text,
+        said: "dropped CSM at ep 5",
+        title: "csm",
+        notes: { status: "dropped", episodesWatched: 5 },
+      },
+      { lineNo: 2, position: 0, line: "ANIME 2024", said: "ANIME 2024", title: null, notes: {} },
+      {
+        lineNo: 3,
+        position: 0,
+        line: "monster",
+        said: "monster",
+        title: null,
+        notes: {},
+        unread: true,
+      },
+    ]);
+  });
+
+  it("falls back to the whole line when the model's words aren't really in it", () => {
+    const [item] = itemsFrom(
+      [{ lineNo: 1, text: "the eater one" }],
+      [{ line: 1, said: "Soul Eater", title: "Soul Eater" }],
+    );
+    expect(item?.said).toBe("the eater one");
+  });
+});

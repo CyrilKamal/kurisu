@@ -54,6 +54,7 @@ The agent is a tool-calling loop where reads are free and every write goes throu
 | `propose_update` | Stage a status, episode, chapter or score change; returns a proposal ID | Writes a pending row locally |
 | `commit_update` | Apply a proposal to MAL and the mirror | Writes to MAL |
 | `get_airing_today` | New episodes for Watching shows, from AniList schedules | None |
+| `report_items` | Import only: what each pasted line says, title as written | None |
 | `recommend` | Rank backlog candidates and shows new to the user against constraints and taste memory | None |
 
 **Safe writes.** `commit_update` only accepts a proposal ID, never raw arguments. Low-confidence matches return to the user for confirmation before commit. Adding a show that isn't on the list always waits for the user's confirmation, however clear the match. Each proposal has an idempotency key, so a retried commit never double-counts episodes. Every commit is logged with the prior value for undo.

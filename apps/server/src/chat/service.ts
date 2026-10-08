@@ -515,7 +515,7 @@ export async function loadThread(
 }
 
 /** Cards for these shows: what MAL says about each, and where the user is in it, if anywhere. */
-async function loadShowCards(
+export async function loadShowCards(
   db: Db,
   userId: string,
   animeIds: number[],

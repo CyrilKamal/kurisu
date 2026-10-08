@@ -1261,3 +1261,28 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
 - The proposal sources gain `user` and `import`.
 - Import needs its own eval with your cases.
 - Every milestone after 4 is renumbered in CLAUDE.md and the design doc.
+
+## 2026-10-07 — Import: the model only reads, code matches and groups, writes run in-process (Milestone 5)
+**Decision:**
+- **Reading:** Flash-Lite (prompt `import.v1`) reads about 25 lines per call and reports each show with one tool, `report_items`: your words for it, the title exactly as written, and only the status, episodes, score or rewatching the line gives. A line it skips still becomes a row ("Couldn't read this line"), so nothing in the notes goes unseen.
+- **Matching:** code matches each title on your list, then on AniList (3 titles per request). A match is clear only when that line's own words name the show, the grounding rule from #65.
+- **Grouping:** `groupMatched` applies your rules:
+  - **add** (pre-checked; a score with no status means Completed);
+  - **update** (pre-checked; forward only: more episodes, starting or finishing a planned show, finishing or resuming one in progress, a score where MAL has none);
+  - **disagree** (lower progress, a change to a finished show, a contradicting status or score; keeps MAL unless you tap);
+  - **already up to date**, **which one?**, **couldn't find**.
+- **Writing:** an in-process background job writes the checked rows through `commitProposal` (`source: "import"`, idempotency key per row), about one a second. Your Import tap is the confirmation, adds included. It resumes after a restart.
+  - A row whose entry changed since your review (a sync, an edit) isn't written ("changed since review").
+  - Undo reverses the written rows newest first, refusing entries changed since, as History does.
+
+**Alternatives:**
+- Letting the model match and decide (its guesses would be pre-checked writes).
+- pg-boss jobs (more moving parts; a restart resume does the same here).
+- Writing rows as fast as possible (MAL's limits are undocumented).
+
+**Why:** The one thing that must never happen is a wrong pre-checked row, so everything that decides a write is in code and tested. The model only turns messy notes into structured lines.
+
+**Consequences:**
+- A 100-line paste of shows not on your list takes about a minute to match (AniList is spaced 3 s apart) and about 2 minutes to write.
+- Reading is a paid model call, so an interrupted read is marked failed rather than redone.
+- The import eval (next) measures wrong pre-checked rows.

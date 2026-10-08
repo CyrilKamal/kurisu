@@ -133,6 +133,42 @@ describe("responses match the contract", () => {
     expect(contract.changeResponseSchema.parse(removed.json()).change.kind).toBe("remove");
   });
 
+  it("the /imports endpoints", async () => {
+    const send = (method: "POST" | "PATCH" | "DELETE", url: string, payload?: object) =>
+      h.app.inject({
+        method,
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        ...(payload ? { payload: payload as Record<string, unknown> } : {}),
+      });
+    const created = await send("POST", "/imports", { text: "frieren 10/10" });
+    expect(created.statusCode).toBe(202);
+    const { id } = contract.importResponseSchema.parse(created.json()).import;
+
+    // No model in this harness: reading the notes fails, cleanly.
+    let view = contract.importResponseSchema.parse((await get(`/imports/${id}`)).json()).import;
+    for (let i = 0; i < 100 && view.status === "parsing"; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      view = contract.importResponseSchema.parse((await get(`/imports/${id}`)).json()).import;
+    }
+    expect(view.status).toBe("failed");
+    expect(
+      contract.latestImportResponseSchema.parse((await get("/imports/latest")).json()).import?.id,
+    ).toBe(id);
+
+    const run = await send("POST", `/imports/${id}/run`);
+    expect(run.statusCode).toBe(409);
+    expect(contract.importErrorResponseSchema.parse(run.json()).error).toBe("not_ready");
+    const patch = await send("PATCH", `/imports/${id}/items/${crypto.randomUUID()}`, {
+      checked: true,
+    });
+    expect(contract.importErrorResponseSchema.parse(patch.json()).error).toBe("not_ready");
+    const undo = await send("POST", `/imports/${id}/undo`);
+    expect(contract.importErrorResponseSchema.parse(undo.json()).error).toBe("not_ready");
+    expect((await send("DELETE", `/imports/${id}`)).statusCode).toBe(204);
+  });
+
   it("POST /sync success", async () => {
     await skipCooldown();
     const res = await postSync();
