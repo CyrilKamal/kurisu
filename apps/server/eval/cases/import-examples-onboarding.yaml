@@ -1,0 +1,16 @@
+# A format example for onboarding from notes alone (an empty list).
+snapshot: empty
+cases:
+  - id: import-example-onboarding
+    tags: [example, onboarding]
+    notes: |
+      perfect blue 10/10
+      mushishi
+    expect:
+      - line: 1
+        group: add
+        anime: PERFECT BLUE
+        change: { status: completed, score: 10 }
+      - line: 2
+        group: which_one
+        anime: Mushishi

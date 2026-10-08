@@ -1,0 +1,38 @@
+# Format examples for import cases (see eval/README.md, "Import cases").
+# The real cases are yours, in their own import-*.yaml files.
+snapshot: my-list
+cases:
+  - id: import-example-merge
+    tags: [example, merge]
+    notes: |
+      my anime notes
+      kusuriya ep 10
+      finished bocchi the rock 9/10
+      perfect blue 10/10
+    expect:
+      - line: 2
+        group: update
+        anime: Kusuriya no Hitorigoto
+        change: { episodes_watched: 10 }
+      - line: 3
+        group: update
+        anime: Bocchi the Rock!
+        change: { status: completed, score: 9 }
+      - line: 4
+        group: add
+        anime: PERFECT BLUE
+        change: { status: completed, score: 10 }
+
+  - id: import-example-disagree
+    tags: [example, disagree]
+    notes: |
+      dropped cowboy bebop at ep 5, want to watch monster
+    expect:
+      # Cowboy Bebop is completed on the list: changing a finished show waits for a tap.
+      - line: 1
+        group: disagree
+        anime: Cowboy Bebop
+        change: { status: dropped, episodes_watched: 5 }
+      - line: 1
+        group: up_to_date
+        anime: Monster

@@ -348,3 +348,76 @@ pnpm eval:recommend --model gemini:gemini-3.5-flash-lite   # try another recomme
 ```
 
 A case costs about 1¢ on the paid tier, and takes 10 to 15 seconds.
+
+## Import cases
+
+Import cases check the "Import from your notes" flow. They live in their own files, named `import-<anything>.yaml`, and run with `pnpm eval:import`. Each case runs the app's own import code:
+1. The model reads the notes.
+2. Code matches each show on the snapshot's list, then in the frozen AniList catalog.
+3. Code groups each row, as the review screen would show it.
+
+Nothing is written. Each row is compared with what you expect.
+
+```yaml
+snapshot: my-list        # or "empty", for onboarding from notes alone
+cases:
+  - id: import-mixed-list
+    tags: [merge]
+    notes: |
+      2024 watchlist
+      kusuriya ep 10
+      finished bocchi 9/10, dropped cowboy bebop at ep 5
+      perfect blue 10/10
+    expect:
+      - line: 2
+        group: update
+        anime: Kusuriya no Hitorigoto
+        change: { episodes_watched: 10 }
+      - line: 3
+        group: update
+        anime: Bocchi the Rock!
+      - line: 3
+        group: disagree
+        anime: Cowboy Bebop
+      - line: 4
+        group: add
+        anime: PERFECT BLUE
+        change: { status: completed, score: 10 }
+```
+
+- **`notes`:** the text as you'd paste it. Lines count from 1, blank lines included.
+- **`expect`:** one row per show the notes mention, in order: by line, then by place on the line ("finished X, dropped Y" is two rows on one line). **A line you leave out should come back as not a show** (a header like "2024 watchlist").
+- **`group`:**
+  - `add`: not on the list, pre-checked;
+  - `update`: forward only, pre-checked;
+  - `up_to_date`;
+  - `disagree`: lower progress, a finished show, a contradicting status or score; keeps MAL unless tapped;
+  - `which_one`: several shows fit;
+  - `not_found`;
+  - `not_a_show`.
+- **`anime`:** the show, needed for `add`, `update`, `up_to_date` and `disagree`. Use a title from the snapshot or the frozen catalog, or a MAL id. For `which_one` it's optional: the right show must then be among the choices. For a show that isn't on the list, freeze its search first: `pnpm eval:catalog "<title as you'd write it>"`.
+- **`change`:** optional, the fields the row should write: `status`, `episodes_watched`, `score`, `is_rewatching`. Only the fields you give are checked.
+
+**What counts as right:** every row's group, show and given fields match, and no extra rows.
+
+**What the report shows:**
+- **Wrong pre-checked rows**, the number that matters most: rows one Import tap would have written wrongly. It must be 0.
+- rows and cases right;
+- precision and recall of the "?" rows (which one, disagree);
+- latency and cost (about 0.05¢ a case on Flash-Lite).
+
+### Checklist (yours to write)
+
+- [ ] notes in your own style: bullets, numbering, commas, "eps", "/10", typos
+- [ ] several shows on one line
+- [ ] headers, dates and blank lines between shows
+- [ ] nicknames ("jjk s2", "aot", "kusuriya") and a vague one that fits several shows
+- [ ] progress ahead of MAL (an update) and behind it (a disagreement)
+- [ ] a finished show the notes call dropped or watching
+- [ ] a score where MAL has none, and one that differs
+- [ ] "want to watch" for a show already on the list
+- [ ] shows not on the list, with and without a status or score
+- [ ] onboarding from an empty list (`snapshot: empty`)
+- [ ] a title that only looks like another show's ("perfect blue" vs "Blue Period")
+
+`cases/import-examples.yaml` and `cases/import-examples-onboarding.yaml` show the format with three examples.

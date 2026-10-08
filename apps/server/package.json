@@ -21,6 +21,7 @@
     "eval:airing": "tsx eval/src/cli/exportAiring.ts",
     "eval:catalog": "tsx eval/src/cli/exportCatalog.ts",
     "eval:recommend": "tsx eval/src/cli/recommend.ts",
+    "eval:import": "tsx eval/src/cli/import.ts",
     "eval:recommend-data": "tsx eval/src/cli/exportRecommendData.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",

@@ -1286,3 +1286,16 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
 - A 100-line paste of shows not on your list takes about a minute to match (AniList is spaced 3 s apart) and about 2 minutes to write.
 - Reading is a paid model call, so an interrupted read is marked failed rather than redone.
 - The import eval (next) measures wrong pre-checked rows.
+
+## 2026-10-07 — Import eval, and a clear import match needs the title's words in the show's name (Milestone 5)
+**Decision:**
+- **The eval:** `pnpm eval:import` runs import cases (`eval/cases/import-*.yaml`: the notes, plus the expected group, show and change fields per row) through the app's own `prepareImport`, against a list snapshot or an empty one, with AniList frozen. Its first metric is **wrong pre-checked rows**: rows one Import tap would have written wrongly.
+- **The fix it found:** in import, a match is clear only if every word of the title as written (season words aside) is in the matched show's name, as well as passing the search's clear-match rule.
+
+**Alternatives:** Raising the fuzzy threshold for everything, which hurts nicknames in Chat. Asking for every non-exact match, which would mean many more taps.
+
+**Why:** The first eval run caught "perfect blue 10/10" pre-checked as a score of 10 for Blue Period, which is on the list and Perfect Blue isn't. Its word similarity, 0.615, passes the 0.6 bar for a clear match. Notes, unlike Chat messages, are full of shows that aren't on the list, so a lone fuzzy match there isn't evidence. Nicknames that are part of a name ("frieren", "kusuriya") still pass.
+
+**Consequences:**
+- A typo or a different spelling becomes a "?" row instead of a match.
+- Chat's search has the same loose match. That's tracked as a separate task, since changing it needs the full update eval.

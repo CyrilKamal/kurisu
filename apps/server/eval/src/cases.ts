@@ -21,6 +21,8 @@ import { loadSnapshot, TitleIndex, type Snapshot } from "./snapshot.js";
 export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
 /** Recommendation cases have their own format and runner (recommendCases.ts). */
 export const RECOMMEND_FILE = /^recommend-.*\.ya?ml$/;
+/** Import cases too (importCases.ts). */
+export const IMPORT_FILE = /^import-.*\.ya?ml$/;
 
 const expectedWriteSchema = z
   .object({
@@ -119,7 +121,7 @@ export function loadCases(
   catalog: CatalogFreeze | null = loadCatalog(),
 ): LoadResult {
   const files = readdirSync(casesDir)
-    .filter((f) => /\.(ya?ml|txt)$/.test(f) && !RECOMMEND_FILE.test(f))
+    .filter((f) => /\.(ya?ml|txt)$/.test(f) && !RECOMMEND_FILE.test(f) && !IMPORT_FILE.test(f))
     .sort();
   const result: LoadResult = { cases: [], errors: [], warnings: [] };
   const seenIds = new Map<string, string>();

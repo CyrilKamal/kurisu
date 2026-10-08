@@ -3,6 +3,7 @@ import { rememberShows } from "../anilist/catalog.js";
 import { MAX_SEARCH_QUERIES } from "../anilist/client.js";
 import type { Db } from "../db/client.js";
 import { searchCatalog, searchMyList, type SearchCandidate } from "../list/search.js";
+import { normalizeName } from "../list/seasons.js";
 import {
   normalizeChange,
   type EntryState,
@@ -147,14 +148,36 @@ function progressOnly(notes: RequestedChange): boolean {
   );
 }
 
-/** A match from search results: clear only when the user's words name the show. */
+/** Words that say which season or part, not which show: "s2", "season", "2nd", "part", "2". */
+const SEASON_WORD =
+  /^(?:s\d{1,2}|season|seasons|part|cour|\d{1,2}(?:st|nd|rd|th)?|second|third|fourth|fifth|sixth|final)$/;
+
+/**
+ * Whether every word the user wrote for the title is in the show's name (season words aside).
+ * A fuzzy score alone isn't enough: "perfect blue" scores well against "Blue Period", but
+ * "perfect" isn't in that name. A nickname that's part of the name ("frieren", "kusuriya") passes.
+ */
+export function wordsInName(title: string, name: string): boolean {
+  const nameWords = new Set(normalizeName(name).split(" "));
+  return normalizeName(title)
+    .split(" ")
+    .filter((word) => word.length > 0 && !SEASON_WORD.test(word))
+    .every((word) => nameWords.has(word));
+}
+
+/**
+ * A match from search results: clear only when the search's clear-match rule says so (grounded
+ * in the user's words), and every word of the title as written is in the matched name.
+ */
 export function decide(
   candidates: SearchCandidate<ListStatus | null>[],
   notes: RequestedChange,
+  title: string,
 ): Match {
   const clear = candidates.filter(
     (c) =>
       c.clear &&
+      wordsInName(title, c.matchedName) &&
       (c.clearBy === "unique" || (c.clearBy === "only_in_progress" && progressOnly(notes))),
   );
   const [only] = clear;
@@ -182,7 +205,7 @@ export async function matchItems(
     if (!item.title) continue;
     const words = { userText: item.said, groundIn: [item.said] };
     const onList = await searchMyList(db, userId, [item.title], { limit: CANDIDATES, ...words });
-    const match = decide(onList, item.notes);
+    const match = decide(onList, item.notes, item.title);
     matches[i] = match;
     if (match.kind !== "found") unresolved.push(i);
   }
@@ -216,7 +239,7 @@ export async function matchItems(
           sideStoriesDontCount: true,
         },
       );
-      matches[i] = decide(candidates, item.notes);
+      matches[i] = decide(candidates, item.notes, item.title);
     }
   }
   return matches;

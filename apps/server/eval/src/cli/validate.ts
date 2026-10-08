@@ -6,6 +6,8 @@
  *   pnpm eval:validate --verbose  also prints each case's expected change after normalization
  */
 import { loadCases, type Problem } from "../cases.js";
+import { loadCatalog } from "../catalog.js";
+import { loadImportCases } from "../importCases.js";
 import { loadRecommendCases } from "../recommendCases.js";
 import { loadDetails, loadDiscovery } from "../recommendData.js";
 
@@ -14,6 +16,8 @@ const { cases, errors, warnings } = loadCases();
 const recommend = loadRecommendCases(loadDetails(), loadDiscovery());
 errors.push(...recommend.errors);
 warnings.push(...recommend.warnings);
+const imported = loadImportCases(loadCatalog());
+errors.push(...imported.errors);
 
 const where = (p: Problem) =>
   `${p.file}${p.line !== undefined ? `:${String(p.line)}` : ""}${p.caseId ? ` [${p.caseId}]` : ""}`;
@@ -66,7 +70,18 @@ if (verbose) {
 
 const byFile = new Map<string, number>();
 const byTag = new Map<string, number>();
-for (const { file, case: c } of [...cases, ...recommend.cases]) {
+if (verbose) {
+  for (const { case: c, rows } of imported.cases) {
+    const summary = rows
+      .map(
+        (r) => `${String(r.line)}:${r.group}${r.animeId === null ? "" : ` ${String(r.animeId)}`}`,
+      )
+      .join(", ");
+    console.log(`${c.id.padEnd(28)} import: ${summary}`);
+  }
+}
+
+for (const { file, case: c } of [...cases, ...recommend.cases, ...imported.cases]) {
   byFile.set(file, (byFile.get(file) ?? 0) + 1);
   for (const tag of c.tags) byTag.set(tag, (byTag.get(tag) ?? 0) + 1);
 }
@@ -77,7 +92,7 @@ const list = (m: Map<string, number>) =>
     .join(", ");
 
 console.log(
-  `\n${String(cases.length + recommend.cases.length)} valid cases${byFile.size ? ` (${list(byFile)})` : ""}`,
+  `\n${String(cases.length + recommend.cases.length + imported.cases.length)} valid cases${byFile.size ? ` (${list(byFile)})` : ""}`,
 );
 if (byTag.size) console.log(`tags: ${list(byTag)}`);
 console.log(`${String(errors.length)} errors, ${String(warnings.length)} warnings`);

@@ -144,53 +144,72 @@ export async function startImport(deps: ImportDeps, userId: string, text: string
   return row.id;
 }
 
+/** A review row, before it's saved under an import. */
+export type ReviewRow = Omit<typeof importItems.$inferInsert, "importId">;
+
+/**
+ * Reads the notes and turns them into review rows: the model reads each line, code matches the
+ * titles and groups each show. Null when the notes couldn't be read. The eval runs exactly this.
+ */
+export async function prepareImport(
+  deps: Pick<ImportDeps, "db" | "models" | "model" | "prompt" | "catalog">,
+  userId: string,
+  text: string,
+): Promise<ReviewRow[] | null> {
+  const { db } = deps;
+  const items = await readNotes(deps, userId, noteLines(text));
+  if (!items) return null;
+  const matches = await matchItems({ db, userId, catalog: deps.catalog }, items);
+  const rows: ReviewRow[] = [];
+  for (const [i, item] of items.entries()) {
+    const match = matches[i] ?? { kind: "none" as const };
+    const base = {
+      lineNo: item.lineNo,
+      position: item.position,
+      line: item.line,
+      said: item.said,
+      title: item.title ?? "",
+      notes: item.notes,
+    };
+    if (!item.title) {
+      rows.push({
+        ...base,
+        group: item.unread ? "not_found" : "not_a_show",
+        note: item.unread ? "Couldn't read this line." : null,
+      });
+    } else if (match.kind === "none") {
+      rows.push({ ...base, group: "not_found" });
+    } else if (match.kind === "several") {
+      rows.push({ ...base, group: "which_one", candidates: match.candidates });
+    } else {
+      const entry = await entryOf(db, userId, match.animeId);
+      const grouped = groupMatched(
+        item.notes,
+        entry?.numEpisodes ?? (await episodesOf(db, match.animeId)),
+        entry,
+      );
+      rows.push({
+        ...base,
+        animeId: match.animeId,
+        ...grouped,
+        resolution: grouped.group === "disagree" && grouped.change ? "keep_mal" : null,
+      });
+    }
+  }
+  return rows;
+}
+
 async function parse(deps: ImportDeps, userId: string, importId: string, text: string) {
   const { db } = deps;
   try {
-    const items = await readNotes(deps, userId, noteLines(text));
-    if (!items) {
+    const rows = await prepareImport(deps, userId, text);
+    if (!rows) {
       await setStatus(db, importId, "failed", "parse_failed");
       return;
     }
-    const matches = await matchItems({ db, userId, catalog: deps.catalog }, items);
-    const rows: (typeof importItems.$inferInsert)[] = [];
-    for (const [i, item] of items.entries()) {
-      const match = matches[i] ?? { kind: "none" as const };
-      const base = {
-        importId,
-        lineNo: item.lineNo,
-        position: item.position,
-        line: item.line,
-        said: item.said,
-        title: item.title ?? "",
-        notes: item.notes,
-      };
-      if (!item.title) {
-        rows.push({
-          ...base,
-          group: item.unread ? "not_found" : "not_a_show",
-          note: item.unread ? "Couldn't read this line." : null,
-        });
-      } else if (match.kind === "none") {
-        rows.push({ ...base, group: "not_found" });
-      } else if (match.kind === "several") {
-        rows.push({ ...base, group: "which_one", candidates: match.candidates });
-      } else {
-        const entry = await entryOf(db, userId, match.animeId);
-        const grouped = groupMatched(
-          item.notes,
-          entry?.numEpisodes ?? (await episodesOf(db, match.animeId)),
-          entry,
-        );
-        rows.push({
-          ...base,
-          animeId: match.animeId,
-          ...grouped,
-          resolution: grouped.group === "disagree" && grouped.change ? "keep_mal" : null,
-        });
-      }
+    if (rows.length > 0) {
+      await db.insert(importItems).values(rows.map((row) => ({ ...row, importId })));
     }
-    if (rows.length > 0) await db.insert(importItems).values(rows);
     await setStatus(db, importId, "review");
   } catch (err) {
     deps.log?.("import: reading the notes failed", err);
