@@ -1199,3 +1199,18 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
 - Two tests changed:
   - A show neither a brief nor the reply names is now held as "Not sure this is the show you meant" instead of "Your brief didn't list this episode".
   - "watched it" two messages after a brief no longer reaches a show nobody named.
+
+## 2026-10-07 — Time grace in code, queued shows apart from started ones; recommend.v4 (Milestone 4)
+**Decision:**
+- **Time:** shows that fit the time come first. Only when fewer than 3 fit does `find_candidates` add shows up to 5 minutes over (`TIME_GRACE_MINUTES`), after the ones that fit and marked with how far over they run. Prompt `recommend.v4` never searches with more minutes than you gave, and says when a pick runs a little long. If nothing fits even then, it says so and picks nothing.
+- **Queued shows:** Watching or On hold at episode 0 is a new pool, `queued` ("queued on your Watching list, not started yet"), apart from `in_progress`, which now means started. "Continue what I started" searches `in_progress` only.
+- **Plan to Watch:** "From my plan to watch" means Plan to Watch only; "from my list" covers Plan to Watch, started and queued.
+
+**Alternatives:**
+- Letting the model loosen the time freely (v3), which turned "10-15 mins" into 25-minute episodes.
+- Never going over the time, which loses the 16-minute show for "10-15 mins".
+- Leaving ep-0 Watching shows in progress.
+
+**Why:** Your rules, from your recommendation cases: a time limit comes first, with a few minutes of grace for intros and outros; and Watching at episode 0 is your queue, not something you started. The grace sits in code, so the model can't stretch it further.
+
+**Consequences:** On your 25 cases, v3 got 23/25 and v4 gets 25/25: every pick valid and within your labels, genre fit 30/30, median 11.6 s, about 1.2¢ a case.

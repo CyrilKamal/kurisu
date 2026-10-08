@@ -29,10 +29,13 @@ const noTaste: TasteSignals = { genres: new Map(), dropCategories: new Map() };
 const ids = (rows: { animeId: number }[]) => rows.map((r) => r.animeId);
 
 describe("poolOf", () => {
-  it("is Plan to Watch or in progress, never completed, dropped or unaired", () => {
+  it("is Plan to Watch, in progress or queued, never completed, dropped or unaired", () => {
     expect(poolOf(row(1, { status: "plan_to_watch" }))).toBe("plan_to_watch");
-    expect(poolOf(row(1, { status: "watching" }))).toBe("in_progress");
-    expect(poolOf(row(1, { status: "on_hold" }))).toBe("in_progress");
+    expect(poolOf(row(1, { status: "watching", episodesWatched: 3 }))).toBe("in_progress");
+    expect(poolOf(row(1, { status: "on_hold", episodesWatched: 3 }))).toBe("in_progress");
+    // The user queues shows on Watching at episode 0: not started.
+    expect(poolOf(row(1, { status: "watching" }))).toBe("queued");
+    expect(poolOf(row(1, { status: "on_hold" }))).toBe("queued");
     expect(poolOf(row(1, { status: "completed", isRewatching: true }))).toBe("in_progress");
     expect(poolOf(row(1, { status: "completed" }))).toBeNull();
     expect(poolOf(row(1, { status: "dropped" }))).toBeNull();
@@ -138,5 +141,49 @@ describe("rankCandidates", () => {
     const tired: TasteSignals = { genres: new Map(), dropCategories: new Map([["too_long", 2]]) };
     expect(ids(rankCandidates(long, noTaste, {}))).toEqual([1, 2]);
     expect(ids(rankCandidates(long, tired, {}))).toEqual([2, 1]);
+  });
+});
+
+describe("queued shows", () => {
+  it("say they haven't been started, and stay out of in-progress searches", () => {
+    const rows = [
+      row(1, { status: "watching", episodesWatched: 0 }),
+      row(2, { status: "watching", episodesWatched: 4 }),
+    ];
+    const [queued] = rankCandidates(rows, noTaste, { from: ["queued"] });
+    expect(queued?.animeId).toBe(1);
+    expect(queued?.facts).toContain("queued on your Watching list, not started yet");
+    expect(queued?.facts.join(" ")).not.toContain("you're on ep");
+    expect(ids(rankCandidates(rows, noTaste, { from: ["in_progress"] }))).toEqual([2]);
+    expect(ids(rankCandidates(rows, noTaste, {})).sort()).toEqual([1, 2]);
+  });
+});
+
+describe("time grace", () => {
+  const rows = [
+    row(1, { episodeMinutes: 16, malMean: 7 }),
+    row(2, { episodeMinutes: 18, malMean: 7 }),
+    row(3, { episodeMinutes: 24, malMean: 9 }),
+    row(4, { episodeMinutes: 26, malMean: 9 }),
+  ];
+
+  it("adds shows up to 5 minutes over, after the ones that fit, when too few fit", () => {
+    const ranked = rankCandidates(rows, noTaste, { availableMinutes: 20 });
+    // The better-rated 24-minute show still comes after the ones that fit; 26 is too long.
+    expect(ids(ranked)).toEqual([1, 2, 3]);
+    expect(ranked[2]?.minutesOver).toBe(4);
+    expect(ranked[2]?.facts).toContain("runs 4 min over your time (24 min episodes)");
+    expect(ranked[0]).toMatchObject({ minutesOver: null, episodesThatFit: 1 });
+  });
+
+  it("leaves them out when enough shows fit", () => {
+    const enough = [...rows, row(5, { episodeMinutes: 12 })];
+    expect(ids(rankCandidates(enough, noTaste, { availableMinutes: 20 })).sort()).toEqual([
+      1, 2, 5,
+    ]);
+  });
+
+  it("offers only shows in the grace when none fit", () => {
+    expect(ids(rankCandidates(rows, noTaste, { availableMinutes: 15 }))).toEqual([1, 2]);
   });
 });

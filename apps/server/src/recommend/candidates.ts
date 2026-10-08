@@ -7,9 +7,21 @@ import { NOT_YET_AIRED } from "../mal/client.js";
 /** MAL's media types, for "a movie" or "something short like an OVA". */
 export const MEDIA_TYPES = ["tv", "movie", "ova", "ona", "special", "tv_special", "music"] as const;
 
-/** The user's Plan to Watch, their shows in progress, or shows new to them (from AniList). */
-export type Pool = "plan_to_watch" | "in_progress" | "new";
-export const POOLS = ["plan_to_watch", "in_progress", "new"] as const;
+/**
+ * The user's Plan to Watch, shows they've started, shows queued on Watching (or On hold) but not
+ * started, or shows new to them (from AniList). The user queues shows on Watching at episode 0,
+ * so those aren't "in progress" (their rule).
+ */
+export type Pool = "plan_to_watch" | "in_progress" | "queued" | "new";
+export const POOLS = ["plan_to_watch", "in_progress", "queued", "new"] as const;
+
+/**
+ * When fewer shows than a full set of picks fit the time given, shows whose episodes run up to
+ * this many minutes over are offered too, after the ones that fit (the user's rule: intros and
+ * outros make a few minutes' difference).
+ */
+export const TIME_GRACE_MINUTES = 5;
+const FULL_SET_OF_PICKS = 3;
 
 /** What the user asked for, as the recommendation agent read it from their message. */
 export interface Constraints {
@@ -22,7 +34,7 @@ export interface Constraints {
   /** None of these genres. */
   genresNone?: string[];
   mediaTypes?: string[];
-  /** Where to look; all three by default. "Continue something" is in_progress only. */
+  /** Where to look; all four by default. "Continue something" is in_progress only. */
   from?: Pool[];
 }
 
@@ -60,6 +72,8 @@ export interface Candidate extends CandidateRow {
   episodesLeft: number | null;
   /** How many episodes fit in the available minutes, when given. */
   episodesThatFit: number | null;
+  /** How far each episode runs over the available minutes, for a show offered in the grace. */
+  minutesOver: number | null;
   score: number;
   /** Plain facts behind the ranking, for the model to explain picks with. */
   facts: string[];
@@ -73,14 +87,17 @@ export interface TasteSignals {
 }
 
 /**
- * Which pool a show is in: Plan to Watch, in progress (watching, on hold, rewatching), or new to
- * the user. Never completed, dropped, unaired, or a sequel to a show they haven't completed.
+ * Which pool a show is in: Plan to Watch, in progress (started: watching or on hold past episode
+ * 0, or rewatching), queued (watching or on hold at episode 0), or new to the user. Never
+ * completed, dropped, unaired, or a sequel to a show they haven't completed.
  */
 export function poolOf(row: CandidateRow): Pool | null {
   if (row.airingStatus === NOT_YET_AIRED) return null;
   if (row.status === null) return row.prequelsDone === false ? null : "new";
   if (row.status === "plan_to_watch") return "plan_to_watch";
-  if (row.status === "watching" || row.status === "on_hold") return "in_progress";
+  if (row.status === "watching" || row.status === "on_hold") {
+    return row.episodesWatched > 0 ? "in_progress" : "queued";
+  }
   if (row.status === "completed" && row.isRewatching) return "in_progress";
   return null;
 }
@@ -99,9 +116,11 @@ const MAX_DISCOVERY_STRENGTH = 2;
 /**
  * Filters the user's entries and the shows new to them to the ones that meet every constraint and
  * ranks them: taste fit (their genre affinities), the community score, a boost for their own
- * list, a nudge for shows already under way or airing, how strongly AniList points at a new show,
- * and penalties for genres they drop and, if they've dropped shows for being too long, long
- * shows. Pure, so the ranking is unit-tested apart from the database.
+ * list, a nudge for shows already under way, queued or airing, how strongly AniList points at a
+ * new show, and penalties for genres they drop and, if they've dropped shows for being too long,
+ * long shows. Shows that fit the time come first; when fewer than a full set of picks fit, shows
+ * up to TIME_GRACE_MINUTES over follow them. Pure, so the ranking is unit-tested apart from the
+ * database.
  */
 export function rankCandidates(
   rows: CandidateRow[],
@@ -115,6 +134,7 @@ export function rankCandidates(
   const tooLongDrops = taste.dropCategories.get("too_long") ?? 0;
 
   const candidates: Candidate[] = [];
+  const overTime: Candidate[] = [];
   for (const row of rows) {
     const pool = poolOf(row);
     if (!pool || !pools.has(pool)) continue;
@@ -129,11 +149,16 @@ export function rankCandidates(
       if (episodesLeft === null || episodesLeft > constraints.maxEpisodesLeft) continue;
     }
     let episodesThatFit: number | null = null;
+    let minutesOver: number | null = null;
     if (constraints.availableMinutes !== undefined) {
-      if (row.episodeMinutes === null || row.episodeMinutes > constraints.availableMinutes)
-        continue;
-      episodesThatFit = Math.floor(constraints.availableMinutes / row.episodeMinutes);
-      if (episodesLeft !== null) episodesThatFit = Math.min(episodesThatFit, episodesLeft);
+      if (row.episodeMinutes === null) continue;
+      if (row.episodeMinutes > constraints.availableMinutes + TIME_GRACE_MINUTES) continue;
+      if (row.episodeMinutes > constraints.availableMinutes) {
+        minutesOver = row.episodeMinutes - constraints.availableMinutes;
+      } else {
+        episodesThatFit = Math.floor(constraints.availableMinutes / row.episodeMinutes);
+        if (episodesLeft !== null) episodesThatFit = Math.min(episodesThatFit, episodesLeft);
+      }
     }
 
     const facts: string[] = [];
@@ -164,9 +189,13 @@ export function rankCandidates(
       }
     } else if (pool === "plan_to_watch") {
       facts.push("on your Plan to Watch");
+    } else if (pool === "queued") {
+      progressBoost += 0.3;
+      const list = row.status === "on_hold" ? "On hold" : "Watching";
+      facts.push(`queued on your ${list} list, not started yet`);
     }
     if (pool === "in_progress") {
-      progressBoost += row.status === "watching" && row.episodesWatched > 0 ? 0.6 : 0.3;
+      progressBoost += row.status === "watching" ? 0.6 : 0.3;
       facts.push(
         row.numEpisodes
           ? `you're on ep ${String(row.episodesWatched)} of ${String(row.numEpisodes)}`
@@ -191,16 +220,28 @@ export function rankCandidates(
       );
     }
 
-    candidates.push({
+    if (minutesOver !== null) {
+      const unit = row.mediaType === "movie" ? "min" : "min episodes";
+      facts.push(
+        `runs ${String(minutesOver)} min over your time (${String(row.episodeMinutes)} ${unit})`,
+      );
+    }
+
+    (minutesOver === null ? candidates : overTime).push({
       ...row,
       pool,
       episodesLeft,
       episodesThatFit,
+      minutesOver,
       score: round(tasteFit + quality + progressBoost + dropPenalty + lengthPenalty),
       facts,
     });
   }
-  return candidates.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
+  const best = (a: Candidate, b: Candidate) => b.score - a.score || a.title.localeCompare(b.title);
+  candidates.sort(best);
+  // Shows that run over the time only fill in when too few fit.
+  if (candidates.length >= FULL_SET_OF_PICKS) return candidates;
+  return [...candidates, ...overTime.sort(best)];
 }
 
 /** The user's Plan to Watch and in-progress entries with their details. */

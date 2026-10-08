@@ -6,6 +6,7 @@
  *   pnpm eval:recommend                         every case, on the models in config/models.json
  *   pnpm eval:recommend --case rec-movie-tonight --limit 5
  *   pnpm eval:recommend --model gemini:gemini-3.5-flash-lite   a different recommender model
+ *   pnpm eval:recommend --prompt recommend@3                 compare another recommender prompt
  *
  * Needs Docker (a throwaway Postgres) and the frozen data from pnpm eval:recommend-data. Taste is
  * neutral here (the snapshot has no scores), so this measures following the request, not taste.
@@ -17,7 +18,11 @@ import { parseArgs } from "node:util";
 
 import { and, asc, eq, inArray } from "drizzle-orm";
 
-import { CURRENT_PROMPT, RECOMMEND_PROMPT } from "../../../src/agent/prompts/index.js";
+import {
+  CURRENT_PROMPT,
+  RECOMMEND_PROMPT as DEFAULT_RECOMMEND_PROMPT,
+  RECOMMEND_PROMPTS,
+} from "../../../src/agent/prompts/index.js";
 import { runAgent } from "../../../src/agent/runAgent.js";
 import { agentRunSteps, anime, listEntries } from "../../../src/db/schema.js";
 import { loadLocalEnvFile } from "../../../src/env.js";
@@ -57,8 +62,18 @@ const { values } = parseArgs({
     file: { type: "string", multiple: true },
     limit: { type: "string" },
     rpm: { type: "string" },
+    prompt: { type: "string" },
   },
 });
+
+const recommendVersion = values.prompt ?? DEFAULT_RECOMMEND_PROMPT.version;
+if (!Object.hasOwn(RECOMMEND_PROMPTS, recommendVersion)) {
+  console.error(
+    `Unknown prompt "${recommendVersion}". Known: ${Object.keys(RECOMMEND_PROMPTS).join(", ")}`,
+  );
+  process.exit(1);
+}
+const RECOMMEND_PROMPT = RECOMMEND_PROMPTS[recommendVersion as keyof typeof RECOMMEND_PROMPTS];
 
 loadLocalEnvFile();
 const modelsFile = loadModelsFile();
