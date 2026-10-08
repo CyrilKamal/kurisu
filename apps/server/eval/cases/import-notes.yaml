@@ -1,0 +1,250 @@
+# Import cases, written by Claude at Cyril's request on 2026-10-08 (he waived CLAUDE.md's
+# "you write the eval cases" rule for import cases only). Each expected row follows his import
+# rules and the my-list snapshot's state on Oct 3, not what the app produced:
+# - not on the list: an add (Plan to Watch with no info; Completed with a score and no status;
+#   Watching with episodes); plan to watch with a score, or finished short of the end, is held.
+# - on the list: forward moves are updates; lower progress, a non-forward status, or any status
+#   or episode change to a finished show is a disagreement; a score where MAL has none is an
+#   update (the snapshot has no scores); a Plan to Watch show with only a score becomes Completed.
+# - several shows fit: which one; nothing found: couldn't find; a line not about a show: not a show.
+snapshot: my-list
+cases:
+  - id: import-ahead-of-mal
+    tags: [merge, progress]
+    notes: |
+      currently watching:
+      - wistoria s2 ep 11
+      - daemons of the shadow realm 20/24
+      - clevatess 2 ep 4
+    expect:
+      - line: 2
+        group: update
+        anime: Tsue to Tsurugi no Wistoria Season 2
+        change: { episodes_watched: 11 }
+      - line: 3
+        group: update
+        anime: Yomi no Tsugai
+        change: { episodes_watched: 20 }
+      - line: 4
+        group: update
+        anime: "Clevatess II: Majuu no Ou to Itsuwari no Yuusha Denshou"
+        change: { episodes_watched: 4 }
+
+  - id: import-behind-mal
+    tags: [merge, disagree]
+    notes: |
+      wistoria season 2 - ep 5
+      yomi no tsugai ep 12
+    expect:
+      # Lower than MAL (9 and 17): kept as MAL has it unless tapped.
+      - line: 1
+        group: disagree
+        anime: Tsue to Tsurugi no Wistoria Season 2
+        change: { episodes_watched: 5 }
+      - line: 2
+        group: disagree
+        anime: Yomi no Tsugai
+        change: { episodes_watched: 12 }
+
+  - id: import-finishing-planned-shows
+    tags: [merge, score]
+    notes: |
+      finished bocchi the rock 9/10
+      hyouka 8/10
+      made in abyss - done, 10/10
+    expect:
+      - line: 1
+        group: update
+        anime: Bocchi the Rock!
+        change: { status: completed, episodes_watched: 12, score: 9 }
+      # Plan to Watch with only a score: watched, so Completed.
+      - line: 2
+        group: update
+        anime: Hyouka
+        change: { status: completed, episodes_watched: 22, score: 8 }
+      - line: 3
+        group: update
+        anime: Made in Abyss
+        change: { status: completed, episodes_watched: 13, score: 10 }
+
+  - id: import-finished-shows
+    tags: [merge, disagree, score]
+    notes: |
+      cowboy bebop - dropped it at ep 10
+      rewatching steins;gate
+      death note 9/10
+    expect:
+      # Changing a finished show asks.
+      - line: 1
+        group: disagree
+        anime: Cowboy Bebop
+        change: { status: dropped, episodes_watched: 10 }
+      - line: 2
+        group: disagree
+        anime: Steins;Gate
+        change: { is_rewatching: true }
+      # A score where MAL has none is an update, even on a finished show.
+      - line: 3
+        group: update
+        anime: Death Note
+        change: { score: 9 }
+
+  - id: import-status-moves
+    tags: [merge, status]
+    notes: |
+      started trigun, on ep 3
+      picked seven deadly sins imperial wrath back up, ep 2
+      dropped kusuriya
+      gave up on bsd 4
+    expect:
+      - line: 1
+        group: update
+        anime: Trigun
+        change: { status: watching, episodes_watched: 3 }
+      # On hold, picked back up: forward.
+      - line: 2
+        group: update
+        anime: "Nanatsu no Taizai: Kamigami no Gekirin"
+        change: { episodes_watched: 2 }
+      # Watching to Dropped isn't a forward move.
+      - line: 3
+        group: disagree
+        anime: Kusuriya no Hitorigoto
+        change: { status: dropped }
+      - line: 4
+        group: disagree
+        anime: Bungou Stray Dogs 4th Season
+        change: { status: dropped }
+
+  - id: import-already-up-to-date
+    tags: [merge, up-to-date]
+    notes: |
+      want to watch: monster, sonny boy, grand blue
+      fma - finished
+    expect:
+      - line: 1
+        group: up_to_date
+        anime: Monster
+      - line: 1
+        group: up_to_date
+        anime: Sonny Boy
+      - line: 1
+        group: up_to_date
+        anime: Grand Blue
+      - line: 2
+        group: up_to_date
+        anime: Fullmetal Alchemist
+
+  - id: import-vague-names
+    tags: [merge, which-one]
+    notes: |
+      mushoku tensei ep 5
+      haikyuu 8/10
+      spy x family
+    expect:
+      # Every other Mushoku Tensei is finished; season 3 is the one under way.
+      - line: 1
+        group: update
+        anime: "Mushoku Tensei III: Isekai Ittara Honki Dasu"
+        change: { episodes_watched: 5 }
+      # Five finished Haikyuu entries, four Spy x Family: which one?
+      - line: 2
+        group: which_one
+      - line: 3
+        group: which_one
+
+  - id: import-look-alikes
+    tags: [merge, look-alike]
+    notes: |
+      perfect blue 10/10
+      monster 9/10
+    expect:
+      # Not Blue Period (on the list): Perfect Blue isn't on the list.
+      - line: 1
+        group: add
+        anime: PERFECT BLUE
+        change: { status: completed, score: 10 }
+      # Not Re:Monster or Kaiju No. 8 ("Monster #8").
+      - line: 2
+        group: update
+        anime: Monster
+        change: { status: completed, episodes_watched: 74, score: 9 }
+
+  - id: import-not-on-list
+    tags: [merge, add]
+    notes: |
+      look back - 10/10
+      watched 5 eps of ping pong
+      tatami galaxy (want to watch)
+      odd taxi 9/10
+    expect:
+      - line: 1
+        group: add
+        anime: Look Back
+        change: { status: completed, score: 10 }
+      - line: 2
+        group: add
+        anime: Ping Pong THE ANIMATION
+        change: { status: watching, episodes_watched: 5 }
+      - line: 3
+        group: add
+        anime: Yojouhan Shinwa Taikei
+        change: { status: plan_to_watch }
+      - line: 4
+        group: add
+        anime: Odd Taxi
+        change: { status: completed, episodes_watched: 13, score: 9 }
+
+  - id: import-contradictions
+    tags: [merge, held]
+    notes: |
+      shirobako - finished at ep 12
+      want to watch ping pong the animation, 8/10
+    expect:
+      # Finished, but at ep 12 of 24: held, nothing writes it.
+      - line: 1
+        group: disagree
+        anime: SHIROBAKO
+      # Plan to watch, with a score: held.
+      - line: 2
+        group: disagree
+        anime: Ping Pong THE ANIMATION
+
+  - id: import-messy-formatting
+    tags: [merge, format]
+    notes: |
+      ANIME 2026
+
+      1. Vinland Saga S2 – done 9/10
+      2) jjk 2 ✓ 8/10
+      * grand blue (ep 4)
+    expect:
+      - line: 3
+        group: update
+        anime: Vinland Saga Season 2
+        change: { score: 9 }
+      - line: 4
+        group: update
+        anime: Jujutsu Kaisen 2nd Season
+        change: { score: 8 }
+      - line: 5
+        group: update
+        anime: Grand Blue
+        change: { status: watching, episodes_watched: 4 }
+
+  - id: import-several-per-line
+    tags: [merge, multi]
+    notes: |
+      finished clannad, dropped back arrow, uzumaki 7/10
+    expect:
+      # Clannad and Clannad: After Story are both on Plan to Watch.
+      - line: 1
+        group: which_one
+      - line: 1
+        group: up_to_date
+        anime: Back Arrow
+      # A score for a dropped show where MAL has none.
+      - line: 1
+        group: update
+        anime: Uzumaki
+        change: { score: 7 }

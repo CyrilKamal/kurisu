@@ -1398,3 +1398,21 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
   - The fix can't change what the model sees: the tool specs it gets are unchanged, and the schema only runs once it calls `propose_update`.
   - The two cases that flipped never reached `propose_update`, so they are model noise. "Starting future diary and odd taxi" searched Odd Taxi until the repeat stop; it also failed once on 2026-10-06. "two episodes of kabeneri … and 5 eps of kabeneri" asked instead.
   - Reruns of the two, 3 each on this fix: kabeneri 3/3, future diary 2/3. The miss again never called `propose_update`: it searched only AniList and said Future Diary was already on the list.
+
+## 2026-10-08 — Import cases written by Claude at Cyril's request; "bsd 4" and "tatami galaxy" match (Milestone 5)
+**Decision:**
+- **The cases:** Cyril waived CLAUDE.md's "you write the eval cases" rule for import cases only. The reason given: notes aren't open-ended enough to need hand-written wording. Claude wrote 14 cases (`import-notes.yaml`, `import-onboarding.yaml`). Each expected row comes from Cyril's import rules and the snapshot's state, not from what the app produced. A failing row was judged against those rules: the case or the app. The rule still holds for every other kind of eval case.
+- **Seasons:** when a title ends in a bare number ("bsd 4") and the show the rest of it names doesn't carry that number, import looks for that season of the same show on the list by its own names ("Bungou Stray Dogs 4th Season"). If none is named exactly, the user picks.
+- **Leading articles:** when nothing is clear, a title that is a show's name minus a leading "The" ("tatami galaxy") picks that show, but only if every other candidate is its movie, special or OVA. Seasons still ask.
+
+**Alternatives:**
+- Treating these rows as fine because they're safe: "bsd 4" was a "?" row on the wrong show, and "Use my notes" would have dropped season 1.
+- Changing the shared list search, which would need the full update eval.
+
+**Why:**
+- The first run of the cases: 51/55 rows right, 0 wrong pre-checked.
+- Two misses were app weaknesses ("bsd 4" matched season 1 by its "BSD" synonym; "tatami galaxy" asked between the series and its Specials). One was the model adding a status that wasn't on the line ("uzumaki 7/10"), caught as a "?" row.
+
+**Consequences:**
+- Two runs after the fixes: 55/55 and 54/55 rows right (the Uzumaki misread), 0 wrong pre-checked of 29–30.
+- Both fixes live in import only; Chat's search is unchanged.

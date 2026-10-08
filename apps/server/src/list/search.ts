@@ -490,7 +490,8 @@ function clearForQuery(
 /** Movies, specials, OVAs and the like, as opposed to a TV or web series. */
 const SIDE_STORY_TYPES = ["movie", "special", "ova", "tv_special", "music", "cm", "pv"];
 
-function isSideStory(e: AnyEntry): boolean {
+/** A movie, special or OVA: a series' side story rather than a season of it. */
+export function isSideStory(e: { mediaType: string | null }): boolean {
   return e.mediaType !== null && SIDE_STORY_TYPES.includes(e.mediaType);
 }
 
