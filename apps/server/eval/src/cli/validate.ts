@@ -10,10 +10,17 @@ import { loadCatalog } from "../catalog.js";
 import { loadImportCases } from "../importCases.js";
 import { loadRecommendCases } from "../recommendCases.js";
 import { loadDetails, loadDiscovery } from "../recommendData.js";
+import { loadStreaming } from "../streaming.js";
 
 const verbose = process.argv.includes("--verbose");
 const { cases, errors, warnings } = loadCases();
-const recommend = loadRecommendCases(loadDetails(), loadDiscovery());
+const recommend = loadRecommendCases(
+  loadDetails(),
+  loadDiscovery(),
+  undefined,
+  undefined,
+  loadStreaming(),
+);
 errors.push(...recommend.errors);
 warnings.push(...recommend.warnings);
 const imported = loadImportCases(loadCatalog());

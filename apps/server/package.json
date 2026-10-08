@@ -23,6 +23,7 @@
     "eval:recommend": "tsx eval/src/cli/recommend.ts",
     "eval:import": "tsx eval/src/cli/import.ts",
     "eval:recommend-data": "tsx eval/src/cli/exportRecommendData.ts",
+    "eval:streaming": "tsx eval/src/cli/exportStreaming.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",
     "eval": "tsx eval/src/cli/run.ts"

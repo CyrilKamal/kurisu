@@ -22,7 +22,13 @@ if (existsSync(AIRING_FILE) && !values.force) {
 }
 
 /** Files in the snapshots folder that hold frozen data rather than a list snapshot. */
-const FROZEN_FILES = new Set(["airing.json", "catalog.json", "details.json", "discovery.json"]);
+const FROZEN_FILES = new Set([
+  "airing.json",
+  "catalog.json",
+  "details.json",
+  "discovery.json",
+  "streaming.json",
+]);
 
 // Shows "the newest episode" can be about: anything watching, airing, or about to air.
 const malIds = new Set<number>();

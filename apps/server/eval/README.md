@@ -304,6 +304,17 @@ Labels, all optional (`expect: {}` means "any sensible picks"):
   - `any`: the default.
 - **`must_not`:** shows that must never be picked: a title from the snapshot or the discovery pool, or a MAL id. `pnpm eval:lookup` finds list titles.
 - **`picks: false`:** nothing should be recommended, because nothing can fit.
+- **`streams_on`:** every pick streams on at least one of these services, by AniList's official links (frozen in `snapshots/streaming.json`). For "anything on Netflix", `[netflix]`. The ids: `crunchyroll`, `netflix`, `hidive`, `hulu`, `disney_plus`, `prime_video`, `max`, `apple_tv`, `tubi`, `youtube`, `bilibili_tv`, `retrocrush`, `adult_swim`. A pick AniList lists on none of them fails.
+
+Next to `message`, a case can also set **`services`**: the streaming services you have in it, as on the Brief page (the same ids). It's empty by default. "On my services" means these, and cards name only these plus any the message asks for.
+
+```yaml
+  - id: rec-my-services
+    message: "something i can stream tonight"
+    services: [crunchyroll, hidive]
+    expect:
+      streams_on: [crunchyroll, hidive]
+```
 
 ### What counts as correct
 
@@ -311,7 +322,7 @@ A case is right when all of these hold:
 - the message reached the recommender;
 - there's at least one pick (none for `picks: false`);
 - every pick is valid: not completed, dropped or unaired, and from your list or the pool;
-- every pick is within the hard labels: `media_types`, `max_episode_minutes`, `genres_none`, `source` and `must_not`.
+- every pick is within the hard labels: `media_types`, `max_episode_minutes`, `genres_none`, `source`, `must_not` and `streams_on`.
 
 The report also shows:
 - the share of valid picks;
@@ -324,6 +335,7 @@ The report also shows:
 ### Frozen data, and what this doesn't measure
 
 - **Frozen data:** `snapshots/details.json` holds MAL's genres, episode length and community score for the snapshot's shows. `snapshots/discovery.json` holds your discovery pool's AniList data and how strongly it points at each show. Both were frozen once with `pnpm eval:recommend-data`, which refuses to overwrite them. Neither holds a score you gave, or which favorites led to each pool show.
+- **Where shows stream:** `snapshots/streaming.json` holds AniList's official streaming links for the snapshot's Plan to Watch, Watching, On hold and rewatching shows, and for the pool's shows. It was frozen once with `pnpm eval:streaming`, which refuses to overwrite it.
 - **Taste isn't measured:** the snapshot has no scores, so taste is neutral. These cases measure whether recommendations follow the request (length, kind of show, mood, source), not how well they match your taste.
 
 ### Checklist (yours to write; aim for about 20)
@@ -338,8 +350,10 @@ The report also shows:
 - [ ] a mix of constraints ("a short funny movie")
 - [ ] a request nothing can fit (`picks: false`)
 - [ ] a recommendation in the same message as an update ("finished X, what next?")
+- [ ] a streaming service ("anything on Netflix"), and your own services ("something I can stream"), with `services` set
+- [ ] a service the app can't check ("anything on iQIYI": it should say so, `picks: false`)
 
-`cases/recommend-examples.yaml` shows the format with three examples.
+`cases/recommend-examples.yaml` shows the format with a few examples.
 
 ```bash
 pnpm eval:recommend                        # every recommendation case, on the configured models

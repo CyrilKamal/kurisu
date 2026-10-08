@@ -1,7 +1,16 @@
 import { and, eq, sql } from "drizzle-orm";
 
+import type { StreamingLink } from "../anilist/client.js";
+import { watchOn } from "../brief/services.js";
 import type { Db } from "../db/client.js";
-import { anilistCatalog, anime, discovery, listEntries, tasteGenres } from "../db/schema.js";
+import {
+  anilistCatalog,
+  anilistMedia,
+  anime,
+  discovery,
+  listEntries,
+  tasteGenres,
+} from "../db/schema.js";
 import { NOT_YET_AIRED } from "../mal/client.js";
 
 /** MAL's media types, for "a movie" or "something short like an OVA". */
@@ -61,6 +70,11 @@ export interface Constraints {
   yearTo?: number;
   /** Where to look; all four by default. "Continue something" is in_progress only. */
   from?: Pool[];
+  /**
+   * Streaming service ids (brief/services.ts): the show must stream on at least one, by AniList's
+   * official links. A show AniList lists nowhere never fits.
+   */
+  services?: string[];
 }
 
 /** A list entry, or a show new to the user, with the details the ranking needs. */
@@ -80,6 +94,8 @@ export interface CandidateRow {
   airingStatus: string | null;
   /** The year it started airing; null when unknown. */
   startYear: number | null;
+  /** Where it streams officially, from AniList; [] when AniList lists nowhere (or isn't asked yet). */
+  streamingLinks: StreamingLink[];
   /** For a new show: how strongly AniList points at it for this user (see discovery.ts). */
   strength?: number;
   /** For a new show: the user's favorites whose fans like it. */
@@ -103,6 +119,8 @@ export interface Candidate extends CandidateRow {
   minutesOver: number | null;
   /** How many years outside the years asked for it started airing, for a show in the grace. */
   yearsOff: number | null;
+  /** Labels of the services it streams on, among the user's own and any asked for. */
+  streamsOn: string[];
   score: number;
   /** Plain facts behind the ranking, for the model to explain picks with. */
   facts: string[];
@@ -148,19 +166,23 @@ const MAX_DISCOVERY_STRENGTH = 2;
  * list, a nudge for shows already under way, queued or airing, how strongly AniList points at a
  * new show, and penalties for genres they drop and, if they've dropped shows for being too long,
  * long shows. Shows that fit the time and years come first; when fewer than a full set of picks
- * fit, shows up to TIME_GRACE_MINUTES over or YEAR_GRACE years outside follow them. Pure, so the
+ * fit, shows up to TIME_GRACE_MINUTES over or YEAR_GRACE years outside follow them. Where a show
+ * streams only filters (when services are asked for); it never changes the ranking. Pure, so the
  * ranking is unit-tested apart from the database.
  */
 export function rankCandidates(
   rows: CandidateRow[],
   taste: TasteSignals,
   constraints: Constraints,
+  /** The streaming services the user subscribes to (brief settings), to say where each streams. */
+  userServices: readonly string[] = [],
 ): Candidate[] {
   const wanted = lowerSet(constraints.genresAny);
   const unwanted = lowerSet(constraints.genresNone);
   const types = lowerSet(constraints.mediaTypes);
   const pools = new Set<Pool>(constraints.from?.length ? constraints.from : POOLS);
   const tooLongDrops = taste.dropCategories.get("too_long") ?? 0;
+  const shownServices = [...new Set([...userServices, ...(constraints.services ?? [])])];
 
   const candidates: Candidate[] = [];
   // Shows just outside the time or the years asked for.
@@ -173,6 +195,9 @@ export function rankCandidates(
     if (wanted.size > 0 && !genres.some((g) => wanted.has(g))) continue;
     if (genres.some((g) => unwanted.has(g))) continue;
     if (types.size > 0 && !types.has((row.mediaType ?? "").toLowerCase())) continue;
+    if (constraints.services?.length) {
+      if (watchOn(row.streamingLinks, constraints.services).length === 0) continue;
+    }
 
     const episodesLeft =
       row.numEpisodes === null ? null : Math.max(0, row.numEpisodes - row.episodesWatched);
@@ -282,6 +307,7 @@ export function rankCandidates(
       episodesThatFit,
       minutesOver,
       yearsOff,
+      streamsOn: watchOn(row.streamingLinks, shownServices).map((w) => w.service),
       score: round(tasteFit + quality + progressBoost + dropPenalty + lengthPenalty),
       facts,
     });
@@ -310,16 +336,22 @@ export async function candidateRows(db: Db, userId: string): Promise<CandidateRo
       mediaType: anime.mediaType,
       airingStatus: anime.airingStatus,
       startDate: anime.startDate,
+      streamingLinks: anilistMedia.streamingLinks,
     })
     .from(listEntries)
     .innerJoin(anime, eq(anime.malId, listEntries.animeId))
+    .leftJoin(anilistMedia, eq(anilistMedia.malId, anime.malId))
     .where(
       and(
         eq(listEntries.userId, userId),
         sql`(${listEntries.status} in ('plan_to_watch', 'watching', 'on_hold') or ${listEntries.isRewatching})`,
       ),
     );
-  return rows.map(({ startDate, ...row }) => ({ ...row, startYear: startYearOf(startDate) }));
+  return rows.map(({ startDate, streamingLinks, ...row }) => ({
+    ...row,
+    startYear: startYearOf(startDate),
+    streamingLinks: streamingLinks ?? [],
+  }));
 }
 
 /**
@@ -339,6 +371,7 @@ export async function discoveryRows(db: Db, userId: string): Promise<CandidateRo
       mediaType: anilistCatalog.mediaType,
       airingStatus: anilistCatalog.airingStatus,
       startDate: anilistCatalog.startDate,
+      streamingLinks: anilistCatalog.streamingLinks,
       strength: discovery.strength,
       because: discovery.because,
       prequelsDone: sql<boolean>`NOT EXISTS (

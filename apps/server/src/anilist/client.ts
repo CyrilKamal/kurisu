@@ -86,6 +86,8 @@ export interface DiscoveredShow extends CatalogShow {
   isAdult: boolean;
   /** The entries this one follows, by MAL id. */
   prequelMalIds: number[];
+  /** Where it streams officially. */
+  streamingLinks: StreamingLink[];
 }
 
 /** One "fans also liked" link: a show AniList users recommend to fans of a seed show. */
@@ -195,6 +197,18 @@ function searchQuery(count: number): string {
   return `query (${indexes.map((i) => `$q${i}: String`).join(", ")}) { ${pages.join(" ")} }`;
 }
 
+const externalLinksSchema = z
+  .array(
+    z.object({
+      siteId: z.number().int().nullish(),
+      site: z.string(),
+      url: z.string().nullish(),
+      type: z.string().nullish(),
+      isDisabled: z.boolean().nullish(),
+    }),
+  )
+  .nullish();
+
 const searchMediaSchema = z.object({
   id: z.number().int().positive(),
   idMal: z.number().int().positive().nullish(),
@@ -287,6 +301,7 @@ const DETAILS_QUERY = `query ($ids: [Int], $page: Int) {
       averageScore
       popularity
       relations { edges { relationType node { idMal type } } }
+      externalLinks { siteId site url type isDisabled }
     }
   }
 }`;
@@ -323,6 +338,7 @@ const detailsSchema = z.object({
             ),
           })
           .nullish(),
+        externalLinks: externalLinksSchema,
       }),
     ),
   }),
@@ -350,17 +366,7 @@ const mediaPageSchema = z.object({
         nextAiringEpisode: z
           .object({ episode: z.number().int().positive(), airingAt: z.number().int() })
           .nullish(),
-        externalLinks: z
-          .array(
-            z.object({
-              siteId: z.number().int().nullish(),
-              site: z.string(),
-              url: z.string().nullish(),
-              type: z.string().nullish(),
-              isDisabled: z.boolean().nullish(),
-            }),
-          )
-          .nullish(),
+        externalLinks: externalLinksSchema,
       }),
     ),
   }),
@@ -528,6 +534,7 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
             ? [e.node.idMal]
             : [],
         ),
+        streamingLinks: streamingLinks([m]),
       }));
     },
   };
@@ -647,7 +654,9 @@ function toMedia(malId: number, m: RawMedia, offset: number, links: StreamingLin
 }
 
 /** Enabled official streaming links of these parts, one per service. */
-function streamingLinks(parts: RawMedia[]): StreamingLink[] {
+function streamingLinks(
+  parts: { externalLinks?: z.infer<typeof externalLinksSchema> }[],
+): StreamingLink[] {
   const bySite = new Map<number, StreamingLink>();
   for (const part of parts) {
     for (const link of part.externalLinks ?? []) {

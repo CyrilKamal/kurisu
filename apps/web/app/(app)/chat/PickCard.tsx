@@ -6,8 +6,8 @@ import { Cover } from "./ShowCard";
 
 /**
  * A recommended show: cover, where you are in it (or that it's new to you), how long it takes,
- * and why it fits. A new show has an Add button, which asks Chat to add it (and Chat then asks
- * you to confirm, as every add does).
+ * why it fits, and where it streams on your services. A new show has an Add button, which asks
+ * Chat to add it (and Chat then asks you to confirm, as every add does).
  */
 export function PickCard({
   pick,
@@ -60,6 +60,28 @@ export function PickCard({
           {length ? ` · ${length}` : ""}
         </p>
         <p className="mt-1">{pick.why}</p>
+        {pick.watchOn.length > 0 && (
+          <p className="mt-1 text-xs text-zinc-500">
+            On{" "}
+            {pick.watchOn.map((w, i) => (
+              <span key={w.service}>
+                {i > 0 ? (i === pick.watchOn.length - 1 ? " or " : ", ") : ""}
+                {w.url ? (
+                  <a
+                    href={w.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-zinc-700 underline-offset-2 hover:underline dark:text-zinc-300"
+                  >
+                    {w.service}
+                  </a>
+                ) : (
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300">{w.service}</span>
+                )}
+              </span>
+            ))}
+          </p>
+        )}
         {onAdd && (
           <button
             type="button"

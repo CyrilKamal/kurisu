@@ -10,6 +10,11 @@ const DAY_MS = 24 * HOUR_MS;
 
 /** Rows younger than this aren't refetched. Airing times rarely move within hours. */
 export const AIRING_MAX_AGE_MS = 6 * HOUR_MS;
+/**
+ * Where a show streams changes far less often than when it airs: rows kept only for where to
+ * watch are refetched weekly.
+ */
+export const STREAMING_MAX_AGE_MS = 7 * DAY_MS;
 /** Older rows are too stale to say which episode is the latest. */
 const STALE_AFTER_MS = 7 * DAY_MS;
 /**
@@ -159,6 +164,26 @@ export async function airingCandidateIds(db: Db, userId: string): Promise<number
         or(
           eq(listEntries.status, "watching"),
           inArray(anime.airingStatus, ["currently_airing", "not_yet_aired"]),
+        ),
+      ),
+    );
+  return rows.map((row) => row.malId);
+}
+
+/**
+ * The user's entries the recommender can pick from (Plan to Watch, Watching, On hold, and
+ * rewatches), whose rows are kept for where to watch them.
+ */
+export async function recommendableIds(db: Db, userId: string): Promise<number[]> {
+  const rows = await db
+    .select({ malId: listEntries.animeId })
+    .from(listEntries)
+    .where(
+      and(
+        eq(listEntries.userId, userId),
+        or(
+          inArray(listEntries.status, ["plan_to_watch", "watching", "on_hold"]),
+          eq(listEntries.isRewatching, true),
         ),
       ),
     );

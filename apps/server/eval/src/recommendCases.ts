@@ -3,9 +3,11 @@ import { readdirSync, readFileSync } from "node:fs";
 import { parse } from "yaml";
 import { z } from "zod";
 
+import { STREAMING_SERVICE_IDS } from "../../src/brief/services.js";
 import { MEDIA_TYPES } from "../../src/recommend/candidates.js";
 import { CASES_DIR, RECOMMEND_FILE, type Problem } from "./cases.js";
 import type { DetailsFreeze, DiscoveryFreeze } from "./recommendData.js";
+import type { StreamingFreeze } from "./streaming.js";
 import { loadSnapshot, normalizeTitle, TitleIndex, type Snapshot } from "./snapshot.js";
 
 /**
@@ -24,6 +26,7 @@ export const PICK_SOURCES = [
 export type PickSource = (typeof PICK_SOURCES)[number];
 
 const titleOrId = z.union([z.string().min(1), z.number().int().positive()]);
+const serviceId = z.enum(STREAMING_SERVICE_IDS as [string, ...string[]]);
 
 export const recommendCaseSchema = z
   .object({
@@ -35,6 +38,8 @@ export const recommendCaseSchema = z
       .default([]),
     tags: z.array(z.string().regex(/^[a-z0-9-]+$/)).default([]),
     notes: z.string().optional(),
+    /** The streaming services the user has in this case (their brief settings); none by default. */
+    services: z.array(serviceId).default([]),
     expect: z
       .object({
         /** False when nothing should be recommended, because nothing can fit. */
@@ -62,6 +67,8 @@ export const recommendCaseSchema = z
         /** No pick has any of these genres. */
         genres_none: z.array(z.string().min(1)).min(1).optional(),
         source: z.enum(PICK_SOURCES).default("any"),
+        /** Every pick streams on at least one of these services, by the frozen AniList links. */
+        streams_on: z.array(serviceId).min(1).optional(),
         /** Shows that must never be picked: titles from the snapshot or the pool, or MAL ids. */
         must_not: z.array(titleOrId).default([]),
       })
@@ -114,6 +121,7 @@ export function loadRecommendCases(
   pool: DiscoveryFreeze | null,
   casesDir: string = CASES_DIR,
   snapshotLoader: (name: string) => Snapshot = loadSnapshot,
+  streaming: StreamingFreeze | null = null,
 ): RecommendLoadResult {
   const files = readdirSync(casesDir)
     .filter((f) => RECOMMEND_FILE.test(f))
@@ -214,6 +222,12 @@ export function loadRecommendCases(
       }
       if (from !== undefined && to !== undefined && from > to) {
         result.errors.push(problem("year_from is after year_to."));
+        ok = false;
+      }
+      if (c.expect.streams_on && !streaming) {
+        result.errors.push(
+          problem("streams_on needs the frozen streaming links: run pnpm eval:streaming."),
+        );
         ok = false;
       }
       if (c.expect.grace_minutes !== undefined && c.expect.max_episode_minutes === undefined) {

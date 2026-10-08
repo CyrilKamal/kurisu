@@ -4,8 +4,9 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import type { Db } from "../../src/db/client.js";
-import { anilistCatalog, discovery, discoveryRuns } from "../../src/db/schema.js";
+import { anilistCatalog, anilistMedia, discovery, discoveryRuns } from "../../src/db/schema.js";
 import { SNAPSHOTS_DIR } from "./snapshot.js";
+import { linksByMalId, type StreamingFreeze } from "./streaming.js";
 
 /**
  * What the recommendation eval needs beyond the list snapshot, frozen once from the dev database
@@ -88,14 +89,17 @@ export function loadDiscovery(file: string = DISCOVERY_FILE): DiscoveryFreeze | 
 
 /**
  * Gives the snapshot's shows their frozen details, and the user the frozen discovery pool, built
- * as of when it was frozen. Run after loadSnapshotIntoDb.
+ * as of when it was frozen, with where each show streams when that's frozen too. Run after
+ * loadSnapshotIntoDb.
  */
 export async function loadRecommendDataIntoDb(
   db: Db,
   userId: string,
   details: DetailsFreeze,
   pool: DiscoveryFreeze,
+  streaming: StreamingFreeze | null = null,
 ): Promise<void> {
+  const links = linksByMalId(streaming);
   await db.execute(sql`
     UPDATE anime a
     SET genres = ARRAY(SELECT jsonb_array_elements_text(d.value -> 'genres')),
@@ -127,6 +131,7 @@ export async function loadRecommendDataIntoDb(
           coverUrl: show.coverUrl,
           startDate: show.startDate,
           prequelMalIds: show.prequelMalIds,
+          streamingLinks: links.get(show.malId) ?? [],
         })),
       )
       .onConflictDoNothing();
@@ -137,4 +142,26 @@ export async function loadRecommendDataIntoDb(
   await db
     .insert(discoveryRuns)
     .values({ userId, refreshedAt: new Date(pool.frozenAt), shows: pool.shows.length });
+
+  // List shows' links live in the AniList cache, next to any frozen airing data.
+  if (streaming) {
+    const onList = new Set(details.shows.map((show) => show.malId));
+    const rows = streaming.shows
+      .filter((show) => onList.has(show.malId))
+      .map((show) => ({
+        malId: show.malId,
+        anilistId: show.anilistId,
+        streamingLinks: show.links,
+        fetchedAt: new Date(streaming.frozenAt),
+      }));
+    if (rows.length > 0) {
+      await db
+        .insert(anilistMedia)
+        .values(rows)
+        .onConflictDoUpdate({
+          target: anilistMedia.malId,
+          set: { streamingLinks: sql`excluded.streaming_links` },
+        });
+    }
+  }
 }

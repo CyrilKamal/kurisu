@@ -3,8 +3,9 @@ import { z } from "zod";
 
 import type { Prompt } from "../agent/runAgent.js";
 import { runToolLoop, type ToolOutcome } from "../agent/toolLoop.js";
+import { STREAMING_SERVICE_IDS, STREAMING_SERVICES } from "../brief/services.js";
 import type { Db } from "../db/client.js";
-import { agentRuns, discoveryRuns, recommendations } from "../db/schema.js";
+import { agentRuns, briefSettings, discoveryRuns, recommendations } from "../db/schema.js";
 import type { ModelClient } from "../llm/modelClient.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import type { LlmMessage, ToolCall, ToolSpec } from "../llm/types.js";
@@ -64,7 +65,7 @@ const TOOL_SPECS: ToolSpec[] = [
   {
     name: "find_candidates",
     description:
-      "Search the user's Plan to Watch, the shows they've started, the shows queued on their Watching list but not started, and shows new to them (picked from AniList by their taste) that meet the constraints, best fit first, with the facts behind each. When fewer than 3 shows fit the time or years given, shows up to 5 minutes over or 2 years outside follow them, marked with how far off they are.",
+      "Search the user's Plan to Watch, the shows they've started, the shows queued on their Watching list but not started, and shows new to them (picked from AniList by their taste) that meet the constraints, best fit first, with the facts behind each and streams_on: where it streams among their services. When fewer than 3 shows fit the time or years given, shows up to 5 minutes over or 2 years outside follow them, marked with how far off they are.",
     parameters: {
       type: "object",
       properties: {
@@ -95,6 +96,15 @@ const TOOL_SPECS: ToolSpec[] = [
           type: "array",
           items: { type: "string", enum: [...POOLS] },
           description: "Where to look; all four if not set",
+        },
+        services: {
+          type: "array",
+          items: { type: "string", enum: [...STREAMING_SERVICE_IDS] },
+          description: "Streaming services it must be on (at least one)",
+        },
+        on_my_services: {
+          type: "boolean",
+          description: "It must stream on one of the services they subscribe to",
         },
       },
     },
@@ -131,6 +141,15 @@ const findArgs = z
     year_to: z.coerce.number().int().min(1900).max(2100).optional(),
     era: z.enum(ERAS).optional(),
     from: z.array(z.enum(POOLS)).optional(),
+    // A null from the model means not given (as in propose_update).
+    services: z
+      .array(z.enum(STREAMING_SERVICE_IDS as [string, ...string[]]))
+      .nullish()
+      .transform((v) => v ?? undefined),
+    on_my_services: z
+      .boolean()
+      .nullish()
+      .transform((v) => v ?? undefined),
   })
   .strict();
 
@@ -153,6 +172,8 @@ interface RecContext {
   /** Candidates any search in this run returned, with that search's constraints. */
   offered: Map<number, { candidate: Candidate; constraints: Constraints }>;
   genres: string[] | null;
+  /** The streaming services they subscribe to (brief settings), read once per run. */
+  services: string[] | null;
   tasteFresh: boolean;
   picks: Pick[];
   /** The sentence above the picks, when present_picks gave one. */
@@ -189,6 +210,7 @@ export async function runRecommender(
     userId: input.userId,
     offered: new Map(),
     genres: null,
+    services: null,
     tasteFresh: false,
     picks: [],
     reply: null,
@@ -290,6 +312,15 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
       return name ? [name] : [];
     });
 
+  ctx.services ??= await userServices(ctx.db, ctx.userId);
+  if (a.on_my_services && ctx.services.length === 0 && !a.services?.length) {
+    return failure(
+      "no_services",
+      "They haven't told kurisu which streaming services they have (they can, under Brief on the List screen). Ask which service, or search without one.",
+    );
+  }
+  const services = [...new Set([...(a.services ?? []), ...(a.on_my_services ? ctx.services : [])])];
+
   // Years they gave win over an era ("old", "recent"), which is counted from this year.
   const years =
     a.year_from !== undefined || a.year_to !== undefined
@@ -306,6 +337,7 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
     ...(years.yearFrom !== undefined && { yearFrom: years.yearFrom }),
     ...(years.yearTo !== undefined && { yearTo: years.yearTo }),
     ...(a.from?.length && { from: a.from }),
+    ...(services.length > 0 && { services }),
   };
   // Every genre they asked for was unknown: say so rather than filtering on nothing.
   if (a.genres_any?.length && !constraints.genresAny?.length) {
@@ -319,6 +351,7 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
     [...(await candidateRows(ctx.db, ctx.userId)), ...(await discoveryRows(ctx.db, ctx.userId))],
     await tasteSignals(ctx.db, ctx.userId),
     constraints,
+    ctx.services,
   );
   const shown = ranked.slice(0, CANDIDATES_SHOWN);
   // Right after the first sync, the pool of new shows may still be building.
@@ -343,6 +376,7 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
         ...(c.yearsOff !== null && { years_outside_their_years: c.yearsOff }),
         genres: c.genres,
         facts: c.facts,
+        ...(c.streamsOn.length > 0 && { streams_on: c.streamsOn }),
       })),
       ...(ranked.length > shown.length && { more: ranked.length - shown.length }),
       ...(unknown.length > 0 && {
@@ -353,7 +387,10 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
             note: "New shows for them are still being gathered (about a minute after a sync); only their own list was searched.",
           }
         : ranked.length === 0 && {
-            note: "Nothing fits all of that, on their list or among shows new to them.",
+            note:
+              services.length > 0
+                ? `Nothing fits all of that on ${serviceNames(services)}, on their list or among shows new to them. Where a show streams comes from AniList's official links; a show it lists nowhere there doesn't count.`
+                : "Nothing fits all of that, on their list or among shows new to them.",
           }),
     },
   };
@@ -408,6 +445,22 @@ async function presentPicksTool(ctx: RecContext, raw: unknown): Promise<ToolOutc
       next: "Reply in one short sentence; the picks show as cards.",
     },
   };
+}
+
+/** The streaming services the user subscribes to, from their brief settings. */
+async function userServices(db: Db, userId: string): Promise<string[]> {
+  const [row] = await db
+    .select({ services: briefSettings.services })
+    .from(briefSettings)
+    .where(eq(briefSettings.userId, userId));
+  return row?.services ?? [];
+}
+
+/** "Netflix or Crunchyroll". */
+function serviceNames(ids: string[]): string {
+  return STREAMING_SERVICES.filter((s) => ids.includes(s.id))
+    .map((s) => s.label)
+    .join(" or ");
 }
 
 function failure(error: string, message: string): ToolOutcome {

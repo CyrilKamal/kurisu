@@ -41,6 +41,7 @@ export interface FakeDetailedMedia extends FakeCatalogMedia {
   averageScore: number | null;
   popularity: number;
   relations: { edges: { relationType: string; node: { idMal: number | null; type: string } }[] };
+  externalLinks?: FakeAniListMedia["externalLinks"];
 }
 
 export interface FakeAiring {
@@ -286,4 +287,13 @@ export function detailedMedia(
     relations: { edges: [] },
     ...overrides,
   };
+}
+
+/** An official streaming link, in AniList's shape. */
+export function streamingLink(
+  siteId: number,
+  site: string,
+  url: string,
+): FakeAniListMedia["externalLinks"][number] {
+  return { siteId, site, url, type: "STREAMING", isDisabled: false };
 }

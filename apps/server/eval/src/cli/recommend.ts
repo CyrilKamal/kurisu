@@ -8,6 +8,7 @@
  *   pnpm eval:recommend --model gemini:gemini-3.5-flash-lite   a different recommender model
  *   pnpm eval:recommend --prompt recommend@3                 compare another recommender prompt
  *   pnpm eval:recommend --thinking low                       the recommender's thinking level
+ *   pnpm eval:recommend --agent-prompt progress-sync@14      another progress agent prompt
  *
  * Needs Docker (a throwaway Postgres) and the frozen data from pnpm eval:recommend-data. Taste is
  * neutral here (the snapshot has no scores), so this measures following the request, not taste.
@@ -20,12 +21,13 @@ import { parseArgs } from "node:util";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 import {
-  CURRENT_PROMPT,
+  CURRENT_PROMPT as DEFAULT_AGENT_PROMPT,
+  PROMPTS,
   RECOMMEND_PROMPT as DEFAULT_RECOMMEND_PROMPT,
   RECOMMEND_PROMPTS,
 } from "../../../src/agent/prompts/index.js";
 import { runAgent } from "../../../src/agent/runAgent.js";
-import { agentRunSteps, anime, listEntries } from "../../../src/db/schema.js";
+import { agentRunSteps, anime, briefSettings, listEntries } from "../../../src/db/schema.js";
 import { loadLocalEnvFile } from "../../../src/env.js";
 import { createModelClient } from "../../../src/llm/modelClient.js";
 import {
@@ -51,6 +53,7 @@ import {
   type RecommendScore,
 } from "../recommendScore.js";
 import { loadSnapshot, type Snapshot } from "../snapshot.js";
+import { linksByMalId, loadStreaming } from "../streaming.js";
 import { throttle } from "../throttle.js";
 
 const RESULTS_DIR = fileURLToPath(new URL("../../results/", import.meta.url));
@@ -66,6 +69,7 @@ const { values } = parseArgs({
     limit: { type: "string" },
     rpm: { type: "string" },
     prompt: { type: "string" },
+    "agent-prompt": { type: "string" },
     thinking: { type: "string" },
   },
 });
@@ -78,6 +82,12 @@ if (!Object.hasOwn(RECOMMEND_PROMPTS, recommendVersion)) {
   process.exit(1);
 }
 const RECOMMEND_PROMPT = RECOMMEND_PROMPTS[recommendVersion as keyof typeof RECOMMEND_PROMPTS];
+const agentVersion = values["agent-prompt"] ?? DEFAULT_AGENT_PROMPT.version;
+if (!Object.hasOwn(PROMPTS, agentVersion)) {
+  console.error(`Unknown prompt "${agentVersion}". Known: ${Object.keys(PROMPTS).join(", ")}`);
+  process.exit(1);
+}
+const CURRENT_PROMPT = PROMPTS[agentVersion as keyof typeof PROMPTS];
 
 loadLocalEnvFile();
 const modelsFile = loadModelsFile();
@@ -108,7 +118,8 @@ const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm)
 
 const details = loadDetails();
 const pool = loadDiscovery();
-const loaded = loadRecommendCases(details, pool);
+const streaming = loadStreaming();
+const loaded = loadRecommendCases(details, pool, undefined, undefined, streaming);
 if (loaded.errors.length > 0 || !details || !pool) {
   for (const e of loaded.errors)
     console.error(`ERROR ${e.file}${e.caseId ? ` [${e.caseId}]` : ""}: ${e.message}`);
@@ -130,6 +141,7 @@ if (selected.length === 0) {
 const airing = loadAiring();
 const catalog = frozenCatalogSearch(loadCatalog());
 const poolIds = new Set(pool.shows.map((s) => s.malId));
+const streamingLinks = linksByMalId(streaming);
 const snapshots = new Map<string, Snapshot>();
 
 console.log(
@@ -190,9 +202,11 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
   const { db } = database;
   if (!details || !pool) throw new Error("frozen data missing");
   const userId = await loadSnapshotIntoDb(db, snapshot, airing);
-  await loadRecommendDataIntoDb(db, userId, details, pool);
-  const { writer } = createFakeWriter(db);
+  await loadRecommendDataIntoDb(db, userId, details, pool, streaming);
   const c = resolved.case;
+  if (c.services.length > 0)
+    await db.insert(briefSettings).values({ userId, services: c.services });
+  const { writer } = createFakeWriter(db);
 
   const waitedBefore = models.waitedMs;
   const agent = await runAgent(
@@ -254,6 +268,7 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
       genres: row?.genres ?? [],
       airingStatus: row?.airingStatus ?? null,
       startYear: startYearOf(row?.startDate ?? null),
+      streamingLinks: streamingLinks.get(id) ?? [],
     };
   });
 
