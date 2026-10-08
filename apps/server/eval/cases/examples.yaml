@@ -2,6 +2,18 @@
 # not your real list. See ../README.md for the full reference.
 snapshot: examples
 cases:
+  - id: example-reaction
+    message: "watched ep 8 of fixture watching show, that fight scene was insane"
+    tags: [plain, reaction]
+    notes: >-
+      A feeling about the show it updated: the diary keeps "that fight scene was insane", in the
+      user's words. reaction: false would mean no note should be saved; leave it out to not check.
+    expect:
+      writes:
+        - anime: "Fixture Watching Show"
+          episodes_watched: 8
+      reaction: true
+
   - id: example-plain
     message: "watched ep 8 of fixture watching show"
     tags: [plain]

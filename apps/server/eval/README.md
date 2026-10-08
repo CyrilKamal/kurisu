@@ -166,6 +166,7 @@ Some messages are about a show that isn't on the snapshot's list: "add X to my p
 - **Adds**: the adds the agent holds for you must be exactly the listed `adds`, no more and no less. They're never counted as writes.
 - **`clarify: true`**: the agent should ask first, either with a question or with a change held for you to confirm, instead of writing. A case can list writes and set `clarify: true` together. For example, "finished X and dropped the isekai one" writes X and asks about the other.
 - **No writes and no `clarify`**: the agent should do nothing, for example when the message isn't an update. Tag these `no-action`.
+- **`reaction`** (optional, for the diary): `reaction: true` means the message says how you felt about a show it updates ("that finale was insane"), so a diary note should be saved. `reaction: false` means none should be. Leave it out and the diary isn't checked. `pnpm eval` ignores it; `pnpm eval:diary` runs only the diary reader over the cases with writes. It reports the labeled cases it got right, and lists the notes it saved in unlabeled cases so you can read them.
 
 ### Rules the agent applies automatically
 

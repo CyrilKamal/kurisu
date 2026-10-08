@@ -162,6 +162,13 @@
       "when": 1791496685434,
       "tag": "0022_sunday_recap",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791498840522,
+      "tag": "0023_diary_notes",
+      "breakpoints": true
     }
   ]
 }

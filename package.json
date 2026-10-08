@@ -25,6 +25,7 @@
     "eval:catalog": "pnpm --filter @kurisu/server eval:catalog",
     "eval:recommend": "pnpm --filter @kurisu/server eval:recommend",
     "eval:import": "pnpm --filter @kurisu/server eval:import",
+    "eval:diary": "pnpm --filter @kurisu/server eval:diary",
     "eval:recommend-data": "pnpm --filter @kurisu/server eval:recommend-data",
     "eval:streaming": "pnpm --filter @kurisu/server eval:streaming",
     "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",

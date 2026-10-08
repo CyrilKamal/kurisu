@@ -484,6 +484,33 @@ export const statsResponseSchema = z.object({
 });
 export type StatsResponse = z.infer<typeof statsResponseSchema>;
 
+/**
+ * One update in the diary: made through kurisu (Chat, the List screen) or on MAL's site (found by
+ * a sync), with the user's reaction when they gave one.
+ */
+export const diaryEntrySchema = z.object({
+  /** The change's id, or the list event's. */
+  id: z.uuid(),
+  origin: z.enum(["kurisu", "mal"]),
+  kind: z.enum(WRITE_KINDS),
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  before: listChangeSchema,
+  after: listChangeSchema,
+  at: z.iso.datetime(),
+  /** What the user said about the show with this update, in their own words. */
+  note: z.object({ id: z.uuid(), text: z.string() }).nullable(),
+});
+export type DiaryEntry = z.infer<typeof diaryEntrySchema>;
+
+/** GET /diary: the latest updates, newest first, and the time zone their days follow. */
+export const diaryResponseSchema = z.object({
+  timeZone: z.string(),
+  entries: z.array(diaryEntrySchema),
+});
+export type DiaryResponse = z.infer<typeof diaryResponseSchema>;
+
 /** PUT /stats/goal: this year's goal, in shows completed; null clears it. */
 export const goalRequestSchema = z.object({
   target: z.number().int().min(1).max(1000).nullable(),

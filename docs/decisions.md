@@ -1585,3 +1585,34 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - A user whose brief is off gets no recap. The Stats page has the same numbers.
 - Brief responses gain `recap` (the test response and `lastDaily`), so the Brief page can say "Sent your week's recap".
 
+
+## 2026-10-08 — The diary reads reactions apart from the write agent; progress-sync.v16 not kept (Milestone 5)
+**Decision:**
+- **The reader:** a reaction ("that finale was insane") is read by a diary reader of its own (`src/diary/reader.ts`, prompt `diary.v1`, the agent role's model).
+  - It runs in the background after a Chat message's updates commit.
+  - It sees only the message and the shows it updated, and calls `save_reactions` with an anime_id and the user's words for each.
+- **Own words only:** code keeps the words only if they appear in the message word for word (case and spacing aside), and otherwise the whole message. Notes go in `diary_notes`, one per change, for shows that message updated (migration 0023). An undo takes a note back, as it does a drop reason.
+- **The write agent stays as it was:** progress-sync.v15 remains current, and the write agent never sees the diary.
+- **The page:** `/list/diary` (`GET /diary`, `DELETE /diary/notes/:id`) shows the latest 100 updates by day in the user's time zone: kurisu's, minus imports, undos and undone changes, plus MAL-site changes. Each comes with its note, which can be deleted.
+- **Eval:** `pnpm eval:diary` runs only the reader over the update cases' messages, with each case's expected writes as the shows updated. An optional `expect.reaction` label is shown in one format example.
+
+**Alternatives:**
+- **A `reaction` field on `propose_update` (progress-sync.v16).** It was offered only to prompts that opt in, with v15's system text unchanged.
+  - It passed its format examples 3/3, saving exactly "that fight scene was insane".
+  - Side by side on all 141 cases, though: v15 got 130/141 with 0/122 wrong writes, and v16 got 128/141 with **2/123 wrong writes**. "Watched 4 more episoddes of charlotte" also set Watching, and "…resuming servamp" also set episode 4. Neither case had a wrong write in any of their 14+ earlier full runs.
+  - One optional field shifted how Flash-Lite fills in the fields it does use. So v16 was never committed.
+- **Saving the whole message every time (the plan).** A message about several shows would file all of it under each one.
+- **A note without an update** ("frieren is so good"). There's no change to attach it to, so it's left out for now.
+
+**Why:**
+- No wrong write is worth a diary feature. A separate reader can't change a write at all, and it can be evaluated on its own for a few cents instead of the 140-case update eval.
+- Checking the words against the message keeps the notes the user's own.
+
+**Consequences:**
+- `pnpm eval:diary` on Flash-Lite with diary.v1, run twice, over 97 messages with writes:
+  - The labeled example was right both times.
+  - Each run saved a note on 1 of 96 unlabeled messages: "didnt like", on a message that drops a show for that reason.
+  - Median 0.5 s, about $0.00015 a message.
+- A reaction costs one extra small model call per message that commits something, and the reply doesn't wait for it.
+- A change confirmed later with a tap, rather than in its message, gets no note.
+- Integration tests turn the diary off (`diary: false` in the harness), since it would take the agent model's scripted turns. The diary's own tests turn it on.
