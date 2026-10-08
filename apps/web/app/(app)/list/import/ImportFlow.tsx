@@ -191,7 +191,9 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
         <p className="text-base font-medium">
           {view.status === "done"
             ? `Imported ${String(counts.written)} ${counts.written === 1 ? "show" : "shows"}.`
-            : `Undone: ${String(counts.undone)} ${counts.undone === 1 ? "show is" : "shows are"} back as they were.`}
+            : counts.undone === 1
+              ? "Undone: 1 show is back as it was."
+              : `Undone: ${String(counts.undone)} shows are back as they were.`}
         </p>
         {failures.length > 0 && (
           <ul className="flex flex-col gap-1 text-sm">
