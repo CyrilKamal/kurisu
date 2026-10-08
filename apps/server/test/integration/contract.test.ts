@@ -111,6 +111,28 @@ describe("responses match the contract", () => {
     expect(() => contract.tasteResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("POST /list/:animeId/edit and /remove", async () => {
+    const post = (url: string, payload: Record<string, unknown>) =>
+      h.app.inject({
+        method: "POST",
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        payload,
+      });
+    const edited = await post("/list/900001/edit", { score: 7, requestId: crypto.randomUUID() });
+    expect(edited.statusCode).toBe(200);
+    expect(contract.changeResponseSchema.parse(edited.json()).change.source).toBe("user");
+
+    const refused = await post("/list/900001/edit", { score: 7, requestId: crypto.randomUUID() });
+    expect(refused.statusCode).toBe(400);
+    expect(contract.editErrorResponseSchema.parse(refused.json()).error).toBe("no_change");
+
+    const removed = await post("/list/900004/remove", { requestId: crypto.randomUUID() });
+    expect(removed.statusCode).toBe(200);
+    expect(contract.changeResponseSchema.parse(removed.json()).change.kind).toBe("remove");
+  });
+
   it("POST /sync success", async () => {
     await skipCooldown();
     const res = await postSync();

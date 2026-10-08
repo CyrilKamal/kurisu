@@ -120,6 +120,13 @@
       "when": 1791320709285,
       "tag": "0016_discovery",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791426211215,
+      "tag": "0017_manual_and_import_sources",
+      "breakpoints": true
     }
   ]
 }

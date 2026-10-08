@@ -1,4 +1,4 @@
-import type { ListChange, WriteKind } from "@kurisu/shared";
+import type { ChangeSource, ListChange, WriteKind } from "@kurisu/shared";
 
 import { STATUS_LABELS } from "./format";
 
@@ -29,6 +29,20 @@ export function describeWrite(kind: WriteKind, before: ListChange, after: ListCh
   if (kind === "remove") return "Removed from your list";
   if (kind === "add") return `Added ${addedAs(after)}`;
   return describeChange(before, after);
+}
+
+/** Who made a change, when it wasn't the agent in Chat: "Edited by you", "From import". */
+export function sourceLabel(source: ChangeSource): string | null {
+  switch (source) {
+    case "user":
+      return "Edited by you";
+    case "import":
+      return "From import";
+    case "undo":
+      return "Undo";
+    case "agent":
+      return null;
+  }
 }
 
 /** The button that confirms an add: "Add to Plan to Watch", "Add as Watching, ep 3". */

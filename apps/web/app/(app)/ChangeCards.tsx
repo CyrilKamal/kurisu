@@ -8,11 +8,12 @@ import {
   confirmationReasonLabel,
   describeChange,
   describeWrite,
+  sourceLabel,
 } from "@/lib/describeChange";
 
 import { Cover, showDetails } from "./chat/ShowCard";
 
-/** A write the agent made (or an undo), with an Undo button. */
+/** A write (by the agent, the user, an import, or an undo), with an Undo button. */
 export function ChangeCard({
   change,
   onUndo,
@@ -26,7 +27,7 @@ export function ChangeCard({
       <div className="min-w-0">
         <p className="truncate font-medium">{change.title}</p>
         <p className="text-zinc-500">
-          {change.isUndo ? "Undo: " : ""}
+          {sourceLabel(change.source) ? `${sourceLabel(change.source) ?? ""}: ` : ""}
           {describeWrite(change.kind, change.before, change.after)}
         </p>
       </div>

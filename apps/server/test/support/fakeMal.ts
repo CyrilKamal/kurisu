@@ -262,7 +262,9 @@ export class FakeMal {
       json(res, 404, { error: "not_found" });
       return;
     }
-    this.list.splice(index, 1);
+    // MAL still knows the show, so it can be put back on the list (undoing a removal).
+    const [removed] = this.list.splice(index, 1);
+    if (removed && !this.catalog.some((n) => n.id === animeId)) this.catalog.push(removed.node);
     res.writeHead(200).end();
   }
 

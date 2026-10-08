@@ -162,7 +162,14 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
 
   app.get("/health", () => ({ status: "ok" }));
   registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
-  registerListRoutes(app, { config, db, listSync });
+  // Every write to MAL, from Chat, the List screen or an import, goes through these.
+  const writeDeps = {
+    db,
+    writeListStatus,
+    removeListStatus: createMalListRemover(malWrites),
+    refreshAnime: createAnimeRefresher({ db, ...malWrites }),
+  };
+  registerListRoutes(app, { config, db, listSync, writes: writeDeps });
   registerTasteRoutes(app, { config, db });
   registerPushRoutes(app, {
     config,
@@ -175,9 +182,9 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     config,
     db,
     models,
-    writeListStatus,
-    removeListStatus: createMalListRemover(malWrites),
-    refreshAnime: createAnimeRefresher({ db, ...malWrites }),
+    writeListStatus: writeDeps.writeListStatus,
+    removeListStatus: writeDeps.removeListStatus,
+    refreshAnime: writeDeps.refreshAnime,
     catalog: (queries) => chatAniList.searchAnime(queries),
     prompt: options.prompt ?? CURRENT_PROMPT,
     recommendPrompt: RECOMMEND_PROMPT,

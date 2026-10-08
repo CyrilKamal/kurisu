@@ -1,9 +1,10 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
 import type { Config } from "../config.js";
 import { commitProposal } from "../writes/commit.js";
+import { writeError } from "../writes/httpErrors.js";
 import { cancelProposal, undoChange } from "../writes/undo.js";
 import {
   ConversationNotFoundError,
@@ -168,15 +169,4 @@ export function registerChatRoutes(
   app.get("/changes", { preHandler: requireUser(db) }, async (request) => ({
     changes: await loadChanges(db, userOf(request)),
   }));
-}
-
-/** Maps write-path outcomes to HTTP: missing → 404, MAL trouble → 502, the rest → 409. */
-function writeError(reply: FastifyReply, error: string) {
-  const status =
-    error === "not_found"
-      ? 404
-      : ["mal_unavailable", "invalid_response", "internal_error"].includes(error)
-        ? 502
-        : 409;
-  return reply.code(status).send({ error });
 }
