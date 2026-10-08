@@ -307,6 +307,8 @@ Labels, all optional (`expect: {}` means "any sensible picks"):
 - **`picks: false`:** nothing should be recommended, because nothing can fit.
 - **`streams_on`:** every pick streams on at least one of these services, by AniList's official links (frozen in `snapshots/streaming.json`). For "anything on Netflix", `[netflix]`. The ids: `crunchyroll`, `netflix`, `hidive`, `hulu`, `disney_plus`, `prime_video`, `max`, `apple_tv`, `tubi`, `youtube`, `bilibili_tv`, `retrocrush`, `adult_swim`. A pick AniList lists on none of them fails.
 
+- **`airing_now: true`:** every pick is airing now, for "what's good this season". `snapshots/season.json` holds what was airing (this season's series and last season's still airing), frozen once with `pnpm eval:season`.
+
 Next to `message`, a case can also set **`services`**: the streaming services you have in it, as on the Brief page (the same ids). It's empty by default. "On my services" means these, and cards name only these plus any the message asks for.
 
 ```yaml

@@ -1616,3 +1616,25 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - A reaction costs one extra small model call per message that commits something, and the reply doesn't wait for it.
 - A change confirmed later with a tap, rather than in its message, gets no note.
 - Integration tests turn the diary off (`diary: false` in the harness), since it would take the agent model's scripted turns. The diary's own tests turn it on.
+
+## 2026-10-08 — What's good this season; recommend.v8 (Milestone 5)
+**Decision:**
+- **The lineup:** a shared `season_shows` table (migration 0024) holds what's airing now: this season's series and last season's still airing (TV, TV short, ONA), most popular first, from AniList. Only shows on MAL that have started airing and aren't adult are kept, with their details in `anilist_catalog`. It's rebuilt at most daily after a sync, just before discovery.
+- **The search:** `find_candidates` gains `airing_now`. It then searches only airing shows: the user's own, plus season shows that aren't on their list and don't follow a show they haven't completed.
+  - A season show's pull follows its popularity rank, and its facts say "#N most popular show airing now".
+  - Other requests never see season shows.
+- **recommend.v8:** v7 plus one line mapping "this season", "airing now", "currently airing", "what's good right now", "seasonal anime" and "new this season" to `airing_now`. It's current.
+- **Eval:** `snapshots/season.json` (`pnpm eval:season`, 54 shows for 2026 FALL) and an `airing_now` label. One format example. Cyril's own cases are a YOUR TURN.
+
+**Alternatives:**
+- **Adding season shows to each user's discovery pool (the plan).** The lineup is the same for everyone, while the pool is per user and rebuilt with taste weights and a size cap. The pool would drop or reweight them, and they'd show up in every "something new" request.
+- **Every currently airing show by popularity.** Long-running shows (One Piece) would crowd out the season's lineup. Last season's still-airing shows cover the two-cour ones.
+
+**Why:** it reuses the catalog, ranking, cards and where-to-watch that discovery already has. Gating on `airing_now` keeps the other 25 recommendation cases' behavior as it was.
+
+**Consequences:**
+- Recommendation eval on v8, every case (Cyril's 25 plus 8 format examples): 33/33, 95/95 picks within the labels, median 3.8 s, $0.006 a case.
+- Throwaway probes (5 phrasings ×2, not committed): every one that reached the recommender was right. "What's new this season" stayed with the progress agent once in 2 (progress-sync.v15), the same handoff gap as "any new anime?".
+- The user's own airing shows rank first (the list boost), so "what's good this season" leads with what they're watching. New shows fill in after.
+- Season shows are fetched once a day for every user together: one lineup request plus a details request per 50 shows.
+

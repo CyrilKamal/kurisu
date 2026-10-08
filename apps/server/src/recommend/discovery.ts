@@ -115,7 +115,7 @@ export function catalogRowFrom(show: DiscoveredShow & { malId: number }): Catalo
 }
 
 /** Only shows that can be recommended: on MAL, not adult, and out (or airing). */
-function usable(show: DiscoveredShow): show is DiscoveredShow & { malId: number } {
+export function usable(show: DiscoveredShow): show is DiscoveredShow & { malId: number } {
   return (
     show.malId !== null &&
     !show.isAdult &&
@@ -231,7 +231,7 @@ async function recordRun(
 }
 
 /** An upsert takes AniList's latest details for every column but the key. */
-const CATALOG_UPDATE: Record<string, SQL> = Object.fromEntries(
+export const CATALOG_UPDATE: Record<string, SQL> = Object.fromEntries(
   Object.entries(getTableColumns(anilistCatalog))
     .filter(([key]) => key !== "malId")
     .map(([key, column]) => [key, sql.raw(`excluded."${column.name}"`)]),

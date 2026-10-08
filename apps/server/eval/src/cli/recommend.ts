@@ -53,6 +53,7 @@ import {
   type RecommendScore,
 } from "../recommendScore.js";
 import { loadSnapshot, type Snapshot } from "../snapshot.js";
+import { loadSeason, loadSeasonIntoDb } from "../season.js";
 import { linksByMalId, loadStreaming } from "../streaming.js";
 import { throttle } from "../throttle.js";
 
@@ -119,7 +120,8 @@ const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm)
 const details = loadDetails();
 const pool = loadDiscovery();
 const streaming = loadStreaming();
-const loaded = loadRecommendCases(details, pool, undefined, undefined, streaming);
+const season = loadSeason();
+const loaded = loadRecommendCases(details, pool, undefined, undefined, streaming, season);
 if (loaded.errors.length > 0 || !details || !pool) {
   for (const e of loaded.errors)
     console.error(`ERROR ${e.file}${e.caseId ? ` [${e.caseId}]` : ""}: ${e.message}`);
@@ -140,8 +142,15 @@ if (selected.length === 0) {
 
 const airing = loadAiring();
 const catalog = frozenCatalogSearch(loadCatalog());
-const poolIds = new Set(pool.shows.map((s) => s.malId));
-const streamingLinks = linksByMalId(streaming);
+// Shows new to the user the recommender may offer: the discovery pool and what's airing.
+const poolIds = new Set([
+  ...pool.shows.map((s) => s.malId),
+  ...(season?.shows ?? []).map((s) => s.malId),
+]);
+const streamingLinks = new Map([
+  ...(season?.shows ?? []).map((s) => [s.malId, s.links] as const),
+  ...linksByMalId(streaming),
+]);
 const snapshots = new Map<string, Snapshot>();
 
 console.log(
@@ -203,6 +212,7 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
   if (!details || !pool) throw new Error("frozen data missing");
   const userId = await loadSnapshotIntoDb(db, snapshot, airing);
   await loadRecommendDataIntoDb(db, userId, details, pool, streaming);
+  if (season) await loadSeasonIntoDb(db, season);
   const c = resolved.case;
   if (c.services.length > 0)
     await db.insert(briefSettings).values({ userId, services: c.services });

@@ -705,6 +705,21 @@ export const discovery = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.malId] })],
 );
 
+/**
+ * What's airing now: this season's series and last season's still airing, most popular first,
+ * from AniList. Shared by all users (details in anilist_catalog); rebuilt at most daily
+ * (recommend/season.ts).
+ */
+export const seasonShows = pgTable("season_shows", {
+  malId: integer("mal_id").primaryKey(),
+  anilistId: integer("anilist_id").notNull(),
+  // "2026 FALL": the season this lineup is for.
+  season: text("season").notNull(),
+  // 1 for the most popular.
+  rank: integer("rank").notNull(),
+  fetchedAt: timestamptz("fetched_at").notNull(),
+});
+
 /** When each user's discovery pool was last built, so it's rebuilt at most daily. */
 export const discoveryRuns = pgTable("discovery_runs", {
   userId: uuid("user_id")

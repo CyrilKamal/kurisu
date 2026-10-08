@@ -20,6 +20,7 @@ import { RECOMMEND_V4 } from "./recommend.v4.js";
 import { RECOMMEND_V5 } from "./recommend.v5.js";
 import { RECOMMEND_V6 } from "./recommend.v6.js";
 import { RECOMMEND_V7 } from "./recommend.v7.js";
+import { RECOMMEND_V8 } from "./recommend.v8.js";
 
 /** Every prompt version, so the eval can compare them (pnpm eval --prompt progress-sync@1). */
 export const PROMPTS = {
@@ -43,7 +44,7 @@ export const PROMPTS = {
 export const CURRENT_PROMPT = PROGRESS_SYNC_V15;
 
 /** The recommendation agent's prompt. */
-export const RECOMMEND_PROMPT = RECOMMEND_V7;
+export const RECOMMEND_PROMPT = RECOMMEND_V8;
 
 /** Every recommendation prompt by version, for comparing them in the recommendation eval. */
 export const RECOMMEND_PROMPTS = {
@@ -54,6 +55,7 @@ export const RECOMMEND_PROMPTS = {
   [RECOMMEND_V5.version]: RECOMMEND_V5,
   [RECOMMEND_V6.version]: RECOMMEND_V6,
   [RECOMMEND_V7.version]: RECOMMEND_V7,
+  [RECOMMEND_V8.version]: RECOMMEND_V8,
 } as const;
 
 /** The diary reader's prompt (diary/reader.ts). */

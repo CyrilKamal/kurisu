@@ -104,6 +104,16 @@ export interface FanRecommendation {
   rank: number;
 }
 
+/** An anime season, as AniList names them. */
+export type AniListSeason = "WINTER" | "SPRING" | "SUMMER" | "FALL";
+
+/** A season's lineup to fetch: its series, most popular first; `airing` keeps those still airing. */
+export interface SeasonList {
+  season: AniListSeason;
+  year: number;
+  airing?: boolean;
+}
+
 /** A top-rated list to fetch: by AniList genre, tag or format. */
 export interface TopList {
   key: string;
@@ -128,6 +138,11 @@ export interface AniListClient {
   topRated(lists: TopList[]): Promise<Map<string, number[]>>;
   /** Full details of these shows, by AniList id. Ids AniList doesn't know are missing. */
   showDetails(anilistIds: number[]): Promise<DiscoveredShow[]>;
+  /**
+   * The series (TV, TV short, ONA) of these seasons, most popular first, as AniList ids: one list
+   * per season asked for, in one request. Adult titles are left out.
+   */
+  seasonLineup(lists: SeasonList[]): Promise<number[][]>;
   /**
    * The anime that follow each of these MAL entries (AniList's SEQUEL relations), by MAL id.
    * Ids AniList doesn't know are missing; a known show with no sequel maps to [].
@@ -293,6 +308,22 @@ function topQuery(lists: TopList[]): string {
       list.format ? `format_in: [${list.format}]` : null,
     ].filter(Boolean);
     return `l${String(i)}: Page(perPage: ${String(TOP_LIST_SIZE)}) { media(type: ANIME, ${filters.join(", ")}, isAdult: false, status_in: [FINISHED, RELEASING], sort: [SCORE_DESC], popularity_greater: ${String(MIN_POPULARITY)}) { id } }`;
+  });
+  return `query { ${pages.join(" ")} }`;
+}
+
+/** Shows per season lineup. */
+export const SEASON_LIST_SIZE = 50;
+
+/** One aliased page per season, so a lineup is a single request. */
+function seasonQuery(lists: SeasonList[]): string {
+  const pages = lists.map((list, i) => {
+    const filters = [
+      `season: ${list.season}`,
+      `seasonYear: ${String(list.year)}`,
+      ...(list.airing ? ["status: RELEASING"] : []),
+    ];
+    return `s${String(i)}: Page(perPage: ${String(SEASON_LIST_SIZE)}) { media(type: ANIME, ${filters.join(", ")}, isAdult: false, format_in: [TV, TV_SHORT, ONA], sort: [POPULARITY_DESC]) { id } }`;
   });
   return `query { ${pages.join(" ")} }`;
 }
@@ -585,6 +616,12 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
         ),
         streamingLinks: streamingLinks([m]),
       }));
+    },
+
+    async seasonLineup(lists) {
+      if (lists.length === 0) return [];
+      const pages = await query(seasonQuery(lists), {}, topSchema);
+      return lists.map((_, i) => (pages[`s${String(i)}`]?.media ?? []).map((m) => m.id));
     },
 
     async sequelsOf(malIds) {

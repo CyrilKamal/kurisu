@@ -24,6 +24,7 @@ import {
   type Constraints,
 } from "./candidates.js";
 import { rememberDiscovered } from "./discovery.js";
+import { seasonRows } from "./season.js";
 
 /** Picks per recommendation (the user's choice). */
 export const MAX_PICKS = 3;
@@ -106,6 +107,11 @@ const TOOL_SPECS: ToolSpec[] = [
           type: "boolean",
           description: "It must stream on one of the services they subscribe to",
         },
+        airing_now: {
+          type: "boolean",
+          description:
+            "Only shows airing now: their airing shows plus this season's most popular, new to them",
+        },
       },
     },
   },
@@ -147,6 +153,10 @@ const findArgs = z
       .nullish()
       .transform((v) => v ?? undefined),
     on_my_services: z
+      .boolean()
+      .nullish()
+      .transform((v) => v ?? undefined),
+    airing_now: z
       .boolean()
       .nullish()
       .transform((v) => v ?? undefined),
@@ -338,6 +348,7 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
     ...(years.yearTo !== undefined && { yearTo: years.yearTo }),
     ...(a.from?.length && { from: a.from }),
     ...(services.length > 0 && { services }),
+    ...(a.airing_now && { airingNow: true }),
   };
   // Every genre they asked for was unknown: say so rather than filtering on nothing.
   if (a.genres_any?.length && !constraints.genresAny?.length) {
@@ -347,8 +358,14 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
     );
   }
 
+  const pool = await discoveryRows(ctx.db, ctx.userId);
+  // What's airing now joins the search only when asked for; a show the pool has keeps its row.
+  const inPool = new Set(pool.map((row) => row.animeId));
+  const season = a.airing_now
+    ? (await seasonRows(ctx.db, ctx.userId)).filter((row) => !inPool.has(row.animeId))
+    : [];
   const ranked = rankCandidates(
-    [...(await candidateRows(ctx.db, ctx.userId)), ...(await discoveryRows(ctx.db, ctx.userId))],
+    [...(await candidateRows(ctx.db, ctx.userId)), ...pool, ...season],
     await tasteSignals(ctx.db, ctx.userId),
     constraints,
     ctx.services,

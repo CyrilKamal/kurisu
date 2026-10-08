@@ -75,6 +75,8 @@ export interface Constraints {
    * official links. A show AniList lists nowhere never fits.
    */
   services?: string[];
+  /** Only shows airing now: "this season", "airing now". */
+  airingNow?: boolean;
 }
 
 /** A list entry, or a show new to the user, with the details the ranking needs. */
@@ -107,6 +109,8 @@ export interface CandidateRow {
    * they haven't seen), so it isn't recommended.
    */
   prequelsDone?: boolean;
+  /** For a show from what's airing now (recommend/season.ts): its popularity rank, 1 first. */
+  seasonRank?: number;
 }
 
 export interface Candidate extends CandidateRow {
@@ -195,6 +199,7 @@ export function rankCandidates(
     if (wanted.size > 0 && !genres.some((g) => wanted.has(g))) continue;
     if (genres.some((g) => unwanted.has(g))) continue;
     if (types.size > 0 && !types.has((row.mediaType ?? "").toLowerCase())) continue;
+    if (constraints.airingNow && row.airingStatus !== "currently_airing") continue;
     if (constraints.services?.length) {
       if (watchOn(row.streamingLinks, constraints.services).length === 0) continue;
     }
@@ -251,6 +256,9 @@ export function rankCandidates(
       const because = row.because ?? [];
       if (because.length > 0) {
         facts.push(`fans of ${because.slice(0, 2).join(" and ")} also like it`);
+      }
+      if (row.seasonRank !== undefined) {
+        facts.push(`#${String(row.seasonRank)} most popular show airing now`);
       }
     } else if (pool === "plan_to_watch") {
       facts.push("on your Plan to Watch");

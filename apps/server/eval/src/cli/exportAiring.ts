@@ -27,6 +27,7 @@ const FROZEN_FILES = new Set([
   "catalog.json",
   "details.json",
   "discovery.json",
+  "season.json",
   "streaming.json",
 ]);
 

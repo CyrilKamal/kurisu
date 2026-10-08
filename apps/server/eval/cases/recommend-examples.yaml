@@ -43,6 +43,12 @@ cases:
     expect:
       streams_on: [netflix]
 
+  - id: rec-example-this-season
+    message: what's good this season?
+    tags: [example, season]
+    expect:
+      airing_now: true
+
   - id: rec-example-my-services
     message: what can I stream tonight on my services
     tags: [example, streaming]

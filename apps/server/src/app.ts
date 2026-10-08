@@ -13,6 +13,7 @@ import {
 } from "./anilist/cache.js";
 import { completedIds, refreshSequels } from "./anilist/sequels.js";
 import { refreshDiscovery } from "./recommend/discovery.js";
+import { refreshSeason } from "./recommend/season.js";
 import { refreshTaste } from "./taste/profile.js";
 import { createAniListClient } from "./anilist/client.js";
 import { registerAuthRoutes } from "./auth/routes.js";
@@ -123,6 +124,13 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       })
       .catch((err: unknown) => {
         app.log.warn({ err: { name: (err as Error).name } }, "could not refresh sequels");
+      })
+      // What's airing now, shared by every user: at most daily. Before discovery,
+      // which stays the last step (its run marks the background work done).
+      .then(() => refreshSeason({ db, anilist: syncAniList }))
+      .then(() => undefined)
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh this season");
       })
       // Shows new to the user, for recommendations: at most daily, and never in the way of the
       // airing data above. It records its own failures.

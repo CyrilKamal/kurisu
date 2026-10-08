@@ -7,6 +7,7 @@ import { STREAMING_SERVICE_IDS } from "../../src/brief/services.js";
 import { MEDIA_TYPES } from "../../src/recommend/candidates.js";
 import { CASES_DIR, RECOMMEND_FILE, type Problem } from "./cases.js";
 import type { DetailsFreeze, DiscoveryFreeze } from "./recommendData.js";
+import type { SeasonFreeze } from "./season.js";
 import type { StreamingFreeze } from "./streaming.js";
 import { loadSnapshot, normalizeTitle, TitleIndex, type Snapshot } from "./snapshot.js";
 
@@ -69,6 +70,8 @@ export const recommendCaseSchema = z
         source: z.enum(PICK_SOURCES).default("any"),
         /** Every pick streams on at least one of these services, by the frozen AniList links. */
         streams_on: z.array(serviceId).min(1).optional(),
+        /** Every pick is airing now (snapshots/season.json holds what was airing). */
+        airing_now: z.literal(true).optional(),
         /** Shows that must never be picked: titles from the snapshot or the pool, or MAL ids. */
         must_not: z.array(titleOrId).default([]),
       })
@@ -122,6 +125,7 @@ export function loadRecommendCases(
   casesDir: string = CASES_DIR,
   snapshotLoader: (name: string) => Snapshot = loadSnapshot,
   streaming: StreamingFreeze | null = null,
+  season: SeasonFreeze | null = null,
 ): RecommendLoadResult {
   const files = readdirSync(casesDir)
     .filter((f) => RECOMMEND_FILE.test(f))
@@ -222,6 +226,10 @@ export function loadRecommendCases(
       }
       if (from !== undefined && to !== undefined && from > to) {
         result.errors.push(problem("year_from is after year_to."));
+        ok = false;
+      }
+      if (c.expect.airing_now && !season) {
+        result.errors.push(problem("airing_now needs what was airing: run pnpm eval:season."));
         ok = false;
       }
       if (c.expect.streams_on && !streaming) {
