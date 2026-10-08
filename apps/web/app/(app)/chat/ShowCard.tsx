@@ -56,12 +56,13 @@ export function ShowCard({
   onChoose?: () => void;
   onAdd?: () => void;
 }) {
-  const body = (title: React.ReactNode) => (
+  const body = (title: React.ReactNode, below?: React.ReactNode) => (
     <>
       <Cover url={show.pictureUrl} />
       <div className="min-w-0">
         {title}
         <p className="text-xs text-zinc-500">{showDetails(show)}</p>
+        {below}
       </div>
     </>
   );
@@ -81,25 +82,23 @@ export function ShowCard({
   return (
     <div className={CARD}>
       {body(
-        <>
-          <a
-            href={`https://myanimelist.net/anime/${String(show.animeId)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="line-clamp-2 font-medium leading-snug hover:underline"
+        <a
+          href={`https://myanimelist.net/anime/${String(show.animeId)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="line-clamp-2 font-medium leading-snug hover:underline"
+        >
+          {show.title}
+        </a>,
+        onAdd && (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="mt-2 h-8 rounded-md border border-zinc-300 px-2.5 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
           >
-            {show.title}
-          </a>
-          {onAdd && (
-            <button
-              type="button"
-              onClick={onAdd}
-              className="mt-2 h-8 rounded-md border border-zinc-300 px-2.5 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-            >
-              Add to Plan to Watch
-            </button>
-          )}
-        </>,
+            Add to Plan to Watch
+          </button>
+        ),
       )}
     </div>
   );
