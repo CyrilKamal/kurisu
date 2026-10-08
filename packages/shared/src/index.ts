@@ -336,6 +336,8 @@ export const briefSettingsSchema = z.object({
   time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
   timeZone: z.string().min(1).max(64),
   services: z.array(z.enum(streamingServiceIds)).max(STREAMING_SERVICES.length),
+  /** On Sundays the brief also sums up the week, with this year's goal. */
+  sundayRecap: z.boolean(),
 });
 export type BriefSettings = z.infer<typeof briefSettingsSchema>;
 
@@ -351,6 +353,8 @@ export const briefSettingsResponseSchema = briefSettingsSchema.extend({
       episodes: z.number().int().nonnegative(),
       /** Shows it said started airing: sequels to ones the user finished, Plan to Watch shows. */
       started: z.number().int().nonnegative(),
+      /** Whether it summed up the week (a Sunday). */
+      recap: z.boolean(),
       at: z.iso.datetime({ offset: true }),
     })
     .nullable(),
@@ -366,6 +370,8 @@ export const briefTestResponseSchema = z.object({
   episodes: z.number().int().nonnegative(),
   /** Shows that started airing: sequels to ones the user finished, Plan to Watch shows. */
   started: z.number().int().nonnegative(),
+  /** Whether it summed up the week (sent on a Sunday). */
+  recap: z.boolean(),
   push: pushTestResponseSchema,
 });
 export type BriefTestResponse = z.infer<typeof briefTestResponseSchema>;

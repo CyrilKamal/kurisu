@@ -29,10 +29,18 @@ const settingsBody = z.object({
     .array(z.string().refine((id) => STREAMING_SERVICE_IDS.includes(id)))
     .max(STREAMING_SERVICE_IDS.length)
     .transform((ids) => [...new Set(ids)]),
+  // Left out by an older page: kept as it was.
+  sundayRecap: z.boolean().optional(),
 });
 
 /** What the settings page shows before the user has saved anything. */
-const DEFAULT_SETTINGS = { enabled: false, localTime: "08:00", timeZone: "UTC", services: [] };
+const DEFAULT_SETTINGS = {
+  enabled: false,
+  localTime: "08:00",
+  timeZone: "UTC",
+  services: [],
+  sundayRecap: true,
+};
 
 /** A test brief calls AniList and the model, so once a minute is plenty. */
 const TEST_COOLDOWN_MS = 60_000;
@@ -60,6 +68,7 @@ export function registerBriefRoutes(
       time: settings.localTime,
       timeZone: settings.timeZone,
       services: settings.services,
+      sundayRecap: settings.sundayRecap,
       ...(await briefSchedule(db, userId, settings)),
     };
   }
@@ -72,7 +81,15 @@ export function registerBriefRoutes(
     if (!body.success) return reply.code(400).send(fail("invalid_settings"));
     const { enabled, time, timeZone, services } = body.data;
     const [before] = await db.select().from(briefSettings).where(eq(briefSettings.userId, userId));
-    const values = { enabled, localTime: time, timeZone, services, updatedAt: new Date() };
+    const sundayRecap = body.data.sundayRecap ?? before?.sundayRecap ?? true;
+    const values = {
+      enabled,
+      localTime: time,
+      timeZone,
+      services,
+      sundayRecap,
+      updatedAt: new Date(),
+    };
     await db
       .insert(briefSettings)
       .values({ userId, ...values })
@@ -101,6 +118,7 @@ export function registerBriefRoutes(
         status: outcome.status === "empty" ? "empty" : "sent",
         episodes: outcome.episodes,
         started: outcome.alerts,
+        recap: outcome.recap,
         push: outcome.push,
       };
     } catch (err) {

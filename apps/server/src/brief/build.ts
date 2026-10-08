@@ -221,15 +221,22 @@ export function alertLine(alert: BriefAlert): string {
 
 /**
  * The brief as a chat message: the summary line, one line per show with new episodes and the
- * reply hint, then the shows that started airing. The hint sits right under the episodes it's
- * about; "watched it" never covers a show that only started airing.
+ * reply hint, then the shows that started airing, then a Sunday's recap paragraph. The hint
+ * sits right under the episodes it's about; "watched it" never covers a show that only started
+ * airing.
  */
-export function chatText(summary: string, items: BriefItem[], alerts: BriefAlert[] = []): string {
+export function chatText(
+  summary: string,
+  items: BriefItem[],
+  alerts: BriefAlert[] = [],
+  recap: string | null = null,
+): string {
   const lines = [summary];
   if (items.length > 0) lines.push("", ...items.map(itemLine), "", BRIEF_REPLY_HINT);
   if (alerts.length > 0) {
     lines.push("", ...(items.length > 0 ? [ALERTS_HEADING] : []), ...alerts.map(alertLine));
   }
+  if (recap) lines.push("", recap);
   return lines.join("\n");
 }
 
