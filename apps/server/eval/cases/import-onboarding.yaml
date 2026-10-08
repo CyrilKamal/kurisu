@@ -1,0 +1,52 @@
+# Onboarding from notes alone (an empty list). Written by Claude at Cyril's request on
+# 2026-10-08, from his import rules; see import-notes.yaml.
+snapshot: empty
+cases:
+  - id: import-onboarding-list
+    tags: [onboarding]
+    notes: |
+      my anime list
+
+      finished: perfect blue (10), look back (9)
+      watching: shirobako ep 8
+      plan to watch: tatami galaxy, mushishi
+      frieren 10/10
+    expect:
+      - line: 3
+        group: add
+        anime: PERFECT BLUE
+        change: { status: completed, score: 10 }
+      - line: 3
+        group: add
+        anime: Look Back
+        change: { status: completed, score: 9 }
+      - line: 4
+        group: add
+        anime: SHIROBAKO
+        change: { status: watching, episodes_watched: 8 }
+      - line: 5
+        group: add
+        anime: Yojouhan Shinwa Taikei
+        change: { status: plan_to_watch }
+      # Mushishi has several frozen entries (the series, its sequels and specials).
+      - line: 5
+        group: which_one
+        anime: Mushishi
+      # Frieren isn't frozen, so on an empty list it can't be found.
+      - line: 6
+        group: not_found
+
+  - id: import-onboarding-english-title
+    tags: [onboarding]
+    notes: |
+      natsume's book of friends season 1, done
+      odd taxi
+    expect:
+      - line: 1
+        group: add
+        anime: 4081 # Natsume Yuujinchou (season 1)
+        change: { status: completed, episodes_watched: 13 }
+      - line: 2
+        group: add
+        anime: Odd Taxi
+        change: { status: plan_to_watch }

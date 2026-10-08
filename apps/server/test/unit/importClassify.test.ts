@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { decide, groupMatched } from "../../src/import/classify.js";
+import { decide, groupMatched, trailingNumber } from "../../src/import/classify.js";
 import { itemsFrom, MAX_IMPORT_LINES, noteLines, parseReport } from "../../src/import/parse.js";
 import type { SearchCandidate } from "../../src/list/search.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
@@ -315,6 +315,44 @@ describe("decide and the title's words", () => {
       kind: "found",
       animeId: 1,
     });
+  });
+});
+
+describe("names with a leading article, and season numbers", () => {
+  const series = candidate(7785, {
+    title: "Yojouhan Shinwa Taikei",
+    titleEn: "The Tatami Galaxy",
+    matchedName: "The Tatami Galaxy",
+  });
+  const specials = candidate(8985, {
+    title: "Yojouhan Shinwa Taikei Specials",
+    titleEn: "The Tatami Galaxy Specials",
+    matchedName: "The Tatami Galaxy Specials",
+    mediaType: "special",
+  });
+
+  it('takes the show a title names but for "The", when the rest are its side stories', () => {
+    expect(decide([series, specials], {}, "tatami galaxy")).toEqual({
+      kind: "found",
+      animeId: 7785,
+    });
+  });
+
+  it("still asks when another season shares the name", () => {
+    const season2 = candidate(9999, {
+      title: "Yojouhan Shinwa Taikei 2",
+      titleEn: "The Tatami Galaxy 2",
+      matchedName: "The Tatami Galaxy 2",
+    });
+    expect(decide([series, season2], {}, "tatami galaxy").kind).toBe("several");
+  });
+
+  it("reads a bare trailing number as a season, but not a number that's the whole title", () => {
+    expect(trailingNumber("bsd 4")).toBe(4);
+    expect(trailingNumber("Clevatess 2")).toBe(2);
+    expect(trailingNumber("mob psycho 100")).toBeNull();
+    expect(trailingNumber("86")).toBeNull();
+    expect(trailingNumber("frieren")).toBeNull();
   });
 });
 

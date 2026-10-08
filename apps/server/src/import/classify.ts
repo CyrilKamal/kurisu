@@ -2,8 +2,9 @@ import type { CatalogSearch } from "../agent/tools.js";
 import { rememberShows } from "../anilist/catalog.js";
 import { MAX_SEARCH_QUERIES } from "../anilist/client.js";
 import type { Db } from "../db/client.js";
-import { searchCatalog, searchMyList, type SearchCandidate } from "../list/search.js";
+import { isSideStory, searchCatalog, searchMyList, type SearchCandidate } from "../list/search.js";
 import { wordsInName } from "../list/grounding.js";
+import { normalizeName } from "../list/seasons.js";
 import {
   normalizeChange,
   type EntryState,
@@ -197,6 +198,52 @@ function progressOnly(notes: RequestedChange): boolean {
  * A match from search results: clear only when the search's clear-match rule says so (grounded
  * in the user's words), and every word of the title as written is in the matched name.
  */
+/** A name with a leading article dropped: "The Tatami Galaxy" and "tatami galaxy" are one name. */
+function withoutArticle(name: string): string {
+  return normalizeName(name).replace(/^(?:the|a|an) /, "");
+}
+
+/**
+ * When nothing is clear, but exactly one candidate's name is the title (a leading "The" aside)
+ * and every other candidate is a movie, special or OVA: it's that show ("tatami galaxy" is The
+ * Tatami Galaxy, not its Specials). Seasons never count as side stories, so a title shared by
+ * seasons still asks.
+ */
+function namedDespiteArticle(
+  candidates: SearchCandidate<ListStatus | null>[],
+  title: string,
+): SearchCandidate<ListStatus | null> | null {
+  const wanted = withoutArticle(title);
+  const named = candidates.filter((c) =>
+    [c.title, c.titleEn, c.matchedName].some((n) => n !== null && withoutArticle(n) === wanted),
+  );
+  const [only] = named;
+  if (named.length !== 1 || !only || isSideStory(only)) return null;
+  return candidates.every((c) => c === only || isSideStory(c)) ? only : null;
+}
+
+/** A bare number ending a title ("bsd 4", "clevatess 2"), which usually means the season. */
+export function trailingNumber(title: string): number | null {
+  const found = /^\D.*\s(\d{1,2})$/.exec(normalizeName(title));
+  return found?.[1] ? Number(found[1]) : null;
+}
+
+function ordinal(n: number): string {
+  const teen = n % 100 >= 11 && n % 100 <= 13;
+  const suffix = teen ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
+  return `${String(n)}${suffix}`;
+}
+
+/** Whether a show's names already carry this number ("Mob Psycho 100", "Clevatess Season 2"). */
+function namesHaveNumber(show: SearchCandidate<ListStatus | null>, n: number): boolean {
+  const words = new Set(
+    [show.title, show.titleEn, show.matchedName]
+      .filter((name): name is string => name !== null)
+      .flatMap((name) => normalizeName(name).split(" ")),
+  );
+  return words.has(String(n)) || words.has(ordinal(n));
+}
+
 export function decide(
   candidates: SearchCandidate<ListStatus | null>[],
   notes: RequestedChange,
@@ -210,6 +257,8 @@ export function decide(
   );
   const [only] = clear;
   if (clear.length === 1 && only) return { kind: "found", animeId: only.animeId };
+  const named = clear.length === 0 ? namedDespiteArticle(candidates, title) : null;
+  if (named) return { kind: "found", animeId: named.animeId };
   if (candidates.length > 0) {
     return { kind: "several", candidates: candidates.slice(0, CANDIDATES).map((c) => c.animeId) };
   }
@@ -221,6 +270,31 @@ export function decide(
  * for the rest, a few titles per request. Each search is grounded in that line's own words, so
  * a match is clear only when the user's words name the show (list/grounding.ts).
  */
+/**
+ * "bsd 4" named Bungou Stray Dogs by its nickname, and the 4 is the season: finds that season of
+ * the same show on the list, by its own names ("Bungou Stray Dogs 4th Season"). Only an entry
+ * named exactly that way counts; otherwise the user picks.
+ */
+async function thatSeason(
+  db: Db,
+  userId: string,
+  show: SearchCandidate,
+  season: number,
+): Promise<Match> {
+  const bases = [show.title, show.titleEn].filter((t): t is string => t !== null);
+  const queries = bases.flatMap((base) => [
+    `${base} ${String(season)}`,
+    `${base} season ${String(season)}`,
+    `${base} ${ordinal(season)} season`,
+  ]);
+  const found = await searchMyList(db, userId, queries, { limit: CANDIDATES });
+  const clear = found.filter((c) => c.clear && c.animeId !== show.animeId);
+  const [only] = clear;
+  if (clear.length === 1 && only) return { kind: "found", animeId: only.animeId };
+  const ids = [...new Set([show.animeId, ...found.map((c) => c.animeId)])];
+  return { kind: "several", candidates: ids.slice(0, CANDIDATES) };
+}
+
 export async function matchItems(
   deps: { db: Db; userId: string; catalog: CatalogSearch | null },
   items: ParsedItem[],
@@ -233,7 +307,13 @@ export async function matchItems(
     if (!item.title) continue;
     const words = { userText: item.said, groundIn: [item.said] };
     const onList = await searchMyList(db, userId, [item.title], { limit: CANDIDATES, ...words });
-    const match = decide(onList, item.notes, item.title);
+    let match = decide(onList, item.notes, item.title);
+    const foundId = match.kind === "found" ? match.animeId : null;
+    const show = foundId === null ? null : onList.find((c) => c.animeId === foundId);
+    const season = trailingNumber(item.title);
+    if (show && season !== null && !namesHaveNumber(show, season)) {
+      match = await thatSeason(db, userId, show, season);
+    }
     matches[i] = match;
     if (match.kind !== "found") unresolved.push(i);
   }

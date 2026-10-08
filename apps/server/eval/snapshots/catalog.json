@@ -629,6 +629,63 @@
           "startDate": "2007-04-21"
         }
       ]
+    },
+    {
+      "query": "odd taxi",
+      "frozenAt": "2026-10-08T10:13:37.758Z",
+      "shows": [
+        {
+          "anilistId": 128547,
+          "malId": 46102,
+          "title": "Odd Taxi",
+          "titleEn": "ODDTAXI",
+          "titleJa": "オッドタクシー",
+          "synonyms": [
+            "Необычное такси"
+          ],
+          "format": "TV",
+          "status": "FINISHED",
+          "episodes": 13,
+          "duration": 24,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx128547-nNekWTKqmvEi.jpg",
+          "startDate": "2021-04-06"
+        },
+        {
+          "anilistId": 158676,
+          "malId": 53642,
+          "title": "Odd Taxi Original Picture Drama",
+          "titleEn": null,
+          "titleJa": "オッドタクシー オリジナルピクチャードラマ",
+          "synonyms": [
+            "Odd Taxi: Flauntingly",
+            "Odd Taxi: Koremiyogashi ni",
+            "オッドタクシー これみよがしに"
+          ],
+          "format": "SPECIAL",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 9,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx158676-7L3dRZ1FYvIz.png",
+          "startDate": "2022-03-30"
+        },
+        {
+          "anilistId": 143080,
+          "malId": 50653,
+          "title": "Odd Taxi: In the Woods",
+          "titleEn": "ODDTAXI In The Woods",
+          "titleJa": "映画 オッドタクシー イン・ザ・ウッズ",
+          "synonyms": [
+            "ODDTAXI Movie",
+            "Необычное такси: в чаще"
+          ],
+          "format": "MOVIE",
+          "status": "FINISHED",
+          "episodes": 1,
+          "duration": 127,
+          "coverUrl": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx143080-T5jgumGJBbNa.jpg",
+          "startDate": "2022-04-01"
+        }
+      ]
     }
   ]
 }
