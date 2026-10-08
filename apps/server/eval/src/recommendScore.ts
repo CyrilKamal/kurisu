@@ -51,6 +51,8 @@ function sourceProblem(pick: PickedShow, source: RecommendCase["expect"]["source
       return pick.status === "plan_to_watch" ? null : "not on Plan to Watch";
     case "in_progress":
       return inProgress ? null : "not a show in progress";
+    case "started":
+      return inProgress && pick.episodesWatched > 0 ? null : "not a show you've started";
     case "new":
       return pick.status === null ? null : "on your list, but something new was asked for";
   }
@@ -76,10 +78,12 @@ export function checkPick(
     );
   }
   if (expect.max_episode_minutes !== undefined) {
+    const grace = expect.grace_minutes ?? 0;
     if (pick.episodeMinutes === null) constraint("episode length unknown");
-    else if (pick.episodeMinutes > expect.max_episode_minutes) {
+    else if (pick.episodeMinutes > expect.max_episode_minutes + grace) {
       constraint(
-        `${String(pick.episodeMinutes)}-minute episodes, over ${String(expect.max_episode_minutes)}`,
+        `${String(pick.episodeMinutes)}-minute episodes, over ${String(expect.max_episode_minutes)}` +
+          (grace > 0 ? ` plus ${String(grace)} minutes of grace` : ""),
       );
     }
   }
@@ -143,6 +147,20 @@ export function scoreRecommendCase(
   mustNot: Set<number>,
 ): RecommendScore {
   const violations = run.picks.flatMap((pick) => checkPick(pick, expect, mustNot));
+  // Shows that fit the time come first; ones in the grace only after them.
+  const limit = expect.max_episode_minutes;
+  if (limit !== undefined && expect.grace_minutes !== undefined) {
+    const firstOver = run.picks.findIndex((p) => (p.episodeMinutes ?? 0) > limit);
+    for (const pick of firstOver < 0 ? [] : run.picks.slice(firstOver + 1)) {
+      if (pick.episodeMinutes !== null && pick.episodeMinutes <= limit) {
+        violations.push({
+          animeId: pick.animeId,
+          kind: "constraint",
+          message: "fits the time but came after a show that runs over",
+        });
+      }
+    }
+  }
   const reasons: string[] = [];
   if (run.error) reasons.push(`error: ${run.error}`);
   if (!run.handedOff) reasons.push("never reached the recommender");

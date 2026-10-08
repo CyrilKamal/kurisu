@@ -1,0 +1,167 @@
+# Cyril's recommendation cases (2026-10-07). Wordings are his, as typed. Labels follow his
+# answers: a time limit comes first, with up to 5 minutes of grace when few shows fit; "started"
+# means at least one episode watched; "finish quickly" is at most 13 episodes left; "long" is
+# over 100 episodes left; and the genres for each mood.
+snapshot: my-list
+cases:
+  - id: rec-bored-movie
+    message: im bored want to watch a move, any recs?
+    tags: [movie]
+    expect:
+      media_types: [movie]
+
+  - id: rec-a-show
+    message: can you recommend me a show
+    tags: [show]
+    notes: The app reads "a show" as TV or web series.
+    expect:
+      media_types: [tv, ona]
+
+  - id: rec-20-mins
+    message: i got 20 mins what can i watch
+    tags: [time]
+    notes: Star Wars Visions (16) and Shingeki! Kyojin Chuugakkou (18) fit; up to 25 only after them.
+    expect:
+      max_episode_minutes: 20
+      grace_minutes: 5
+
+  - id: rec-10-15-mins
+    message: anything thats 10-15 mins for me to watch
+    tags: [time]
+    notes: Nothing is 15 minutes or under; Star Wars Visions (16) is close enough.
+    expect:
+      max_episode_minutes: 15
+      grace_minutes: 5
+
+  - id: rec-25-mins-chill
+    message: got 25 mins anything chill to watch
+    tags: [time, mood]
+    expect:
+      max_episode_minutes: 25
+      grace_minutes: 5
+      genres_any: [Slice of Life, Iyashikei, CGDCT]
+
+  - id: rec-funny
+    message: im tryna watch something funny
+    tags: [mood]
+    expect:
+      genres_any: [Comedy]
+
+  - id: rec-laugh
+    message: want something to laugh at
+    tags: [mood]
+    expect:
+      genres_any: [Comedy]
+
+  - id: rec-cry
+    message: anything i can watch to make me cry
+    tags: [mood]
+    expect:
+      genres_any: [Drama, Romance, Music]
+
+  - id: rec-hyped
+    message: tryna watch something to get me hyped up
+    tags: [mood]
+    expect:
+      genres_any: [Action, Sports, Shounen, Martial Arts]
+
+  - id: rec-action
+    message: any action recs for me
+    tags: [genre]
+    expect:
+      genres_any: [Action]
+
+  - id: rec-thriller
+    message: tryna watch a thriller
+    tags: [mood]
+    expect:
+      genres_any: [Suspense, Psychological, Mystery, Horror, Gore]
+
+  - id: rec-dark
+    message: i wanna watch something dark
+    tags: [mood]
+    expect:
+      genres_any: [Suspense, Psychological, Mystery, Horror, Gore]
+
+  - id: rec-no-ecchi-romance
+    message: Can you give me any recs not tryna watch any ecchi or romance tho
+    tags: [avoid]
+    expect:
+      genres_none: [Ecchi, Romance]
+
+  - id: rec-continue-started
+    message: what should I continue watching that i started
+    tags: [continue]
+    notes: Only shows with episodes watched; Watching at ep 0 is just queued.
+    expect:
+      source: started
+
+  - id: rec-planned
+    message: can you recommend me something from my planned list
+    tags: [source]
+    expect:
+      source: plan_to_watch
+
+  - id: rec-new
+    message: can you recommend me something new to watch
+    tags: [source]
+    expect:
+      source: new
+
+  - id: rec-finish-quickly
+    message: can you rec me something i can finish quickly
+    tags: [length]
+    expect:
+      max_episodes_left: 13
+
+  - id: rec-finish-weekend
+    message: can you rec me a show to finish over the weekend
+    tags: [length, show]
+    expect:
+      media_types: [tv, ona]
+      max_episodes_left: 13
+
+  - id: rec-not-long
+    message: I wanna watch something but not tryna start long shows like op or dbz
+    tags: [length, avoid]
+    expect:
+      max_episodes_left: 100
+      must_not: [One Piece, Dragon Ball Z]
+
+  - id: rec-any-movie
+    message: can you rec me any type of movie
+    tags: [movie]
+    expect:
+      media_types: [movie]
+
+  - id: rec-movie-genres
+    message: i wanna watch either a comedy romance mecha or horror movie
+    tags: [movie, genre]
+    expect:
+      media_types: [movie]
+      genres_any: [Comedy, Romance, Mecha, Horror]
+
+  - id: rec-finished-daemons
+    message: finished daemons what should I watch now
+    tags: [update]
+    notes: Daemons of the Shadow Realm (Yomi no Tsugai), at ep 17/24 in the snapshot.
+    expect:
+      must_not: [Yomi no Tsugai]
+
+  - id: rec-similar-daemons
+    message: i just finished daemons it was so good anything similar i can watch?
+    tags: [update, similar]
+    notes: Similar means sharing its genres (Action, Adventure, Shounen, Supernatural).
+    expect:
+      genres_any: [Action, Adventure, Shounen, Supernatural]
+      must_not: [Yomi no Tsugai]
+
+  - id: rec-anything
+    message: rec me anything
+    tags: [vague]
+    expect: {}
+
+  - id: rec-idk
+    message: idk what to watch
+    tags: [vague]
+    expect: {}

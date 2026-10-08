@@ -10,9 +10,17 @@ import { loadSnapshot, normalizeTitle, TitleIndex, type Snapshot } from "./snaps
 
 /**
  * Where the picks should come from: the user's list (Plan to Watch or in progress), one part of
- * it, shows new to them, or anywhere.
+ * it, shows new to them, or anywhere. "started" is in progress with at least one episode watched:
+ * a Watching show at episode 0 is only queued.
  */
-export const PICK_SOURCES = ["list", "plan_to_watch", "in_progress", "new", "any"] as const;
+export const PICK_SOURCES = [
+  "list",
+  "plan_to_watch",
+  "in_progress",
+  "started",
+  "new",
+  "any",
+] as const;
 export type PickSource = (typeof PICK_SOURCES)[number];
 
 const titleOrId = z.union([z.string().min(1), z.number().int().positive()]);
@@ -35,6 +43,11 @@ export const recommendCaseSchema = z
         media_types: z.array(z.enum(MEDIA_TYPES)).min(1).optional(),
         /** Every pick's episodes (or the movie) are at most this many minutes. */
         max_episode_minutes: z.number().int().positive().optional(),
+        /**
+         * Minutes over max_episode_minutes still allowed when few shows fit, as long as every pick
+         * that fits comes before them.
+         */
+        grace_minutes: z.number().int().positive().optional(),
         /** Every pick has at most this many episodes left to watch: "something I can finish". */
         max_episodes_left: z.number().int().positive().optional(),
         /** Picks should have at least one of these genres (a mood). Scored as genre fit. */
@@ -187,6 +200,10 @@ export function loadRecommendCases(
         }
       }
 
+      if (c.expect.grace_minutes !== undefined && c.expect.max_episode_minutes === undefined) {
+        result.errors.push(problem("grace_minutes needs max_episode_minutes."));
+        ok = false;
+      }
       if (!c.expect.picks && (c.expect.must_not.length > 0 || c.expect.genres_any)) {
         result.warnings.push(problem("expects no picks, so must_not and genres_any never apply."));
       }
