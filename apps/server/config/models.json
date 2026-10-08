@@ -6,6 +6,10 @@
     "brief": "gemini:gemini-3.5-flash-lite",
     "recommend": "gemini:gemini-3.8-flash"
   },
+  "thinking": {
+    "recommend": "low",
+    "note": "Gemini thinking level per role; unlisted roles use the model's default. Low halved recommendation latency (12.3 s to 6.1 s median) with the same eval result."
+  },
   "ollama": {
     "numCtx": 8192,
     "think": false,

@@ -3,7 +3,13 @@ import { fileURLToPath } from "node:url";
 
 import { z } from "zod";
 
-import { PROVIDER_NAMES, type ProviderName, type Usage } from "./types.js";
+import {
+  PROVIDER_NAMES,
+  THINKING_LEVELS,
+  type ProviderName,
+  type ThinkingLevel,
+  type Usage,
+} from "./types.js";
 
 /** "provider:model", e.g. "gemini:gemini-3.5-flash-lite" or "ollama:qwen3.6:27b". */
 export interface ModelRef {
@@ -11,6 +17,8 @@ export interface ModelRef {
   model: string;
   /** The original "provider:model" string, used in logs and price lookups. */
   ref: string;
+  /** How much the model thinks in this role (config/models.json "thinking"); unset is its default. */
+  thinking?: ThinkingLevel;
 }
 
 export function parseModelRef(value: string): ModelRef {
@@ -38,6 +46,8 @@ const priceSchema = z.object({
   note: z.string().optional(),
 });
 
+const thinkingLevel = z.enum(THINKING_LEVELS).optional();
+
 const modelsFileSchema = z.object({
   roles: z.record(z.enum(MODEL_ROLES), z.string()),
   ollama: z
@@ -47,6 +57,18 @@ const modelsFileSchema = z.object({
       note: z.string().optional(),
     })
     .default({ numCtx: 8192, think: false }),
+  /** A thinking level per role, for thinking models; roles not listed use the model's default. */
+  thinking: z
+    .object({
+      agent: thinkingLevel,
+      escalation: thinkingLevel,
+      eval: thinkingLevel,
+      brief: thinkingLevel,
+      recommend: thinkingLevel,
+      note: z.string().optional(),
+    })
+    .strict()
+    .optional(),
   /** USD per 1M tokens. Keys are model refs; "provider:*" matches any model of a provider. */
   pricesPerMillionTokens: z.record(z.string(), priceSchema),
 });
@@ -66,7 +88,8 @@ export function resolveRoles(
   const pick = (role: ModelRole) => {
     const value = overrides[role] ?? file.roles[role];
     if (!value) throw new Error(`No model configured for role "${role}" in config/models.json.`);
-    return parseModelRef(value);
+    const thinking = file.thinking?.[role];
+    return { ...parseModelRef(value), ...(thinking && { thinking }) };
   };
   return {
     agent: pick("agent"),

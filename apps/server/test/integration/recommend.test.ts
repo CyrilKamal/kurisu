@@ -113,15 +113,17 @@ describe("recommendations in Chat", () => {
               name: "present_picks",
               arguments: {
                 picks: [{ anime_id: CHILL, why: "Calm, short episodes you can finish tonight." }],
+                reply: "Here's something chill.",
               },
             },
           ],
         };
       },
-      { text: "Here's something chill." },
     ]);
 
     const res = await send("40 minutes, something chill");
+    // Showing picks with their sentence ends the run: two model calls, no third just to reply.
+    expect(models.requests.filter((r) => r.ref === RECOMMEND.ref)).toHaveLength(2);
 
     // The chill show, plus the fixture's paused and rewatching Slice of Life shows. Not the movie
     // (too long), the watching show (not Slice of Life), or anything completed or dropped.
@@ -147,8 +149,8 @@ describe("recommendations in Chat", () => {
 
     // Logged as a recommendation run, linked to the run that handed it over.
     const runs = await h.db.select().from(agentRuns);
-    const rec = runs.find((r) => r.promptVersion === "recommend@5");
-    const progress = runs.find((r) => r.promptVersion !== "recommend@5");
+    const rec = runs.find((r) => r.promptVersion === "recommend@6");
+    const progress = runs.find((r) => r.promptVersion !== "recommend@6");
     expect(rec).toMatchObject({ outcome: "recommended", handedOffFromRunId: progress?.id });
     const [row] = await h.db.select().from(recommendations);
     expect(row?.chatMessageId).toBe(reply?.id);
@@ -235,7 +237,7 @@ describe("recommendations in Chat", () => {
     const [rec] = await h.db
       .select()
       .from(agentRuns)
-      .where(eq(agentRuns.promptVersion, "recommend@5"));
+      .where(eq(agentRuns.promptVersion, "recommend@6"));
     expect(rec?.outcome).toBe("error");
   });
 });

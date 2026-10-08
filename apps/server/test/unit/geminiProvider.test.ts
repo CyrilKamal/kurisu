@@ -78,6 +78,16 @@ describe("gemini provider", () => {
     }
   });
 
+  it("sends a thinking level when one is set, never a thinking budget", async () => {
+    server.reply({ body: functionCallResponse });
+
+    await provider.chat({ model: "m", system: "", tools, messages: hello, thinking: "low" });
+
+    const body = server.requests[0]?.body;
+    expect(body).toHaveProperty("generationConfig.thinkingConfig.thinkingLevel", "LOW");
+    expect(body).not.toHaveProperty("generationConfig.thinkingConfig.thinkingBudget");
+  });
+
   it("parses function calls, counts thinking tokens as output and hides thoughts", async () => {
     server.reply({ body: functionCallResponse });
 

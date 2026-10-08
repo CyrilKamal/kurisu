@@ -31,11 +31,17 @@ export type LlmMessage =
     }
   | { role: "tool"; toolCallId: string; name: string; content: string };
 
+/** How much a thinking model thinks before answering; less is faster. */
+export const THINKING_LEVELS = ["minimal", "low", "medium", "high"] as const;
+export type ThinkingLevel = (typeof THINKING_LEVELS)[number];
+
 export interface ChatRequest {
   model: string;
   system: string;
   messages: LlmMessage[];
   tools: ToolSpec[];
+  /** Unset leaves the model's default. Providers without the setting ignore it. */
+  thinking?: ThinkingLevel;
   // No sampling settings (temperature, top_p, top_k): newer Gemini models reject them, so every
   // model runs on its own defaults.
   signal?: AbortSignal;

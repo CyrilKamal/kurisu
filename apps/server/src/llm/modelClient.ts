@@ -43,7 +43,11 @@ export function createModelClient(options: ModelClientOptions): ModelClient {
 
   return {
     chat(ref, request) {
-      return provider(ref.provider).chat({ ...request, model: ref.model });
+      return provider(ref.provider).chat({
+        ...request,
+        model: ref.model,
+        ...(ref.thinking && { thinking: ref.thinking }),
+      });
     },
   };
 }
