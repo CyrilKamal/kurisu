@@ -19,6 +19,34 @@ export interface PickedShow {
   episodeMinutes: number | null;
   genres: string[];
   airingStatus: string | null;
+  /** The year it started airing; null when unknown. */
+  startYear: number | null;
+}
+
+type Expect = RecommendCase["expect"];
+
+/** How many years outside the asked-for years a pick started airing; null when unknown. */
+function yearsOutside(pick: PickedShow, expect: Expect): number | null {
+  if (pick.startYear === null) return null;
+  const before = expect.year_from === undefined ? 0 : expect.year_from - pick.startYear;
+  const after = expect.year_to === undefined ? 0 : pick.startYear - expect.year_to;
+  return Math.max(before, after, 0);
+}
+
+function yearRange(expect: Expect): string {
+  const { year_from: from, year_to: to } = expect;
+  if (from !== undefined && to !== undefined) return `${String(from)}-${String(to)}`;
+  return from !== undefined ? `${String(from)} on` : `up to ${String(to)}`;
+}
+
+/** Whether a pick is a near miss the grace allows: a little over the time or outside the years. */
+function nearMiss(pick: PickedShow, expect: Expect): boolean {
+  const overTime =
+    expect.grace_minutes !== undefined &&
+    expect.max_episode_minutes !== undefined &&
+    (pick.episodeMinutes ?? 0) > expect.max_episode_minutes;
+  const offYears = expect.grace_years !== undefined && (yearsOutside(pick, expect) ?? 0) > 0;
+  return overTime || offYears;
 }
 
 export interface Violation {
@@ -95,6 +123,17 @@ export function checkPick(
       constraint(`${String(left)} episodes left, over ${String(expect.max_episodes_left)}`);
     }
   }
+  if (expect.year_from !== undefined || expect.year_to !== undefined) {
+    const off = yearsOutside(pick, expect);
+    const grace = expect.grace_years ?? 0;
+    if (off === null) constraint("air year unknown");
+    else if (off > grace) {
+      constraint(
+        `aired ${String(pick.startYear)}, outside ${yearRange(expect)}` +
+          (grace > 0 ? ` plus ${String(grace)} years of grace` : ""),
+      );
+    }
+  }
   const genres = new Set(pick.genres.map((g) => g.toLowerCase()));
   const unwanted = (expect.genres_none ?? []).filter((g) => genres.has(g.toLowerCase()));
   if (unwanted.length > 0) constraint(`has ${unwanted.join(", ")}`);
@@ -147,25 +186,29 @@ export function scoreRecommendCase(
   mustNot: Set<number>,
 ): RecommendScore {
   const violations = run.picks.flatMap((pick) => checkPick(pick, expect, mustNot));
-  // Shows that fit the time come first; ones in the grace only after them.
-  const limit = expect.max_episode_minutes;
-  if (limit !== undefined && expect.grace_minutes !== undefined) {
-    const firstOver = run.picks.findIndex((p) => (p.episodeMinutes ?? 0) > limit);
-    for (const pick of firstOver < 0 ? [] : run.picks.slice(firstOver + 1)) {
-      if (pick.episodeMinutes !== null && pick.episodeMinutes <= limit) {
-        violations.push({
-          animeId: pick.animeId,
-          kind: "constraint",
-          message: "fits the time but came after a show that runs over",
-        });
-      }
+  // Shows that fit come first; near misses the grace allows only after them.
+  const firstMiss = run.picks.findIndex((p) => nearMiss(p, expect));
+  for (const pick of firstMiss < 0 ? [] : run.picks.slice(firstMiss + 1)) {
+    if (!nearMiss(pick, expect)) {
+      violations.push({
+        animeId: pick.animeId,
+        kind: "constraint",
+        message: "fits the request but came after a show that's a little off",
+      });
     }
   }
   const reasons: string[] = [];
   if (run.error) reasons.push(`error: ${run.error}`);
   if (!run.handedOff) reasons.push("never reached the recommender");
-  if (expect.picks && run.picks.length === 0) reasons.push("no picks");
-  if (!expect.picks && run.picks.length > 0) reasons.push("picked shows when nothing should fit");
+  if (expect.clarify) {
+    if (run.picks.length > 0) reasons.push("picked shows instead of asking");
+    else if (!run.reply.includes("?")) reasons.push("didn't ask");
+  } else {
+    if (expect.picks && run.picks.length === 0) reasons.push("no picks");
+    if (!expect.picks && run.picks.length > 0) {
+      reasons.push("picked shows when nothing should fit");
+    }
+  }
   if (violations.length > 0) reasons.push("picks break the labels");
   const wanted = expect.genres_any;
   return {

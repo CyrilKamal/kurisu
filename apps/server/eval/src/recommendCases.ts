@@ -48,6 +48,13 @@ export const recommendCaseSchema = z
          * that fits comes before them.
          */
         grace_minutes: z.number().int().positive().optional(),
+        /** Every pick started airing in these years; either end may be left open. */
+        year_from: z.number().int().min(1900).max(2100).optional(),
+        year_to: z.number().int().min(1900).max(2100).optional(),
+        /** Years outside year_from/year_to still allowed when few fit, after every pick inside. */
+        grace_years: z.number().int().positive().optional(),
+        /** The recommender should ask instead of picking (say, when "new" is unclear). */
+        clarify: z.boolean().default(false),
         /** Every pick has at most this many episodes left to watch: "something I can finish". */
         max_episodes_left: z.number().int().positive().optional(),
         /** Picks should have at least one of these genres (a mood). Scored as genre fit. */
@@ -200,6 +207,15 @@ export function loadRecommendCases(
         }
       }
 
+      const { year_from: from, year_to: to } = c.expect;
+      if (c.expect.grace_years !== undefined && from === undefined && to === undefined) {
+        result.errors.push(problem("grace_years needs year_from or year_to."));
+        ok = false;
+      }
+      if (from !== undefined && to !== undefined && from > to) {
+        result.errors.push(problem("year_from is after year_to."));
+        ok = false;
+      }
       if (c.expect.grace_minutes !== undefined && c.expect.max_episode_minutes === undefined) {
         result.errors.push(problem("grace_minutes needs max_episode_minutes."));
         ok = false;

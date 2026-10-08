@@ -25,6 +25,8 @@ const showDetailsSchema = z
     genres: z.array(z.string()),
     episodeMinutes: z.number().int().positive().nullable(),
     malMean: z.number().positive().nullable(),
+    /** When it started airing, as MAL gives it ("2019-04-06", "2019-04"). */
+    startDate: z.string().nullable().optional(),
   })
   .strict();
 
@@ -98,7 +100,8 @@ export async function loadRecommendDataIntoDb(
     UPDATE anime a
     SET genres = ARRAY(SELECT jsonb_array_elements_text(d.value -> 'genres')),
         episode_minutes = (d.value ->> 'episodeMinutes')::int,
-        mal_mean = (d.value ->> 'malMean')::real
+        mal_mean = (d.value ->> 'malMean')::real,
+        start_date = d.value ->> 'startDate'
     FROM jsonb_array_elements(${JSON.stringify(details.shows)}::jsonb) AS d
     WHERE a.mal_id = (d.value ->> 'malId')::int
   `);

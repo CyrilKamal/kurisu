@@ -9,9 +9,10 @@
  * and strengths). No scores the user gave, and not which favorites led to each pool show.
  *
  * It refuses to overwrite either file: recommendation cases are labeled against them. Pass
- * --force only if no case depends on them yet.
+ * --force only if no case depends on them yet. `--fill-start-dates` only adds each show's start
+ * date to an existing details.json, leaving everything else as frozen.
  */
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 
 import { asc, eq, inArray } from "drizzle-orm";
@@ -30,9 +31,14 @@ import { loadSnapshot } from "../snapshot.js";
 const SNAPSHOT = "my-list";
 
 const { values } = parseArgs({
-  options: { user: { type: "string" }, force: { type: "boolean", default: false } },
+  options: {
+    user: { type: "string" },
+    force: { type: "boolean", default: false },
+    "fill-start-dates": { type: "boolean", default: false },
+  },
 });
-for (const file of [DETAILS_FILE, DISCOVERY_FILE]) {
+const fillOnly = values["fill-start-dates"];
+for (const file of fillOnly ? [] : [DETAILS_FILE, DISCOVERY_FILE]) {
   if (existsSync(file) && !values.force) {
     console.error(`${file} already exists, and eval cases may depend on it. Not overwriting.`);
     process.exit(1);
@@ -48,6 +54,31 @@ if (!databaseUrl) {
 
 const { db, close } = createDb(databaseUrl);
 try {
+  if (fillOnly) {
+    const frozen = detailsFreezeSchema.parse(JSON.parse(readFileSync(DETAILS_FILE, "utf8")));
+    const dates = new Map(
+      (
+        await db
+          .select({ malId: anime.malId, startDate: anime.startDate })
+          .from(anime)
+          .where(
+            inArray(
+              anime.malId,
+              frozen.shows.map((s) => s.malId),
+            ),
+          )
+      ).map((r) => [r.malId, r.startDate]),
+    );
+    const shows = frozen.shows.map((show) => ({
+      ...show,
+      startDate: show.startDate ?? dates.get(show.malId) ?? null,
+    }));
+    writeFileSync(DETAILS_FILE, `${JSON.stringify({ ...frozen, shows }, null, 2)}\n`);
+    const known = shows.filter((s) => s.startDate !== null).length;
+    console.log(`Added start dates: ${String(known)} of ${String(shows.length)} shows have one.`);
+    process.exit(0);
+  }
+
   const allUsers = await db.select().from(users);
   const user = values.user
     ? allUsers.find((u) => u.malUsername === values.user)
@@ -68,6 +99,7 @@ try {
       genres: anime.genres,
       episodeMinutes: anime.episodeMinutes,
       malMean: anime.malMean,
+      startDate: anime.startDate,
     })
     .from(anime)
     .where(

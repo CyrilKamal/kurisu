@@ -12,6 +12,8 @@ import { refreshTaste } from "../taste/profile.js";
 import {
   candidateRows,
   discoveryRows,
+  ERAS,
+  eraYears,
   knownGenres,
   MEDIA_TYPES,
   POOLS,
@@ -62,7 +64,7 @@ const TOOL_SPECS: ToolSpec[] = [
   {
     name: "find_candidates",
     description:
-      "Search the user's Plan to Watch, the shows they've started, the shows queued on their Watching list but not started, and shows new to them (picked from AniList by their taste) that meet the constraints, best fit first, with the facts behind each. When fewer than 3 shows fit the time given, shows up to 5 minutes over follow them, marked with how far over they run.",
+      "Search the user's Plan to Watch, the shows they've started, the shows queued on their Watching list but not started, and shows new to them (picked from AniList by their taste) that meet the constraints, best fit first, with the facts behind each. When fewer than 3 shows fit the time or years given, shows up to 5 minutes over or 2 years outside follow them, marked with how far off they are.",
     parameters: {
       type: "object",
       properties: {
@@ -82,6 +84,13 @@ const TOOL_SPECS: ToolSpec[] = [
           description: "MyAnimeList genres to avoid",
         },
         media_types: { type: "array", items: { type: "string", enum: [...MEDIA_TYPES] } },
+        year_from: { type: "integer", description: "Earliest year it started airing" },
+        year_to: { type: "integer", description: "Latest year it started airing" },
+        era: {
+          type: "string",
+          enum: [...ERAS],
+          description: "old: before 2000; recent: the last 5 years. Ignored when years are given.",
+        },
         from: {
           type: "array",
           items: { type: "string", enum: [...POOLS] },
@@ -117,6 +126,9 @@ const findArgs = z
     genres_any: z.array(z.string()).optional(),
     genres_none: z.array(z.string()).optional(),
     media_types: z.array(z.enum(MEDIA_TYPES)).optional(),
+    year_from: z.coerce.number().int().min(1900).max(2100).optional(),
+    year_to: z.coerce.number().int().min(1900).max(2100).optional(),
+    era: z.enum(ERAS).optional(),
     from: z.array(z.enum(POOLS)).optional(),
   })
   .strict();
@@ -268,12 +280,21 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
       return name ? [name] : [];
     });
 
+  // Years they gave win over an era ("old", "recent"), which is counted from this year.
+  const years =
+    a.year_from !== undefined || a.year_to !== undefined
+      ? { yearFrom: a.year_from, yearTo: a.year_to }
+      : a.era
+        ? eraYears(a.era, new Date().getFullYear())
+        : {};
   const constraints: Constraints = {
     ...(a.available_minutes !== undefined && { availableMinutes: a.available_minutes }),
     ...(a.max_episodes_left !== undefined && { maxEpisodesLeft: a.max_episodes_left }),
     ...(a.genres_any?.length && { genresAny: keep(a.genres_any) ?? [] }),
     ...(a.genres_none?.length && { genresNone: keep(a.genres_none) ?? [] }),
     ...(a.media_types?.length && { mediaTypes: a.media_types }),
+    ...(years.yearFrom !== undefined && { yearFrom: years.yearFrom }),
+    ...(years.yearTo !== undefined && { yearTo: years.yearTo }),
     ...(a.from?.length && { from: a.from }),
   };
   // Every genre they asked for was unknown: say so rather than filtering on nothing.
@@ -307,7 +328,9 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
         type: c.mediaType,
         ...(c.numEpisodes !== null && { episodes: c.numEpisodes }),
         list: c.pool,
+        ...(c.startYear !== null && { year: c.startYear }),
         ...(c.minutesOver !== null && { minutes_over_their_time: c.minutesOver }),
+        ...(c.yearsOff !== null && { years_outside_their_years: c.yearsOff }),
         genres: c.genres,
         facts: c.facts,
       })),

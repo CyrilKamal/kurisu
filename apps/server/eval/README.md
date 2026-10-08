@@ -290,6 +290,8 @@ Labels, all optional (`expect: {}` means "any sensible picks"):
 - **`max_episode_minutes`:** every pick's episodes (or the movie) run at most this long. A pick whose length is unknown fails it.
 - **`grace_minutes`:** with `max_episode_minutes`, picks may run up to this many minutes over the limit, but every pick that fits has to come first. This matches the app: when fewer than 3 shows fit, it adds ones up to 5 minutes over.
 - **`max_episodes_left`:** every pick has at most this many episodes left to watch, for "something I can finish this weekend". A pick whose episode count is unknown fails it.
+- **`year_from`, `year_to`:** every pick started airing in these years; either end can be left open. **`grace_years`** allows picks up to that many years outside, after every pick inside them. This matches the app: when fewer than 3 shows fit the years, it adds ones up to 2 years outside. A pick whose year is unknown fails.
+- **`clarify: true`:** the recommender should ask a question instead of picking, for example when "new" could mean new to you or recently aired.
 - **`genres_any`:** the picks should have at least one of these genres, for a mood like "chill" or "funny". This is reported as **genre fit** and doesn't fail a case, since moods map to genres loosely.
 - **`genres_none`:** no pick has any of these. This fails the case.
 - **Genre names** are MAL's, spelled as MAL spells them ("Slice of Life", "Iyashikei", "Suspense"). The validator suggests the right spelling.

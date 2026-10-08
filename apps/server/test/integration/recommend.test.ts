@@ -147,8 +147,8 @@ describe("recommendations in Chat", () => {
 
     // Logged as a recommendation run, linked to the run that handed it over.
     const runs = await h.db.select().from(agentRuns);
-    const rec = runs.find((r) => r.promptVersion === "recommend@4");
-    const progress = runs.find((r) => r.promptVersion !== "recommend@4");
+    const rec = runs.find((r) => r.promptVersion === "recommend@5");
+    const progress = runs.find((r) => r.promptVersion !== "recommend@5");
     expect(rec).toMatchObject({ outcome: "recommended", handedOffFromRunId: progress?.id });
     const [row] = await h.db.select().from(recommendations);
     expect(row?.chatMessageId).toBe(reply?.id);
@@ -235,7 +235,7 @@ describe("recommendations in Chat", () => {
     const [rec] = await h.db
       .select()
       .from(agentRuns)
-      .where(eq(agentRuns.promptVersion, "recommend@4"));
+      .where(eq(agentRuns.promptVersion, "recommend@5"));
     expect(rec?.outcome).toBe("error");
   });
 });

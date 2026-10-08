@@ -14,6 +14,7 @@ import { RECOMMEND_V1 } from "./recommend.v1.js";
 import { RECOMMEND_V2 } from "./recommend.v2.js";
 import { RECOMMEND_V3 } from "./recommend.v3.js";
 import { RECOMMEND_V4 } from "./recommend.v4.js";
+import { RECOMMEND_V5 } from "./recommend.v5.js";
 
 /** Every prompt version, so the eval can compare them (pnpm eval --prompt progress-sync@1). */
 export const PROMPTS = {
@@ -35,7 +36,7 @@ export const PROMPTS = {
 export const CURRENT_PROMPT = PROGRESS_SYNC_V13;
 
 /** The recommendation agent's prompt. */
-export const RECOMMEND_PROMPT = RECOMMEND_V4;
+export const RECOMMEND_PROMPT = RECOMMEND_V5;
 
 /** Every recommendation prompt by version, for comparing them in the recommendation eval. */
 export const RECOMMEND_PROMPTS = {
@@ -43,4 +44,5 @@ export const RECOMMEND_PROMPTS = {
   [RECOMMEND_V2.version]: RECOMMEND_V2,
   [RECOMMEND_V3.version]: RECOMMEND_V3,
   [RECOMMEND_V4.version]: RECOMMEND_V4,
+  [RECOMMEND_V5.version]: RECOMMEND_V5,
 } as const;

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  eraYears,
   poolOf,
   rankCandidates,
+  startYearOf,
   type CandidateRow,
   type TasteSignals,
 } from "../../src/recommend/candidates.js";
@@ -21,6 +23,7 @@ function row(id: number, overrides: Partial<CandidateRow>): CandidateRow {
     malMean: 7.5,
     mediaType: "tv",
     airingStatus: "finished_airing",
+    startYear: 2015,
     ...overrides,
   };
 }
@@ -185,5 +188,44 @@ describe("time grace", () => {
 
   it("offers only shows in the grace when none fit", () => {
     expect(ids(rankCandidates(rows, noTaste, { availableMinutes: 15 }))).toEqual([1, 2]);
+  });
+});
+
+describe("years", () => {
+  it("reads the start year from full or partial dates", () => {
+    expect(startYearOf("2019-04-06")).toBe(2019);
+    expect(startYearOf("2019-04")).toBe(2019);
+    expect(startYearOf("1998")).toBe(1998);
+    expect(startYearOf(null)).toBeNull();
+    expect(startYearOf("")).toBeNull();
+  });
+
+  it("turns old and recent into years, counting recent from this year", () => {
+    expect(eraYears("old", 2026)).toEqual({ yearTo: 1999 });
+    expect(eraYears("recent", 2026)).toEqual({ yearFrom: 2022 });
+  });
+
+  const rows = [
+    row(1, { startYear: 1995, malMean: 7 }),
+    row(2, { startYear: 1998, malMean: 7 }),
+    row(3, { startYear: 2001, malMean: 9 }),
+    row(4, { startYear: 2003, malMean: 9 }),
+    row(5, { startYear: null, malMean: 9 }),
+  ];
+
+  it("keeps the years asked for, then shows up to 2 years outside when too few fit", () => {
+    const ranked = rankCandidates(rows, noTaste, { yearFrom: 1990, yearTo: 1999 });
+    // The better-rated 2001 show comes after the two that fit; 2003 and unknown years are out.
+    expect(ids(ranked)).toEqual([1, 2, 3]);
+    expect(ranked[0]?.facts).toContain("aired 1995");
+    expect(ranked[2]).toMatchObject({ yearsOff: 2 });
+    expect(ranked[2]?.facts).toContain("aired 2001, 2 years after the years asked for");
+  });
+
+  it("leaves the near misses out when enough fit, and counts years before the range too", () => {
+    const enough = [...rows, row(6, { startYear: 1999 })];
+    expect(ids(rankCandidates(enough, noTaste, { yearTo: 1999 })).sort()).toEqual([1, 2, 6]);
+    const recent = rankCandidates([row(7, { startYear: 2021 })], noTaste, { yearFrom: 2022 });
+    expect(recent[0]?.facts).toContain("aired 2021, 1 year before the years asked for");
   });
 });

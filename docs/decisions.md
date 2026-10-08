@@ -1214,3 +1214,21 @@ Anything else is held as `ambiguous_match`, and the agent asks. A query that is 
 **Why:** Your rules, from your recommendation cases: a time limit comes first, with a few minutes of grace for intros and outros; and Watching at episode 0 is your queue, not something you started. The grace sits in code, so the model can't stretch it further.
 
 **Consequences:** On your 25 cases, v3 got 23/25 and v4 gets 25/25: every pick valid and within your labels, genre fit 30/30, median 11.6 s, about 1.2¢ a case.
+
+## 2026-10-07 — Year ranges in recommendations; recommend.v5 (Milestone 4)
+**Decision:**
+- **Years asked for:** `find_candidates` takes `year_from`/`year_to` (the year a show started airing: MAL's start date for list shows, AniList's for new ones) and an `era`. "Old" or "classic" means before 2000; "recent", "newer" or "latest" means the last 5 years, counted from today's date in code.
+- **Grace:** shows inside the years come first. When fewer than 3 fit, shows up to 2 years outside fill in (`YEAR_GRACE`), marked as such, the same way as the time grace.
+- **"New":** "something new" still means new to you. When "new" could mean either new to you or recently aired, `recommend.v5` asks which.
+
+**Alternatives:**
+- Strict years, which you turned down for "a year or two of grace".
+- Having the model work out "recent" itself, which needs today's date in the prompt and isn't testable in code.
+
+**Why:** You asked for year ranges, and chose the meanings of "old", "recent" and "new" and the grace.
+
+**Consequences:**
+- The eval's frozen `details.json` gained start dates (`pnpm eval:recommend-data --fill-start-dates`; 347 of 348 shows).
+- New labels: `year_from`, `year_to`, `grace_years`, and `clarify` for "should ask".
+- Your 25 cases stay 25/25 on v5.
+- "any new anime?" on its own doesn't reach the recommender: the progress agent answers it with an offer. Handing it over would need a progress-sync change and a full eval run.
