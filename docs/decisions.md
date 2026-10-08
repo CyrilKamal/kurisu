@@ -1527,3 +1527,40 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - A premiere is missed when no brief covered its time, as an episode is: the brief was off, or the 48-hour cap. Test briefs (the last 24 hours) can repeat one, as they repeat episodes.
 - Only completed shows' sequels count, not those of dropped or on-hold shows.
 - The relations cost about one AniList request per 50 completed shows a week. The query was tried against AniList with 50 shows per page.
+
+## 2026-10-08 — Stats, MAL-site changes and the yearly goal (Milestone 5)
+**Decision:**
+- **MAL-site changes:** a sync after the first one compares MAL's list with the mirror before replacing it, and records what changed in `list_events` (migration 0021):
+  - shows added;
+  - the list fields changed on the others (status, episodes, score, rewatching; not dates);
+  - shows removed.
+
+  A change counts only when MAL's time for it is newer than the mirror's, and a removal only for an entry the mirror had before the sync began. That way a kurisu write landing mid-sync isn't mistaken for a change on MAL. kurisu's own writes stay in `changes` and leave nothing for a sync to find, because a commit writes MAL's answer, `updated_at` included, into the mirror.
+- **Stats (`GET /stats`, `/list/stats`):**
+  - **All time:** days watched, episodes, completed, mean score, the score spread, statuses and the most completed genres.
+  - **This year:** shows completed, by month, with the latest ones.
+  - **The last 7 days:** episodes, hours, shows and shows finished.
+- **What the last 7 days count:**
+  - **Episodes:** episodes moved forward, through kurisu or on MAL. A show added through kurisu counts its episodes (the user said they watched them). A show added on MAL counts them only while it's Watching, since one added as completed is usually an old show being logged.
+  - **Left out:** undos, undone changes and imports.
+- **This year's completions:** counted by MAL's finish date, or else by the day kurisu or a sync saw the show completed.
+  - kurisu doesn't send MAL a finish date, so MAL's date alone would miss every show finished through kurisu.
+  - An old show logged as completed has neither date, so it doesn't count.
+  - "This year" follows the user's time zone, from the brief settings.
+- **The goal:** `yearly_goals` (user, year, target), set on the Stats page with `PUT /stats/goal`. The page shows a meter.
+- **The Sunday recap moves to a PR of its own (5b).** It reads the same last-7-days numbers.
+
+**Alternatives:**
+- **Writing a finish date to MAL when kurisu completes a show.** That's a new kind of write the user never asked for. The local fallback answers the goal without touching MAL.
+- **Recording every sync difference, the first sync included.** The first sync would log the whole list as "added".
+- **A daily snapshot of the list, diffed later.** It's more storage, and the sync already holds both sides of the diff.
+
+**Why:**
+- The diff needs no extra MAL calls, and it can't count kurisu's own writes twice.
+- The completion fallback keeps "using MAL finish dates" (Cyril's choice) true wherever MAL has one.
+
+**Consequences:**
+- A MAL-site change is only seen at the next sync (login, Re-sync, or after a kurisu write). The page says so.
+- Several edits on MAL between two syncs show as one net change.
+- A sync that read MAL before a kurisu write still overwrites the mirror with the older copy until the next sync. That was already true, and now no event is recorded for it.
+

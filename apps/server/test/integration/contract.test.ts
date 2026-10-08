@@ -111,6 +111,22 @@ describe("responses match the contract", () => {
     expect(() => contract.tasteResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("GET /stats and PUT /stats/goal", async () => {
+    const stats = await get("/stats");
+    expect(stats.statusCode).toBe(200);
+    expect(() => contract.statsResponseSchema.parse(stats.json())).not.toThrow();
+
+    const goal = await h.app.inject({
+      method: "PUT",
+      url: "/stats/goal",
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+      payload: { target: 12 } satisfies contract.GoalRequest,
+    });
+    expect(goal.statusCode).toBe(200);
+    expect(contract.statsResponseSchema.parse(goal.json()).year.goal).toBe(12);
+  });
+
   it("POST /list/:animeId/edit and /remove", async () => {
     const post = (url: string, payload: Record<string, unknown>) =>
       h.app.inject({

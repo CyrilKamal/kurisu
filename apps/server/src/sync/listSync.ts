@@ -4,7 +4,7 @@ import { ZodError } from "zod";
 
 import { ReauthRequiredError, withMalAccessToken, type TokenStore } from "../auth/tokenStore.js";
 import type { Db } from "../db/client.js";
-import { anime, listEntries, syncRuns } from "../db/schema.js";
+import { anime, listEntries, listEvents, syncRuns } from "../db/schema.js";
 import {
   animeListFirstPageUrl,
   DEFAULT_RETRY,
@@ -15,6 +15,7 @@ import {
   type RetryOptions,
 } from "../mal/client.js";
 import { MalOAuthError } from "../mal/oauth.js";
+import { listEventsBetween } from "../stats/events.js";
 import { toMirrorRows } from "./mirrorRows.js";
 
 /** Minimum time between manual syncs per user. MAL's rate limits are undocumented. */
@@ -68,11 +69,43 @@ export function createListSync(deps: {
     return [...items.values()];
   }
 
-  async function replaceMirror(userId: string, items: MalAnimeListItem[]): Promise<void> {
+  /**
+   * Replaces the user's mirror with MAL's list. After the first sync, what changed on MAL since
+   * the mirror was written is recorded as list events (stats/events.ts); the first sync only
+   * builds the mirror, so it records none.
+   */
+  async function replaceMirror(
+    userId: string,
+    items: MalAnimeListItem[],
+    startedAt: Date,
+  ): Promise<void> {
     const syncedAt = new Date();
     const rows = items.map((item) => toMirrorRows(item, userId, syncedAt));
 
     await db.transaction(async (tx) => {
+      const [synced] = await tx
+        .select({ id: syncRuns.id })
+        .from(syncRuns)
+        .where(and(eq(syncRuns.userId, userId), eq(syncRuns.status, "succeeded")))
+        .limit(1);
+      const mirror = synced
+        ? new Map(
+            (
+              await tx
+                .select({
+                  animeId: listEntries.animeId,
+                  status: listEntries.status,
+                  episodesWatched: listEntries.numEpisodesWatched,
+                  score: listEntries.score,
+                  isRewatching: listEntries.isRewatching,
+                  malUpdatedAt: listEntries.malUpdatedAt,
+                })
+                .from(listEntries)
+                .where(eq(listEntries.userId, userId))
+            ).map(({ animeId, ...state }) => [animeId, state] as const),
+          )
+        : null;
+
       for (const chunk of chunks(
         rows.map((r) => r.anime),
         INSERT_CHUNK,
@@ -103,6 +136,25 @@ export function createListSync(deps: {
             ? and(eq(listEntries.userId, userId), notInArray(listEntries.animeId, keep))
             : eq(listEntries.userId, userId),
         );
+
+      if (mirror) {
+        const incoming = new Map(
+          rows.map(({ entry }) => [
+            entry.animeId,
+            {
+              status: entry.status,
+              episodesWatched: entry.numEpisodesWatched,
+              score: entry.score,
+              isRewatching: entry.isRewatching,
+              malUpdatedAt: entry.malUpdatedAt,
+            },
+          ]),
+        );
+        const events = listEventsBetween(userId, mirror, incoming, { startedAt, at: syncedAt });
+        for (const chunk of chunks(events, INSERT_CHUNK)) {
+          await tx.insert(listEvents).values(chunk);
+        }
+      }
     });
   }
 
@@ -116,7 +168,7 @@ export function createListSync(deps: {
     let finished: Partial<SyncRun>;
     try {
       const items = await fetchWholeList(userId);
-      await replaceMirror(userId, items);
+      await replaceMirror(userId, items, started.startedAt);
       finished = { status: "succeeded", entriesCount: items.length };
       log.info({ userId, trigger, entries: items.length }, "list sync succeeded");
       deps.afterSync?.(userId);
