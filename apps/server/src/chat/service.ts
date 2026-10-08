@@ -486,7 +486,9 @@ export async function loadThread(
       role: row.role,
       content: row.content,
       createdAt: row.createdAt.toISOString(),
-      changes: mine.flatMap((c) => (c.change ? [toChangeView(c.change, c.title, c.proposal.source)] : [])),
+      changes: mine.flatMap((c) =>
+        c.change ? [toChangeView(c.change, c.title, c.proposal.source)] : [],
+      ),
       pending: mine
         .filter((c) => c.proposal.status === "pending" && c.proposal.requiresConfirmation)
         .map((c) => {
