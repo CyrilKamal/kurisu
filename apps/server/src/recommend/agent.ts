@@ -62,7 +62,7 @@ const TOOL_SPECS: ToolSpec[] = [
   {
     name: "find_candidates",
     description:
-      "Search the user's Plan to Watch, their shows in progress, and shows new to them (picked from AniList by their taste) that meet the constraints, best fit first, with the facts behind each.",
+      "Search the user's Plan to Watch, the shows they've started, the shows queued on their Watching list but not started, and shows new to them (picked from AniList by their taste) that meet the constraints, best fit first, with the facts behind each. When fewer than 3 shows fit the time given, shows up to 5 minutes over follow them, marked with how far over they run.",
     parameters: {
       type: "object",
       properties: {
@@ -85,7 +85,7 @@ const TOOL_SPECS: ToolSpec[] = [
         from: {
           type: "array",
           items: { type: "string", enum: [...POOLS] },
-          description: "Where to look; all three if not set",
+          description: "Where to look; all four if not set",
         },
       },
     },
@@ -307,6 +307,7 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
         type: c.mediaType,
         ...(c.numEpisodes !== null && { episodes: c.numEpisodes }),
         list: c.pool,
+        ...(c.minutesOver !== null && { minutes_over_their_time: c.minutesOver }),
         genres: c.genres,
         facts: c.facts,
       })),
