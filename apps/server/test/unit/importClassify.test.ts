@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { decide, groupMatched } from "../../src/import/classify.js";
+import { decide, groupMatched, wordsInName } from "../../src/import/classify.js";
 import { itemsFrom, MAX_IMPORT_LINES, noteLines } from "../../src/import/parse.js";
 import type { SearchCandidate } from "../../src/list/search.js";
 import type { EntryState } from "../../src/writes/normalize.js";
@@ -132,27 +132,53 @@ function candidate(
 
 describe("decide", () => {
   it("finds a show only when exactly one is clear", () => {
-    expect(decide([candidate(1, { clear: true, clearBy: "unique" }), candidate(2)], {})).toEqual({
+    expect(
+      decide([candidate(1, { clear: true, clearBy: "unique" }), candidate(2)], {}, "Show"),
+    ).toEqual({
       kind: "found",
       animeId: 1,
     });
-    expect(decide([candidate(1), candidate(2)], {})).toEqual({
+    expect(decide([candidate(1), candidate(2)], {}, "Show")).toEqual({
       kind: "several",
       candidates: [1, 2],
     });
-    expect(decide([], {})).toEqual({ kind: "none" });
+    expect(decide([], {}, "Show")).toEqual({ kind: "none" });
   });
 
   it("takes the one in progress only for forward progress", () => {
     const inProgress = [candidate(1, { clear: true, clearBy: "only_in_progress" }), candidate(2)];
-    expect(decide(inProgress, { episodesWatched: 6 }).kind).toBe("found");
-    expect(decide(inProgress, { score: 8 }).kind).toBe("several");
-    expect(decide(inProgress, { status: "dropped" }).kind).toBe("several");
+    expect(decide(inProgress, { episodesWatched: 6 }, "Show").kind).toBe("found");
+    expect(decide(inProgress, { score: 8 }, "Show").kind).toBe("several");
+    expect(decide(inProgress, { status: "dropped" }, "Show").kind).toBe("several");
   });
 
   it("offers at most five", () => {
     const many = [1, 2, 3, 4, 5, 6, 7].map((id) => candidate(id));
-    expect(decide(many, {})).toEqual({ kind: "several", candidates: [1, 2, 3, 4, 5] });
+    expect(decide(many, {}, "Show")).toEqual({ kind: "several", candidates: [1, 2, 3, 4, 5] });
+  });
+});
+
+describe("wordsInName", () => {
+  it("needs every word as written in the name, season words aside", () => {
+    expect(wordsInName("frieren", "Sousou no Frieren")).toBe(true);
+    expect(wordsInName("Kusuriya", "Kusuriya no Hitorigoto")).toBe(true);
+    expect(wordsInName("jjk s2", "JJK")).toBe(true);
+    expect(wordsInName("bocchi the rock", "Bocchi the Rock!")).toBe(true);
+    expect(wordsInName("perfect blue", "Blue Period")).toBe(false);
+    expect(wordsInName("frieran", "Sousou no Frieren")).toBe(false);
+  });
+
+  it("keeps a fuzzy match whose words aren't all in the name from being clear", () => {
+    const blue = candidate(1, {
+      clear: true,
+      clearBy: "unique",
+      title: "Blue Period",
+      matchedName: "Blue Period",
+    });
+    expect(decide([blue], { score: 10 }, "perfect blue")).toEqual({
+      kind: "several",
+      candidates: [1],
+    });
   });
 });
 
