@@ -8,6 +8,7 @@ import type { Config } from "../config.js";
 import type { TokenCipher } from "../crypto/tokenCipher.js";
 import type { Db } from "../db/client.js";
 import { malTokens, users } from "../db/schema.js";
+import { findOpenInvite, useInvite } from "../invites/invites.js";
 import { fetchMe } from "../mal/client.js";
 import { buildAuthorizeUrl, exchangeCode, type MalOAuthConfig } from "../mal/oauth.js";
 import { latestSyncRun, type ListSync } from "../sync/listSync.js";
@@ -39,6 +40,8 @@ export type LoginError =
   | "mal_unavailable"
   | "invite_only";
 
+const loginQuerySchema = z.object({ invite: z.string().min(1).max(128).optional() });
+
 const callbackQuerySchema = z.object({
   code: z.string().min(1).max(4096).optional(),
   state: z.string().min(1).max(512).optional(),
@@ -63,9 +66,14 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     path: "/",
   } as const;
 
-  app.get("/auth/mal/login", async (_request, reply) => {
+  app.get("/auth/mal/login", async (request, reply) => {
     await deleteExpiredOAuthStates(db);
-    const { state, codeChallenge } = await createOAuthState(db, cipher);
+    // A login from an invite link carries the invite to the callback. One that's expired or used
+    // is dropped here; the callback then treats the login like any other.
+    const query = loginQuerySchema.safeParse(request.query);
+    const invite =
+      query.success && query.data.invite ? await findOpenInvite(db, query.data.invite) : null;
+    const { state, codeChallenge } = await createOAuthState(db, cipher, invite?.id ?? null);
     // Binds the callback to this browser, so a login link can't be replayed from elsewhere.
     reply.setCookie(OAUTH_STATE_COOKIE, state, {
       ...cookieBase,
@@ -90,12 +98,12 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       return fail("invalid_state");
     }
 
-    const codeVerifier = await consumeOAuthState(db, cipher, state);
-    if (codeVerifier === null) return fail("invalid_state");
+    const pending = await consumeOAuthState(db, cipher, state);
+    if (pending === null) return fail("invalid_state");
 
     let tokens;
     try {
-      tokens = await exchangeCode(oauth, { code, codeVerifier });
+      tokens = await exchangeCode(oauth, { code, codeVerifier: pending.codeVerifier });
     } catch (err) {
       request.log.warn({ err }, "MAL token exchange failed");
       return fail("token_exchange_failed");
@@ -109,25 +117,42 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       return fail("mal_unavailable");
     }
 
-    if (!(await maySignIn(db, config, me))) {
-      // The tokens MAL just issued are dropped unstored; nothing about this account is kept.
+    // While sign-up is closed (OWNER_MAL_USERNAME set), a new account must be the owner's or
+    // come from an invite. Refused logins drop the tokens MAL just issued, unstored.
+    const closed = config.owner !== null;
+    const isOwner = config.owner !== null && sameName(me.name, config.owner.malUsername);
+    const isNew = (await findUserId(db, me.id)) === null;
+    const refuse = () => {
       request.log.info("sign-up refused: kurisu is invite-only");
       return fail("invite_only");
-    }
+    };
+    if (closed && isNew && !isOwner && pending.inviteId === null) return refuse();
 
-    const userId = await db.transaction(async (tx) => {
-      const [user] = await tx
-        .insert(users)
-        .values({ malUserId: me.id, malUsername: me.name })
-        .onConflictDoUpdate({
-          target: users.malUserId,
-          set: { malUsername: me.name, updatedAt: new Date() },
-        })
-        .returning({ id: users.id });
-      if (!user) throw new Error("user upsert returned no row");
-      await tokenStore.save(user.id, tokens, tx);
-      return user.id;
-    });
+    let userId: string;
+    try {
+      userId = await db.transaction(async (tx) => {
+        const [user] = await tx
+          .insert(users)
+          .values({ malUserId: me.id, malUsername: me.name, isOwner })
+          .onConflictDoUpdate({
+            target: users.malUserId,
+            set: { malUsername: me.name, isOwner, updatedAt: new Date() },
+          })
+          .returning({ id: users.id });
+        if (!user) throw new Error("user upsert returned no row");
+        // A new account uses up its invite, in the same transaction, so a link that was used
+        // or revoked since the login started leaves no account behind.
+        if (isNew && pending.inviteId !== null) {
+          const used = await useInvite(tx, pending.inviteId, user.id);
+          if (!used && closed && !isOwner) throw new InviteUnavailableError();
+        }
+        await tokenStore.save(user.id, tokens, tx);
+        return user.id;
+      });
+    } catch (err) {
+      if (err instanceof InviteUnavailableError) return refuse();
+      throw err;
+    }
 
     await deleteExpiredSessions(db);
     const session = await createSession(db, userId);
@@ -154,6 +179,21 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     },
   );
 
+  /** Deletes the account and everything kurisu holds for it. The MAL list isn't touched. */
+  app.delete(
+    "/me",
+    { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] },
+    async (request, reply) => {
+      const user = request.user;
+      if (!user) throw new Error("requireUser did not set request.user");
+      // Every per-user table cascades from users.
+      await db.delete(users).where(eq(users.id, user.id));
+      reply.clearCookie(SESSION_COOKIE, cookieBase);
+      request.log.info({ userId: user.id }, "account deleted");
+      return reply.code(204).send();
+    },
+  );
+
   app.get("/me", { preHandler: requireUser(db) }, async (request) => {
     const user = request.user;
     if (!user) throw new Error("requireUser did not set request.user");
@@ -163,26 +203,28 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       .where(eq(malTokens.userId, user.id))
       .limit(1);
     return {
-      user: { malUsername: user.malUsername },
+      user: { malUsername: user.malUsername, isOwner: user.isOwner },
       needsReauth: tokens?.needsReauth ?? true,
       lastSync: toLastSync(await latestSyncRun(db, user.id)),
     };
   });
 }
 
-/**
- * Whether this MAL account may log in: anyone who already has an account, and otherwise only
- * the owner while OWNER_MAL_USERNAME is set. Without it (local development), anyone may.
- */
-async function maySignIn(db: Db, config: Config, me: { id: number; name: string }) {
-  if (config.owner === null) return true;
-  if (me.name.toLowerCase() === config.owner.malUsername.toLowerCase()) return true;
-  const [existing] = await db
+/** Thrown inside the sign-up transaction when its invite can't be used any more. */
+class InviteUnavailableError extends Error {}
+
+/** MAL usernames aren't case-sensitive. */
+function sameName(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
+}
+
+async function findUserId(db: Db, malUserId: number): Promise<string | null> {
+  const [row] = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.malUserId, me.id))
+    .where(eq(users.malUserId, malUserId))
     .limit(1);
-  return existing !== undefined;
+  return row?.id ?? null;
 }
 
 function safeEqual(a: string, b: string): boolean {

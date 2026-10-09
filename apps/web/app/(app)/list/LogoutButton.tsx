@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { forgetPushOnThisBrowser } from "@/lib/pushDevice";
+
 export function LogoutButton() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -10,6 +12,7 @@ export function LogoutButton() {
   async function logout() {
     setPending(true);
     try {
+      await forgetPushOnThisBrowser(true);
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
       router.replace("/");

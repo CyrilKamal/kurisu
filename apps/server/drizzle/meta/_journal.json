@@ -176,6 +176,13 @@
       "when": 1791499815861,
       "tag": "0024_season_shows",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791585349813,
+      "tag": "0025_invites",
+      "breakpoints": true
     }
   ]
 }

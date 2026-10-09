@@ -52,9 +52,33 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   malUserId: integer("mal_user_id").notNull().unique(),
   malUsername: text("mal_username").notNull(),
+  // The MAL account named by OWNER_MAL_USERNAME, set at each login. Only the owner invites.
+  isOwner: boolean("is_owner").notNull().default(false),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
+
+/**
+ * One-time links the owner shares. While sign-up is closed, a new account needs one. Only a
+ * SHA-256 hash of the code in the link is stored, like sessions.
+ */
+export const invites = pgTable(
+  "invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    codeHash: text("code_hash").notNull().unique(),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Who it's for, so the owner can tell links apart. Never shown to the person invited.
+    note: text("note"),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    expiresAt: timestamptz("expires_at").notNull(),
+    usedBy: uuid("used_by").references(() => users.id, { onDelete: "set null" }),
+    usedAt: timestamptz("used_at"),
+  },
+  (table) => [index("invites_created_by_idx").on(table.createdBy)],
+);
 
 /** MAL OAuth tokens, encrypted at rest (see crypto/tokenCipher.ts). Never log these columns. */
 export const malTokens = pgTable("mal_tokens", {
@@ -90,6 +114,8 @@ export const oauthStates = pgTable("oauth_states", {
   createdAt: timestamptz("created_at").notNull().defaultNow(),
   expiresAt: timestamptz("expires_at").notNull(),
   consumedAt: timestamptz("consumed_at"),
+  // The invite this login started from, if any; it's used up only when the account is created.
+  inviteId: uuid("invite_id").references(() => invites.id, { onDelete: "set null" }),
 });
 
 /**

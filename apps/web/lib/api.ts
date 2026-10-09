@@ -27,3 +27,16 @@ export async function apiGet<T>(path: string, schema: z.ZodType<T>): Promise<T |
   }
   return schema.parse(await res.json());
 }
+
+/** GETs a route that needs no session, like an invite's check. Returns null on a 404. */
+export async function apiGetPublic<T>(path: string, schema: z.ZodType<T>): Promise<T | null> {
+  const res = await fetch(`${apiInternalUrl()}${path}`, {
+    headers: { accept: "application/json" },
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`API ${path} returned ${String(res.status)}`);
+  }
+  return schema.parse(await res.json());
+}

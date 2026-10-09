@@ -22,6 +22,15 @@ export function requireUser(db: Db): preHandlerAsyncHookHandler {
   };
 }
 
+/** For the owner's routes (invites); runs after `requireUser`. Others get a 404. */
+export function requireOwner(): preHandlerAsyncHookHandler {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.user?.isOwner) {
+      return reply.code(404).send({ error: "not_found" });
+    }
+  };
+}
+
 /**
  * CSRF defense for state-changing routes, on top of SameSite=Lax cookies: the browser's Origin
  * header must be the web app's origin. Browsers always send Origin on POST.

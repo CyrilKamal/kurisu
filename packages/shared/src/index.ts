@@ -52,11 +52,37 @@ export type LastSync = z.infer<typeof lastSyncSchema>;
 
 /** GET /me */
 export const meResponseSchema = z.object({
-  user: z.object({ malUsername: z.string() }),
+  /** isOwner: the account named by OWNER_MAL_USERNAME, the only one that can invite. */
+  user: z.object({ malUsername: z.string(), isOwner: z.boolean() }),
   needsReauth: z.boolean(),
   lastSync: lastSyncSchema.nullable(),
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;
+
+/** One of the owner's invite links, without its code (kurisu keeps only a hash). */
+export const inviteViewSchema = z.object({
+  id: z.uuid(),
+  /** Who it's for, as the owner wrote it. */
+  note: z.string().nullable(),
+  createdAt: z.iso.datetime(),
+  expiresAt: z.iso.datetime(),
+  status: z.enum(["open", "used", "expired"]),
+  /** The MAL username of whoever joined with it. */
+  usedBy: z.string().nullable(),
+});
+export type InviteView = z.infer<typeof inviteViewSchema>;
+
+export const invitesResponseSchema = z.object({ invites: z.array(inviteViewSchema) });
+
+/** A new invite: the link to share, shown only this once. */
+export const createdInviteSchema = z.object({
+  id: z.uuid(),
+  url: z.url(),
+  expiresAt: z.iso.datetime(),
+});
+
+/** GET /invites/code/:code, for the invite page: the link still works, and who sent it. */
+export const inviteCodeResponseSchema = z.object({ inviter: z.string() });
 
 export const listEntrySchema = z.object({
   animeId: z.number().int().positive(),

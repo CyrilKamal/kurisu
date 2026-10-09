@@ -138,8 +138,13 @@ export async function login(
     query: URLSearchParams;
     stateCookie: string | undefined;
   }) => void | Promise<void> = () => undefined,
+  /** The code from an invite link, as /invite/<code> passes it on. */
+  invite?: string,
 ): Promise<LoginResult> {
-  const start = await h.app.inject({ method: "GET", url: "/auth/mal/login" });
+  const start = await h.app.inject({
+    method: "GET",
+    url: invite === undefined ? "/auth/mal/login" : `/auth/mal/login?invite=${invite}`,
+  });
   const authorizeUrl = new URL(String(start.headers.location));
   const stateCookie = start.cookies.find((c) => c.name === OAUTH_STATE_COOKIE)?.value ?? "";
 
