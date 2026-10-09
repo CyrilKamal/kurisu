@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 import { apiInternalUrl } from "./lib/apiInternalUrl";
 
 const nextConfig: NextConfig = {
+  // Lets the dev server answer at a Tailscale address (https://<pc>.<tailnet>.ts.net), so the
+  // app can be tried on a phone over HTTPS, which installing it and push both need.
+  allowedDevOrigins: ["**.ts.net"],
   // Proxy /api/* to the Fastify server so the browser only ever talks to one origin.
   // That keeps the session cookie first-party and avoids CORS entirely.
   rewrites() {
