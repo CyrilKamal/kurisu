@@ -19,7 +19,7 @@ export default async function LoginPage(props: PageProps<"/">) {
       <Image src="/icons/192.png" alt="" width={48} height={48} priority />
       <div>
         {/* The design system's `display` style: the wordmark, and nowhere else. */}
-        <h1 className="text-[40px]/12 font-bold tracking-[-0.03em] text-ink">kurisu</h1>
+        <h1 className="font-serif text-[40px]/12 font-bold tracking-[-0.02em] text-ink">kurisu</h1>
         <p className="text-ink-muted">Your anime list, kept in sync by conversation.</p>
       </div>
 

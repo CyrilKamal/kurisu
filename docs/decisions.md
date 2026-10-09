@@ -1749,3 +1749,26 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 **Consequences:**
 - New UI can only use tokens (`bg-surface`, `text-ink-muted`, `rounded-control`) or `k-` classes.
 - Layout utilities (flex, grid, spacing, sizing) still work.
+
+## 2026-10-09 — Inter and Source Serif 4; monospace only for the machine (between Milestones 5 and 6)
+**Decision:**
+- **The design system's type is now v3:**
+  - Inter for words and numbers. Every number uses tabular figures, so columns still line up.
+  - Source Serif 4 for show titles, screen and section titles, the brief's summary and the wordmark.
+  - JetBrains Mono only for what the agent prints: RunMeta, the tool trace and proposal ids.
+- This replaces Outfit, and the rule that every number is monospace (the decision of 2026-10-08, "The kurisu design system, used as written").
+- The artifact (version 8) and `apps/web/design/` changed together.
+
+**Alternatives:** Cyril picked this pairing from four options, based on what the big trackers ship (read from their live pages on 2026-10-09):
+- Geist + Geist Mono, which keeps monospace numbers.
+- Barlow + Barlow Semi Condensed (Last.fm).
+- Overpass + Overpass Mono (AniList).
+
+**Why:**
+- Cyril didn't like Outfit, or the mono labels like "airing".
+- None of the trackers checked sets numbers in a monospace font. The polished ones pair a neutral grotesque for the interface with a serif for titles: Letterboxd (Graphik and Tiempos), MUBI (Riforma and Tiempos), and Hardcover (Inter and New Spirit). Inter and Source Serif 4 are the free fonts closest to that.
+
+**Consequences:**
+- Mono now means "the agent printed this", which the command log can lean on.
+- The `.k-mono` and `.k-input--mono` class names stay for compatibility, though they're now Inter with tabular figures.
+- Disclosure tables that borrow the trace's "[+]" toggle (Taste, Stats) set themselves back to Inter.

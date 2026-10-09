@@ -1,12 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Outfit } from "next/font/google";
+import { Inter, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 
 import { ServiceWorker } from "./ServiceWorker";
 
 import "./globals.css";
 
-// The design system's two faces: Outfit for words, JetBrains Mono for every number.
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+// The design system's faces: Inter for words and numbers, Source Serif 4 for show and screen
+// titles, and JetBrains Mono only for what the agent prints (RunMeta, the trace, proposal ids).
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  axes: ["opsz"],
+  variable: "--font-source-serif",
+});
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
 export const metadata: Metadata = {
@@ -26,7 +32,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${sourceSerif.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="min-h-dvh">
         {children}
         <ServiceWorker />

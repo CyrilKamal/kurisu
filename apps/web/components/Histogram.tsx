@@ -56,7 +56,7 @@ export function Histogram({
           </span>
         )}
       </div>
-      <details className="k-trace mt-2">
+      <details className="k-trace mt-2 font-sans tabular-nums">
         <summary>Show as a table</summary>
         <table className="k-mono mt-2">
           <tbody>
