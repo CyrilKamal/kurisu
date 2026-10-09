@@ -1,0 +1,58 @@
+/* kurisu v2, generated from tokens.json by build-tokens.mjs. Don't edit. */
+:root {
+  /* color */
+  --bg: #0d0e12;
+  --surface: #161822;
+  --surface-raised: #1e2130;
+  --surface-inset: #101118;
+  --line: #262a3a;
+  --line-strong: #626a89;
+  --scrim: #05060acc;
+  --ink: #e6e8f2;
+  --ink-muted: #a0a6bd;
+  --ink-faint: #848ba5;
+  --accent: #b7323b;
+  --accent-hover: #c53a44;
+  --accent-text: #ef6b73;
+  --accent-soft: #b7323b29;
+  --on-accent: #f4f5fa;
+  --signal: #32b795;
+  --signal-soft: #32b79524;
+  --on-signal: #0d0e12;
+  --warn: #d4a64a;
+  --warn-soft: #d4a64a24;
+  --status-watching: var(--signal);
+  --status-completed: #7f95ff;
+  --status-completed-soft: #7f95ff24;
+  --status-on-hold: var(--warn);
+  --status-dropped: var(--ink-faint);
+  --status-planned: #9aa1c4;
+  --status-planned-soft: #9aa1c41f;
+  --taste-up: var(--signal);
+  --taste-down: var(--accent-text);
+  --danger: var(--accent-text);
+  --focus: var(--ink);
+  /* spacing */
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  /* radius */
+  --radius-4: 4px;
+  --radius-6: 6px;
+  /* size */
+  --control-24: 24px;
+  --control-32: 32px;
+  --control-40: 40px;
+  --tap-min: 48px;
+  --poster-sm: 32px;
+  --poster-md: 64px;
+  --poster-lg: 96px;
+  --meter-height: 4px;
+  --log-gutter: 80px;
+  --nav-height: 56px;
+  --content-max: 720px;
+  --sidebar-width: 288px;
+}

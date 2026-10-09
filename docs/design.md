@@ -34,6 +34,8 @@ Four flows; progress sync is the core and shipped first.
 
 The app has two screens: **Chat** for talking to the agent, and **List** showing the mirrored MAL list with a change log, so every write, by the agent, the user or an import, is visible and reversible.
 
+The look follows the kurisu design system (https://claude.ai/artifact/UoY3mvw8Z4Yf8uutvEDYLw; copied into `apps/web/design/`): dark only, crimson for actions, teal for writes, and Chat as a command log where every reply shows its run.
+
 ## Architecture
 
 The app talks only to a server-side agent backend, which holds MAL tokens, runs the daily jobs and never lets the model write to MAL outside the commit step.

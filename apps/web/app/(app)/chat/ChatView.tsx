@@ -10,12 +10,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { Icon } from "@/components/Icon";
 import { getApi, postApi } from "@/lib/clientApi";
 import { writeErrorMessage } from "@/lib/describeChange";
 
 import { ChangeCard, PendingCard } from "../ChangeCards";
 import { useChatShell } from "./ChatShell";
-import { MenuIcon, NewChatIcon } from "./icons";
 import { PickCard } from "./PickCard";
 import { ShowCard } from "./ShowCard";
 import { ThinkingBubble } from "./ThinkingBubble";
@@ -132,7 +132,7 @@ export function ChatView({
           aria-label="Show chats"
           className="-ml-2 rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 md:hidden dark:text-zinc-400 dark:hover:bg-zinc-900"
         >
-          <MenuIcon />
+          <Icon name="menu" />
         </button>
         <h1 className="min-w-0 flex-1 truncate py-1 text-lg font-semibold">{title}</h1>
         <Link
@@ -141,7 +141,7 @@ export function ChatView({
           title="New chat"
           className="-mr-2 rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 md:hidden dark:text-zinc-400 dark:hover:bg-zinc-900"
         >
-          <NewChatIcon />
+          <Icon name="new-chat" />
         </Link>
       </header>
 

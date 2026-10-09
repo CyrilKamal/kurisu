@@ -3,32 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Icon } from "@/components/Icon";
+
 const TABS = [
-  { href: "/chat", label: "Chat" },
-  { href: "/list", label: "List" },
+  { href: "/chat", label: "Chat", icon: "chat" },
+  { href: "/list", label: "List", icon: "list" },
 ] as const;
 
+/** The bottom bar (NavBar): solid surface, a 2px crimson bar over the active tab. */
 export function NavBar() {
   const pathname = usePathname();
   return (
-    <nav
-      aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95"
-    >
-      <ul className="mx-auto flex h-14 max-w-2xl">
+    <nav aria-label="Main" className="k-nav fixed inset-x-0 bottom-0 z-20">
+      <ul>
         {TABS.map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           return (
-            <li key={tab.href} className="flex-1">
-              <Link
-                href={tab.href}
-                aria-current={active ? "page" : undefined}
-                className={`flex h-full items-center justify-center text-sm ${
-                  active
-                    ? "font-semibold text-blue-700 dark:text-blue-400"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                }`}
-              >
+            <li key={tab.href}>
+              <Link href={tab.href} aria-current={active ? "page" : undefined}>
+                <Icon name={tab.icon} />
                 {tab.label}
               </Link>
             </li>
