@@ -4,6 +4,8 @@ import { changeResponseSchema, type ChangeView, type ListEntry } from "@kurisu/s
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition, type ReactNode } from "react";
 
+import { Banner } from "@/components/Banner";
+import { Icon } from "@/components/Icon";
 import { postApi, sendApi } from "@/lib/clientApi";
 import { describeWrite } from "@/lib/describeChange";
 import { canAddEpisode, editErrorMessage } from "@/lib/editEntry";
@@ -59,19 +61,28 @@ export function ListBrowser({
   const [, startRefresh] = useTransition();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
-  const [notice, setNotice] = useState<{ text: string; undoId: string | null } | null>(null);
+  const [notice, setNotice] = useState<{
+    level: "info" | "error";
+    text: string;
+    undoId: string | null;
+  } | null>(null);
   const editing = entries.find((e) => e.animeId === editingId) ?? null;
 
   /** After a write: say what changed, offer Undo, and reload the list from the server. */
   function written(change: ChangeView, undoable = true) {
     setEditingId(null);
     setNotice({
+      level: "info",
       text: `${change.title}: ${describeWrite(change.kind, change.before, change.after)}`,
       undoId: undoable ? change.id : null,
     });
     startRefresh(() => {
       router.refresh();
     });
+  }
+
+  function failed(error: string) {
+    setNotice({ level: "error", text: editErrorMessage(error), undoId: null });
   }
 
   async function addEpisode(entry: ListEntry) {
@@ -84,13 +95,13 @@ export function ListBrowser({
     );
     setSavingId(null);
     if (result.ok && result.data) written(result.data.change);
-    else if (!result.ok) setNotice({ text: editErrorMessage(result.error), undoId: null });
+    else if (!result.ok) failed(result.error);
   }
 
   async function undo(changeId: string) {
     const result = await postApi(`/changes/${changeId}/undo`, changeResponseSchema);
     if (result.ok && result.data) written(result.data.change, false);
-    else if (!result.ok) setNotice({ text: editErrorMessage(result.error), undoId: null });
+    else if (!result.ok) failed(result.error);
   }
 
   const filtered = isFiltered(view);
@@ -99,9 +110,9 @@ export function ListBrowser({
 
   return (
     <>
-      <header className="pt-3">{header}</header>
+      {header}
       {/* Only the tabs and filters stay pinned, so they don't fill a phone's screen. */}
-      <div className="sticky top-0 z-10 -mx-4 border-b border-zinc-200 bg-white/90 px-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
+      <div className="sticky top-0 z-10 -mx-4 bg-bg px-4">
         <StatusTabs
           selected={view.status}
           counts={counts}
@@ -116,7 +127,7 @@ export function ListBrowser({
       {banner}
 
       {visible.length > 0 ? (
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <ul className="k-rows -mx-2">
           {visible.map((entry) => (
             <EntryRow
               key={entry.animeId}
@@ -124,29 +135,28 @@ export function ListBrowser({
               onEdit={() => {
                 setEditingId(entry.animeId);
               }}
-              {...(canAddEpisode(entry) && {
-                onNextEpisode: () => void addEpisode(entry),
-              })}
+              onNextEpisode={canAddEpisode(entry) ? () => void addEpisode(entry) : undefined}
               busy={savingId === entry.animeId}
             />
           ))}
         </ul>
       ) : (
-        <div className="py-12 text-center text-sm text-zinc-500">
-          <p>
+        <div className="k-empty mt-4">
+          <p className="k-empty__count">0 entries</p>
+          <p className="k-empty__title">
             {entries.length === 0
-              ? "Your MyAnimeList anime list is empty."
+              ? "Your MyAnimeList anime list is empty"
               : filtered
-                ? `Nothing in ${STATUS_LABELS[view.status]} matches these filters.`
-                : `Nothing in ${STATUS_LABELS[view.status]}.`}
+                ? `Nothing in ${STATUS_LABELS[view.status]} matches these filters`
+                : `Nothing in ${STATUS_LABELS[view.status]}`}
           </p>
           {filtered && (
             <button
               type="button"
+              className="k-btn"
               onClick={() => {
                 update(clearFilters(view));
               }}
-              className="mt-3 h-9 rounded-lg border border-zinc-300 px-3 font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
             >
               Clear filters
             </button>
@@ -166,33 +176,37 @@ export function ListBrowser({
       )}
 
       {notice && (
-        <div
-          role="status"
-          className="fixed inset-x-0 bottom-16 z-20 mx-auto flex max-w-2xl items-center gap-3 rounded-lg bg-zinc-900 px-3 py-2 text-sm text-white shadow-lg dark:bg-zinc-100 dark:text-zinc-900"
+        <Banner
+          level={notice.level}
+          className="fixed inset-x-4 bottom-[calc(var(--nav-height)+var(--space-16))] z-20 mx-auto max-w-(--content-max)"
+          action={
+            <span className="flex items-center gap-2">
+              {notice.undoId && (
+                <button
+                  type="button"
+                  className="k-link"
+                  onClick={() => {
+                    if (notice.undoId) void undo(notice.undoId);
+                  }}
+                >
+                  Undo
+                </button>
+              )}
+              <button
+                type="button"
+                className="k-btn k-btn--ghost k-btn--icon k-btn--sm"
+                aria-label="Dismiss"
+                onClick={() => {
+                  setNotice(null);
+                }}
+              >
+                <Icon name="clear" />
+              </button>
+            </span>
+          }
         >
-          <span className="min-w-0 flex-1 truncate">{notice.text}</span>
-          {notice.undoId && (
-            <button
-              type="button"
-              onClick={() => {
-                if (notice.undoId) void undo(notice.undoId);
-              }}
-              className="shrink-0 font-medium underline"
-            >
-              Undo
-            </button>
-          )}
-          <button
-            type="button"
-            aria-label="Dismiss"
-            onClick={() => {
-              setNotice(null);
-            }}
-            className="shrink-0 px-1"
-          >
-            ×
-          </button>
-        </div>
+          {notice.text}
+        </Banner>
       )}
     </>
   );

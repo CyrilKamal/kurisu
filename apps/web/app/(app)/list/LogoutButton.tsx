@@ -20,11 +20,12 @@ export function LogoutButton() {
   return (
     <button
       type="button"
+      className="k-btn k-btn--ghost"
       onClick={() => void logout()}
       disabled={pending}
-      className="h-9 rounded-lg px-2 text-sm text-zinc-600 hover:bg-zinc-100 disabled:opacity-60 dark:text-zinc-400 dark:hover:bg-zinc-900"
+      aria-busy={pending}
     >
-      Log out
+      {pending ? "Logging out…" : "Log out"}
     </button>
   );
 }

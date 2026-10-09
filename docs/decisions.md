@@ -1711,3 +1711,18 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 **Consequences:**
 - The thread query does two more lookups: runs with their steps, and briefs.
 - The trace exposes tool names and arguments to the user. That's fine for a personal app, but it's worth a look before the friends beta (Milestone 6).
+
+## 2026-10-08 — List screens in the design system, keeping List editing (between Milestones 5 and 6)
+**Decision:**
+- **The List screen:** ScreenHeader with a mono status line, section links as ghost buttons, StatusTabs with square marks and counts, FilterBar, and dense EntryRows. Each row has a progress-edged poster, a meter with its readout, and a mono score. Banners carry log levels (WARN, INFO, ERR).
+- **History** uses the ChangeLog: day rows, the time in the gutter, the WriteBlock diff, and Undo.
+- **The Diary** uses the same layout, with the user's words under each update ("said …").
+- **The edit sheet** is a panel of the system's Field controls.
+- **List editing stays.** The system's EntryRow note says "no inline editors; writes go through the log", but it was written before Milestone 5 added List editing, which Cyril asked for. So each row keeps "+1 ep" and Edit as small buttons. Every edit still goes through propose → commit, shows in History and can be undone.
+
+**Alternatives:**
+- **Dropping "+1 ep" and Edit, as the note says.** That would remove a Milestone 5 done-when ("I can edit any entry and remove shows on the List screen").
+
+**Why:** the system describes the look. Cyril's milestone describes what the app does, and where they differ, the milestone wins.
+
+**Consequences:** the design system's EntryRow should gain the two buttons and its note should change. That's for Cyril to decide in the artifact. `ChangeCards.tsx` is gone; History and Chat share the diff component.

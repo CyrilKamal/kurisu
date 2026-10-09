@@ -55,11 +55,43 @@ export function clockTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-GB", { hour12: false });
 }
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** "2026-10-08" in the viewer's time zone. */
+function localDate(date: Date): string {
+  return `${String(date.getFullYear())}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 /** "2026-10-08 08:00" in the viewer's time zone. */
 export function dateTime(iso: string): string {
   const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${String(date.getFullYear())}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
-    date.getHours(),
-  )}:${pad(date.getMinutes())}`;
+  return `${localDate(date)} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/** "21:40" in the viewer's time zone. */
+export function hourMinute(iso: string): string {
+  const date = new Date(iso);
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/**
+ * Items by day in the viewer's time zone, keeping their order, each day labelled as the
+ * ChangeLog's day rows are: "2026-10-08 Thu".
+ */
+export function byLocalDay<T>(
+  items: T[],
+  at: (item: T) => string,
+): { key: string; label: string; items: T[] }[] {
+  const days = new Map<string, { key: string; label: string; items: T[] }>();
+  for (const item of items) {
+    const date = new Date(at(item));
+    const key = localDate(date);
+    const day = days.get(key);
+    if (day) day.items.push(item);
+    else {
+      const weekday = date.toLocaleDateString("en-US", { weekday: "short" });
+      days.set(key, { key, label: `${key} ${weekday}`, items: [item] });
+    }
+  }
+  return [...days.values()];
 }
