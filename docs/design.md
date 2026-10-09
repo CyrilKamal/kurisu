@@ -110,5 +110,5 @@ The biggest risk is data sourcing, not the agent: MAL has no episode-level sched
 4. Recommendations and taste memory.
 5. Your list, in your hands: in-app editing, import from notes, where to watch, sequel alerts, stats and recap, diary, what's good this season.
 6. Invite a handful of friends, with friend features (taste match, activity); add their failures to the eval set.
-7. A paid plan: written approval from MAL (and AniList's license past $150 a month in revenue), a free tier and a paid tier through Stripe, terms and a privacy policy, on a server that stays up.
-8. Stretch: distill the parsing step into a fine-tuned small open model (1–3B) trained on labeled update messages, served locally. Compare it with Flash-Lite on accuracy, latency and cost.
+7. AI lab: RAG over your own history, semantic recommendations from embedded synopses, hybrid title search, and a LoRA fine-tune of a small open model (1–3B) for the parsing step. Each is measured against an eval, whether or not it ships.
+8. A paid plan: written approval from MAL (and AniList's license past $150 a month in revenue), a free tier and a paid tier through Stripe, terms and a privacy policy, on a server that stays up.

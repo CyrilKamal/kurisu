@@ -1820,7 +1820,7 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - **Asking MAL now,** in two places (texts drafted by Claude), and the beta goes ahead while waiting:
   - **A support ticket** asks how to get the written approval section 3(a)(xiv) requires before a paid plan. Only MAL itself can give that.
   - **A post in the MAL API Club** asks whether keeping each user's list in kurisu's own database is fine under section 3(c), and whether there are request-rate guidelines. That's where API questions get answered, though an answer there isn't binding. The hosted app's MAL registration says commercial, and its description says the beta is free.
-- **Milestone 7 is now the paid plan.** That means the approvals (MAL's, and AniList's license past $150 a month), Stripe, a free tier and a paid tier, terms and a privacy policy, and likely a server. Distillation moves to Milestone 8, still a stretch.
+- **A paid plan becomes a milestone** (Milestone 8, after the AI lab in the next entry). That means the approvals (MAL's, and AniList's license past $150 a month), Stripe, a free tier and a paid tier, terms and a privacy policy, and likely a server.
 - **Spending protection in Milestone 6:** a per-friend daily limit, plus a $5 monthly cap on friends' estimated model spend. The owner keeps working past the cap.
 - **MAL sync stays as it is:** at login, after writes and on Re-sync. There's no polling, even for fresher friend activity.
 
@@ -1834,9 +1834,29 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - **Gemini isn't free for other people's data.** The beta runs on Cyril's prepaid credit, which stops every call, his own included, when it runs out.
 - **Any revenue needs approval.** MAL counts any revenue (paid apps, subscriptions, even recurring donations with quotas) as commercial, which needs its written approval. AniList is free under $150 a month in revenue and needs a license above that, and it restricts competing list trackers unless it authorizes them.
 - **Section 3(c)** says apps may not store MAL users' personal information or the content they create "on the server-side", and kurisu's list mirror (a hard rule since Milestone 1) does. It doesn't define those terms, but a revoked Client ID would break kurisu for everyone.
-- **Why the paid plan comes before distillation:** the beta supplies real per-user costs to price from. A local model only saves money while kurisu runs on this PC; on a rented server it needs a GPU, which costs more than Flash-Lite.
+- **Why a local model isn't the way to cut costs:** a local model only saves money while kurisu runs on this PC. On a rented server it needs a GPU, which costs more than Flash-Lite. The beta supplies real per-user costs to price from.
 
 **Consequences:**
 - MAL's answer may change how the mirror works, and whether a paid plan is possible at all.
 - **Price:** at list prices, a typical user costs about 50¢ a month in model calls. $2–3 a month, or about $20 a year (a card charge costs about 30¢), would cover it.
-- CLAUDE.md and the design doc renumber distillation to Milestone 8.
+- CLAUDE.md and the design doc gain the paid-plan milestone.
+
+## 2026-10-09 — Milestone 7 becomes an AI lab: embeddings, RAG and fine-tuning, each measured (Milestone 6)
+**Decision:** Milestone 7 is four experiments, each measured against an eval and logged as a decision entry whether it wins or not. Nothing from the lab has to reach the paid app, which becomes Milestone 8.
+- **RAG over your own history:** diary notes, drop reasons and chats are embedded. A question retrieves the closest ones and is answered with citations. It's scored on retrieval recall@k and on whether answers stick to their sources, over a question set Cyril writes.
+- **Semantic recommendations:** AniList synopses are embedded into pgvector and blended into the recommender's ranking. It's scored on the existing recommendation eval.
+- **Hybrid title search:** vectors next to today's trigram matching, for nicknames. It's scored on update accuracy and wrong-write rate, with the grounding rule (decision of 2026-10-06) still applying.
+- **Fine-tuning:** a LoRA fine-tune of a 1–3B open model for the parsing step, on messages Cyril labels, compared with Flash-Lite. This replaces the old distillation milestone.
+
+**Alternatives:**
+- Putting the lab after the paid plan.
+- No lab milestone, only lab work while the paid plan waits on MAL.
+- Keeping distillation as the only experiment.
+
+**Why:** Cyril wants hands-on work with embeddings, RAG and fine-tuning to talk about, even if it never ships. The eval harness makes each one a measured result rather than a feature added for its name. The paid plan has to wait for MAL's written approval anyway, so the lab fills that wait.
+
+**Consequences:**
+- **Embeddings:** they go through the one provider module, like every model call. Development runs them on Ollama (free); Gemini's embedding model is used only if something ships.
+- **pgvector:** vectors live in Postgres, so the database image changes in dev and in the hosted stack.
+- **Fine-tuning data:** training messages must be kept apart from the eval cases, or the scores mean nothing. They're answers Cyril has checked, not Gemini's outputs: Gemini's terms bar using the API to build competing models or to replicate its models. Friends' messages aren't used, so the beta's terms don't need a training clause.
+- **A related constraint for the paid plan:** Gemini's terms also rule out apps likely to be used by anyone under 18, so it needs an 18+ check at sign-up.
