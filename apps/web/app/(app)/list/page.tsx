@@ -17,13 +17,16 @@ import { SyncBanner } from "./SyncBanner";
 export const metadata: Metadata = { title: "My list · kurisu" };
 
 /** The screens around the list, as ghost links under its header. */
-const SECTIONS: { href: string; label: string; icon?: IconName }[] = [
+const SECTIONS: { href: string; label: string; icon?: IconName; ownerOnly?: boolean }[] = [
   { href: "/list/brief", label: "Brief", icon: "bell" },
   { href: "/list/stats", label: "Stats" },
   { href: "/list/diary", label: "Diary" },
   { href: "/list/taste", label: "Taste", icon: "star" },
   { href: "/list/import", label: "Import", icon: "plus" },
   { href: "/list/changes", label: "History", icon: "undo" },
+  // Only the owner invites, for now; friends themselves come next.
+  { href: "/list/friends", label: "Friends", ownerOnly: true },
+  { href: "/list/account", label: "Account" },
 ];
 
 export default async function ListPage(props: PageProps<"/list">) {
@@ -56,12 +59,14 @@ export default async function ListPage(props: PageProps<"/list">) {
               aria-label="List screens"
               className="-mx-4 flex gap-2 overflow-x-auto px-4 py-2 [scrollbar-width:none]"
             >
-              {SECTIONS.map((section) => (
-                <Link key={section.href} href={section.href} className="k-btn k-btn--ghost">
-                  {section.icon && <Icon name={section.icon} />}
-                  {section.label}
-                </Link>
-              ))}
+              {SECTIONS.filter((section) => !section.ownerOnly || me.user.isOwner).map(
+                (section) => (
+                  <Link key={section.href} href={section.href} className="k-btn k-btn--ghost">
+                    {section.icon && <Icon name={section.icon} />}
+                    {section.label}
+                  </Link>
+                ),
+              )}
             </nav>
           </>
         }

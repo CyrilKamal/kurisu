@@ -11,6 +11,9 @@
  *
  * FAKE_MAL_PORT and FAKE_MAL_REDIRECT_URI override the port (4010) and the registered redirect
  * URI, for running a second copy of the app alongside a normal dev server.
+ *
+ * To log in as someone else (an invited friend, say), open
+ * http://127.0.0.1:4010/fake/login-as?name=<name>&id=<number> first. Everyone sees the same list.
  */
 import { fixtureList } from "../fixtures/animeList.js";
 import { FakeMal } from "./fakeMal.js";

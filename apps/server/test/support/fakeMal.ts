@@ -56,6 +56,8 @@ export class FakeMal {
   /** Every secret handed out (codes, verifiers, tokens), so tests can check none reach the logs. */
   readonly issuedSecrets: string[] = [];
 
+  /** Who logs in next, and who /users/@me says the token holder is. Tests switch it. */
+  user: { id: number; name: string };
   /** The user's list as MAL would return it. */
   list: FakeListItem[] = [];
   /** Page size the fake uses, whatever `limit` the client asks for, so tests can force paging. */
@@ -88,7 +90,9 @@ export class FakeMal {
     private readonly options: FakeMalOptions,
     private readonly server: Server,
     readonly baseUrl: string,
-  ) {}
+  ) {
+    this.user = options.user;
+  }
 
   /** Starts on `port`, or a random free port if omitted (tests). */
   static async start(options: FakeMalOptions, port = 0): Promise<FakeMal> {
@@ -125,6 +129,7 @@ export class FakeMal {
   }
 
   reset(): void {
+    this.user = this.options.user;
     this.tokenGrants.length = 0;
     this.codes.clear();
     this.accessTokens.clear();
@@ -156,6 +161,18 @@ export class FakeMal {
       this.authorize(url, res);
       return;
     }
+    // For clicking through as someone else (dev:fake-mal): the next login is this MAL user.
+    if (req.method === "GET" && url.pathname === "/fake/login-as") {
+      const name = url.searchParams.get("name");
+      const id = Number(url.searchParams.get("id"));
+      if (!name || !Number.isInteger(id) || id <= 0) {
+        json(res, 400, { error: "name and a positive integer id are required" });
+        return;
+      }
+      this.user = { id, name };
+      json(res, 200, { user: this.user });
+      return;
+    }
     if (req.method === "POST" && url.pathname === "/v1/oauth2/token") {
       this.token(new URLSearchParams(await readBody(req)), res);
       return;
@@ -165,7 +182,7 @@ export class FakeMal {
         json(res, 401, { error: "invalid_token" });
         return;
       }
-      json(res, 200, { id: this.options.user.id, name: this.options.user.name });
+      json(res, 200, { id: this.user.id, name: this.user.name });
       return;
     }
     const patch = /^\/v2\/anime\/(\d+)\/my_list_status$/.exec(url.pathname);

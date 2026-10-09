@@ -99,6 +99,32 @@ describe("responses match the contract", () => {
     expect(() => contract.meResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("the /invites endpoints", async () => {
+    // Only the owner invites; this harness has none, so make the test user one.
+    await h.db.update(users).set({ isOwner: true });
+    const send = (method: "POST" | "DELETE", url: string) =>
+      h.app.inject({
+        method,
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        payload: method === "POST" ? { note: "Alex" } : undefined,
+      });
+
+    const created = await send("POST", "/invites");
+    expect(created.statusCode).toBe(201);
+    const invite = contract.createdInviteSchema.parse(created.json());
+
+    const listed = await get("/invites");
+    expect(contract.invitesResponseSchema.parse(listed.json()).invites).toHaveLength(1);
+
+    const code = new URL(invite.url).pathname.split("/").pop() ?? "";
+    const check = await h.app.inject({ method: "GET", url: `/invites/code/${code}` });
+    expect(() => contract.inviteCodeResponseSchema.parse(check.json())).not.toThrow();
+
+    expect((await send("DELETE", `/invites/${invite.id}`)).statusCode).toBe(204);
+  });
+
   it("GET /list", async () => {
     const res = await get("/list");
     const parsed = contract.listResponseSchema.parse(res.json());

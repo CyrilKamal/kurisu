@@ -1860,3 +1860,28 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - **pgvector:** vectors live in Postgres, so the database image changes in dev and in the hosted stack.
 - **Fine-tuning data:** training messages must be kept apart from the eval cases, or the scores mean nothing. They're answers Cyril has checked, not Gemini's outputs: Gemini's terms bar using the API to build competing models or to replicate its models. Friends' messages aren't used, so the beta's terms don't need a training clause.
 - **A related constraint for the paid plan:** Gemini's terms also rule out apps likely to be used by anyone under 18, so it needs an 18+ check at sign-up.
+
+## 2026-10-09 — Invites: one-time links from the owner, and deleting your data (Milestone 6)
+**Decision:**
+- **The owner:** the account named by `OWNER_MAL_USERNAME`. `users.is_owner` is set at each login, and only the owner can make invites.
+- **An invite:** a one-time link that works for a week. Only a SHA-256 hash of its code is stored, like sessions, so the owner copies the link once when it's made.
+- **Joining:**
+  - `/invite/<code>` says who sent it and lists the beta terms: the beta runs on the owner's PC, users must be 18 or older, Gemini reads messages, the owner may read conversations where kurisu went wrong, and users can delete everything.
+  - The login carries the invite to the callback. The callback uses the invite up in the same transaction that creates the account, so a link used or revoked meanwhile leaves no account behind.
+  - Existing accounts log in without an invite.
+- **Account page:** `/list/account` holds logging out and "Delete my kurisu data" (`DELETE /me`, one confirming tap). Every per-user table cascades from `users`, and MAL is never touched. A used invite stays in the owner's list as "Used; that account was since deleted".
+- **Logging out:** it also deletes and unsubscribes this browser's push subscription, so a shared browser stops getting the last person's briefs.
+
+**Alternatives:**
+- **Invite codes typed in by hand:** a link is one tap.
+- **Storing codes so they can be shown again:** a leaked database would then hold working links.
+- **An allowlist of MAL usernames:** it needs the owner to know each friend's MAL name, and to redeploy.
+- **Letting friends invite:** later, if the beta grows.
+
+**Why:** The address is public, and every account spends the owner's Gemini credit, so each account should come from the owner on purpose. Deleting must be one place and complete, because friends are trusting the owner's PC with their list.
+
+**Consequences:**
+- The invite records who invited whom, which the friend features (next PR) use to make an invitee and the owner friends.
+- **The beta terms are on the invite page**, and their wording is Cyril's to approve.
+- **The fake MAL can log in as someone else** (`/fake/login-as`, and `user` in tests), for testing more than one account.
+- **This PR leaves out the rest of the planned PR 2:** the daily and monthly model budgets, the shared AniList limiter, the season lock and the scoping fixes. They come in a follow-up PR.

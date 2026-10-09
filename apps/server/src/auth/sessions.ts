@@ -12,6 +12,7 @@ export interface SessionUser {
   id: string;
   malUserId: number;
   malUsername: string;
+  isOwner: boolean;
 }
 
 function hashToken(token: string): string {
@@ -31,7 +32,12 @@ export async function createSession(
 
 export async function findSessionUser(db: Db, token: string): Promise<SessionUser | null> {
   const [row] = await db
-    .select({ id: users.id, malUserId: users.malUserId, malUsername: users.malUsername })
+    .select({
+      id: users.id,
+      malUserId: users.malUserId,
+      malUsername: users.malUsername,
+      isOwner: users.isOwner,
+    })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
     .where(and(eq(sessions.idHash, hashToken(token)), gt(sessions.expiresAt, new Date())))
