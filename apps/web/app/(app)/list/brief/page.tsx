@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { apiGet } from "@/lib/api";
 
 import { BriefSettingsForm } from "./BriefSettingsForm";
@@ -19,14 +20,17 @@ export default async function BriefPage() {
   if (!settings || !push) redirect("/");
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-24">
-      <header className="flex items-center justify-between border-b border-zinc-200 py-3 dark:border-zinc-800">
-        <h1 className="text-lg font-semibold">Morning brief</h1>
-        <Link href="/list" className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
-          Back to list
-        </Link>
-      </header>
-      <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+    <main className="mx-auto max-w-(--content-max) px-4 pb-16">
+      <ScreenHeader
+        title="Morning brief"
+        sub="new episodes, premieres and your week, once a day"
+        actions={
+          <Link href="/list" className="k-btn k-btn--ghost">
+            Back to list
+          </Link>
+        }
+      />
+      <p className="k-field__hint pt-4">
         Once a day, a notification lists new episodes of the shows you&apos;re watching, and says
         when a sequel to a show you finished, or a show on your Plan to Watch, starts airing. On
         Sundays it sums up your week. Tap it to open Chat, where you can reply &ldquo;watched

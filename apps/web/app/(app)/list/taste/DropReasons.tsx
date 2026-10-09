@@ -3,11 +3,17 @@
 import type { DropReasonView } from "@kurisu/shared";
 import { useState } from "react";
 
+import { Banner } from "@/components/Banner";
+import { Icon } from "@/components/Icon";
+import { Poster } from "@/components/Poster";
 import { sendApi } from "@/lib/clientApi";
 import { relativeTime } from "@/lib/format";
 import { DROP_CATEGORY_LABELS } from "@/lib/taste";
 
-/** The reasons given for dropping shows, newest first, each one deletable. */
+/**
+ * The reasons given for dropping shows, newest first, in the user's own words (the design
+ * system's DropReason). Each one can be forgotten.
+ */
 export function DropReasons({ initialReasons }: { initialReasons: DropReasonView[] }) {
   const [reasons, setReasons] = useState(initialReasons);
   const [notice, setNotice] = useState<string | null>(null);
@@ -29,7 +35,7 @@ export function DropReasons({ initialReasons }: { initialReasons: DropReasonView
 
   if (reasons.length === 0) {
     return (
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="k-field__hint pt-2">
         None yet. When you drop a show in Chat and say why, like &ldquo;dropping X, way too
         slow&rdquo;, the reason is remembered here.
       </p>
@@ -39,40 +45,36 @@ export function DropReasons({ initialReasons }: { initialReasons: DropReasonView
   return (
     <>
       {notice && (
-        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-400">
+        <Banner level="error" className="mt-2">
           {notice}
-        </p>
+        </Banner>
       )}
-      <ul className="mt-2 flex flex-col gap-2">
+      <ul className="k-drops pt-2">
         {reasons.map((reason) => (
-          <li
-            key={reason.id}
-            className="flex items-start gap-3 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <li key={reason.id} className="k-drop">
+            <Poster url={reason.pictureUrl} title={reason.title} />
+            <div className="min-w-0">
+              <div className="k-drop__head">
                 <a
+                  className="k-drop__title hover:underline"
                   href={`https://myanimelist.net/anime/${String(reason.animeId)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium hover:underline"
                 >
                   {reason.title}
                 </a>
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                  {DROP_CATEGORY_LABELS[reason.category]}
-                </span>
-                <span className="text-xs text-zinc-500">{relativeTime(reason.createdAt)}</span>
+                <span className="k-tag k-tag--word">{DROP_CATEGORY_LABELS[reason.category]}</span>
+                <span className="k-mono">{relativeTime(reason.createdAt)}</span>
               </div>
-              <p className="mt-1 text-zinc-600 dark:text-zinc-400">&ldquo;{reason.said}&rdquo;</p>
+              <p className="k-drop__said">{reason.said}</p>
             </div>
             <button
               type="button"
+              className="k-btn k-btn--danger k-btn--icon k-btn--sm"
               onClick={() => void remove(reason)}
-              aria-label={`Delete the reason for dropping ${reason.title}`}
-              className="h-8 shrink-0 rounded-md px-2 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-red-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-red-400"
+              aria-label={`Forget the reason for dropping ${reason.title}`}
             >
-              Delete
+              <Icon name="trash" />
             </button>
           </li>
         ))}

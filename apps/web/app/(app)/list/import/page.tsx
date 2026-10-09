@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { apiGet } from "@/lib/api";
 
 import { ImportFlow } from "./ImportFlow";
@@ -15,13 +16,16 @@ export default async function ImportPage() {
   if (!latest) redirect("/");
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-40">
-      <header className="flex items-center justify-between border-b border-zinc-200 py-3 dark:border-zinc-800">
-        <h1 className="text-lg font-semibold">Import from your notes</h1>
-        <Link href="/list" className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
-          Back to list
-        </Link>
-      </header>
+    <main className="mx-auto max-w-(--content-max) px-4 pb-40">
+      <ScreenHeader
+        title="Import"
+        sub="from your notes: paste, review, one tap"
+        actions={
+          <Link href="/list" className="k-btn k-btn--ghost">
+            Back to list
+          </Link>
+        }
+      />
       <ImportFlow initial={latest.import} />
     </main>
   );

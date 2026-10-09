@@ -1726,3 +1726,26 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 **Why:** the system describes the look. Cyril's milestone describes what the app does, and where they differ, the milestone wins.
 
 **Consequences:** the design system's EntryRow should gain the two buttons and its note should change. That's for Cyril to decide in the artifact. `ChangeCards.tsx` is gone; History and Chat share the diff component.
+
+## 2026-10-08 — The rest of the screens, and nothing off the system (between Milestones 5 and 6)
+**Decision:**
+- **Taste:** a hero metric, AffinityBars diverging from the centre line (teal up, crimson down, each with a sign), and drop reasons as DropReasons with posters. `dropReasonViewSchema` gains `pictureUrl`.
+- **Stats:**
+  - StatTile strips for the week, the year (hero) and all time.
+  - The yearly goal as a crimson meter with its readout.
+  - Months and scores as the system's ScoreHistogram, each with its table view. The score histogram is shown only from 10 scored shows on, as the system says.
+- **Brief settings:** the system's switch, a mono time field and square checkboxes.
+- **Import:** grouped panels, "?" tags, Keep MAL or Use my notes as pressed chips, "which one?" as a ChoiceList, the proposed write in teal, and a solid bottom bar with the primary Import.
+- **Login:** the logo as it is, the `display` wordmark, and one `k-btn--lg`.
+- **Lock-down:**
+  - `globals.css` removes Tailwind's palette, radii, shadows and blur, and the always-dark shim.
+  - `test/designSystem.test.ts` fails on a palette color, `dark:`, a radius past the system's, or a shadow, blur or gradient. A probe file proved it catches one.
+
+**Alternatives:**
+- **Keeping Tailwind's defaults and relying on review.** A stray class silently mixes in another palette. With the defaults removed, it renders nothing, and the test names the line.
+
+**Why:** the system's rule: "If a value isn't a token, it doesn't belong in the UI."
+
+**Consequences:**
+- New UI can only use tokens (`bg-surface`, `text-ink-muted`, `rounded-control`) or `k-` classes.
+- Layout utilities (flex, grid, spacing, sizing) still work.

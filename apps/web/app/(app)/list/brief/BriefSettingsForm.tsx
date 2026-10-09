@@ -66,72 +66,76 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettingsResponse 
   };
 
   return (
-    <section className="mt-6">
-      <h2 className="text-sm font-semibold">Brief</h2>
-      <div className="mt-2 flex flex-col gap-4 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
-        <label className="flex items-center gap-2">
+    <section className="pt-6">
+      <h2 className="k-caps pb-2">Brief</h2>
+      <div className="k-panel flex flex-col gap-6 p-4">
+        <label className="k-switch">
           <input
             type="checkbox"
+            role="switch"
             checked={settings.enabled}
             onChange={(e) => {
               setSettings((s) => ({ ...s, enabled: e.target.checked }));
             }}
-            className="size-4"
           />
           Send me a morning brief
         </label>
 
-        <label className="flex flex-wrap items-center gap-2">
-          <span>Time</span>
-          <input
-            type="time"
-            value={settings.time}
-            onChange={(e) => {
-              setSettings((s) => ({ ...s, time: e.target.value }));
-            }}
-            className="h-9 rounded-lg border border-zinc-300 bg-transparent px-2 dark:border-zinc-700"
-          />
-          <span className="text-zinc-500">{timeZone}</span>
-        </label>
+        <div className="k-field">
+          <label className="k-field__label" htmlFor="brief-time">
+            Time
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              id="brief-time"
+              type="time"
+              value={settings.time}
+              onChange={(e) => {
+                setSettings((s) => ({ ...s, time: e.target.value }));
+              }}
+              className="k-input k-input--mono w-32"
+            />
+            <span className="k-field__hint">{timeZone}</span>
+          </div>
+        </div>
 
-        <fieldset>
-          <legend>Services you subscribe to</legend>
-          <p className="mt-1 text-zinc-500">
-            The brief says where to watch only when a show is on one of these.
-          </p>
-          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+        <fieldset className="k-field m-0 border-0 p-0">
+          <legend className="k-field__label pb-2">Where you watch</legend>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
             {STREAMING_SERVICES.map((service) => (
-              <label key={service.id} className="flex items-center gap-2">
+              <label key={service.id} className="k-check">
                 <input
                   type="checkbox"
                   checked={settings.services.includes(service.id)}
                   onChange={() => {
                     toggleService(service.id);
                   }}
-                  className="size-4"
                 />
                 {service.label}
               </label>
             ))}
           </div>
+          <p className="k-field__hint">
+            The brief names a service only when AniList lists the show on one of these.
+          </p>
         </fieldset>
 
-        <label className="flex items-start gap-2">
-          <input
-            type="checkbox"
-            checked={settings.sundayRecap}
-            onChange={(e) => {
-              setSettings((s) => ({ ...s, sundayRecap: e.target.checked }));
-            }}
-            className="mt-0.5 size-4"
-          />
-          <span>
+        <div className="k-field">
+          <label className="k-switch">
+            <input
+              type="checkbox"
+              role="switch"
+              checked={settings.sundayRecap}
+              onChange={(e) => {
+                setSettings((s) => ({ ...s, sundayRecap: e.target.checked }));
+              }}
+            />
             Sunday recap
-            <span className="block text-zinc-500">
-              On Sundays the brief also sums up your week, with your goal for the year.
-            </span>
-          </span>
-        </label>
+          </label>
+          <p className="k-field__hint">
+            On Sundays the brief also sums up your week, with your goal for the year.
+          </p>
+        </div>
 
         {timeZone && <ScheduleStatus saved={saved} />}
 
@@ -143,11 +147,7 @@ export function BriefSettingsForm({ initial }: { initial: BriefSettingsResponse 
             Send a brief now
           </Button>
         </div>
-        <p
-          role="status"
-          aria-live="polite"
-          className="text-zinc-600 empty:hidden dark:text-zinc-400"
-        >
+        <p role="status" aria-live="polite" className="k-field__hint empty:hidden">
           {message}
         </p>
       </div>
@@ -177,10 +177,10 @@ function ScheduleStatus({ saved }: { saved: BriefSettingsResponse }) {
       : `Next brief: ${saved.next} at ${formatTime(saved.time)}.`;
   const last = saved.lastDaily;
   return (
-    <div className="rounded-md bg-zinc-50 px-3 py-2 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+    <div className="rounded-control bg-surface-raised px-4 py-2">
       <p>{next}</p>
       {last && (
-        <p className="mt-1 text-zinc-500">
+        <p className="k-field__hint">
           Last brief ({formatDate(last.localDate)}): {lastBriefText(last)}
         </p>
       )}

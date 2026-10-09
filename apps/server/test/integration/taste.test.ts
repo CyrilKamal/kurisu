@@ -204,6 +204,7 @@ describe("Taste page routes", () => {
         id: reason.id,
         animeId: DROPPED,
         title: "Fixture Dropped Show",
+        pictureUrl: expect.stringContaining(String(DROPPED)) as unknown,
         category: "pacing",
         said: "way too slow",
         createdAt: reason.createdAt.toISOString(),
