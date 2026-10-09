@@ -26,6 +26,7 @@ export const LOGIN_ERRORS = [
   "invalid_state",
   "token_exchange_failed",
   "mal_unavailable",
+  "invite_only",
 ] as const;
 export type LoginError = (typeof LOGIN_ERRORS)[number];
 

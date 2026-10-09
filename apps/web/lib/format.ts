@@ -131,6 +131,7 @@ export function loginErrorMessage(code: string | undefined): string | null {
     invalid_state: "That login expired or was already used. Please try again.",
     token_exchange_failed: "MyAnimeList didn't accept the login. Please try again.",
     mal_unavailable: "Couldn't reach MyAnimeList. Please try again in a minute.",
+    invite_only: "kurisu is invite-only for now, so that MyAnimeList account can't sign up.",
   };
   return code in messages ? messages[code as LoginError] : messages.invalid_request;
 }

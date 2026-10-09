@@ -38,10 +38,12 @@ describe("loadConfig", () => {
         SERVER_PORT: "8080",
         WEB_ORIGIN: "https://kurisu.example/some/path",
         MAL_API_BASE_URL: "http://127.0.0.1:9999/v2/",
+        OWNER_MAL_USERNAME: "Cyril",
       }),
     );
 
     expect(config.nodeEnv).toBe("production");
+    expect(config.owner).toEqual({ malUsername: "Cyril" });
     expect(config.server.port).toBe(8080);
     expect(config.webOrigin).toBe("https://kurisu.example");
     expect(config.mal.apiBaseUrl).toBe("http://127.0.0.1:9999/v2");
@@ -87,6 +89,13 @@ describe("loadConfig", () => {
     expect(() => loadConfig(testEnv({ VAPID_PUBLIC_KEY: "pub" }))).toThrow(/must be set together/);
     expect(() => loadConfig(testEnv({ ...vapid, VAPID_SUBJECT: "someone@example.com" }))).toThrow(
       /VAPID_SUBJECT: invalid/,
+    );
+  });
+
+  it("leaves sign-up open without an owner, except in production", () => {
+    expect(loadConfig(testEnv()).owner).toBeNull();
+    expect(() => loadConfig(testEnv({ NODE_ENV: "production" }))).toThrow(
+      /OWNER_MAL_USERNAME must be set in production/,
     );
   });
 

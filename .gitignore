@@ -17,6 +17,9 @@ coverage/
 .env*
 !.env.example
 
+# The hosted app's daily database backups (deploy/README.md)
+backups/
+
 # Logs
 *.log
 npm-debug.log*
