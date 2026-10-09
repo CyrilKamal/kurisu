@@ -1,0 +1,63 @@
+# Cyril's "this season" cases (2026-10-08). Wordings are Cyril's, as typed. Labels follow the
+# scenario each one answers: every pick is airing now, plus the service, mood, genre to avoid or
+# source the message asks for; "a show" is TV or web series, as in recommend-mine.yaml.
+snapshot: my-list
+cases:
+  - id: rec-season-best
+    message: what are the best animes this season
+    tags: [season]
+    expect:
+      airing_now: true
+
+  - id: rec-season-must-watch
+    message: what are the must watch animes airing rn
+    tags: [season]
+    expect:
+      airing_now: true
+
+  - id: rec-season-netflix
+    message: whats airing rn on netflix
+    tags: [season, streaming]
+    notes: Airing on Netflix in the frozen data - Steel Ball Run, One Piece (list), Tougen Anki (new).
+    expect:
+      airing_now: true
+      streams_on: [netflix]
+
+  - id: rec-season-funny
+    message: any funny airing animes
+    tags: [season, mood]
+    expect:
+      airing_now: true
+      genres_any: [Comedy]
+
+  - id: rec-season-no-isekai
+    message: tryna watch a show this season but not any isekai
+    tags: [season, show]
+    expect:
+      airing_now: true
+      media_types: [tv, ona]
+      genres_none: [Isekai]
+
+  - id: rec-season-new
+    message: any new shows that are airing rn i should take a look at
+    tags: [season, new]
+    notes: New to Cyril, not on the list.
+    expect:
+      airing_now: true
+      media_types: [tv, ona]
+      source: new
+
+  - id: rec-season-mine
+    message: what am i watching thats airing rn
+    tags: [season, continue]
+    notes: One Piece, Bleach TYBW The Calamity, Steel Ball Run. Reads like a list question, so it may not reach the recommender.
+    expect:
+      airing_now: true
+      source: in_progress
+
+  - id: rec-season-whats-new
+    message: whats new this szn
+    tags: [season, known-gap]
+    notes: The known handoff gap ("what's new this season", progress-sync v15).
+    expect:
+      airing_now: true
