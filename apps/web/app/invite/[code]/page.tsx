@@ -47,6 +47,11 @@ export default async function InvitePage(props: PageProps<"/invite/[code]">) {
                 answer quickly. MyAnimeList&apos;s login gives it your list, never your password.
               </li>
               <li>
+                You and {invite.inviter} become friends: you see each other&apos;s taste match, and
+                what each of you watches (episodes, finishes, scores and drops). You can turn that
+                off, and your chats and diary stay private.
+              </li>
+              <li>
                 Google&apos;s Gemini reads what you send kurisu, on the paid tier, which Google
                 doesn&apos;t train on.
               </li>

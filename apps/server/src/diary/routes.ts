@@ -1,3 +1,4 @@
+import { diaryNotePatchSchema } from "@kurisu/shared";
 import { and, eq } from "drizzle-orm";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
@@ -31,6 +32,26 @@ export function registerDiaryRoutes(app: FastifyInstance, deps: DiaryRouteDeps):
       entries: diary.entries.map((entry) => ({ ...entry, at: entry.at.toISOString() })),
     };
   });
+
+  /** Shows one note to friends, with its update, or stops showing it. */
+  app.patch(
+    "/diary/notes/:id",
+    { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] },
+    async (request, reply) => {
+      const params = idParams.safeParse(request.params);
+      const body = diaryNotePatchSchema.safeParse(request.body);
+      if (!params.success) return reply.code(404).send({ error: "not_found" });
+      if (!body.success) return reply.code(400).send({ error: "invalid_request" });
+      const updated = await db
+        .update(diaryNotes)
+        .set({ shared: body.data.shared })
+        .where(and(eq(diaryNotes.id, params.data.id), eq(diaryNotes.userId, userOf(request))))
+        .returning({ id: diaryNotes.id, shared: diaryNotes.shared });
+      const [note] = updated;
+      if (!note) return reply.code(404).send({ error: "not_found" });
+      return note;
+    },
+  );
 
   /** Deletes one diary note. The update it came with stays. */
   app.delete(

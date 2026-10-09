@@ -13,7 +13,8 @@
  * URI, for running a second copy of the app alongside a normal dev server.
  *
  * To log in as someone else (an invited friend, say), open
- * http://127.0.0.1:4010/fake/login-as?name=<name>&id=<number> first. Everyone sees the same list.
+ * http://127.0.0.1:4010/fake/login-as?name=<name>&id=<number> first. Everyone sees the same list,
+ * except id 5151 ("alex"), who has their own.
  */
 import { fixtureList } from "../fixtures/animeList.js";
 import { FakeMal } from "./fakeMal.js";
@@ -73,6 +74,31 @@ fake.catalog = [
     mean: 9.1,
   },
 ];
+
+// "alex" (id 5151) has a list of their own, for trying friends: different scores, and a show
+// that isn't on the main list.
+const frieren = fake.catalog[0];
+fake.lists.set(5151, [
+  ...fixtureList().map((entry) =>
+    entry.list_status.score > 0
+      ? { ...entry, list_status: { ...entry.list_status, score: 11 - entry.list_status.score } }
+      : entry,
+  ),
+  ...(frieren
+    ? [
+        {
+          node: frieren,
+          list_status: {
+            status: "completed" as const,
+            score: 10,
+            num_episodes_watched: 28,
+            is_rewatching: false,
+            updated_at: "2026-10-01T20:00:00+00:00",
+          },
+        },
+      ]
+    : []),
+]);
 
 console.log(`Fake MAL listening on ${fake.baseUrl}`);
 console.log(`  MAL_AUTH_BASE_URL=${fake.authBaseUrl}`);

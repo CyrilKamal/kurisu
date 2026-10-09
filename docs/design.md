@@ -17,7 +17,7 @@ A personal agent that runs your anime and manga life through conversation: you t
 
 - Hosting, streaming or linking to unlicensed content.
 - Generating art, translations or stories.
-- A native mobile app or social features.
+- A native mobile app, or social features beyond friends' taste match and activity.
 - Manga release tracking (deferred until anime flows are solid).
 
 ## User experience

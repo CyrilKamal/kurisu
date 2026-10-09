@@ -43,6 +43,20 @@ export function DiaryTimeline({ initial }: { initial: DiaryResponse }) {
     }
   }
 
+  async function toggleShare(entry: DiaryEntry) {
+    if (!entry.note) return;
+    const note = entry.note;
+    setNotice(null);
+    setNote(entry.id, { ...note, shared: !note.shared });
+    const result = await sendApi("PATCH", `/diary/notes/${note.id}`, null, {
+      shared: !note.shared,
+    });
+    if (!result.ok) {
+      setNote(entry.id, note);
+      setNotice("Couldn't change who sees that note. Please try again.");
+    }
+  }
+
   if (entries.length === 0) {
     return (
       <div className="k-empty mt-6">
@@ -94,7 +108,21 @@ export function DiaryTimeline({ initial }: { initial: DiaryResponse }) {
                     after={entry.after}
                     prefix={entry.origin === "mal" ? "On MyAnimeList" : null}
                   />
-                  {entry.note && <p className="k-drop__said">{entry.note.text}</p>}
+                  {entry.note && (
+                    <>
+                      <p className="k-drop__said">{entry.note.text}</p>
+                      <button
+                        type="button"
+                        className="k-link k-field__hint"
+                        onClick={() => void toggleShare(entry)}
+                        aria-pressed={entry.note.shared}
+                      >
+                        {entry.note.shared
+                          ? "Shared with friends · Stop sharing"
+                          : "Share with friends"}
+                      </button>
+                    </>
+                  )}
                 </div>
                 {entry.note ? (
                   <button
