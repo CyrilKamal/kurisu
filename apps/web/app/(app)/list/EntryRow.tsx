@@ -1,11 +1,24 @@
 import type { ListEntry } from "@kurisu/shared";
-import Image from "next/image";
 
-import { mediaTypeLabel, progressLabel } from "@/lib/format";
+import { Icon } from "@/components/Icon";
+import { Poster, progressOf } from "@/components/Poster";
+import { ProgressMeter } from "@/components/ProgressMeter";
+import { Score } from "@/components/Score";
+import { mediaTypeLabel } from "@/lib/format";
+
+/** "TV · 24 min", "Movie · 110 min", "ONA". */
+function kindAndLength(entry: ListEntry): string | null {
+  const parts = [
+    mediaTypeLabel(entry.mediaType),
+    entry.episodeMinutes === null ? null : `${String(entry.episodeMinutes)} min`,
+  ].filter((part) => part !== null);
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
 
 /**
- * One show on the List screen. With handlers, it gets an Edit button and, for a show under way,
- * "+1 ep" for the most common edit.
+ * One show on the List screen, dense (the design system's EntryRow): poster with its progress
+ * edge, title and meta, then progress, score and the edit actions on the right. List editing
+ * (Milestone 5) adds "+1 ep" and Edit, which the system's row predates.
  */
 export function EntryRow({
   entry,
@@ -15,89 +28,69 @@ export function EntryRow({
 }: {
   entry: ListEntry;
   onEdit?: () => void;
-  onNextEpisode?: () => void;
+  onNextEpisode?: (() => void) | undefined;
   busy?: boolean;
 }) {
-  const details = [
-    mediaTypeLabel(entry.mediaType),
-    progressLabel(entry),
-    entry.airingStatus === "currently_airing" ? "Airing" : null,
-  ].filter((part) => part !== null);
+  const underway =
+    entry.isRewatching || (entry.episodesWatched > 0 && entry.status !== "completed");
+  const meta = kindAndLength(entry);
 
   return (
-    <li className="flex items-start gap-3 py-3">
-      {entry.pictureUrl ? (
-        <Image
-          src={entry.pictureUrl}
-          alt=""
-          width={48}
-          height={68}
-          className="h-[68px] w-12 shrink-0 rounded bg-zinc-200 object-cover dark:bg-zinc-800"
-        />
-      ) : (
-        <div aria-hidden className="h-[68px] w-12 shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
-      )}
-
-      <div className="min-w-0 flex-1">
+    <li className="k-row">
+      <Poster
+        url={entry.pictureUrl}
+        title={entry.title}
+        progress={underway ? progressOf(entry.episodesWatched, entry.numEpisodes) : null}
+      />
+      <div className="k-row__main">
         <a
+          className="k-row__title"
           href={`https://myanimelist.net/anime/${String(entry.animeId)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="line-clamp-2 font-medium leading-snug hover:underline"
         >
           {entry.title}
         </a>
-        <p className="mt-1 text-sm text-zinc-500">{details.join(" · ")}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          {entry.isRewatching && (
-            <span className="inline-block rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-800 dark:bg-blue-950 dark:text-blue-200">
-              Rewatching
-            </span>
-          )}
+        <p className="k-row__meta">
+          {meta && <span>{meta}</span>}
+          {entry.airingStatus === "currently_airing" && <span className="k-airing">airing</span>}
+          {entry.isRewatching && <span className="k-tag k-tag--word">Rewatching</span>}
+        </p>
+      </div>
+      <div className="k-row__data">
+        {entry.status !== "plan_to_watch" && (
+          <ProgressMeter
+            watched={entry.episodesWatched}
+            total={entry.numEpisodes}
+            bar={entry.status !== "completed" || entry.isRewatching}
+            className="w-24 sm:w-40"
+          />
+        )}
+        <div className="flex items-center gap-2">
+          <Score score={entry.score} />
           {onNextEpisode && (
             <button
               type="button"
+              className="k-btn k-btn--sm"
               onClick={onNextEpisode}
               disabled={busy}
+              aria-busy={busy}
               aria-label={`Watched episode ${String(entry.episodesWatched + 1)} of ${entry.title}`}
-              className="h-7 rounded-full border border-zinc-300 px-2.5 text-xs font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900"
             >
               {busy ? "Saving…" : "+1 ep"}
             </button>
           )}
-        </div>
-      </div>
-
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        {entry.score > 0 && (
-          <span
-            className="text-sm tabular-nums text-zinc-600 dark:text-zinc-300"
-            aria-label={`Score ${String(entry.score)} out of 10`}
-          >
-            ★ {entry.score}
-          </span>
-        )}
-        {onEdit && (
-          <button
-            type="button"
-            onClick={onEdit}
-            aria-label={`Edit ${entry.title}`}
-            className="flex size-8 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.75}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="size-4"
+          {onEdit && (
+            <button
+              type="button"
+              className="k-btn k-btn--ghost k-btn--icon k-btn--sm"
+              onClick={onEdit}
+              aria-label={`Edit ${entry.title}`}
             >
-              <path d="M16.9 3.6a2.1 2.1 0 0 1 3 3L8 18.5l-4 1 1-4Z" />
-            </svg>
-          </button>
-        )}
+              <Icon name="rename" />
+            </button>
+          )}
+        </div>
       </div>
     </li>
   );

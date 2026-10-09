@@ -1,6 +1,7 @@
 import type { ListEntry } from "@kurisu/shared";
 import type { ReactNode } from "react";
 
+import { Icon } from "@/components/Icon";
 import { mediaTypeLabel } from "@/lib/format";
 import {
   AIRING_FILTERS,
@@ -16,7 +17,10 @@ import {
   type ListView,
 } from "@/lib/listFilters";
 
-/** A title search, then type, genre and airing filters and the sort order, as compact menus. */
+/**
+ * A title filter, then type, genre and airing menus and the sort order (the design system's
+ * FilterBar). A menu that's filtering gets a crimson edge.
+ */
 export function ListFilters({
   entries,
   view,
@@ -31,11 +35,12 @@ export function ListFilters({
   const airing = facetOptions(entries, view, "airing");
 
   return (
-    <div className="flex flex-wrap items-center gap-2 py-2">
-      <div className="relative min-w-48 flex-1">
-        <SearchIcon />
+    <div className="k-filterbar">
+      <div className="k-search">
+        <Icon name="search" />
         <input
           type="search"
+          className="k-input pr-8"
           value={view.query}
           onChange={(event) => {
             onChange({ ...view, query: event.target.value });
@@ -44,7 +49,6 @@ export function ListFilters({
           aria-label="Filter by title"
           autoComplete="off"
           enterKeyHint="search"
-          className="h-9 w-full rounded-lg border border-zinc-300 bg-white pl-8 pr-8 text-sm placeholder:text-zinc-400 focus:border-blue-600 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-blue-400 [&::-webkit-search-cancel-button]:hidden"
         />
         {view.query && (
           <button
@@ -53,14 +57,14 @@ export function ListFilters({
               onChange({ ...view, query: "" });
             }}
             aria-label="Clear the title filter"
-            className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            className="k-btn k-btn--ghost k-btn--icon k-btn--sm absolute right-1 top-1"
           >
-            <ClearIcon />
+            <Icon name="clear" />
           </button>
         )}
       </div>
 
-      <div className="-mx-4 flex max-w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:max-w-full sm:px-0">
+      <div className="k-filterbar__menus">
         <Menu
           label="Type"
           value={view.type ?? ""}
@@ -108,10 +112,10 @@ export function ListFilters({
         {isFiltered(view) && (
           <button
             type="button"
+            className="k-btn k-btn--ghost k-btn--sm"
             onClick={() => {
               onChange(clearFilters(view));
             }}
-            className="h-8 shrink-0 rounded-full px-2 text-sm text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
           >
             Clear
           </button>
@@ -129,7 +133,7 @@ function optionsFor(options: FacetOption[], label: (value: string) => string) {
   ));
 }
 
-/** A native menu (the phone's own picker) styled as a chip; tinted while it filters. */
+/** A native menu (the phone's own picker); crimson-edged while it filters. */
 function Menu({
   label,
   value,
@@ -144,72 +148,17 @@ function Menu({
   children: ReactNode;
 }) {
   return (
-    <div className="relative shrink-0">
+    <label className={active ? "k-menu is-set" : "k-menu"}>
+      <span className="k-visually-hidden">{label}</span>
       <select
-        aria-label={label}
         value={value}
         onChange={(event) => {
           onChange(event.target.value);
         }}
-        className={`h-8 appearance-none rounded-full border pl-3 pr-7 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
-          active
-            ? "border-blue-300 bg-blue-50 font-medium text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
-            : "border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-        }`}
       >
         {children}
       </select>
-      <ChevronIcon />
-    </div>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      aria-hidden="true"
-      className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
-    </svg>
-  );
-}
-
-function ClearIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      aria-hidden="true"
-      className="size-4"
-    >
-      <path d="M6 6l12 12M18 6 6 18" />
-    </svg>
-  );
-}
-
-function ChevronIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="pointer-events-none absolute right-2 top-1/2 size-4 -translate-y-1/2 text-zinc-500"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
+      <Icon name="chevron-down" />
+    </label>
   );
 }

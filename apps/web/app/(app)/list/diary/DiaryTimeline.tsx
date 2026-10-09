@@ -1,16 +1,29 @@
 "use client";
 
 import type { DiaryEntry, DiaryResponse } from "@kurisu/shared";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
+import { Banner } from "@/components/Banner";
+import { Diff } from "@/components/Diff";
+import { Icon } from "@/components/Icon";
+import { Poster } from "@/components/Poster";
 import { sendApi } from "@/lib/clientApi";
-import { describeWrite } from "@/lib/describeChange";
 import { groupByDay } from "@/lib/diary";
 
-/** The diary by day: each update, where it was made, and the user's note, which can be deleted. */
+/**
+ * The diary by day on the user's clock, laid out like the ChangeLog: each update with its time,
+ * poster and diff, where it was made, and the user's own words under it, which can be deleted.
+ */
 export function DiaryTimeline({ initial }: { initial: DiaryResponse }) {
   const [entries, setEntries] = useState(initial.entries);
   const [notice, setNotice] = useState<string | null>(null);
+  // The user's own time zone, from the server, so the server's render and the browser's agree.
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: initial.timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 
   function setNote(entryId: string, note: DiaryEntry["note"]) {
     setEntries((current) => current.map((e) => (e.id === entryId ? { ...e, note } : e)));
@@ -32,58 +45,74 @@ export function DiaryTimeline({ initial }: { initial: DiaryResponse }) {
 
   if (entries.length === 0) {
     return (
-      <p className="mt-6 rounded-lg border border-zinc-200 p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-        Nothing yet. Updates you make in Chat or on the List screen show up here, with anything you
-        said about the show.
-      </p>
+      <div className="k-empty mt-6">
+        <p className="k-empty__title">Nothing yet</p>
+        <p className="k-empty__text">
+          Updates you make in Chat or on the List screen show up here, with anything you said about
+          the show.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="mt-4">
-      {notice && <p className="mb-3 text-sm text-red-700 dark:text-red-400">{notice}</p>}
-      {groupByDay(entries, initial.timeZone).map((day) => (
-        <section key={day.date} className="mt-5">
-          <h2 className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">{day.label}</h2>
-          <ul className="mt-1 divide-y divide-zinc-100 dark:divide-zinc-900">
+    <>
+      {notice && (
+        <Banner level="error" className="mt-4">
+          {notice}
+        </Banner>
+      )}
+      <ol className="k-changes -mx-4">
+        {groupByDay(entries, initial.timeZone).map((day) => (
+          <Fragment key={day.date}>
+            <li className="k-changes__day">
+              <span>
+                {day.date} · {day.label}
+              </span>
+              <span>
+                {day.entries.length} update{day.entries.length === 1 ? "" : "s"}
+              </span>
+            </li>
             {day.entries.map((entry) => (
-              <li key={entry.id} className="py-2 text-sm">
-                <div className="flex flex-wrap items-baseline gap-x-2">
+              <li key={entry.id} className="k-changes__entry">
+                <time className="k-changes__time" dateTime={entry.at}>
+                  {time.format(new Date(entry.at))}
+                </time>
+                <Poster url={entry.pictureUrl} title={entry.title} />
+                <div className="min-w-0">
                   <a
+                    className="k-write__title block hover:underline"
                     href={`https://myanimelist.net/anime/${String(entry.animeId)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium hover:underline"
                   >
                     {entry.title}
                   </a>
-                  <span className="text-zinc-600 dark:text-zinc-400">
-                    {describeWrite(entry.kind, entry.before, entry.after)}
-                  </span>
-                  {entry.origin === "mal" && (
-                    <span className="text-xs text-zinc-500">on MyAnimeList</span>
-                  )}
+                  <Diff
+                    kind={entry.kind}
+                    before={entry.before}
+                    after={entry.after}
+                    prefix={entry.origin === "mal" ? "On MyAnimeList" : null}
+                  />
+                  {entry.note && <p className="k-drop__said">{entry.note.text}</p>}
                 </div>
-                {entry.note && (
-                  <div className="mt-1 flex items-start gap-2">
-                    <blockquote className="flex-1 border-l-2 border-zinc-300 pl-2 italic text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
-                      {entry.note.text}
-                    </blockquote>
-                    <button
-                      type="button"
-                      onClick={() => void removeNote(entry)}
-                      aria-label={`Delete the note about ${entry.title}`}
-                      className="h-7 shrink-0 rounded-md px-2 text-xs text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                {entry.note ? (
+                  <button
+                    type="button"
+                    className="k-btn k-btn--danger k-btn--icon k-btn--sm"
+                    onClick={() => void removeNote(entry)}
+                    aria-label={`Delete the note about ${entry.title}`}
+                  >
+                    <Icon name="trash" />
+                  </button>
+                ) : (
+                  <span />
                 )}
               </li>
             ))}
-          </ul>
-        </section>
-      ))}
-    </div>
+          </Fragment>
+        ))}
+      </ol>
+    </>
   );
 }

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Icon, type IconName } from "@/components/Icon";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { apiGet } from "@/lib/api";
 import { lastSyncLabel } from "@/lib/format";
 import { readListView } from "@/lib/listFilters";
@@ -14,6 +16,16 @@ import { SyncBanner } from "./SyncBanner";
 
 export const metadata: Metadata = { title: "My list · kurisu" };
 
+/** The screens around the list, as ghost links under its header. */
+const SECTIONS: { href: string; label: string; icon?: IconName }[] = [
+  { href: "/list/brief", label: "Brief", icon: "bell" },
+  { href: "/list/stats", label: "Stats" },
+  { href: "/list/diary", label: "Diary" },
+  { href: "/list/taste", label: "Taste", icon: "star" },
+  { href: "/list/import", label: "Import", icon: "plus" },
+  { href: "/list/changes", label: "History", icon: "undo" },
+];
+
 export default async function ListPage(props: PageProps<"/list">) {
   const [me, list] = await Promise.all([
     apiGet("/me", meResponseSchema),
@@ -24,59 +36,34 @@ export default async function ListPage(props: PageProps<"/list">) {
   const initialView = readListView(await props.searchParams);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-24">
+    <main className="mx-auto max-w-(--content-max) px-4 pb-16">
       <ListBrowser
         entries={list.entries}
         initialView={initialView}
         header={
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-            <div className="min-w-0">
-              <h1 className="text-lg font-semibold">My list</h1>
-              <p className="truncate text-sm text-zinc-500">
-                {me.user.malUsername} · {lastSyncLabel(list.lastSync)}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/list/brief"
-                className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                Brief
-              </Link>
-              <Link
-                href="/list/stats"
-                className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                Stats
-              </Link>
-              <Link
-                href="/list/diary"
-                className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                Diary
-              </Link>
-              <Link
-                href="/list/taste"
-                className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                Taste
-              </Link>
-              <Link
-                href="/list/import"
-                className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                Import
-              </Link>
-              <Link
-                href="/list/changes"
-                className="h-9 rounded-lg px-2 text-sm leading-9 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                History
-              </Link>
-              <ResyncButton />
-              <LogoutButton />
-            </div>
-          </div>
+          <>
+            <ScreenHeader
+              title="My list"
+              sub={`${me.user.malUsername} · ${String(list.entries.length)} entries · ${lastSyncLabel(list.lastSync).toLowerCase()}`}
+              actions={
+                <>
+                  <ResyncButton />
+                  <LogoutButton />
+                </>
+              }
+            />
+            <nav
+              aria-label="List screens"
+              className="-mx-4 flex gap-2 overflow-x-auto px-4 py-2 [scrollbar-width:none]"
+            >
+              {SECTIONS.map((section) => (
+                <Link key={section.href} href={section.href} className="k-btn k-btn--ghost">
+                  {section.icon && <Icon name={section.icon} />}
+                  {section.label}
+                </Link>
+              ))}
+            </nav>
+          </>
         }
         banner={
           <SyncBanner

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { diffParts } from "../lib/describeChange";
 import {
+  byLocalDay,
+  hourMinute,
   modelLabel,
   msLabel,
   runErrorLabel,
@@ -60,5 +62,22 @@ describe("diffParts", () => {
     expect(diffParts("remove", { status: "plan_to_watch" }, {})).toEqual([
       { kind: "text", text: "Removed from your list" },
     ]);
+  });
+});
+
+describe("byLocalDay", () => {
+  it("groups by the viewer's calendar day, keeping the order", () => {
+    // Local times, so the test holds in any time zone.
+    const at = (d: Date) => ({ at: d.toISOString() });
+    const items = [
+      at(new Date(2026, 9, 8, 21, 40)),
+      at(new Date(2026, 9, 8, 8, 5)),
+      at(new Date(2026, 9, 6, 23, 12)),
+    ];
+    expect(byLocalDay(items, (i) => i.at).map((d) => [d.label, d.items.length])).toEqual([
+      ["2026-10-08 Thu", 2],
+      ["2026-10-06 Tue", 1],
+    ]);
+    expect(hourMinute(new Date(2026, 9, 8, 8, 5).toISOString())).toBe("08:05");
   });
 });

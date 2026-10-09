@@ -4,6 +4,8 @@ import { syncErrorResponseSchema } from "@kurisu/shared";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { Icon } from "@/components/Icon";
+
 /** Asks the server to re-sync with MAL, then re-renders the page with the fresh mirror. */
 export function ResyncButton() {
   const router = useRouter();
@@ -44,17 +46,19 @@ export function ResyncButton() {
     <div className="relative">
       <button
         type="button"
+        className="k-btn"
         onClick={() => void resync()}
         disabled={busy}
-        className="h-9 rounded-lg border border-zinc-300 px-3 text-sm font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900"
+        aria-busy={busy}
       >
+        <Icon name="sync" />
         {busy ? "Syncing…" : "Re-sync"}
       </button>
-      {/* Floats under the button so a message never reflows the sticky header. */}
+      {/* Floats under the button so a message never reflows the header. */}
       <p
         role="status"
         aria-live="polite"
-        className="absolute right-0 top-full z-20 mt-1 w-56 rounded-md bg-zinc-900 px-2 py-1.5 text-xs text-white shadow-lg empty:hidden dark:bg-zinc-100 dark:text-zinc-900"
+        className="k-panel k-field__hint absolute right-0 top-full z-20 mt-2 w-56 px-2 py-2 empty:hidden"
       >
         {message}
       </p>
