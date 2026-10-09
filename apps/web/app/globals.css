@@ -1,5 +1,39 @@
 @import "tailwindcss";
+/* The kurisu design system (design/README.md): its tokens, and its k- component classes, which
+   Tailwind utilities can still adjust for layout. */
+@import "../design/tokens.css";
+@import "../design/bundle.css" layer(components);
 
-:root {
-  color-scheme: light dark;
+/* Dark only. Screens not yet restyled keep their dark: classes, which now always apply. */
+@custom-variant dark (&);
+
+/* next/font sets --font-outfit and --font-jetbrains-mono on <html> (app/layout.tsx). */
+@theme {
+  --font-sans: var(--font-outfit), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* The tokens as Tailwind colors and radii, for layout written with utilities. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-inset: var(--surface-inset);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-scrim: var(--scrim);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --radius-control: var(--radius-4);
+  --radius-panel: var(--radius-6);
 }

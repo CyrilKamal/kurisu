@@ -1666,3 +1666,27 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
   - The same 8 known cases miss on both, and every miss asks instead of writing. Only v17 asked on "Just watched MHA more"; 3 that missed on v15 pass.
 - "Any new anime?" on its own still asks which "new" they mean.
 
+
+## 2026-10-08 — The kurisu design system, used as written: its stylesheet, dark only (between Milestones 5 and 6)
+**Decision:**
+- **The source:** the app takes its look from Cyril's design system "kurisu" on claude.ai.
+- **What's copied:** `apps/web/design/` holds verbatim copies of its `tokens.json` and `bundle.css`. `bundle.css` loses only its Google Fonts `@import`, since `next/font` loads Outfit and JetBrains Mono instead.
+- **Token variables:** `design/tokens.css` is generated from `tokens.json` (`design:tokens`).
+- **How screens use it:** with the system's own `k-` classes (`k-btn`, `k-row`, `k-write`, ...). Tailwind does layout only, with the token colors mapped in (`bg-surface`, `text-ink-muted`).
+- **Dark only:** there's no light theme. Until every screen is restyled, the old `dark:` classes always apply (`@custom-variant dark (&)`), so unconverted screens show their dark look on the new canvas.
+- **The rollout:** four PRs.
+  1. Foundation.
+  2. Chat as a command log.
+  3. The List screens.
+  4. The other screens, then remove Tailwind's default palette.
+
+**Alternatives:**
+- **Re-creating every component in Tailwind utilities from the tokens.** That's twice the styling to maintain, and it would drift from the system's previews.
+- **Keeping a light theme.** The system has none and says "Dark only".
+
+**Why:** the system already ships its components as CSS on token variables. Using that file as-is keeps the app and the design system identical, and a newer version is a copy and one command.
+
+**Consequences:**
+- A newer version of the system is a file copy plus `design:tokens`, then a look at the screens.
+- Off-system styles stay possible until the last PR removes Tailwind's default palette.
+- The logo stays as `lib/brandMark.ts` draws it, as the system says, until final art replaces it.

@@ -4,9 +4,8 @@ import { CHAT_TITLE_MAX, type ConversationView } from "@kurisu/shared";
 import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
 
+import { Icon } from "@/components/Icon";
 import { groupChats } from "@/lib/chatGroups";
-
-import { PlusIcon, RenameIcon, TrashIcon } from "./icons";
 
 const noSubscription = () => () => undefined;
 
@@ -62,7 +61,7 @@ export function ChatSidebar({
           onClick={onNavigate}
           className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-zinc-300 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
         >
-          <PlusIcon />
+          <Icon name="plus" />
           New chat
         </Link>
       </div>
@@ -141,7 +140,7 @@ export function ChatSidebar({
                           title="Rename chat"
                           className={`${ROW_BUTTON} hover:text-zinc-900 dark:hover:text-zinc-100`}
                         >
-                          <RenameIcon />
+                          <Icon name="rename" />
                         </button>
                         <button
                           type="button"
@@ -152,7 +151,7 @@ export function ChatSidebar({
                           title="Delete chat"
                           className={`${ROW_BUTTON} hover:text-red-700 dark:hover:text-red-400`}
                         >
-                          <TrashIcon />
+                          <Icon name="trash" />
                         </button>
                       </div>
                     </li>
