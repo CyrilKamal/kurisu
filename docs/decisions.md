@@ -1817,11 +1817,9 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 ## 2026-10-09 — kurisu will be commercial: MAL is asked now, and a paid plan becomes Milestone 7 (Milestone 6)
 **Decision:**
 - **Commercial intent:** Cyril wants kurisu to charge, to pay for its model use. The friends beta stays free.
-- **Asking MAL now:** Cyril sends MAL a note (drafted by Claude) through its support form. It asks two things:
-  - whether keeping each user's list in kurisu's own database is fine under section 3(c) of the API agreement;
-  - how to get the written approval section 3(a)(xiv) requires before a paid plan.
-
-  The beta goes ahead while waiting. The hosted app's MAL registration says commercial, and its description says the beta is free.
+- **Asking MAL now,** in two places (texts drafted by Claude), and the beta goes ahead while waiting:
+  - **A support ticket** asks how to get the written approval section 3(a)(xiv) requires before a paid plan. Only MAL itself can give that.
+  - **A post in the MAL API Club** asks whether keeping each user's list in kurisu's own database is fine under section 3(c), and whether there are request-rate guidelines. That's where API questions get answered, though an answer there isn't binding. The hosted app's MAL registration says commercial, and its description says the beta is free.
 - **Milestone 7 is now the paid plan.** That means the approvals (MAL's, and AniList's license past $150 a month), Stripe, a free tier and a paid tier, terms and a privacy policy, and likely a server. Distillation moves to Milestone 8, still a stretch.
 - **Spending protection in Milestone 6:** a per-friend daily limit, plus a $5 monthly cap on friends' estimated model spend. The owner keeps working past the cap.
 - **MAL sync stays as it is:** at login, after writes and on Re-sync. There's no polling, even for fresher friend activity.
