@@ -761,6 +761,26 @@ describe("chat API", () => {
       ],
     });
 
+    // The run behind the reply, for RunMeta and its trace.
+    const change = body.messages[1]?.changes[0];
+    const proposal = contract.shortId(change?.proposalId ?? "");
+    expect(body.messages[0]?.run).toBeNull();
+    expect(body.messages[1]?.brief).toBeNull();
+    expect(body.messages[1]?.run).toMatchObject({
+      model: "ollama:test-lite",
+      escalatedFrom: null,
+      handoff: null,
+      error: null,
+    });
+    expect(body.messages[1]?.run?.steps.map((s) => [s.tool, s.args, s.ok])).toEqual([
+      ["search_my_list", '"fixture watching show"', true],
+      ["propose_update", `#${String(WATCHING)} episodes_watched=8`, true],
+      ["commit_update", proposal, true],
+    ]);
+    expect(body.messages[1]?.run?.steps[1]?.result).toBe(proposal);
+    expect(body.messages[1]?.run?.steps[2]?.result).toBe("written");
+    expect(body.conversation.isBrief).toBe(false);
+
     expect(body.conversation.title).toBe("watched ep 8 of fixture watching show");
     const thread = contract.chatThreadResponseSchema.parse(
       (await get(`/chat/conversations/${body.conversation.id}`)).json(),
@@ -807,6 +827,16 @@ describe("chat API", () => {
       ["ollama:test-flash", "committed"],
     ]);
     expect(runs[1]?.escalatedFromRunId).toBe(runs[0]?.id);
+    // RunMeta shows the escalation; the first model only asked, so it made no tool calls.
+    expect(body.messages[1]?.run).toMatchObject({
+      model: "ollama:test-flash",
+      escalatedFrom: "ollama:test-lite",
+    });
+    expect(body.messages[1]?.run?.steps.map((s) => s.tool)).toEqual([
+      "search_my_list",
+      "propose_update",
+      "commit_update",
+    ]);
   });
 
   it("keeps the first answer when the stronger model fails", async () => {
@@ -895,6 +925,8 @@ describe("chat API", () => {
 
     expect(body.messages[1]?.content).toMatch(/GEMINI_API_KEY/);
     expect(models.requests.map((r) => r.ref)).toEqual(["ollama:test-lite"]);
+    // RunMeta shows the failure in place of the token count.
+    expect(body.messages[1]?.run).toMatchObject({ error: "model_auth", steps: [] });
   });
 
   it("confirms a held proposal, and cancels another", async () => {

@@ -1,3 +1,4 @@
+import * as contract from "@kurisu/shared";
 import { and, desc, eq } from "drizzle-orm";
 import { PgBoss } from "pg-boss";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -752,14 +753,25 @@ describe("shows that started airing", () => {
     // The sequel has a row to show it by, and to add it from; its card says it's not on the list.
     const [row] = await h.db.select().from(anime).where(eq(anime.malId, SEQUEL));
     expect(row?.title).toBe("Fixture Rewatch Show 2");
-    const thread = (await send("GET", `/chat/conversations/${(await briefChat()).id}`)).json<{
-      messages: { shows: { animeId: number; status: string | null }[]; asksToChoose: boolean }[];
-    }>();
+    const thread = contract.chatThreadResponseSchema.parse(
+      (await send("GET", `/chat/conversations/${(await briefChat()).id}`)).json(),
+    );
     expect(thread.messages[0]?.shows.map((show) => [show.animeId, show.status])).toEqual([
       [PLANNED, "plan_to_watch"],
       [SEQUEL, null],
     ]);
     expect(thread.messages[0]?.asksToChoose).toBe(false);
+    // The brief's card: its premieres, and no run behind it (no model wrote this one).
+    expect(thread.conversation.isBrief).toBe(true);
+    expect(thread.messages[0]?.run).toBeNull();
+    expect(thread.messages[0]?.brief).toMatchObject({
+      items: [],
+      alerts: [
+        { animeId: PLANNED, kind: "ptw_started", after: null },
+        { animeId: SEQUEL, kind: "sequel_started", after: "Fixture Rewatch Show" },
+      ],
+      recap: null,
+    });
   });
 
   it("lists them after new episodes, and says each one once", async () => {

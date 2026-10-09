@@ -2,29 +2,25 @@
 
 import { CHAT_TITLE_MAX, type ConversationView } from "@kurisu/shared";
 import Link from "next/link";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { groupChats } from "@/lib/chatGroups";
+import { useIsBrowser } from "@/lib/useIsBrowser";
 
-const noSubscription = () => () => undefined;
-
-/**
- * False while rendering on the server: "Today" and "Yesterday" depend on the viewer's time zone,
- * so the list is grouped by day only in the browser.
- */
-function useIsBrowser(): boolean {
-  return useSyncExternalStore(
-    noSubscription,
-    () => true,
-    () => false,
-  );
+/** "21:41" for a chat from today or yesterday, "10-01" for an older one, in the viewer's zone. */
+function chatTime(iso: string, recent: boolean): string {
+  const date = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return recent
+    ? `${pad(date.getHours())}:${pad(date.getMinutes())}`
+    : `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-const ROW_BUTTON =
-  "rounded-md p-1.5 text-zinc-400 hover:bg-zinc-200 focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100 dark:hover:bg-zinc-800";
-
-/** The list of chats: a New chat button, then each chat by when it was last active. */
+/**
+ * The list of chats (the design system's ChatList): New chat, then chats by day with briefs
+ * tagged and times in mono. Rename and delete take the time's place on hover or focus.
+ */
 export function ChatSidebar({
   chats,
   activeId,
@@ -41,6 +37,7 @@ export function ChatSidebar({
   onRename: (chat: ConversationView, title: string) => Promise<void>;
   onDelete: (chat: ConversationView) => Promise<void>;
 }) {
+  // "Today" and the times depend on the viewer's time zone, so they're only shown in the browser.
   const inBrowser = useIsBrowser();
   const groups = inBrowser ? groupChats(chats, new Date()) : [{ label: null, chats }];
   const [editing, setEditing] = useState<{ id: string; draft: string } | null>(null);
@@ -54,112 +51,111 @@ export function ChatSidebar({
   }
 
   return (
-    <nav aria-label="Chats" className="flex h-full flex-col">
-      <div className="p-3">
-        <Link
-          href="/chat/new"
-          onClick={onNavigate}
-          className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-zinc-300 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
-        >
-          <Icon name="plus" />
+    <nav aria-label="Chats" className="k-chatlist flex h-full flex-col">
+      <div className="k-chatlist__top">
+        <Link href="/chat/new" onClick={onNavigate} className="k-btn k-btn--block">
+          <Icon name="new-chat" />
           New chat
         </Link>
       </div>
       {notice && (
-        <p role="alert" className="px-3 pb-2 text-xs text-red-700 dark:text-red-400">
+        <p role="alert" className="k-cmd__notice px-4 pt-2">
+          <span className="k-tag k-tag--word text-accent-text">Err</span>
           {notice}
         </p>
       )}
-      <div className="flex-1 overflow-y-auto px-2 pb-3">
+      <div className="k-chatlist__scroll">
         {chats.length === 0 ? (
-          <p className="px-2 py-4 text-sm text-zinc-500">No chats yet.</p>
+          <p className="k-caps k-chatlist__group">No chats yet</p>
         ) : (
-          groups.map((group) => (
-            <section key={group.label ?? "all"} className="mb-2">
-              {group.label && (
-                <h2 className="px-2 pb-1 pt-2 text-xs font-medium text-zinc-500">{group.label}</h2>
-              )}
-              <ul>
-                {group.chats.map((chat) => {
-                  const active = chat.id === activeId;
-                  if (editing?.id === chat.id) {
+          groups.map((group) => {
+            const recent = group.label === "Today" || group.label === "Yesterday";
+            return (
+              <section key={group.label ?? "all"}>
+                {group.label && <h2 className="k-caps k-chatlist__group">{group.label}</h2>}
+                <ul>
+                  {group.chats.map((chat) => {
+                    if (editing?.id === chat.id) {
+                      return (
+                        <li key={chat.id} className="px-2 py-2">
+                          <input
+                            // Focus moves here because the user just asked to rename.
+                            autoFocus
+                            value={editing.draft}
+                            maxLength={CHAT_TITLE_MAX}
+                            aria-label="Chat name"
+                            className="k-input w-full"
+                            onFocus={(event) => {
+                              event.currentTarget.select();
+                            }}
+                            onChange={(event) => {
+                              setEditing({ id: chat.id, draft: event.target.value });
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                event.currentTarget.blur();
+                              } else if (event.key === "Escape") {
+                                cancelled.current = true;
+                                event.currentTarget.blur();
+                              }
+                            }}
+                            onBlur={() => {
+                              finishRename(chat);
+                            }}
+                          />
+                        </li>
+                      );
+                    }
                     return (
-                      <li key={chat.id} className="py-0.5">
-                        <input
-                          // Focus moves here because the user just asked to rename.
-                          autoFocus
-                          value={editing.draft}
-                          maxLength={CHAT_TITLE_MAX}
-                          aria-label="Chat name"
-                          onFocus={(event) => {
-                            event.currentTarget.select();
-                          }}
-                          onChange={(event) => {
-                            setEditing({ id: chat.id, draft: event.target.value });
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              event.preventDefault();
-                              event.currentTarget.blur();
-                            } else if (event.key === "Escape") {
-                              cancelled.current = true;
-                              event.currentTarget.blur();
-                            }
-                          }}
-                          onBlur={() => {
-                            finishRename(chat);
-                          }}
-                          className="h-9 w-full rounded-lg border border-blue-700 bg-transparent px-2 text-sm focus:outline-none"
-                        />
+                      <li key={chat.id} className="group relative">
+                        <Link
+                          href={`/chat/${chat.id}`}
+                          onClick={onNavigate}
+                          aria-current={chat.id === activeId ? "page" : undefined}
+                          title={chat.title}
+                          className="k-chatitem"
+                        >
+                          <span className="k-chatitem__title">{chat.title}</span>
+                          <span className="k-chatitem__side">
+                            {chat.isBrief && <span className="k-tag k-tag--word">Brief</span>}
+                            <span className="group-focus-within:invisible group-hover:invisible">
+                              {inBrowser ? chatTime(chat.lastMessageAt, recent) : ""}
+                            </span>
+                          </span>
+                        </Link>
+                        <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 group-focus-within:flex group-hover:flex">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              cancelled.current = false;
+                              setEditing({ id: chat.id, draft: chat.title });
+                            }}
+                            aria-label={`Rename chat: ${chat.title}`}
+                            title="Rename chat"
+                            className="k-btn k-btn--icon k-btn--sm k-btn--ghost"
+                          >
+                            <Icon name="rename" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void onDelete(chat);
+                            }}
+                            aria-label={`Delete chat: ${chat.title}`}
+                            title="Delete chat"
+                            className="k-btn k-btn--icon k-btn--sm k-btn--danger"
+                          >
+                            <Icon name="trash" />
+                          </button>
+                        </div>
                       </li>
                     );
-                  }
-                  return (
-                    <li key={chat.id} className="group relative">
-                      <Link
-                        href={`/chat/${chat.id}`}
-                        onClick={onNavigate}
-                        aria-current={active ? "page" : undefined}
-                        title={chat.title}
-                        className={`block truncate rounded-lg py-2 pl-2 pr-16 text-sm ${
-                          active
-                            ? "bg-zinc-100 font-medium dark:bg-zinc-900"
-                            : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
-                        }`}
-                      >
-                        {chat.title}
-                      </Link>
-                      <div className="absolute right-1 top-1/2 flex -translate-y-1/2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            cancelled.current = false;
-                            setEditing({ id: chat.id, draft: chat.title });
-                          }}
-                          aria-label={`Rename chat: ${chat.title}`}
-                          title="Rename chat"
-                          className={`${ROW_BUTTON} hover:text-zinc-900 dark:hover:text-zinc-100`}
-                        >
-                          <Icon name="rename" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            void onDelete(chat);
-                          }}
-                          aria-label={`Delete chat: ${chat.title}`}
-                          title="Delete chat"
-                          className={`${ROW_BUTTON} hover:text-red-700 dark:hover:text-red-400`}
-                        >
-                          <Icon name="trash" />
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))
+                  })}
+                </ul>
+              </section>
+            );
+          })
         )}
       </div>
     </nav>

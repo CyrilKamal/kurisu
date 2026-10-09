@@ -1,4 +1,11 @@
-import type { LastSync, ListEntry, ListStatus, LoginError, SyncError } from "@kurisu/shared";
+import type {
+  LastSync,
+  ListEntry,
+  ListStatus,
+  LoginError,
+  ShowCard,
+  SyncError,
+} from "@kurisu/shared";
 
 export const STATUS_LABELS: Record<ListStatus, string> = {
   watching: "Watching",
@@ -23,6 +30,35 @@ const MEDIA_TYPE_LABELS: Record<string, string> = {
 export function mediaTypeLabel(mediaType: string | null): string | null {
   if (!mediaType || mediaType === "unknown") return null;
   return MEDIA_TYPE_LABELS[mediaType] ?? mediaType;
+}
+
+/** "Watching · ep 5 of 12 · TV · 12 eps × 24 min", or "Not on your list · Movie · 110 min". */
+export function showDetails(show: ShowCard): string {
+  const where =
+    show.status === null
+      ? "Not on your list"
+      : show.status === "plan_to_watch"
+        ? STATUS_LABELS.plan_to_watch
+        : `${STATUS_LABELS[show.status]} · ep ${String(show.episodesWatched)}${
+            show.numEpisodes === null ? "" : ` of ${String(show.numEpisodes)}`
+          }`;
+  const length =
+    show.episodeMinutes === null
+      ? null
+      : show.numEpisodes === 1
+        ? `${String(show.episodeMinutes)} min`
+        : show.numEpisodes === null
+          ? `${String(show.episodeMinutes)} min eps`
+          : `${String(show.numEpisodes)} eps × ${String(show.episodeMinutes)} min`;
+  return [where, mediaTypeLabel(show.mediaType), length].filter((p) => p !== null).join(" · ");
+}
+
+/** "46m", "4h", "4h 48m". */
+export function durationLabel(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${String(m)}m`;
+  return m === 0 ? `${String(h)}h` : `${String(h)}h ${String(m)}m`;
 }
 
 /** "7 / 12 eps", "1 / 1 ep", or "3 / ? eps" when MAL doesn't know the episode count yet. */

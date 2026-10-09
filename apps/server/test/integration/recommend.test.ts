@@ -154,6 +154,20 @@ describe("recommendations in Chat", () => {
     expect(rec).toMatchObject({ outcome: "recommended", handedOffFromRunId: progress?.id });
     const [row] = await h.db.select().from(recommendations);
     expect(row?.chatMessageId).toBe(reply?.id);
+    // RunMeta names the recommender, and the trace runs on into its calls.
+    expect(reply?.run).toMatchObject({
+      model: AGENT.ref,
+      handoff: { model: RECOMMEND.ref, promptVersion: "recommend@9" },
+      // The progress run stopped to hand over; that's not an error.
+      error: null,
+    });
+    expect(reply?.run?.steps.map((s) => s.tool)).toEqual([
+      "recommend_shows",
+      "find_candidates",
+      "present_picks",
+    ]);
+    expect(reply?.run?.steps[0]?.result).toBe("handed to the recommender");
+    expect(reply?.run?.steps[2]?.result).toBe("1 pick shown");
   });
 
   it("only shows picks the search returned", async () => {

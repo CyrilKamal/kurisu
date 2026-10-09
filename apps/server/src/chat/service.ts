@@ -1,3 +1,4 @@
+import type { BriefCardView, RunView } from "@kurisu/shared";
 import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
 
 import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
@@ -23,6 +24,7 @@ import { runRecommender, type RecommendResult } from "../recommend/agent.js";
 import type { AnimeRefresher, CommitErrorCode, ListRemover } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 import { mentionedShows } from "./mentions.js";
+import { loadBriefCards, loadRunViews } from "./runs.js";
 import { titleFrom, UNTITLED_CHAT } from "./titles.js";
 
 export interface ChatDeps extends AgentDeps {
@@ -49,8 +51,11 @@ const HISTORY_MESSAGES = 6;
 
 export interface ChangeView {
   id: string;
+  proposalId: string;
   animeId: number;
   title: string;
+  pictureUrl: string | null;
+  numEpisodes: number | null;
   kind: "update" | "add" | "remove";
   before: ListChange;
   after: ListChange;
@@ -78,6 +83,8 @@ export interface ConversationView {
   id: string;
   title: string;
   lastMessageAt: string;
+  /** A chat a morning brief started. */
+  isBrief: boolean;
 }
 
 /** The chat doesn't exist, or isn't the user's. */
@@ -100,6 +107,10 @@ export interface ChatMessageView {
   shows: ShowCardView[];
   /** The reply asks a question, so its show cards answer it when tapped. */
   asksToChoose: boolean;
+  /** The runs behind an assistant reply (RunMeta and its trace). */
+  run: RunView | null;
+  /** A brief's message: its card. */
+  brief: BriefCardView | null;
 }
 
 /** A show a reply names, as a card. `status` is null when it isn't on the user's list. */
@@ -370,6 +381,10 @@ export async function listConversations(
         order by m.created_at limit 1
       )`,
       lastMessageAt: lastMessageAt.mapWith(conversations.createdAt),
+      isBrief: sql<boolean>`exists (
+        select 1 from briefs b join chat_messages bm on bm.id = b.chat_message_id
+        where bm.conversation_id = ${conversations.id}
+      )`,
     })
     .from(conversations)
     .leftJoin(chatMessages, eq(chatMessages.conversationId, conversations.id))
@@ -386,6 +401,7 @@ export async function listConversations(
     id: row.id,
     title: row.title ?? (row.firstMessage ? titleFrom(row.firstMessage) : UNTITLED_CHAT),
     lastMessageAt: row.lastMessageAt.toISOString(),
+    isBrief: row.isBrief,
   }));
 }
 
@@ -479,7 +495,15 @@ export async function loadThread(
     runIds.length === 0
       ? []
       : await db
-          .select({ proposal: proposals, title: anime.title, change: changes })
+          .select({
+            proposal: proposals,
+            show: {
+              title: anime.title,
+              pictureUrl: anime.mainPictureUrl,
+              numEpisodes: anime.numEpisodes,
+            },
+            change: changes,
+          })
           .from(proposals)
           .innerJoin(anime, eq(proposals.animeId, anime.malId))
           .leftJoin(changes, eq(changes.proposalId, proposals.id))
@@ -496,6 +520,11 @@ export async function loadThread(
     userId,
     rows.map((r) => r.id),
   );
+  const runViews = await loadRunViews(db, runIds);
+  const briefCards = await loadBriefCards(
+    db,
+    rows.filter((r) => r.role === "assistant" && r.runId === null).map((r) => r.id),
+  );
   const showCards = await loadShowCards(db, userId, [
     ...rows.flatMap((r) => r.showIds),
     ...cards.filter((c) => c.proposal.kind === "add").map((c) => c.proposal.animeId),
@@ -509,7 +538,7 @@ export async function loadThread(
       content: row.content,
       createdAt: row.createdAt.toISOString(),
       changes: mine.flatMap((c) =>
-        c.change ? [toChangeView(c.change, c.title, c.proposal.source)] : [],
+        c.change ? [toChangeView(c.change, c.show, c.proposal.source)] : [],
       ),
       pending: mine
         .filter((c) => c.proposal.status === "pending" && c.proposal.requiresConfirmation)
@@ -518,7 +547,7 @@ export async function loadThread(
           return {
             id: c.proposal.id,
             animeId: c.proposal.animeId,
-            title: c.title,
+            title: c.show.title,
             kind: add ? ("add" as const) : ("update" as const),
             before: c.proposal.before ? pickChanged(c.proposal.before, c.proposal.change) : {},
             change: c.proposal.change,
@@ -532,6 +561,8 @@ export async function loadThread(
         return card ? [card] : [];
       }),
       asksToChoose: row.role === "assistant" && row.showIds.length > 0 && row.content.includes("?"),
+      run: row.runId ? (runViews.get(row.runId) ?? null) : null,
+      brief: briefCards.get(row.id) ?? null,
     };
   });
 }
@@ -655,35 +686,54 @@ function askedServices(constraints: Record<string, unknown>, animeId: number): s
 /** The user's most recent committed changes, newest first. */
 export async function loadChanges(db: Db, userId: string, limit = 50): Promise<ChangeView[]> {
   const rows = await db
-    .select({ change: changes, title: anime.title, source: proposals.source })
+    .select({
+      change: changes,
+      show: {
+        title: anime.title,
+        pictureUrl: anime.mainPictureUrl,
+        numEpisodes: anime.numEpisodes,
+      },
+      source: proposals.source,
+    })
     .from(changes)
     .innerJoin(anime, eq(changes.animeId, anime.malId))
     .innerJoin(proposals, eq(changes.proposalId, proposals.id))
     .where(eq(changes.userId, userId))
     .orderBy(desc(changes.committedAt))
     .limit(limit);
-  return rows.map((r) => toChangeView(r.change, r.title, r.source));
+  return rows.map((r) => toChangeView(r.change, r.show, r.source));
 }
 
 export async function loadChange(db: Db, userId: string, id: string): Promise<ChangeView | null> {
   const [row] = await db
-    .select({ change: changes, title: anime.title, source: proposals.source })
+    .select({
+      change: changes,
+      show: {
+        title: anime.title,
+        pictureUrl: anime.mainPictureUrl,
+        numEpisodes: anime.numEpisodes,
+      },
+      source: proposals.source,
+    })
     .from(changes)
     .innerJoin(anime, eq(changes.animeId, anime.malId))
     .innerJoin(proposals, eq(changes.proposalId, proposals.id))
     .where(and(eq(changes.userId, userId), eq(changes.id, id)));
-  return row ? toChangeView(row.change, row.title, row.source) : null;
+  return row ? toChangeView(row.change, row.show, row.source) : null;
 }
 
 function toChangeView(
   change: typeof changes.$inferSelect,
-  title: string,
+  show: { title: string; pictureUrl: string | null; numEpisodes: number | null },
   source: ChangeView["source"],
 ): ChangeView {
   return {
     id: change.id,
+    proposalId: change.proposalId,
     animeId: change.animeId,
-    title,
+    title: show.title,
+    pictureUrl: show.pictureUrl,
+    numEpisodes: show.numEpisodes,
     kind: change.kind,
     before: change.before,
     after: change.after,
