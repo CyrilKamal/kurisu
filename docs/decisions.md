@@ -1772,3 +1772,63 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - Mono now means "the agent printed this", which the command log can lean on.
 - The `.k-mono` and `.k-input--mono` class names stay for compatibility, though they're now Inter with tabular figures.
 - Disclosure tables that borrow the trace's "[+]" toggle (Taste, Stats) set themselves back to Inter.
+
+## 2026-10-09 — Hosting: a Compose stack on Cyril's PC, published by Tailscale Funnel (Milestone 6)
+**Decision:** The hosted kurisu is one Docker Compose stack (`deploy/compose.yaml`, project `kurisu-prod`): Postgres with its own volume, the server, the web app, and a daily `pg_dump` kept 14 days. It runs on Cyril's PC. Tailscale Funnel publishes the web app at `https://<pc>.<tailnet>.ts.net`, and nothing else is reachable from outside.
+- **Checkout:** the stack builds from its own checkout, detached at `origin/main` (`deploy/deploy.sh`), so dev edits never ship unmerged.
+- **Separate from dev:** it has its own MAL app, token key, VAPID keys and database. Cyril's dev data was copied across once (`deploy/copy-dev-data.sh`), without tokens, sessions or push subscriptions.
+- **Images:** keep the whole workspace, because the server imports `@kurisu/shared` as TypeScript source, which Node 24 runs from the workspace but not from `node_modules`. Migrations run when the server starts.
+- **Proxy timeout:** Next's proxy waits up to 120 s, not 30, since a first login waits for a full list sync.
+
+**Alternatives:**
+- **A $5 VPS:** always on, but it costs money every month. Cyril wanted free for now.
+- **Free tiers (Render, Railway, Vercel with Neon or Supabase):** they sleep when idle or expire databases. The server must run all day for the 5-minute brief check (decision of 2026-09-29).
+- **Tailscale without Funnel:** private to the tailnet, so every friend would need Tailscale.
+- **A Cloudflare Tunnel:** needs a domain.
+
+**Why:** Free, HTTPS (which install and push need), and no account for friends to create. The stack is plain Compose, so a VPS later is the same files plus a restore.
+
+**Consequences:**
+- **Uptime follows the PC.** kurisu is down while the PC sleeps or is off.
+- **The address is public.** Funnel hostnames show up in certificate logs, so sign-up must be closed (next entry).
+- **Dev and hosted share Cyril's MAL list.** Writes from the dev app reach the hosted one as MAL-site changes.
+- **PR #94 is closed.** Running the dev server over Tailscale is no longer the way to the phone.
+- **Small changes from the plan:**
+  - The scripts are bash (Git Bash here, any shell on a VPS), not PowerShell.
+  - The database check is its own route, `/health/db`, so `/health` still needs no database.
+  - `trustProxy` stays off. With Funnel and Next both in front, Fastify could only find the client's address from a header the client can forge, and only logs would use it.
+
+## 2026-10-09 — Only the owner can sign up, until invites (Milestone 6)
+**Decision:**
+- **The setting:** `OWNER_MAL_USERNAME` names the MAL account that owns this kurisu. Production refuses to start without it.
+- **While it's set:** a MAL login creates an account only for that username (compared case-insensitively). Anyone who already has an account still logs in. Everyone else is sent to `/?login_error=invite_only`, and the tokens MAL issued are dropped without being stored.
+- **Production errors:** 500s say "Something went wrong", and the details go to the logs only.
+
+**Alternatives:**
+- An allowlist of usernames in the environment.
+- Waiting for invites before the first deploy.
+
+**Why:** The address is public from the first deploy, and an open sign-up would let anyone with a MAL account spend Gemini credit. Invites (the next PR) need an owner anyway.
+
+**Consequences:**
+- Unset (local development and tests), sign-up stays open as before.
+- A MAL username change would stop matching, but only for creating an account. An existing account always logs in.
+
+## 2026-10-09 — MAL's API agreement, and making money later (Milestone 6)
+**Decision:**
+- **Asking MAL:** Cyril sends MAL a short note (drafted by Claude) describing kurisu: invite-only, free, a handful of friends. It asks whether keeping each user's list in kurisu's own database is fine under section 3(c) of the API agreement. The beta goes ahead while waiting for an answer.
+- **MAL sync stays as it is:** at login, after writes and on Re-sync. There's no polling, even for fresher friend activity.
+- **Money:** nothing in Milestone 6 earns or prepares to earn money.
+
+**Alternatives:**
+- Inviting friends only after MAL answers.
+- Not asking at all.
+- Syncing when the app opens, to make friends' MAL-site changes show sooner.
+
+**Why:**
+- **Section 3(c)** says apps may not store MAL users' personal information or the content they create "on the server-side", and kurisu's list mirror (a hard rule since Milestone 1) does. It doesn't define those terms, but a revoked Client ID would break kurisu for everyone.
+- **Any revenue needs approval.** MAL counts any revenue (paid apps, subscriptions, even recurring donations with quotas) as commercial, which needs its written approval. AniList is free under $150 a month in revenue and needs a license above that, and it restricts competing list trackers unless it authorizes them.
+
+**Consequences:**
+- MAL's answer may change how the mirror works for friends.
+- **What money would take later:** MAL's written approval, an AniList license past $150 a month, and a server. The per-user daily budget (next PR) is the lever a free tier would use.

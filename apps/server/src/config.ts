@@ -55,6 +55,10 @@ const envSchema = z.object({
 
   // "off" stops the daily brief job (the routes still work). Tests turn it off.
   BRIEF_SCHEDULER: optional(z.enum(["on", "off"]).default("on")),
+
+  // The MAL account that owns this kurisu. When set, no other MAL account can sign up.
+  // Required in production, where the app is reachable from the internet.
+  OWNER_MAL_USERNAME: optional(z.string().min(1).optional()),
 });
 
 export interface Config {
@@ -87,6 +91,8 @@ export interface Config {
     };
   };
   brief: { scheduler: boolean };
+  /** The owner's MAL username; when set, only that account can create a kurisu account. */
+  owner: { malUsername: string } | null;
 }
 
 /**
@@ -104,6 +110,11 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (vapid.some(Boolean) && !vapid.every(Boolean)) {
     throw new Error(
       "Invalid environment configuration:\n  VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT must be set together",
+    );
+  }
+  if (parsed.NODE_ENV === "production" && !parsed.OWNER_MAL_USERNAME) {
+    throw new Error(
+      "Invalid environment configuration:\n  OWNER_MAL_USERNAME must be set in production, or anyone could sign up",
     );
   }
   return {
@@ -141,5 +152,6 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       },
     },
     brief: { scheduler: parsed.BRIEF_SCHEDULER === "on" },
+    owner: parsed.OWNER_MAL_USERNAME ? { malUsername: parsed.OWNER_MAL_USERNAME } : null,
   };
 }

@@ -36,7 +36,8 @@ export type LoginError =
   | "invalid_request"
   | "invalid_state"
   | "token_exchange_failed"
-  | "mal_unavailable";
+  | "mal_unavailable"
+  | "invite_only";
 
 const callbackQuerySchema = z.object({
   code: z.string().min(1).max(4096).optional(),
@@ -108,6 +109,12 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       return fail("mal_unavailable");
     }
 
+    if (!(await maySignIn(db, config, me))) {
+      // The tokens MAL just issued are dropped unstored; nothing about this account is kept.
+      request.log.info("sign-up refused: kurisu is invite-only");
+      return fail("invite_only");
+    }
+
     const userId = await db.transaction(async (tx) => {
       const [user] = await tx
         .insert(users)
@@ -161,6 +168,21 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       lastSync: toLastSync(await latestSyncRun(db, user.id)),
     };
   });
+}
+
+/**
+ * Whether this MAL account may log in: anyone who already has an account, and otherwise only
+ * the owner while OWNER_MAL_USERNAME is set. Without it (local development), anyone may.
+ */
+async function maySignIn(db: Db, config: Config, me: { id: number; name: string }) {
+  if (config.owner === null) return true;
+  if (me.name.toLowerCase() === config.owner.malUsername.toLowerCase()) return true;
+  const [existing] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.malUserId, me.id))
+    .limit(1);
+  return existing !== undefined;
 }
 
 function safeEqual(a: string, b: string): boolean {

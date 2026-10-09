@@ -44,6 +44,8 @@ The app talks only to a server-side agent backend, which holds MAL tokens, runs 
 
 The agent reads the user's list from the Postgres mirror, pulls airing schedules from AniList (keyed by MAL ID), and reaches MAL only through `commit_update`. Next.js serves the PWA; the backend can be a TypeScript or Python service with a queue-backed cron for briefs.
 
+**Hosting.** The app, the backend and Postgres run together as one Docker Compose stack (`deploy/`) on the developer's PC, published over HTTPS by Tailscale Funnel, so the PWA installs and push works on phones. Sign-up is closed: only the owner and invited friends get accounts. The same stack can move to a small server later.
+
 ## Agent design
 
 The agent is a tool-calling loop where reads are free and every write goes through a proposal step, so the model never mutates MAL directly.

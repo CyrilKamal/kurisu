@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 import { apiInternalUrl } from "./lib/apiInternalUrl";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // The proxy's default 30 s can cut off a first login, which waits for a full list sync,
+    // or a slow chat reply that escalates and hands off.
+    proxyTimeout: 120_000,
+  },
   // Proxy /api/* to the Fastify server so the browser only ever talks to one origin.
   // That keeps the session cookie first-party and avoids CORS entirely.
   rewrites() {

@@ -1,0 +1,15 @@
+# Only what the build needs goes into the hosted app's images.
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/*.tsbuildinfo
+.git
+.github
+.claude
+# Secrets never enter an image: the hosted app gets them from .env.prod at runtime.
+.env*
+!.env.example
+backups
+apps/server/eval/results
+apps/server/eval/private

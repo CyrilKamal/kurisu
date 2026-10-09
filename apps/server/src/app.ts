@@ -1,4 +1,7 @@
+import { STATUS_CODES } from "node:http";
+
 import fastifyCookie from "@fastify/cookie";
+import { sql } from "drizzle-orm";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { CURRENT_PROMPT, DIARY_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
@@ -73,6 +76,23 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
 
   const { db, close } = createDb(config.databaseUrl);
   app.addHook("onClose", close);
+
+  // In production a failure's details stay in the logs; the browser only learns that it failed.
+  if (config.nodeEnv === "production") {
+    app.setErrorHandler((error: { statusCode?: number; message: string }, request, reply) => {
+      const statusCode =
+        error.statusCode !== undefined && error.statusCode >= 400 ? error.statusCode : 500;
+      if (statusCode >= 500) {
+        request.log.error({ err: error }, "request failed");
+        return reply
+          .code(statusCode)
+          .send({ statusCode, error: STATUS_CODES[statusCode], message: "Something went wrong" });
+      }
+      return reply
+        .code(statusCode)
+        .send({ statusCode, error: STATUS_CODES[statusCode], message: error.message });
+    });
+  }
 
   const cipher = createTokenCipher(config.tokenEncryptionKey);
   const tokenStore = createTokenStore({ db, cipher, oauth: config.mal });
@@ -204,6 +224,16 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   app.decorateRequest("user", null);
 
   app.get("/health", () => ({ status: "ok" }));
+  // For the hosted app's healthcheck: the server is up and can reach its database.
+  // Docker asks every 30 s, so its requests aren't logged.
+  app.get("/health/db", { logLevel: "warn" }, async (_request, reply) => {
+    try {
+      await db.execute(sql`select 1`);
+      return { status: "ok" };
+    } catch {
+      return reply.code(503).send({ status: "unavailable" });
+    }
+  });
   registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
   // Every write to MAL, from Chat, the List screen or an import, goes through these.
   const writeDeps = {
