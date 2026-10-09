@@ -19,6 +19,7 @@ import { useChatShell } from "./ChatShell";
 import { CommandLine } from "./CommandLine";
 import { LogEntry, Working } from "./Log";
 import { Picks } from "./Picks";
+import { ReportReply } from "./ReportReply";
 import { RunMeta } from "./RunMeta";
 import { ChoiceList, ShowList } from "./Shows";
 import { HeldWrite, WriteBlock } from "./WriteBlock";
@@ -267,6 +268,7 @@ export function ChatView({
                     </>
                   )}
                   {message.run && <RunMeta run={message.run} />}
+                  {message.run && <ReportReply messageId={message.id} />}
                 </LogEntry>
               ),
             )}

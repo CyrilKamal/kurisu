@@ -7,6 +7,12 @@
  */
 import { loadCases, type Problem } from "../cases.js";
 import { loadCatalog } from "../catalog.js";
+import {
+  hasPrivateCases,
+  loadPrivateAiring,
+  loadPrivateSnapshot,
+  PRIVATE_DIR,
+} from "../private.js";
 import { loadImportCases } from "../importCases.js";
 import { loadRecommendCases } from "../recommendCases.js";
 import { loadDetails, loadDiscovery } from "../recommendData.js";
@@ -27,6 +33,14 @@ errors.push(...recommend.errors);
 warnings.push(...recommend.warnings);
 const imported = loadImportCases(loadCatalog());
 errors.push(...imported.errors);
+// The review queue's cases, on the PC that has them (eval/private/ is gitignored).
+if (hasPrivateCases()) {
+  const labeled = loadCases(PRIVATE_DIR, loadPrivateSnapshot, loadPrivateAiring());
+  const inPrivate = (p: Problem) => ({ ...p, file: `private/${p.file}` });
+  errors.push(...labeled.errors.map(inPrivate));
+  warnings.push(...labeled.warnings.map(inPrivate));
+  cases.push(...labeled.cases);
+}
 
 const where = (p: Problem) =>
   `${p.file}${p.line !== undefined ? `:${String(p.line)}` : ""}${p.caseId ? ` [${p.caseId}]` : ""}`;

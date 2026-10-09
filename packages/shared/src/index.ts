@@ -179,6 +179,12 @@ export const friendAddedSchema = z.object({ friendId: z.uuid() });
 export const sharingRequestSchema = z.object({ shareActivity: z.boolean() }).strict();
 export const sharingResponseSchema = sharingRequestSchema;
 
+/** POST /chat/messages/:id/report: the user says this reply was wrong, in their words or none. */
+export const reportRequestSchema = z
+  .object({ note: z.string().trim().min(1).max(500).optional() })
+  .strict();
+export const reportResponseSchema = z.object({ reported: z.literal(true) });
+
 /** PATCH /diary/notes/:id: show a note to friends, or stop. */
 export const diaryNotePatchSchema = z.object({ shared: z.boolean() }).strict();
 

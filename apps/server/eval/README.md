@@ -251,6 +251,28 @@ The report prints:
 
 It also breaks accuracy down by tag and, for every failure, shows the expected versus actual writes, the reply, and the tool calls the agent made. The full JSON report lands in `eval/results/` (gitignored).
 
+## Cases from the review queue (private)
+
+Replies on the hosted app that may have gone wrong are kept in a review queue. These are a failed run, a chat write undone within a day, or a reply the user reported with "Report a problem". Each item holds the message, the turns before it, the reply, and the list as it was before the run.
+
+```bash
+pnpm review --env-file C:/Users/megar/repos/kurisu-prod/.env.prod          # new items, with what the run did
+pnpm review --env-file C:/Users/megar/repos/kurisu-prod/.env.prod --export <id>
+pnpm review --env-file C:/Users/megar/repos/kurisu-prod/.env.prod --dismiss <id>
+```
+
+`--export` writes the files into `eval/private/`:
+
+- **`drafts/review-<id>.yaml`:** a draft case with an empty `expect`.
+- **`snapshots/review-<id>.json`:** its list, in the snapshot format, with no scores or usernames.
+- **`snapshots/review-<id>.airing.json`:** the newest episodes of its shows at the time.
+
+Label the draft like any case, then move it up into `eval/private/` and run `pnpm eval --dir private`. `pnpm eval:validate` checks `eval/private/` too when it exists.
+
+**These are real people's messages and lists, so `eval/private/` is gitignored and never committed.** CI doesn't run them.
+
+The list is today's copy with that run's writes rolled back, so the shows the run touched are as the agent saw them. Shows changed since by something else are as they are now. When two captures freeze the same show's newest episode, the later one wins.
+
 ## Recommendation cases
 
 Recommendation cases check what Chat recommends for "what should I watch" messages. They live in their own files, named `recommend-<anything>.yaml`, and run separately with `pnpm eval:recommend`.

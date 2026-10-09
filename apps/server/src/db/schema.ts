@@ -892,3 +892,40 @@ export const importItems = pgTable(
   },
   (table) => [index("import_items_import_idx").on(table.importId, table.lineNo, table.position)],
 );
+
+/** Why a reply went to the review queue: it failed, its write was undone soon after, or the user reported it. */
+export const reviewKind = pgEnum("review_kind", ["error", "undone", "report"]);
+export const reviewStatus = pgEnum("review_status", ["new", "exported", "dismissed"]);
+
+/**
+ * Replies that may have gone wrong, for the owner to label as eval cases (pnpm review). Each
+ * holds what's needed to replay it: the message, the turns before it, the reply, and the list
+ * as it was before the run (eval snapshot entries) with the airing data of its shows then. One
+ * per run and kind. It stays private: exports go to the gitignored eval/private/.
+ */
+export const reviewItems = pgTable(
+  "review_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    runId: uuid("run_id")
+      .notNull()
+      .references(() => agentRuns.id, { onDelete: "cascade" }),
+    kind: reviewKind("kind").notNull(),
+    // The user's words when they reported it; why it was queued otherwise.
+    note: text("note"),
+    message: text("message").notNull(),
+    history: jsonb("history").$type<{ role: "user" | "assistant"; content: string }[]>().notNull(),
+    reply: text("reply").notNull(),
+    listSnapshot: jsonb("list_snapshot").$type<unknown[]>().notNull(),
+    airing: jsonb("airing").$type<unknown[]>().notNull(),
+    status: reviewStatus("status").notNull().default("new"),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("review_items_run_kind_idx").on(table.runId, table.kind),
+    index("review_items_status_idx").on(table.status, table.createdAt.desc()),
+  ],
+);

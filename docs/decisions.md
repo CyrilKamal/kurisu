@@ -1948,3 +1948,34 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - **Late activity:** a friend's changes on MAL's site appear only after their next sync (login or Re-sync), since kurisu never polls MAL.
 - **Timing:** the taste match is computed on each view. That's fine for a handful of friends; a cache would come with more.
 - **The fake MAL holds a list per user** (`lists`, and tokens remember their holder) for testing friends.
+
+## 2026-10-09 — The review queue: what goes in, and where its cases live (Milestone 6)
+**Decision:**
+- **What goes in:** a chat reply goes to the review queue, in the background, in any of these cases:
+  - its run ended in an error that isn't a model outage (rate limit, unavailable, bad key);
+  - it said it changed something it didn't;
+  - a chat write it made is undone within 24 hours;
+  - the user taps "Report a problem" under it, with an optional note.
+
+  One item per run and reason.
+- **What an item keeps:** the message, up to 4 earlier turns, the reply, and the list as it was before the run. That's today's copy with the run's writes rolled back, in the eval snapshot format: no scores, dates or usernames. It also keeps its airing shows' newest episodes then.
+- **`pnpm review`:** reads the hosted database through `--env-file` and lists new items with the run's tool calls.
+  - `--export` writes a draft case (empty `expect`), its snapshot and its airing into `apps/server/eval/private/`, which is gitignored.
+  - `pnpm eval --dir private` runs the labeled ones, and `eval:validate` checks them when the folder exists.
+
+**Alternatives:**
+- **A review page in the app:** the CLI plus Claude's summaries, with Cyril labeling, is the flow CLAUDE.md asks for.
+- **Committing friends' cases, anonymized:** Cyril chose to keep them local.
+- **Queueing every escalation or clarification:** most are fine, and the queue would drown.
+- **Inferring rephrasings from consecutive messages:** too noisy without labels.
+- **Snapshotting the whole list at every message:** costs space on every run, for the rare one that goes wrong.
+
+**Why:** The done-when asks for friends' failures to reach Cyril for labeling. Undo within a day and an explicit report are the strongest signals of a wrong write. Errors that aren't outages show the agent failing outright.
+
+**Consequences:**
+- The Report link is visible to everyone under every reply's RunMeta, and the invite terms already say Cyril may read those conversations.
+- A labeled case runs against its own list and airing, so it isn't mixed into the shared snapshots.
+- **Two approximations to watch for when labeling:**
+  - shows changed after the message by something other than that run are in their later state;
+  - when two captures freeze the same show's airing, the later one wins.
+- CI never sees private cases, so they're checked only on Cyril's PC.

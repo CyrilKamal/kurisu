@@ -1,4 +1,5 @@
 import * as contract from "@kurisu/shared";
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import type { LoginError } from "../../src/auth/routes.js";
@@ -8,7 +9,7 @@ import { STREAMING_SERVICES } from "../../src/brief/services.js";
 import { CHAT_TITLE_MAX } from "../../src/chat/titles.js";
 import { DROP_CATEGORIES } from "../../src/taste/dropReasons.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
-import { chatMessages, conversations, syncRuns, users } from "../../src/db/schema.js";
+import { agentRuns, chatMessages, conversations, syncRuns, users } from "../../src/db/schema.js";
 import { MAL_LIST_STATUSES } from "../../src/mal/client.js";
 import type { PushErrorCode } from "../../src/push/routes.js";
 import { generateVapidKeys } from "../../src/push/send.js";
@@ -367,6 +368,26 @@ describe("responses match the contract", () => {
       (await get(`/chat/conversations/${chat.id}`)).json(),
     );
     expect(thread.messages).toHaveLength(2);
+
+    // Reporting a reply needs the run behind it.
+    const [run] = await h.db
+      .insert(agentRuns)
+      .values({ userId: user.id, promptVersion: "progress-sync@17", model: "ollama:test" })
+      .returning({ id: agentRuns.id });
+    const replyId = thread.messages.find((m) => m.role === "assistant")?.id ?? "";
+    await h.db
+      .update(chatMessages)
+      .set({ runId: run?.id ?? null })
+      .where(eq(chatMessages.id, replyId));
+    const reported = await h.app.inject({
+      method: "POST",
+      url: `/chat/messages/${replyId}/report`,
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+      payload: contract.reportRequestSchema.parse({ note: "wrong show" }),
+    });
+    expect(reported.statusCode).toBe(202);
+    expect(() => contract.reportResponseSchema.parse(reported.json())).not.toThrow();
 
     const missing = await get(`/chat/conversations/${crypto.randomUUID()}`);
     expect(missing.statusCode).toBe(404);
