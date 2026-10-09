@@ -24,6 +24,57 @@ export function describeChange(before: ListChange, after: ListChange): string {
   return parts.join(" · ");
 }
 
+/**
+ * A write as the design system's diff shows it: each changed field as a label, the old value
+ * struck through, an arrow and the new value; numbers set in mono. "ep 6 → 7 · of 12".
+ */
+export type DiffPart =
+  | { kind: "text"; text: string }
+  | { kind: "change"; label: string | null; from: string; to: string; numeric: boolean }
+  | { kind: "of"; total: number };
+
+export function diffParts(
+  kind: WriteKind,
+  before: ListChange,
+  after: ListChange,
+  numEpisodes: number | null = null,
+): DiffPart[] {
+  if (kind !== "update") return [{ kind: "text", text: describeWrite(kind, before, after) }];
+  const parts: DiffPart[] = [];
+  if (after.episodesWatched !== undefined) {
+    parts.push({
+      kind: "change",
+      label: "ep",
+      from: String(before.episodesWatched ?? "?"),
+      to: String(after.episodesWatched),
+      numeric: true,
+    });
+    if (numEpisodes !== null) parts.push({ kind: "of", total: numEpisodes });
+  }
+  if (after.status !== undefined) {
+    parts.push({
+      kind: "change",
+      label: null,
+      from: before.status ? STATUS_LABELS[before.status] : "?",
+      to: STATUS_LABELS[after.status],
+      numeric: false,
+    });
+  }
+  if (after.score !== undefined) {
+    parts.push({
+      kind: "change",
+      label: "score",
+      from: scoreLabel(before.score),
+      to: scoreLabel(after.score),
+      numeric: true,
+    });
+  }
+  if (after.isRewatching !== undefined) {
+    parts.push({ kind: "text", text: after.isRewatching ? "rewatching" : "rewatch finished" });
+  }
+  return parts;
+}
+
 /** What a write did: an add or a removal in words, an update as describeChange says it. */
 export function describeWrite(kind: WriteKind, before: ListChange, after: ListChange): string {
   if (kind === "remove") return "Removed from your list";

@@ -10,8 +10,9 @@ import {
   describeWrite,
   sourceLabel,
 } from "@/lib/describeChange";
+import { showDetails } from "@/lib/format";
 
-import { Cover, showDetails } from "./chat/ShowCard";
+import { Cover } from "./chat/ShowCard";
 
 /** A write (by the agent, the user, an import, or an undo), with an Undo button. */
 export function ChangeCard({

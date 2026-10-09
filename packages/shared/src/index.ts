@@ -134,8 +134,13 @@ export type ChangeSource = (typeof CHANGE_SOURCES)[number];
 
 export const changeViewSchema = z.object({
   id: z.uuid(),
+  /** The proposal it committed, shown as its short id (`shortId`). */
+  proposalId: z.uuid(),
   animeId: z.number().int().positive(),
   title: z.string(),
+  pictureUrl: z.string().nullable(),
+  /** The show's episode count, for "ep 6 → 7 of 12". */
+  numEpisodes: z.number().int().positive().nullable(),
   kind: z.enum(WRITE_KINDS),
   before: listChangeSchema,
   after: listChangeSchema,
@@ -182,6 +187,88 @@ export const pickViewSchema = z.object({
 });
 export type PickView = z.infer<typeof pickViewSchema>;
 
+/** A proposal's or change's short id, as Chat shows it: "p_7f3a". */
+export function shortId(id: string): string {
+  return `p_${id.replaceAll("-", "").slice(0, 4)}`;
+}
+
+/** One tool call of a reply's run, summed up for its trace. */
+export const runStepViewSchema = z.object({
+  tool: z.string(),
+  /** The arguments in a few words: `"tidewater"`, `#5114 status=completed`. */
+  args: z.string(),
+  /** What came back in a few words: "1 match", "written", or the error code. */
+  result: z.string(),
+  ok: z.boolean(),
+  ms: z.number().int().nonnegative(),
+});
+export type RunStepView = z.infer<typeof runStepViewSchema>;
+
+/**
+ * The agent runs behind a reply (RunMeta): the progress agent's, after any escalation, plus the
+ * recommender's when it handed the message over. Times and tokens add up all of them.
+ */
+export const runViewSchema = z.object({
+  /** "gemini:gemini-3.5-flash-lite". */
+  model: z.string(),
+  promptVersion: z.string(),
+  /** The model of the run it escalated from, when it did. */
+  escalatedFrom: z.string().nullable(),
+  /** The recommender, when the message was handed to it. */
+  handoff: z.object({ model: z.string(), promptVersion: z.string() }).nullable(),
+  latencyMs: z.number().int().nonnegative(),
+  inputTokens: z.number().int().nonnegative(),
+  outputTokens: z.number().int().nonnegative(),
+  /** A short error code when the reply's run failed ("model_timeout"). */
+  error: z.string().nullable(),
+  steps: z.array(runStepViewSchema),
+});
+export type RunView = z.infer<typeof runViewSchema>;
+
+/** A morning brief's message, for its card: the new episodes, premieres and Sunday recap. */
+export const briefCardViewSchema = z.object({
+  /** The user's local date it's for ("2026-10-08"). */
+  localDate: z.string().nullable(),
+  summary: z.string().nullable(),
+  items: z.array(
+    z.object({
+      animeId: z.number().int().positive(),
+      title: z.string(),
+      pictureUrl: z.string().nullable(),
+      /** New episodes not watched yet, ascending. */
+      episodes: z.array(z.number().int().positive()),
+      premiere: z.boolean(),
+      finale: z.boolean(),
+      episodesWatched: z.number().int().nonnegative(),
+      numEpisodes: z.number().int().positive().nullable(),
+      /** The user's services that list it; empty when none do. */
+      services: z.array(z.string()),
+    }),
+  ),
+  /** Shows that started airing; their cards are the message's `shows`. */
+  alerts: z.array(
+    z.object({
+      animeId: z.number().int().positive(),
+      kind: z.enum(["sequel_started", "ptw_started"]),
+      /** For a sequel: the show they finished that it follows. */
+      after: z.string().nullable(),
+      services: z.array(z.string()),
+    }),
+  ),
+  recap: z
+    .object({
+      episodes: z.number().int().nonnegative(),
+      minutes: z.number().int().nonnegative(),
+      shows: z.number().int().nonnegative(),
+      finished: z.array(z.string()),
+      year: z.number().int(),
+      completed: z.number().int().nonnegative(),
+      goal: z.number().int().positive().nullable(),
+    })
+    .nullable(),
+});
+export type BriefCardView = z.infer<typeof briefCardViewSchema>;
+
 export const chatMessageViewSchema = z.object({
   id: z.uuid(),
   role: z.enum(["user", "assistant"]),
@@ -194,6 +281,10 @@ export const chatMessageViewSchema = z.object({
   shows: z.array(showCardSchema),
   /** The reply asks a question, so its show cards answer it when tapped. */
   asksToChoose: z.boolean(),
+  /** The runs behind an assistant reply; null for the user's messages and for briefs. */
+  run: runViewSchema.nullable(),
+  /** A brief's message: its card. */
+  brief: briefCardViewSchema.nullable(),
 });
 export type ChatMessageView = z.infer<typeof chatMessageViewSchema>;
 
@@ -202,6 +293,8 @@ export const conversationViewSchema = z.object({
   id: z.uuid(),
   title: z.string(),
   lastMessageAt: z.iso.datetime(),
+  /** A chat a morning brief started. */
+  isBrief: z.boolean(),
 });
 export type ConversationView = z.infer<typeof conversationViewSchema>;
 

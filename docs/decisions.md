@@ -1690,3 +1690,24 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - A newer version of the system is a file copy plus `design:tokens`, then a look at the screens.
 - Off-system styles stay possible until the last PR removes Tailwind's default palette.
 - The logo stays as `lib/brandMark.ts` draws it, as the system says, until final art replaces it.
+
+## 2026-10-08 — Chat as a command log: every reply shows its run (between Milestones 5 and 6)
+**Decision:**
+- **The design:** Chat follows the design system's LogEntry. It has a time gutter, your lines on a band behind the crimson `›`, and replies in plain text with their artifacts below. The artifacts are WriteBlock (dashed teal, proposal ids, diff, Undo), held writes (Confirm or the add, and Cancel), ChoiceList, the PickCard panel and the BriefCard. Then come the collapsed trace and RunMeta.
+- **API (`chatMessageViewSchema`):** each message gains `run`, which combines the reply's run, the run it escalated from and the recommender's run.
+  - `run` holds the model, prompt versions, total latency and tokens, and an error code only when a run failed. Stop reasons like "handoff" are in the same column but aren't errors.
+  - It also holds each tool call, with its arguments and result summed up in code (`chat/trace.ts`).
+- **Brief messages:** a brief's message gains `brief` (items, premieres, recap), and chats gain `isBrief`.
+- **Change views:** these gain the proposal id, poster and episode count for the write rows.
+- **RunMeta shows no cost.**
+
+**Alternatives:**
+- **A separate endpoint for runs, fetched on tap.** The system says RunMeta is part of the reply and never behind a tap. One query per thread is cheap.
+- **Showing cost.** Our per-run cost uses list prices, which overcount the real bill (decision of 2026-10-07). A wrong number is worse than none.
+- **Raw tool arguments and results in the trace.** They're long, and results are truncated JSON. A few words each ("`"tidewater"` → 1 match") is what the system shows.
+
+**Why:** the system's rule is "show the machine": every reply carries its run, and every write shows its id and can be undone. That data was already logged for evals (`agent_runs`, `agent_run_steps`), so this only exposes it.
+
+**Consequences:**
+- The thread query does two more lookups: runs with their steps, and briefs.
+- The trace exposes tool names and arguments to the user. That's fine for a personal app, but it's worth a look before the friends beta (Milestone 6).

@@ -4,7 +4,12 @@ import { groupChats } from "../lib/chatGroups";
 
 // Local times, so the test holds in any time zone.
 const now = new Date(2026, 9, 6, 9, 30);
-const chat = (id: string, at: Date) => ({ id, title: id, lastMessageAt: at.toISOString() });
+const chat = (id: string, at: Date) => ({
+  id,
+  title: id,
+  lastMessageAt: at.toISOString(),
+  isBrief: false,
+});
 
 describe("groupChats", () => {
   it("groups by the viewer's calendar day, keeping the order", () => {

@@ -121,15 +121,16 @@ export function ChatShell({
   return (
     <ShellContext value={context}>
       <div className="flex h-dvh pb-14">
-        <aside className="hidden w-64 shrink-0 border-r border-zinc-200 md:block dark:border-zinc-800">
+        <aside className="hidden w-(--sidebar-width) shrink-0 border-r border-line md:block">
           {sidebar()}
         </aside>
         {drawerOpen && (
           <div className="fixed inset-0 z-30 md:hidden">
+            {/* A solid scrim, never blurred. */}
             <button
               type="button"
               aria-label="Close chats"
-              className="absolute inset-0 bg-black/40"
+              className="absolute inset-0 bg-scrim"
               onClick={() => {
                 setDrawerOpen(false);
               }}
@@ -138,7 +139,7 @@ export function ChatShell({
               role="dialog"
               aria-modal="true"
               aria-label="Chats"
-              className="absolute inset-y-0 left-0 w-72 max-w-[85%] bg-white shadow-xl dark:bg-zinc-950"
+              className="absolute inset-y-0 left-0 w-(--sidebar-width) max-w-[85%] border-r border-line bg-bg"
             >
               {sidebar(() => {
                 setDrawerOpen(false);
