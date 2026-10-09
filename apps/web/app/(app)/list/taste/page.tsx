@@ -70,7 +70,7 @@ export default async function TastePage() {
           </p>
 
           {all.length > 0 && (
-            <details className="k-trace pt-6">
+            <details className="k-trace pt-6 font-sans tabular-nums">
               <summary>All genres ({all.length})</summary>
               <div className="overflow-x-auto">
                 <table className="mt-2 w-full">
@@ -86,7 +86,7 @@ export default async function TastePage() {
                   <tbody className="text-ink-muted">
                     {all.map((genre) => (
                       <tr key={genre.genre} className="border-t border-line">
-                        <td className="py-2 pr-4 font-sans text-ink">{genre.genre}</td>
+                        <td className="py-2 pr-4 text-ink">{genre.genre}</td>
                         <td className="px-2 py-2 text-right">{formatScore(genre.meanScore)}</td>
                         <td className="px-2 py-2 text-right">{genre.scored}</td>
                         <td className="px-2 py-2 text-right">{genre.dropped}</td>

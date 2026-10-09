@@ -15,8 +15,10 @@
   --text-shadow-*: initial;
   --blur-*: initial;
 
-  /* next/font sets --font-outfit and --font-jetbrains-mono on <html> (app/layout.tsx). */
-  --font-sans: var(--font-outfit), system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* next/font sets --font-inter, --font-source-serif and --font-jetbrains-mono on <html>
+     (app/layout.tsx). */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
