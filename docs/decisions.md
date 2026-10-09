@@ -1638,3 +1638,31 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - The user's own airing shows rank first (the list boost), so "what's good this season" leads with what they're watching. New shows fill in after.
 - Season shows are fetched once a day for every user together: one lineup request plus a details request per 50 shows.
 
+## 2026-10-08 — "This season" questions reach the recommender: progress-sync.v17 and recommend.v9 (Milestone 5)
+**Decision:**
+- **Cyril's cases:** 8 "this season" cases, in their own words, in `recommend-season.yaml`. Each is labeled by the scenario it answers (airing now, plus Netflix, funny, no isekai, new to them, or their own Watching list).
+- **progress-sync.v17 (from v15; v16 was never committed):**
+  - Three examples join the existing "what to watch" line: "what's new this season?", "what's airing on Netflix?" and "what am I watching that's airing?".
+  - The line for questions adds that `search_my_list` only finds titles. The agent must never say the list has no shows of some kind, and points whole-list questions to the List screen.
+- **recommend.v9 (from v8):**
+  - "New" in a message that also asks what's airing means new to the user (`from ["new"]`). Cyril: "new" means new to them almost every time.
+  - "What am I watching" means their Watching list, queued shows included.
+- Both are current.
+
+**Alternatives:**
+- **Keep v15 and v8 and accept the misses.** On v15, 3 of the 8 cases never reached the recommender. One of them, "what am i watching thats airing rn", got a false answer: the agent searched the list for the word "airing", found nothing, and said "You don't have any shows currently airing."
+- **A sentence of its own for airing questions.** v14 did that for streaming questions, and it cost ordinary updates. Examples in existing lines cost nothing measurable here.
+- **"New" always means new to them, even alone ("any new anime?").** That reverses Cyril's earlier rule to ask (recommend.v5). Changed only next to "airing", where "recently aired" is already covered.
+
+**Why:** v15 and v8 got 4 of Cyril's 8 season cases right. v17 and v9 get all 8, with no cost to updates.
+
+**Consequences:**
+- **Recommendation eval, every case** (Cyril's 25 and 8 season cases, plus 8 format examples):
+  - v15 + v8: 37/41.
+  - v17 + v9: 41/41, 119/119 picks within the labels, median 4.4 s, $0.006 a case.
+- **Update eval:**
+  - v17: 132/141, 0/123 wrong writes, clarification precision 65.9% (recall 100%), median 2.4 s, $0.004 an update.
+  - v15 the same day: 130/141, 0/121 wrong writes, precision 64.3%.
+  - The same 8 known cases miss on both, and every miss asks instead of writing. Only v17 asked on "Just watched MHA more"; 3 that missed on v15 pass.
+- "Any new anime?" on its own still asks which "new" they mean.
+
