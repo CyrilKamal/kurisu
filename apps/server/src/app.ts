@@ -18,7 +18,11 @@ import { completedIds, refreshSequels } from "./anilist/sequels.js";
 import { refreshDiscovery } from "./recommend/discovery.js";
 import { refreshSeason } from "./recommend/season.js";
 import { refreshTaste } from "./taste/profile.js";
-import { createAniListClient } from "./anilist/client.js";
+import {
+  createAniListClient,
+  createAniListPacer,
+  DEFAULT_MIN_INTERVAL_MS,
+} from "./anilist/client.js";
 import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
 import { registerBriefRoutes } from "./brief/routes.js";
@@ -38,6 +42,7 @@ import { createListSync } from "./sync/listSync.js";
 import { saveReactionsFor } from "./diary/reader.js";
 import { registerDiaryRoutes } from "./diary/routes.js";
 import { registerInviteRoutes } from "./invites/routes.js";
+import { checkBudget } from "./budget/budget.js";
 import { registerStatsRoutes } from "./stats/routes.js";
 import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
@@ -99,15 +104,24 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   const tokenStore = createTokenStore({ db, cipher, oauth: config.mal });
   // After each list sync, refresh AniList airing data for the shows Chat may ask about ("the
   // newest episode"), in the background so the sync doesn't wait on AniList.
+  // Every AniList client shares one pacer, so with many users' background refreshes the server
+  // as a whole stays under AniList's limit. A chat search goes ahead of them.
+  const anilistPacer = createAniListPacer(
+    options.anilist?.minIntervalMs ?? DEFAULT_MIN_INTERVAL_MS,
+  );
   const syncAniList = createAniListClient({
     apiUrl: config.anilist.apiUrl,
     retry: options.anilist?.retry ?? { retries: 1, baseDelayMs: 500, maxDelayMs: 2_000 },
-    ...(options.anilist?.minIntervalMs !== undefined && {
-      minIntervalMs: options.anilist.minIntervalMs,
-    }),
+    pacer: anilistPacer,
   });
   // One refresh per user at a time; a sync while one runs doesn't queue another.
   const airingRefreshes = new Map<string, Promise<void>>();
+  // The season lineup is shared: users whose syncs overlap wait on the same rebuild.
+  let seasonRefresh: Promise<number | null> | null = null;
+  const refreshSeasonOnce = () =>
+    (seasonRefresh ??= refreshSeason({ db, anilist: syncAniList }).finally(() => {
+      seasonRefresh = null;
+    }));
   app.addHook("onClose", async () => {
     await Promise.allSettled(airingRefreshes.values());
   });
@@ -148,7 +162,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       })
       // What's airing now, shared by every user: at most daily. Before discovery,
       // which stays the last step (its run marks the background work done).
-      .then(() => refreshSeason({ db, anilist: syncAniList }))
+      .then(refreshSeasonOnce)
       .then(() => undefined)
       .catch((err: unknown) => {
         app.log.warn({ err: { name: (err as Error).name } }, "could not refresh this season");
@@ -181,6 +195,9 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   });
 
   const modelsFile = loadModelsFile();
+  // Friends' model budgets; the owner, and everyone while sign-up is open, is never limited.
+  const budget = (user: { id: string; isOwner: boolean }) =>
+    checkBudget(db, modelsFile, config.budget, user);
   const configuredRoles = resolveRoles(modelsFile, config.llm.overrides);
   const models =
     options.models ??
@@ -197,7 +214,12 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   const writeListStatus = createMalListWriter(malWrites);
   // Chat's searches of all anime get their own AniList client, so they never queue behind a
   // background airing refresh.
-  const chatAniList = createAniListClient({ apiUrl: config.anilist.apiUrl, ...options.anilist });
+  const chatAniList = createAniListClient({
+    apiUrl: config.anilist.apiUrl,
+    ...options.anilist,
+    pacer: anilistPacer,
+    urgent: true,
+  });
 
   const push = createPushSender({
     db,
@@ -209,7 +231,11 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
 
   const briefDeps = {
     db,
-    anilist: createAniListClient({ apiUrl: config.anilist.apiUrl, ...options.anilist }),
+    anilist: createAniListClient({
+      apiUrl: config.anilist.apiUrl,
+      ...options.anilist,
+      pacer: anilistPacer,
+    }),
     push,
     models,
     model: options.roles?.brief ?? configuredRoles.brief,
@@ -290,6 +316,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     catalog: (queries) => chatAniList.searchAnime(queries),
     prompt: options.prompt ?? CURRENT_PROMPT,
     recommendPrompt: RECOMMEND_PROMPT,
+    budget,
     ...(options.diary !== false && { diary: readDiary }),
     roles: {
       agent: options.roles?.agent ?? configuredRoles.agent,
@@ -314,7 +341,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       app.log.error({ err }, message);
     },
   };
-  registerImportRoutes(app, { ...importDeps, config });
+  registerImportRoutes(app, { ...importDeps, config, budget });
   app.addHook("onReady", async () => {
     try {
       await resumeImports(importDeps);

@@ -10,19 +10,33 @@ import { stepArgs, stepResult } from "./trace.js";
  * (chat_messages.run_id): that run, the one it escalated from, and the recommender it handed the
  * message to. Times, tokens and tool calls add up all of them, in the order they ran.
  */
-export async function loadRunViews(db: Db, runIds: string[]): Promise<Map<string, RunView>> {
+export async function loadRunViews(
+  db: Db,
+  userId: string,
+  runIds: string[],
+): Promise<Map<string, RunView>> {
   if (runIds.length === 0) return new Map();
+  // Only this user's runs, though the ids already come from their own chat.
   const runs = await db
     .select()
     .from(agentRuns)
-    .where(or(inArray(agentRuns.id, runIds), inArray(agentRuns.handedOffFromRunId, runIds)));
+    .where(
+      and(
+        eq(agentRuns.userId, userId),
+        or(inArray(agentRuns.id, runIds), inArray(agentRuns.handedOffFromRunId, runIds)),
+      ),
+    );
   const byId = new Map(runs.map((r) => [r.id, r]));
   const firstIds = runIds.flatMap((id) => {
     const from = byId.get(id)?.escalatedFromRunId;
     return from ? [from] : [];
   });
   if (firstIds.length > 0) {
-    for (const r of await db.select().from(agentRuns).where(inArray(agentRuns.id, firstIds))) {
+    const first = await db
+      .select()
+      .from(agentRuns)
+      .where(and(eq(agentRuns.userId, userId), inArray(agentRuns.id, firstIds)));
+    for (const r of first) {
       byId.set(r.id, r);
     }
   }

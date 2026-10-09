@@ -2,6 +2,7 @@ import * as contract from "@kurisu/shared";
 import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import type { LoginError } from "../../src/auth/routes.js";
+import type { BudgetLimit } from "../../src/budget/budget.js";
 import type { BriefErrorCode } from "../../src/brief/routes.js";
 import { STREAMING_SERVICES } from "../../src/brief/services.js";
 import { CHAT_TITLE_MAX } from "../../src/chat/titles.js";
@@ -82,6 +83,7 @@ describe("shared constants", () => {
     expect([...MAL_LIST_STATUSES]).toEqual([...contract.LIST_STATUSES]);
     // Checked by the type checker (pnpm typecheck), not at runtime.
     expectTypeOf<LoginError>().toEqualTypeOf<contract.LoginError>();
+    expectTypeOf<BudgetLimit>().toEqualTypeOf<contract.BudgetLimit>();
     expectTypeOf<SyncErrorCode>().toEqualTypeOf<contract.SyncError>();
     expectTypeOf<PushErrorCode>().toEqualTypeOf<contract.PushError>();
     expectTypeOf<BriefErrorCode>().toEqualTypeOf<contract.BriefError>();

@@ -66,6 +66,8 @@ export async function refreshSeason(
   const rows = [...new Map(shows.map((s) => [s.malId, catalogRowFrom(s)])).values()];
 
   await db.transaction(async (tx) => {
+    // Every user's sync can rebuild the lineup; one at a time, so they can't interleave.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('season_shows'))`);
     if (rows.length > 0) {
       await tx
         .insert(anilistCatalog)

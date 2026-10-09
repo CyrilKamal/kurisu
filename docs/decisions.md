@@ -1885,3 +1885,31 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - **The beta terms are on the invite page**, and their wording is Cyril's to approve.
 - **The fake MAL can log in as someone else** (`/fake/login-as`, and `user` in tests), for testing more than one account.
 - **This PR leaves out the rest of the planned PR 2:** the daily and monthly model budgets, the shared AniList limiter, the season lock and the scoping fixes. They come in a follow-up PR.
+
+## 2026-10-09 — Friends' model budgets, one AniList pacer, and runs that check their owner (Milestone 6)
+**Decision:**
+- **Budgets:** while there's an owner, Chat and imports check a budget before saving anything or calling a model. The owner is never limited, and nobody is while sign-up is open (local development). An account is turned away with 429 in two cases:
+  - **`daily_limit`:** it started `FRIEND_DAILY_RUNS` agent runs (agent, escalation, recommender, diary, import; default 100) in the last 24 hours.
+  - **`monthly_limit`:** every account but the owner's has together spent `MONTHLY_MODEL_BUDGET_USD` (default $5) this UTC month. The spend is estimated from `agent_runs` tokens at `config/models.json`'s list prices.
+
+  Chat and the import screen say which limit was hit.
+- **One AniList pacer:** every AniList client shares it, one request every 3 s. A chat search (`urgent`) goes ahead of waiting background refreshes.
+- **Season rebuild:** users whose syncs overlap wait on one in-flight rebuild, and its write transaction takes an advisory lock.
+- **Ownership on every lookup:** run views, chat history and import-item updates now check the user in the query itself, not only in the check before it.
+
+**Alternatives:**
+- **Counting messages instead of runs:** runs track cost more closely, since a recommendation is two runs and the diary one more.
+- **A fixed reply saved in the chat instead of a 429:** it would put a message in the history that kurisu never wrote.
+- **Per-friend monthly caps:** with a handful of friends, one shared cap is simpler and protects the credit just as well.
+- **Separate pacers with smaller budgets each:** chat searches would still compete with refreshes.
+
+**Why:**
+- **Every friend spends the owner's prepaid Gemini credit.** When it runs out, kurisu stops for everyone, the owner included.
+- **The estimate errs on the side of stopping early,** because list prices run higher than the real bill.
+- **AniList's limit is per server, not per client.** Three clients pacing independently could send twice the 30 a minute AniList allows.
+
+**Consequences:**
+- **What's left out of the budgets:** brief summaries. They're one short Flash-Lite call a day per user, and briefs don't log runs.
+- **The monthly cap is shared.** One heavy friend can use up the month for everyone but the owner.
+- **Raising either limit** is an `.env.prod` change and a restart.
+- **This finishes what the plan called PR 2.**

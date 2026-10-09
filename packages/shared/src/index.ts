@@ -30,6 +30,13 @@ export const LOGIN_ERRORS = [
 ] as const;
 export type LoginError = (typeof LOGIN_ERRORS)[number];
 
+/**
+ * Why Chat or an import turned a friend away before calling a model: their runs in the last 24
+ * hours, or everyone but the owner's spend this month. The owner is never limited.
+ */
+export const BUDGET_LIMITS = ["daily_limit", "monthly_limit"] as const;
+export type BudgetLimit = (typeof BUDGET_LIMITS)[number];
+
 /** Why a sync failed, as recorded on the sync run. */
 export const SYNC_ERRORS = [
   "reauth_required",

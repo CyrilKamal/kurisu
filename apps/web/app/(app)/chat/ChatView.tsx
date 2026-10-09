@@ -52,6 +52,10 @@ function sendErrorMessage(status: number, error: string): string {
   if (error === "too_many_messages")
     return "That's a lot of messages. Wait a minute and try again.";
   if (error === "busy") return "Still working on your last message.";
+  if (error === "daily_limit")
+    return "You've reached today's limit for kurisu. It frees up over the next day.";
+  if (error === "monthly_limit")
+    return "kurisu is resting until the 1st: this month's budget for the beta is used up.";
   if (status === 401) return "Your session expired. Reload to log in again.";
   if (status === 404) return "This chat was deleted. Start a new one to keep going.";
   return "Something went wrong. Please try again.";
