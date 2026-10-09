@@ -49,7 +49,7 @@ Some work must be done by me, not you. When you reach one of these points, stop,
 - **Database:** Postgres.
 - **Scheduler:** queue-backed daily cron for morning briefs.
 - **Notifications:** Web Push.
-- **Python:** only for Milestone 7 (fine-tuning). Keep it in its own `ml/` directory.
+- **Python:** only for Milestone 8 (fine-tuning). Keep it in its own `ml/` directory.
 
 TypeScript runs in strict mode. Prefer small modules with clear boundaries over large files.
 
@@ -95,7 +95,8 @@ These are non-negotiable. If a request conflicts with one, stop and ask.
 4. **Recommendations + taste memory.** Recommendations draw from Plan to Watch and in-progress shows, respect constraints like runtime and mood, and explain each pick in one line. Taste memory records drop reasons and rating patterns.
 5. **Your list, in your hands.** I can edit any entry and remove shows on the List screen, and every edit shows in History and can be undone. I can paste notes and import them through one review screen (grouped, adds and clear updates pre-checked, taps only on "?" rows, one Import tap, background writes with progress, one undo), from scratch or onto my MAL list, and my import eval cases pass at a level we've discussed with no wrong pre-checked rows. Picks show where to watch on my services, and "something on Netflix" works. The brief tells me when a sequel or new season of a show I finished, or a Plan to Watch show, starts airing. A Stats page and a Sunday recap show what I watched (including edits made on MAL's site), with a yearly goal. A diary keeps my reactions. "What's good this season" works.
 6. **Friends beta.** A handful of invited users, plus friend features (taste match, activity). Their failures flow into a review queue for me to label.
-7. **Stretch: distillation.** Fine-tune a small open model (1–3B) on labeled update messages for the parsing step, serve it locally, and compare it with Flash-Lite on accuracy, latency, and cost. Log the results as a decision entry.
+7. **Paid plan.** MAL has approved kurisu's commercial use in writing, and AniList's license is in place before revenue passes $150 a month. Anyone can sign up for a free tier with limits, or pay for a plan through Stripe. Terms and a privacy policy are published, and kurisu runs on a server that stays up.
+8. **Stretch: distillation.** Fine-tune a small open model (1–3B) on labeled update messages for the parsing step, serve it locally, and compare it with Flash-Lite on accuracy, latency, and cost. Log the results as a decision entry.
 
 ## Commands
 

@@ -1814,21 +1814,31 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - Unset (local development and tests), sign-up stays open as before.
 - A MAL username change would stop matching, but only for creating an account. An existing account always logs in.
 
-## 2026-10-09 — MAL's API agreement, and making money later (Milestone 6)
+## 2026-10-09 — kurisu will be commercial: MAL is asked now, and a paid plan becomes Milestone 7 (Milestone 6)
 **Decision:**
-- **Asking MAL:** Cyril sends MAL a short note (drafted by Claude) describing kurisu: invite-only, free, a handful of friends. It asks whether keeping each user's list in kurisu's own database is fine under section 3(c) of the API agreement. The beta goes ahead while waiting for an answer.
+- **Commercial intent:** Cyril wants kurisu to charge, to pay for its model use. The friends beta stays free.
+- **Asking MAL now:** Cyril sends MAL a note (drafted by Claude) through its support form. It asks two things:
+  - whether keeping each user's list in kurisu's own database is fine under section 3(c) of the API agreement;
+  - how to get the written approval section 3(a)(xiv) requires before a paid plan.
+
+  The beta goes ahead while waiting. The hosted app's MAL registration says commercial, and its description says the beta is free.
+- **Milestone 7 is now the paid plan.** That means the approvals (MAL's, and AniList's license past $150 a month), Stripe, a free tier and a paid tier, terms and a privacy policy, and likely a server. Distillation moves to Milestone 8, still a stretch.
+- **Spending protection in Milestone 6:** a per-friend daily limit, plus a $5 monthly cap on friends' estimated model spend. The owner keeps working past the cap.
 - **MAL sync stays as it is:** at login, after writes and on Re-sync. There's no polling, even for fresher friend activity.
-- **Money:** nothing in Milestone 6 earns or prepares to earn money.
 
 **Alternatives:**
+- Staying non-commercial, with one-off donations only. MAL allows donations without quotas.
 - Inviting friends only after MAL answers.
-- Not asking at all.
+- Putting the paid plan after distillation, or deciding only after the beta.
 - Syncing when the app opens, to make friends' MAL-site changes show sooner.
 
 **Why:**
-- **Section 3(c)** says apps may not store MAL users' personal information or the content they create "on the server-side", and kurisu's list mirror (a hard rule since Milestone 1) does. It doesn't define those terms, but a revoked Client ID would break kurisu for everyone.
+- **Gemini isn't free for other people's data.** The beta runs on Cyril's prepaid credit, which stops every call, his own included, when it runs out.
 - **Any revenue needs approval.** MAL counts any revenue (paid apps, subscriptions, even recurring donations with quotas) as commercial, which needs its written approval. AniList is free under $150 a month in revenue and needs a license above that, and it restricts competing list trackers unless it authorizes them.
+- **Section 3(c)** says apps may not store MAL users' personal information or the content they create "on the server-side", and kurisu's list mirror (a hard rule since Milestone 1) does. It doesn't define those terms, but a revoked Client ID would break kurisu for everyone.
+- **Why the paid plan comes before distillation:** the beta supplies real per-user costs to price from. A local model only saves money while kurisu runs on this PC; on a rented server it needs a GPU, which costs more than Flash-Lite.
 
 **Consequences:**
-- MAL's answer may change how the mirror works for friends.
-- **What money would take later:** MAL's written approval, an AniList license past $150 a month, and a server. The per-user daily budget (next PR) is the lever a free tier would use.
+- MAL's answer may change how the mirror works, and whether a paid plan is possible at all.
+- **Price:** at list prices, a typical user costs about 50¢ a month in model calls. $2–3 a month, or about $20 a year (a card charge costs about 30¢), would cover it.
+- CLAUDE.md and the design doc renumber distillation to Milestone 8.
