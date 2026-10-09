@@ -4,6 +4,7 @@ import {
   AniListApiError,
   AniListResponseError,
   createAniListClient,
+  createAniListPacer,
   type AniListClient,
 } from "../../src/anilist/client.js";
 import { animeRowFromAniList } from "../../src/anilist/catalog.js";
@@ -346,6 +347,25 @@ describe("errors and retries", () => {
     } finally {
       await server.stop();
     }
+  });
+
+  it("spaces requests apart across clients that share a pacer, putting urgent ones first", async () => {
+    const pacer = createAniListPacer(40);
+    const background = createAniListClient({ apiUrl: fake.apiUrl, pacer });
+    const chat = createAniListClient({ apiUrl: fake.apiUrl, pacer, urgent: true });
+    const ids = Array.from({ length: 101 }, (_, i) => i + 1); // three requests
+
+    const started = Date.now();
+    const order: string[] = [];
+    await Promise.all([
+      background.mediaByMalIds(ids).then(() => order.push("background")),
+      // Asked for after the background requests, but sent first.
+      chat.mediaByMalIds([1]).then(() => order.push("chat")),
+    ]);
+
+    expect(fake.requests).toHaveLength(4);
+    expect(order).toEqual(["chat", "background"]);
+    expect(Date.now() - started).toBeGreaterThanOrEqual(115);
   });
 
   it("spaces requests apart", async () => {

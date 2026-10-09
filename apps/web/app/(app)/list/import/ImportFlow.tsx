@@ -58,11 +58,7 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
       setView(result.data.import);
       setPasting(false);
     } else if (!result.ok) {
-      setNotice(
-        result.error === "busy"
-          ? "Another import is still going. Wait for it to finish."
-          : "Couldn't start the import. Please try again.",
-      );
+      setNotice(startErrorMessage(result.error));
     }
   }
 
@@ -284,4 +280,17 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
       </div>
     </>
   );
+}
+
+function startErrorMessage(error: string): string {
+  switch (error) {
+    case "busy":
+      return "Another import is still going. Wait for it to finish.";
+    case "daily_limit":
+      return "You've reached today's limit for kurisu. It frees up over the next day.";
+    case "monthly_limit":
+      return "kurisu is resting until the 1st: this month's budget for the beta is used up.";
+    default:
+      return "Couldn't start the import. Please try again.";
+  }
 }

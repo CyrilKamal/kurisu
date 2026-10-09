@@ -165,6 +165,13 @@ export async function handleChatMessage(
         await db
           .select({ id: chatMessages.id, role: chatMessages.role, content: chatMessages.content })
           .from(chatMessages)
+          .innerJoin(
+            conversations,
+            and(
+              eq(conversations.id, chatMessages.conversationId),
+              eq(conversations.userId, userId),
+            ),
+          )
           .where(eq(chatMessages.conversationId, existingConversationId))
           .orderBy(desc(chatMessages.createdAt))
           .limit(HISTORY_MESSAGES)
@@ -520,7 +527,7 @@ export async function loadThread(
     userId,
     rows.map((r) => r.id),
   );
-  const runViews = await loadRunViews(db, runIds);
+  const runViews = await loadRunViews(db, userId, runIds);
   const briefCards = await loadBriefCards(
     db,
     rows.filter((r) => r.role === "assistant" && r.runId === null).map((r) => r.id),

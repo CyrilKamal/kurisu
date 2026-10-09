@@ -92,6 +92,23 @@ describe("loadConfig", () => {
     );
   });
 
+  it("limits friends' model use only while there's an owner", () => {
+    expect(loadConfig(testEnv()).budget).toBeNull();
+    expect(loadConfig(testEnv({ OWNER_MAL_USERNAME: "cyril" })).budget).toEqual({
+      dailyRuns: 100,
+      monthlyUsd: 5,
+    });
+    expect(
+      loadConfig(
+        testEnv({
+          OWNER_MAL_USERNAME: "cyril",
+          FRIEND_DAILY_RUNS: "40",
+          MONTHLY_MODEL_BUDGET_USD: "12.5",
+        }),
+      ).budget,
+    ).toEqual({ dailyRuns: 40, monthlyUsd: 12.5 });
+  });
+
   it("leaves sign-up open without an owner, except in production", () => {
     expect(loadConfig(testEnv()).owner).toBeNull();
     expect(() => loadConfig(testEnv({ NODE_ENV: "production" }))).toThrow(

@@ -170,9 +170,9 @@ export const DEFAULT_ANILIST_API_URL = "https://graphql.anilist.co";
 
 /**
  * AniList allows 90 requests a minute, currently lowered to 30. Spacing requests 3 s apart
- * (20 a minute) stays under the lower limit.
+ * (20 a minute) stays under the lower limit, as long as the whole server shares one pacer.
  */
-const DEFAULT_MIN_INTERVAL_MS = 3_000;
+export const DEFAULT_MIN_INTERVAL_MS = 3_000;
 /** Ids per request; AniList pages hold at most 50 items. */
 const BATCH_SIZE = 50;
 /** A guard against a paging bug looping forever. */
@@ -473,13 +473,20 @@ const responseSchema = z.object({
 export interface AniListClientOptions {
   apiUrl: string;
   retry?: RetryOptions;
-  /** Minimum time between requests. Tests set 0. */
+  /** Minimum time between requests, when the client has its own pacer. Tests set 0. */
   minIntervalMs?: number;
+  /** A pacer shared with the server's other AniList clients, so together they stay under the limit. */
+  pacer?: AniListPacer;
+  /** Someone is waiting on these requests (a chat search): they go ahead of background ones. */
+  urgent?: boolean;
 }
 
 export function createAniListClient(options: AniListClientOptions): AniListClient {
   const retry = options.retry ?? DEFAULT_RETRY;
-  const waitTurn = spacing(options.minIntervalMs ?? DEFAULT_MIN_INTERVAL_MS);
+  const pacer =
+    options.pacer ?? createAniListPacer(options.minIntervalMs ?? DEFAULT_MIN_INTERVAL_MS);
+  const urgent = options.urgent ?? false;
+  const waitTurn = () => pacer.wait(urgent);
 
   async function query<T>(
     text: string,
@@ -834,13 +841,38 @@ async function requestJson(
 }
 
 /** Returns a function that resolves once at least `intervalMs` has passed since the last call. */
-function spacing(intervalMs: number): () => Promise<void> {
-  let nextAt = 0;
-  return async () => {
-    const now = Date.now();
-    const wait = Math.max(0, nextAt - now);
-    nextAt = Math.max(now, nextAt) + intervalMs;
-    if (wait > 0) await sleep(wait);
+/** Hands out turns to send an AniList request, at least an interval apart. */
+export interface AniListPacer {
+  /** Resolves when it's this request's turn. Urgent requests go before waiting background ones. */
+  wait(urgent: boolean): Promise<void>;
+}
+
+export function createAniListPacer(intervalMs: number): AniListPacer {
+  const waiting: { urgent: boolean; go: () => void }[] = [];
+  let lastAt = Number.NEGATIVE_INFINITY;
+  let timer: NodeJS.Timeout | null = null;
+
+  function next(): void {
+    if (timer !== null || waiting.length === 0) return;
+    timer = setTimeout(
+      () => {
+        timer = null;
+        const urgentAt = waiting.findIndex((turn) => turn.urgent);
+        const [turn] = waiting.splice(urgentAt === -1 ? 0 : urgentAt, 1);
+        lastAt = Date.now();
+        turn?.go();
+        next();
+      },
+      Math.max(0, lastAt + intervalMs - Date.now()),
+    );
+  }
+
+  return {
+    wait: (urgent) =>
+      new Promise<void>((go) => {
+        waiting.push({ urgent, go });
+        next();
+      }),
   };
 }
 

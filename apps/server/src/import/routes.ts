@@ -3,6 +3,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
+import type { BudgetLimit } from "../budget/budget.js";
 import type { Config } from "../config.js";
 import {
   discardImport,
@@ -27,7 +28,11 @@ function userOf(request: FastifyRequest): string {
 /** Import from notes: paste, review, Import, and undo, all through the single write path. */
 export function registerImportRoutes(
   app: FastifyInstance,
-  deps: ImportDeps & { config: Config },
+  deps: ImportDeps & {
+    config: Config;
+    /** Whether a friend's model budget is spent (see budget/budget.ts). */
+    budget?: (user: { id: string; isOwner: boolean }) => Promise<BudgetLimit | null>;
+  },
 ): void {
   const { config, db } = deps;
   const read = { preHandler: requireUser(db) };
@@ -39,6 +44,9 @@ export function registerImportRoutes(
     const userId = userOf(request);
     // One import at a time: two writing at once could step on each other.
     if (await importBusy(db, userId)) return reply.code(409).send({ error: "busy" });
+    // Reading the notes is a model run, so a spent budget stops it here.
+    const limit = request.user && deps.budget ? await deps.budget(request.user) : null;
+    if (limit) return reply.code(429).send({ error: limit });
     const id = await startImport(deps, userId, body.data.text);
     return reply.code(202).send({ import: await loadImport(db, userId, id) });
   });

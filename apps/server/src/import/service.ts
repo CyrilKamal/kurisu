@@ -350,7 +350,10 @@ export async function updateItem(
       ...(group === "disagree" && { resolution: patch.checked ? "use_notes" : "keep_mal" }),
     };
   }
-  await db.update(importItems).set(next).where(eq(importItems.id, itemId));
+  await db
+    .update(importItems)
+    .set(next)
+    .where(and(eq(importItems.id, itemId), eq(importItems.importId, importId)));
   return "ok";
 }
 
