@@ -4,11 +4,18 @@
 @import "../design/tokens.css";
 @import "../design/bundle.css" layer(components);
 
-/* Dark only. Screens not yet restyled keep their dark: classes, which now always apply. */
-@custom-variant dark (&);
-
-/* next/font sets --font-outfit and --font-jetbrains-mono on <html> (app/layout.tsx). */
+/* Nothing off the system: Tailwind's own palette, radii and shadows are gone, so only the
+   token colors and radii below exist. The app is dark only, with no dark: variant. */
 @theme {
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+
+  /* next/font sets --font-outfit and --font-jetbrains-mono on <html> (app/layout.tsx). */
   --font-sans: var(--font-outfit), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }

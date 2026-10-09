@@ -10,6 +10,9 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { Banner } from "@/components/Banner";
+import { Icon } from "@/components/Icon";
+import { ProgressMeter } from "@/components/ProgressMeter";
 import { getApi, postApi, sendApi } from "@/lib/clientApi";
 import { FOLDED, progress, rowError, rowsIn, SECTIONS, unanswered } from "@/lib/importView";
 
@@ -106,16 +109,14 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
 
   if (pasting || !view) {
     return (
-      <section className="mt-4 flex flex-col gap-3">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <section className="flex flex-col gap-4 pt-4">
+        <p className="k-field__hint">
           Paste a list from your notes: one show per line, or several on a line, written however you
           wrote them (&ldquo;finished frieren 10/10, dropped csm at ep 5&rdquo;). Nothing is saved
           until you&rsquo;ve reviewed every line and tapped Import.
         </p>
         {view?.status === "failed" && (
-          <p className="text-sm text-amber-800 dark:text-amber-300">
-            The last import couldn&rsquo;t be finished. Try again.
-          </p>
+          <Banner level="warn">The last import couldn&rsquo;t be finished. Try again.</Banner>
         )}
         <textarea
           value={text}
@@ -126,22 +127,19 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
           maxLength={MAX_IMPORT_CHARS}
           aria-label="Your notes"
           placeholder={"frieren 10/10\nwatching jjk s2 ep 5\nwant to watch monster"}
-          className="w-full rounded-lg border border-zinc-300 bg-white p-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="k-input h-auto py-2"
         />
-        {notice && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
-            {notice}
-          </p>
-        )}
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-xs text-zinc-500 tabular-nums">
+        {notice && <Banner level="error">{notice}</Banner>}
+        <div className="flex items-center justify-between gap-4">
+          <span className="k-mono">
             {text.length} / {MAX_IMPORT_CHARS}
           </span>
           <button
             type="button"
+            className="k-btn k-btn--primary"
             disabled={busy || text.trim().length === 0}
+            aria-busy={busy}
             onClick={() => void read()}
-            className="h-10 rounded-lg bg-blue-700 px-4 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             {busy ? "Starting…" : "Read my notes"}
           </button>
@@ -154,7 +152,8 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
 
   if (view.status === "parsing") {
     return (
-      <p role="status" className="mt-8 text-center text-sm text-zinc-500">
+      <p role="status" className="k-log__working pt-8">
+        <span className="k-cursor" aria-hidden="true" />
         Reading your notes and finding each show… This can take a minute for a long list.
       </p>
     );
@@ -167,17 +166,10 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
         : counts.undone + counts.undoFailed;
     const total = view.status === "running" ? counts.total : counts.written;
     return (
-      <section role="status" className="mt-8 flex flex-col gap-2">
-        <p className="text-sm">
-          {view.status === "running" ? "Importing" : "Undoing"}: {done} of {total}
-        </p>
-        <div className="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
-          <div
-            className="h-full rounded-full bg-blue-600 transition-all"
-            style={{ width: `${String(total === 0 ? 100 : Math.round((done / total) * 100))}%` }}
-          />
-        </div>
-        <p className="text-xs text-zinc-500">
+      <section role="status" className="flex flex-col gap-2 pt-8">
+        <p className="k-caps">{view.status === "running" ? "Importing" : "Undoing"}</p>
+        <ProgressMeter watched={done} total={Math.max(total, 1)} />
+        <p className="k-field__hint">
           You can leave this page; it keeps going, about one show a second.
         </p>
       </section>
@@ -187,8 +179,8 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
   if (view.status === "done" || view.status === "undone") {
     const failures = view.items.filter((i) => i.status === "failed" || i.status === "undo_failed");
     return (
-      <section className="mt-6 flex flex-col gap-3">
-        <p className="text-base font-medium">
+      <section className="flex flex-col gap-4 pt-6">
+        <p className="k-empty__title">
           {view.status === "done"
             ? `Imported ${String(counts.written)} ${counts.written === 1 ? "show" : "shows"}.`
             : counts.undone === 1
@@ -196,41 +188,32 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
               : `Undone: ${String(counts.undone)} shows are back as they were.`}
         </p>
         {failures.length > 0 && (
-          <ul className="flex flex-col gap-1 text-sm">
+          <ul className="flex flex-col gap-2">
             {failures.map((item) => (
-              <li key={item.id} className="text-amber-800 dark:text-amber-300">
+              <li key={item.id} className="text-warn">
                 {item.show?.title ?? item.said}: {rowError(item.error)}
               </li>
             ))}
           </ul>
         )}
-        {notice && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-400">
-            {notice}
-          </p>
-        )}
+        {notice && <Banner level="error">{notice}</Banner>}
         <div className="flex flex-wrap gap-2">
-          <Link
-            href="/list"
-            className="h-10 rounded-lg bg-blue-700 px-4 text-sm font-medium leading-10 text-white hover:bg-blue-800 dark:bg-blue-600"
-          >
+          <Link href="/list" className="k-btn k-btn--primary">
             See your list
           </Link>
           {view.status === "done" && counts.written > 0 && (
             <button
               type="button"
+              className="k-btn"
               disabled={busy}
+              aria-busy={busy}
               onClick={() => void act("undo")}
-              className="h-10 rounded-lg border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900"
             >
+              <Icon name="undo" />
               Undo this import
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => void startOver()}
-            className="h-10 rounded-lg px-3 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-          >
+          <button type="button" className="k-btn k-btn--ghost" onClick={() => void startOver()}>
             New import
           </button>
         </div>
@@ -246,35 +229,35 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
         const rows = rowsIn(view, group);
         if (rows.length === 0) return null;
         const list = (
-          <ul className="mt-2 flex flex-col gap-2">
+          <ul className="k-panel mt-2 list-none p-0">
             {rows.map((item) => (
               <ImportRow key={item.id} item={item} onPatch={(body) => patch(item, body)} />
             ))}
           </ul>
         );
         return FOLDED.includes(group) ? (
-          <details key={group} className="mt-6">
-            <summary className="cursor-pointer text-sm font-semibold">
+          <details key={group} className="pt-6">
+            <summary className="k-caps cursor-pointer">
               {title} ({rows.length})
             </summary>
             {list}
           </details>
         ) : (
-          <section key={group} className="mt-6">
-            <h2 className="text-sm font-semibold">
+          <section key={group} className="pt-6">
+            <h2 className="k-caps">
               {title} ({rows.length})
             </h2>
-            {hint && <p className="text-xs text-zinc-500">{hint}</p>}
+            {hint && <p className="k-field__hint">{hint}</p>}
             {list}
           </section>
         );
       })}
 
-      <div className="fixed inset-x-0 bottom-14 z-20 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
-        <div className="mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
-          <div className="min-w-0 flex-1 text-xs text-zinc-500">
+      <div className="fixed inset-x-0 bottom-(--nav-height) z-20 border-t border-line bg-surface">
+        <div className="mx-auto flex max-w-(--content-max) flex-wrap items-center gap-2 px-4 py-2">
+          <div className="k-field__hint min-w-0 flex-1">
             {notice ? (
-              <span role="alert" className="text-red-700 dark:text-red-400">
+              <span role="alert" className="text-danger">
                 {notice}
               </span>
             ) : skipped > 0 ? (
@@ -283,18 +266,15 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
               "Nothing is saved until you tap Import."
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => void startOver()}
-            className="h-10 rounded-lg px-3 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-          >
+          <button type="button" className="k-btn k-btn--ghost" onClick={() => void startOver()}>
             Start over
           </button>
           <button
             type="button"
+            className="k-btn k-btn--primary"
             disabled={busy || counts.total === 0}
+            aria-busy={busy}
             onClick={() => void act("run")}
-            className="h-10 rounded-lg bg-blue-700 px-4 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             {counts.total === 0
               ? "Nothing to import"

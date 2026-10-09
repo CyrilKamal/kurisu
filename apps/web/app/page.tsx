@@ -1,6 +1,8 @@
 import { meResponseSchema } from "@kurisu/shared";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
+import { Banner } from "@/components/Banner";
 import { apiGet } from "@/lib/api";
 import { loginErrorMessage } from "@/lib/format";
 
@@ -12,31 +14,26 @@ export default async function LoginPage(props: PageProps<"/">) {
   const error = loginErrorMessage(typeof code === "string" ? code : undefined);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4">
-      <h1 className="text-3xl font-semibold tracking-tight">kurisu</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-        Your anime list, kept in sync by conversation.
-      </p>
+    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-4">
+      {/* The mark stays as it's drawn today, until final art replaces it. */}
+      <Image src="/icons/192.png" alt="" width={48} height={48} priority />
+      <div>
+        {/* The design system's `display` style: the wordmark, and nowhere else. */}
+        <h1 className="text-[40px]/12 font-bold tracking-[-0.03em] text-ink">kurisu</h1>
+        <p className="text-ink-muted">Your anime list, kept in sync by conversation.</p>
+      </div>
 
-      {error && (
-        <p
-          role="alert"
-          className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
-        >
-          {error}
+      {error && <Banner level="error">{error}</Banner>}
+
+      <div className="flex flex-col gap-2">
+        {/* A full navigation, not a client-side Link: the server redirects to MAL's consent page. */}
+        <a href="/api/auth/mal/login" className="k-btn k-btn--primary k-btn--lg k-btn--block">
+          Log in with MyAnimeList
+        </a>
+        <p className="k-field__hint text-center">
+          You&apos;ll approve access on myanimelist.net, then come right back.
         </p>
-      )}
-
-      {/* A full navigation, not a client-side Link: the server redirects to MAL's consent page. */}
-      <a
-        href="/api/auth/mal/login"
-        className="mt-8 inline-flex h-11 items-center justify-center rounded-lg bg-blue-700 px-4 font-medium text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
-      >
-        Log in with MyAnimeList
-      </a>
-      <p className="mt-3 text-center text-xs text-zinc-500">
-        You&apos;ll approve access on myanimelist.net, then come right back.
-      </p>
+      </div>
     </main>
   );
 }

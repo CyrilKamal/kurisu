@@ -508,6 +508,7 @@ export const dropReasonViewSchema = z.object({
   id: z.uuid(),
   animeId: z.number().int().positive(),
   title: z.string(),
+  pictureUrl: z.string().nullable(),
   category: z.enum(DROP_CATEGORIES),
   /** The user's message that gave the reason. */
   said: z.string(),

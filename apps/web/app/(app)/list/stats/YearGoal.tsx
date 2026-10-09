@@ -7,8 +7,8 @@ import { sendApi } from "@/lib/clientApi";
 import { goalProgress } from "@/lib/stats";
 
 /**
- * This year's goal: shows to complete. A meter shows how far along it is (the track a lighter
- * step of the fill's blue), and the goal can be set, changed or cleared.
+ * This year's goal: shows to complete, as a crimson meter with its mono readout (every meter
+ * carries one). The goal can be set, changed or cleared.
  */
 export function YearGoal({
   year,
@@ -43,91 +43,103 @@ export function YearGoal({
   const valid = Number.isInteger(target) && target >= 1 && target <= 1000;
 
   return (
-    <div className="mt-3">
-      {progress && (
-        <div>
-          <div className="flex items-baseline justify-between text-sm">
-            <span>{progress.label}</span>
-            <span className="tabular-nums text-zinc-500">{progress.percent}%</span>
-          </div>
+    <div className="flex flex-col gap-2 py-4">
+      {progress && goal !== null && (
+        <div className="k-field">
+          <span className="k-field__label">Goal for {year}</span>
           <div
+            className="k-meter"
             role="meter"
             aria-label={`${String(year)} goal`}
             aria-valuemin={0}
-            aria-valuemax={goal ?? 0}
-            aria-valuenow={Math.min(completed, goal ?? 0)}
+            aria-valuemax={goal}
+            aria-valuenow={Math.min(completed, goal)}
             aria-valuetext={progress.label}
-            className="mt-1 h-2 overflow-hidden rounded bg-blue-100 dark:bg-blue-950"
           >
-            <div
-              className="h-full rounded bg-blue-600 dark:bg-blue-500"
-              style={{ width: `${String(progress.percent)}%` }}
-            />
+            <div className="k-meter__track">
+              <div
+                className="k-meter__fill"
+                style={{ "--p": `${String(progress.percent)}%` } as React.CSSProperties}
+              />
+            </div>
+            <span className="k-meter__label">
+              <b>{completed}</b>/{goal} · {progress.percent}%
+            </span>
           </div>
         </div>
       )}
       {editing ? (
         <form
-          className="mt-3 flex flex-wrap items-center gap-2 text-sm"
+          className="flex flex-wrap items-center gap-2"
           onSubmit={(event) => {
             event.preventDefault();
             if (valid) void save(target);
           }}
         >
-          <label className="flex items-center gap-2">
+          <label className="k-check" htmlFor="goal-target">
             Complete
-            <input
-              type="number"
-              min={1}
-              max={1000}
-              value={draft}
-              onChange={(event) => {
-                setDraft(event.target.value);
-              }}
-              className="h-9 w-20 rounded-md border border-zinc-300 bg-white px-2 tabular-nums dark:border-zinc-700 dark:bg-zinc-950"
-            />
-            shows in {year}
           </label>
+          <input
+            id="goal-target"
+            type="number"
+            min={1}
+            max={1000}
+            value={draft}
+            aria-invalid={!valid}
+            onChange={(event) => {
+              setDraft(event.target.value);
+            }}
+            className="k-input k-input--mono w-24"
+          />
+          <span className="k-field__hint">shows in {year}</span>
           <button
             type="submit"
+            className="k-btn k-btn--primary"
             disabled={busy || !valid}
-            className="h-9 rounded-md bg-blue-700 px-3 font-medium text-white disabled:opacity-50"
+            aria-busy={busy}
           >
-            Save
+            {busy ? "Saving…" : "Save"}
           </button>
           {goal !== null && (
             <button
               type="button"
+              className="k-btn k-btn--ghost"
               disabled={busy}
               onClick={() => void save(null)}
-              className="h-9 rounded-md px-3 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
               Clear goal
             </button>
           )}
           <button
             type="button"
+            className="k-link"
             onClick={() => {
               setEditing(false);
             }}
-            className="h-9 rounded-md px-3 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
           >
             Cancel
           </button>
         </form>
       ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(String(goal ?? 20));
-            setEditing(true);
-          }}
-          className="mt-2 text-sm text-blue-700 hover:underline dark:text-blue-400"
-        >
-          {goal === null ? `Set a goal for ${String(year)}` : "Change goal"}
-        </button>
+        <div>
+          <button
+            type="button"
+            className="k-link"
+            onClick={() => {
+              setDraft(String(goal ?? 20));
+              setEditing(true);
+            }}
+          >
+            {goal === null ? `Set a goal for ${String(year)}` : "Change goal"}
+          </button>
+        </div>
       )}
-      {notice && <p className="mt-2 text-sm text-red-700 dark:text-red-400">{notice}</p>}
+      {notice && (
+        <p className="k-cmd__notice" role="alert">
+          <span className="k-tag k-tag--word text-accent-text">Err</span>
+          {notice}
+        </p>
+      )}
     </div>
   );
 }

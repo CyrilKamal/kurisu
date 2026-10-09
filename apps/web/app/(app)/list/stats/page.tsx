@@ -3,11 +3,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Histogram, modeOf } from "@/components/Histogram";
+import { Metric, Metrics } from "@/components/Metrics";
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { StatusBadge } from "@/components/StatusBadge";
 import { apiGet } from "@/lib/api";
-import { STATUS_LABELS } from "@/lib/format";
 import { daysWatched, hoursWatched, monthLabel, shortDate, showCount } from "@/lib/stats";
 
-import { ColumnChart } from "./ColumnChart";
 import { YearGoal } from "./YearGoal";
 
 export const metadata: Metadata = { title: "Stats · kurisu" };
@@ -28,111 +30,127 @@ const MONTH_NAMES = [
   "December",
 ];
 
+/** A score histogram reads as noise below this many scored shows (the design system's rule). */
+const MIN_SCORED_FOR_HISTOGRAM = 10;
+
 /**
- * What the user watched: the whole list, this year's completions with a goal, and the last 7
- * days, including changes made on MAL's site that a sync found.
+ * What the user watched: the last 7 days, this year's completions with a goal, and the whole
+ * list, including changes made on MAL's site that a sync found.
  */
 export default async function StatsPage() {
   const stats = await apiGet("/stats", statsResponseSchema);
   if (!stats) redirect("/");
   const { allTime, year, week } = stats;
+  const scoreMode = modeOf(allTime.scores);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-24">
-      <header className="flex items-center justify-between border-b border-zinc-200 py-3 dark:border-zinc-800">
-        <h1 className="text-lg font-semibold">Stats</h1>
-        <Link href="/list" className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
-          Back to list
-        </Link>
-      </header>
+    <main className="mx-auto max-w-(--content-max) px-4 pb-16">
+      <ScreenHeader
+        title="Stats"
+        sub="from your list, your updates and MyAnimeList's site"
+        actions={
+          <Link href="/list" className="k-btn k-btn--ghost">
+            Back to list
+          </Link>
+        }
+      />
 
-      <section className="mt-5">
-        <h2 className="text-base font-semibold">Last 7 days</h2>
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          <Tile label="Episodes" value={String(week.episodes)} />
-          <Tile label="Hours" value={hoursWatched(week.minutes)} />
-          <Tile label="Shows" value={String(week.shows)} />
-        </div>
+      <section className="pt-6">
+        <h2 className="k-empty__title pb-2">Last 7 days</h2>
+        <Metrics>
+          <Metric label="Episodes" value={String(week.episodes)} />
+          <Metric label="Watched" value={hoursWatched(week.minutes)} unit="h" />
+          <Metric label="Shows" value={String(week.shows)} />
+        </Metrics>
         {week.finished.length > 0 && (
-          <p className="mt-2 text-sm">
-            <span className="text-zinc-500">Finished: </span>
+          <p className="k-row__meta pt-2">
+            <span className="k-caps">Finished</span>
             {week.finished.map((show) => show.title).join(", ")}
           </p>
         )}
-        <p className="mt-2 text-xs text-zinc-500">
+        <p className="k-field__hint pt-2">
           From your updates in kurisu, and changes made on MyAnimeList&apos;s site once a sync has
           seen them.
         </p>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-base font-semibold">{year.year}</h2>
-        <p className="mt-2 flex items-baseline gap-2">
-          <span className="text-3xl font-semibold">{year.completed}</span>
-          <span className="text-sm text-zinc-600 dark:text-zinc-400">
-            {year.completed === 1 ? "show" : "shows"} completed
-          </span>
-        </p>
+      <section className="pt-8">
+        <h2 className="k-empty__title pb-2">{year.year}</h2>
+        <Metrics>
+          <Metric
+            hero
+            label="Completed"
+            value={String(year.completed)}
+            basis={`${year.completed === 1 ? "show" : "shows"} finished in ${String(year.year)}`}
+          />
+        </Metrics>
         <YearGoal year={year.year} completed={year.completed} initialGoal={year.goal} />
         {year.completed > 0 && (
-          <ColumnChart
-            title={`Shows completed each month of ${String(year.year)}`}
-            unit="show"
+          <Histogram
+            summary={`Shows completed each month of ${String(year.year)}`}
             columns={year.byMonth.map((value, i) => ({
-              key: String(i + 1),
-              axis: monthLabel(i + 1).slice(0, 1),
+              label: monthLabel(i + 1).slice(0, 1),
               value,
               name: MONTH_NAMES[i] ?? "",
             }))}
           />
         )}
         {year.recent.length > 0 && (
-          <ul className="mt-3 divide-y divide-zinc-100 text-sm dark:divide-zinc-900">
+          <ul className="k-rows">
             {year.recent.map((show) => (
-              <li key={show.animeId} className="flex justify-between gap-3 py-1.5">
+              <li
+                key={show.animeId}
+                className="flex justify-between gap-4 border-b border-line py-2 text-ink"
+              >
                 <span className="min-w-0 truncate">{show.title}</span>
-                <span className="shrink-0 text-zinc-500">{shortDate(show.on)}</span>
+                <span className="k-mono">{shortDate(show.on)}</span>
               </li>
             ))}
           </ul>
         )}
-        <p className="mt-2 text-xs text-zinc-500">
+        <p className="k-field__hint pt-2">
           Counted by the finish date on MyAnimeList, or the day kurisu saw the show completed.
         </p>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-base font-semibold">All time</h2>
-        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Tile label="Days watched" value={daysWatched(allTime.minutes)} />
-          <Tile label="Episodes" value={allTime.episodes.toLocaleString("en-US")} />
-          <Tile label="Completed" value={String(allTime.byStatus.completed)} />
-          <Tile
+      <section className="pt-8">
+        <h2 className="k-empty__title pb-2">All time</h2>
+        <Metrics>
+          <Metric label="Days watched" value={daysWatched(allTime.minutes)} unit="d" />
+          <Metric label="Episodes" value={allTime.episodes.toLocaleString("en-US")} />
+          <Metric label="Completed" value={String(allTime.byStatus.completed)} />
+          <Metric
             label="Mean score"
             value={allTime.meanScore === null ? "–" : allTime.meanScore.toFixed(2)}
+            basis={allTime.scored > 0 ? `across ${showCount(allTime.scored)}` : "nothing scored"}
           />
-        </div>
+        </Metrics>
         {allTime.unknownLength > 0 && (
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="k-field__hint pt-2">
             Days watched leaves out {showCount(allTime.unknownLength)} whose episode length
             MyAnimeList doesn&apos;t list.
           </p>
         )}
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-          {STATUS_ORDER.map(
-            (status) => `${STATUS_LABELS[status]} ${String(allTime.byStatus[status])}`,
-          ).join(" · ")}
+        <p className="k-row__meta gap-4 pt-4">
+          {STATUS_ORDER.map((status) => (
+            <span key={status} className="inline-flex items-center gap-2">
+              <StatusBadge status={status} plain />
+              <span className="k-num">{allTime.byStatus[status]}</span>
+            </span>
+          ))}
         </p>
 
-        {allTime.scored > 0 && (
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold">Your scores</h3>
-            <ColumnChart
-              title={`How many shows got each score, across ${showCount(allTime.scored)}`}
-              unit="show"
+        {allTime.scored >= MIN_SCORED_FOR_HISTOGRAM && (
+          <div className="pt-6">
+            <h3 className="k-caps">Your scores</h3>
+            <Histogram
+              summary={`How you spread your scores across ${showCount(allTime.scored)}${
+                scoreMode === null ? "" : `; most often ${String(scoreMode + 1)}`
+              }${allTime.meanScore === null ? "" : `, average ${allTime.meanScore.toFixed(1)}`}`}
+              modeIndex={scoreMode}
+              mean={allTime.meanScore}
               columns={allTime.scores.map((value, i) => ({
-                key: String(i + 1),
-                axis: String(i + 1),
+                label: String(i + 1),
                 value,
                 name: `Score ${String(i + 1)}`,
               }))}
@@ -141,21 +159,21 @@ export default async function StatsPage() {
         )}
 
         {allTime.topGenres.length > 0 && (
-          <div className="mt-6">
+          <div className="pt-6">
             <div className="flex items-baseline justify-between">
-              <h3 className="text-sm font-semibold">Most completed genres</h3>
-              <Link
-                href="/list/taste"
-                className="text-sm text-blue-700 hover:underline dark:text-blue-400"
-              >
+              <h3 className="k-caps">Most completed genres</h3>
+              <Link href="/list/taste" className="k-link">
                 Taste
               </Link>
             </div>
-            <ul className="mt-1 divide-y divide-zinc-100 text-sm dark:divide-zinc-900">
+            <ul className="k-rows">
               {allTime.topGenres.map((genre) => (
-                <li key={genre.genre} className="flex justify-between py-1.5">
+                <li
+                  key={genre.genre}
+                  className="flex justify-between gap-4 border-b border-line py-2 text-ink"
+                >
                   <span>{genre.genre}</span>
-                  <span className="tabular-nums text-zinc-500">{showCount(genre.shows)}</span>
+                  <span className="k-mono">{showCount(genre.shows)}</span>
                 </li>
               ))}
             </ul>
@@ -163,14 +181,5 @@ export default async function StatsPage() {
         )}
       </section>
     </main>
-  );
-}
-
-function Tile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800">
-      <p className="text-xs text-zinc-500">{label}</p>
-      <p className="text-xl font-semibold">{value}</p>
-    </div>
   );
 }

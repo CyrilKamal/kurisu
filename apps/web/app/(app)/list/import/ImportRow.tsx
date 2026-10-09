@@ -3,45 +3,43 @@
 import type { ImportItemView } from "@kurisu/shared";
 import { useState } from "react";
 
+import { Poster, progressOf } from "@/components/Poster";
 import { STATUS_LABELS } from "@/lib/format";
 import { disagreement, rowAction } from "@/lib/importView";
 
-import { Cover, ShowCard } from "../../chat/ShowCard";
+import { ChoiceList } from "../../chat/Shows";
 
-const ROW =
-  "rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900";
+const ROW = "flex items-start gap-4 border-b border-line px-2 py-2 last:border-b-0";
 
+/** The line from the notes it came from, as the design system quotes the user ("said …"). */
 function Said({ item }: { item: ImportItemView }) {
-  return (
-    <p className="text-xs text-zinc-500">
-      Your notes: <q className="italic">{item.said}</q>
-    </p>
-  );
+  return <p className="k-drop__said">{item.said}</p>;
 }
 
-/** The show a row is about: cover, title, and where it is on the list. */
+/** The show a row is about: poster, title, and the line it came from. */
 function Show({ item }: { item: ImportItemView }) {
   const show = item.show;
+  const title = show?.title ?? item.title ?? item.said;
   return (
-    <div className="flex min-w-0 items-start gap-3">
-      <Cover url={show?.pictureUrl ?? null} />
-      <div className="min-w-0">
-        <p className="line-clamp-2 font-medium leading-snug">{show?.title ?? item.title}</p>
+    <>
+      <Poster
+        url={show?.pictureUrl ?? null}
+        title={title}
+        progress={show ? progressOf(show.episodesWatched, show.numEpisodes) : null}
+      />
+      <div className="min-w-0 flex-1">
+        <p className="k-write__title">{title}</p>
         <Said item={item} />
       </div>
-    </div>
+    </>
   );
 }
 
-/** "Change" for a row that was a "which one?": takes the pick back. */
+/** "Not this one" for a row that was a "which one?": takes the pick back. */
 function Repick({ item, onPatch }: { item: ImportItemView; onPatch: Patch }) {
   if (item.candidates.length === 0) return null;
   return (
-    <button
-      type="button"
-      onClick={() => void onPatch({ animeId: null })}
-      className="text-xs text-zinc-600 underline dark:text-zinc-400"
-    >
+    <button type="button" className="k-link" onClick={() => void onPatch({ animeId: null })}>
       Not this one
     </button>
   );
@@ -63,60 +61,63 @@ export function ImportRow({ item, onPatch }: { item: ImportItemView; onPatch: Pa
     case "update":
       return (
         <li className={ROW}>
-          <label className="flex cursor-pointer items-start gap-3">
+          <label className="k-check items-start pt-2">
             <input
               type="checkbox"
               checked={item.checked}
               disabled={busy}
               onChange={(event) => void patch({ checked: event.target.checked })}
-              className="mt-1 size-4 shrink-0"
             />
-            <div className="min-w-0 flex-1">
-              <Show item={item} />
-              <p className="mt-1 font-medium text-blue-800 dark:text-blue-300">{rowAction(item)}</p>
-            </div>
+            <span className="k-visually-hidden">
+              Import {item.show?.title ?? item.title ?? item.said}
+            </span>
           </label>
-          <Repick item={item} onPatch={patch} />
+          <Show item={item} />
+          <div className="flex flex-col items-end gap-2">
+            {/* Teal: a proposed write, as in Chat. */}
+            <span className="k-caps text-right text-signal">{rowAction(item)}</span>
+            <Repick item={item} onPatch={patch} />
+          </div>
         </li>
       );
 
     case "disagree": {
       const diff = disagreement(item);
       return (
-        <li className={ROW}>
+        <li className={`${ROW} flex-wrap`}>
+          <span className="k-tag k-tag--word mt-2">?</span>
           <Show item={item} />
-          {diff ? (
-            <>
-              <p className="mt-1 text-xs">
-                MAL: <span className="font-medium">{diff.mal}</span> · Your notes:{" "}
-                <span className="font-medium">{diff.notes}</span>
-              </p>
-              <div className="mt-2 inline-flex rounded-lg border border-zinc-300 p-0.5 dark:border-zinc-700">
-                {(["keep_mal", "use_notes"] as const).map((choice) => (
-                  <button
-                    key={choice}
-                    type="button"
-                    disabled={busy}
-                    aria-pressed={item.resolution === choice}
-                    onClick={() => void patch({ resolution: choice })}
-                    className={`h-8 rounded-md px-3 text-xs font-medium ${
-                      item.resolution === choice
-                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                        : "text-zinc-600 dark:text-zinc-400"
-                    }`}
-                  >
-                    {choice === "keep_mal" ? "Keep MAL" : "Use my notes"}
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : (
-            <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
-              {item.note} Nothing will change.
-            </p>
-          )}
-          <div>
-            <Repick item={item} onPatch={patch} />
+          <div className="flex w-full flex-col gap-2">
+            {diff ? (
+              <>
+                <p className="k-diff">
+                  <span>MAL</span>
+                  <b>{diff.mal}</b>
+                  <span className="k-sep">·</span>
+                  <span>your notes</span>
+                  <b>{diff.notes}</b>
+                </p>
+                <div className="k-chips">
+                  {(["keep_mal", "use_notes"] as const).map((choice) => (
+                    <button
+                      key={choice}
+                      type="button"
+                      className="k-chip"
+                      disabled={busy}
+                      aria-pressed={item.resolution === choice}
+                      onClick={() => void patch({ resolution: choice })}
+                    >
+                      {choice === "keep_mal" ? "Keep MAL" : "Use my notes"}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="k-field__hint text-warn">{item.note} Nothing will change.</p>
+            )}
+            <div>
+              <Repick item={item} onPatch={patch} />
+            </div>
           </div>
         </li>
       );
@@ -124,16 +125,16 @@ export function ImportRow({ item, onPatch }: { item: ImportItemView; onPatch: Pa
 
     case "which_one":
       return (
-        <li className={ROW}>
-          <Said item={item} />
-          <div className="mt-2 flex flex-col gap-2">
-            {item.candidates.map((show) => (
-              <ShowCard
-                key={show.animeId}
-                show={show}
-                onChoose={() => void patch({ animeId: show.animeId })}
-              />
-            ))}
+        <li className={`${ROW} flex-col`}>
+          <div className="flex items-center gap-4">
+            <span className="k-tag k-tag--word">?</span>
+            <Said item={item} />
+          </div>
+          <div className="w-full">
+            <ChoiceList
+              shows={item.candidates}
+              onChoose={busy ? undefined : (show) => void patch({ animeId: show.animeId })}
+            />
           </div>
         </li>
       );
@@ -143,28 +144,25 @@ export function ImportRow({ item, onPatch }: { item: ImportItemView; onPatch: Pa
         <li className={ROW}>
           <Show item={item} />
           {item.malState && (
-            <p className="mt-1 text-xs text-zinc-500">
-              Already {STATUS_LABELS[item.malState.status]}, ep{" "}
-              {String(item.malState.episodesWatched)}
-              {item.malState.score ? `, ${String(item.malState.score)}/10` : ""}
-            </p>
+            <span className="k-meter__label text-right">
+              {STATUS_LABELS[item.malState.status]} · ep <b>{item.malState.episodesWatched}</b>
+              {item.malState.score ? ` · ${String(item.malState.score)}/10` : ""}
+            </span>
           )}
         </li>
       );
 
     case "not_found":
       return (
-        <li className={ROW}>
-          <p>
-            <q className="italic">{item.said}</q>
-          </p>
-          <p className="text-xs text-zinc-500">
+        <li className={`${ROW} flex-col gap-0`}>
+          <Said item={item} />
+          <p className="k-field__hint">
             {item.note ?? "No show by that name on your list or on AniList."}
           </p>
         </li>
       );
 
     case "not_a_show":
-      return <li className={`${ROW} text-zinc-500`}>{item.line}</li>;
+      return <li className={`${ROW} text-ink-faint`}>{item.line}</li>;
   }
 }

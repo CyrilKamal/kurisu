@@ -97,11 +97,11 @@ export function Notifications({ publicKey }: { publicKey: string | null }) {
   }
 
   return (
-    <section className="mt-6">
-      <h2 className="text-sm font-semibold">Notifications on this device</h2>
-      <div className="mt-2 rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-800">
+    <section className="pt-6">
+      <h2 className="k-caps pb-2">Notifications on this device</h2>
+      <div className="k-panel p-4">
         {publicKey === null ? (
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-ink-muted">
             Push isn&apos;t set up on the server yet (VAPID keys are missing).
           </p>
         ) : (
@@ -113,11 +113,7 @@ export function Notifications({ publicKey }: { publicKey: string | null }) {
             onTest={test}
           />
         )}
-        <p
-          role="status"
-          aria-live="polite"
-          className="mt-2 text-zinc-600 empty:hidden dark:text-zinc-400"
-        >
+        <p role="status" aria-live="polite" className="k-field__hint pt-2 empty:hidden">
           {message}
         </p>
       </div>
@@ -134,7 +130,7 @@ function StateView(props: {
 }) {
   switch (props.state) {
     case "checking":
-      return <p className="text-zinc-500">Checking…</p>;
+      return <p className="text-ink-faint">Checking…</p>;
     case "unsupported":
       return <p>This browser can&apos;t show push notifications.</p>;
     case "needs_install":
@@ -150,7 +146,7 @@ function StateView(props: {
       );
     case "off":
       return (
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <p>Off on this device.</p>
           <Button onClick={props.onTurnOn} disabled={props.busy} primary>
             Turn on notifications
@@ -159,7 +155,7 @@ function StateView(props: {
       );
     case "on":
       return (
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <p>On for this device.</p>
           <div className="flex gap-2">
             <Button onClick={props.onTest} disabled={props.busy}>
@@ -185,11 +181,8 @@ export function Button(props: {
       type="button"
       onClick={() => void props.onClick()}
       disabled={props.disabled}
-      className={
-        props.primary
-          ? "h-9 rounded-lg bg-blue-700 px-3 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-60"
-          : "h-9 rounded-lg border border-zinc-300 px-3 text-sm font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900"
-      }
+      aria-busy={props.disabled}
+      className={props.primary ? "k-btn k-btn--primary" : "k-btn"}
     >
       {props.children}
     </button>

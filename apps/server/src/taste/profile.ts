@@ -24,6 +24,7 @@ export interface TasteProfile {
     id: string;
     animeId: number;
     title: string;
+    pictureUrl: string | null;
     category: string;
     said: string;
     createdAt: Date;
@@ -95,6 +96,7 @@ export async function loadTaste(db: Db, userId: string): Promise<TasteProfile> {
       id: dropReasons.id,
       animeId: dropReasons.animeId,
       title: anime.title,
+      pictureUrl: anime.mainPictureUrl,
       category: dropReasons.category,
       said: dropReasons.said,
       createdAt: dropReasons.createdAt,
