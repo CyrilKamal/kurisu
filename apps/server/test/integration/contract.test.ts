@@ -127,6 +127,29 @@ describe("responses match the contract", () => {
     expect((await send("DELETE", `/invites/${invite.id}`)).statusCode).toBe(204);
   });
 
+  it("the /friends endpoints", async () => {
+    const send = (method: "POST" | "PUT", url: string, payload?: object) =>
+      h.app.inject({
+        method,
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        ...(payload === undefined ? {} : { payload }),
+      });
+
+    const friends = contract.friendsResponseSchema.parse((await get("/friends")).json());
+    const code = new URL(friends.link).pathname.split("/").pop() ?? "";
+    const check = await get(`/friends/links/${code}`);
+    expect(contract.friendLinkCheckSchema.parse(check.json())).toMatchObject({ self: true });
+
+    const reset = await send("POST", "/friends/link/reset");
+    expect(() => contract.friendLinkResponseSchema.parse(reset.json())).not.toThrow();
+    const sharing = await send("PUT", "/friends/sharing", { shareActivity: false });
+    expect(contract.sharingResponseSchema.parse(sharing.json())).toEqual({ shareActivity: false });
+    expect((await send("POST", "/friends", { code: "nobody" })).statusCode).toBe(404);
+    expect((await get(`/friends/${crypto.randomUUID()}`)).statusCode).toBe(404);
+  });
+
   it("GET /list", async () => {
     const res = await get("/list");
     const parsed = contract.listResponseSchema.parse(res.json());

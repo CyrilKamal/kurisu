@@ -1913,3 +1913,38 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 - **The monthly cap is shared.** One heavy friend can use up the month for everyone but the owner.
 - **Raising either limit** is an `.env.prod` change and a restart.
 - **This finishes what the plan called PR 2.**
+
+## 2026-10-09 — Friends: invites and friend links, a taste match, and activity you choose to share (Milestone 6)
+**Decision:**
+- **Becoming friends:**
+  - Joining with an invite makes you friends with the inviter, in the sign-up transaction. Migration 0026 does the same for invites already used.
+  - Anyone can share their friend link (`/friend/<code>`), and opening it while logged in adds a friendship. A friend link never creates an account. Its code is kept encrypted, so it can be copied again, and hashed, so it can be looked up; "New link" retires the old one.
+  - A friendship is one row per pair, smaller id first.
+- **The taste match:** the cosine of both users' scores on shows both scored, each centred on that user's own average (a Pearson-like correlation, as MAL's affinity does). It's blended with the cosine of their genre affinities, so it has something to say before they share many shows; the scores weigh n/(n+10).
+  - Shown as 0–100, where 50 is no relation, with what it's based on.
+  - "Not enough in common yet" below 5 shared scored shows and 3 shared genres.
+  - The friend page lists shows you both loved (8 and up), where you disagree most (3 or more points apart), and up to 5 shows they scored 8 or more that aren't on your list. Their Add opens a new chat with "Add <title> to my Plan to Watch" typed but not sent, so the add still waits for the user's OK.
+- **Activity:** each friend's diary updates (kurisu's and MAL-site ones) are read as one of these:
+  - finished (with score), dropped (never the reason), started, watched eps a–b (one line per show per day), added to Plan to Watch, or rated.
+
+  Removals, imports and undone changes never show.
+- **Sharing:**
+  - Cyril chose what's shared: episodes, finishes, scores and drops.
+  - Diary quotes only if they're like Letterboxd reviews. They aren't, since the diary saves them from chat on its own, so each note has a Share switch on the Diary page and starts private.
+  - A user can turn sharing off on the Friends page. Friends then see only the taste match.
+- **Where it lives:** Friends is a List screen (`/list/friends`), next to Stats and Taste. The nav stays Chat and List.
+
+**Alternatives:**
+- **Everyone in the beta sees everyone:** two friends of Cyril's who don't know each other would see each other's watching.
+- **Friendships only between Cyril and each friend:** friends couldn't connect with each other.
+- **A third tab in the nav:** the design system and design doc have two screens.
+- **The match from genres alone, or from scores alone:** genres alone ignore actual agreement; scores alone say nothing until friends share several shows.
+- **Diary quotes shared by default:** they're words said to kurisu, not written for friends.
+
+**Why:** Milestone 6's done-when names taste match and activity. Each sharing choice is Cyril's, and the defaults keep anything said to kurisu private unless shared on purpose.
+
+**Consequences:**
+- The design doc's "no social features" non-goal now reads "beyond friends' taste match and activity".
+- **Late activity:** a friend's changes on MAL's site appear only after their next sync (login or Re-sync), since kurisu never polls MAL.
+- **Timing:** the taste match is computed on each view. That's fine for a handful of friends; a cache would come with more.
+- **The fake MAL holds a list per user** (`lists`, and tokens remember their holder) for testing friends.

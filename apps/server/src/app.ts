@@ -43,6 +43,7 @@ import { saveReactionsFor } from "./diary/reader.js";
 import { registerDiaryRoutes } from "./diary/routes.js";
 import { registerInviteRoutes } from "./invites/routes.js";
 import { checkBudget } from "./budget/budget.js";
+import { registerFriendRoutes } from "./friends/routes.js";
 import { registerStatsRoutes } from "./stats/routes.js";
 import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
@@ -263,6 +264,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   });
   registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
   registerInviteRoutes(app, { config, db });
+  registerFriendRoutes(app, { config, db, cipher });
   // Every write to MAL, from Chat, the List screen or an import, goes through these.
   const writeDeps = {
     db,

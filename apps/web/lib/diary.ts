@@ -1,11 +1,11 @@
 import type { DiaryEntry } from "@kurisu/shared";
 
-export interface DiaryDay {
+export interface DiaryDay<T = DiaryEntry> {
   /** "2026-10-08" on the user's clock. */
   date: string;
   /** "Today", "Yesterday", or "Mon, Oct 6". */
   label: string;
-  entries: DiaryEntry[];
+  entries: T[];
 }
 
 /** The date on the user's clock, "2026-10-08". */
@@ -18,15 +18,18 @@ function dateIn(at: Date, timeZone: string): string {
   }).format(at);
 }
 
-/** The diary's entries by day on the user's clock, newest first, keeping their order within. */
-export function groupByDay(
-  entries: DiaryEntry[],
+/**
+ * Entries (the diary's, or friends' activity) by day on the user's clock, newest first, keeping
+ * their order within.
+ */
+export function groupByDay<T extends { at: string } = DiaryEntry>(
+  entries: T[],
   timeZone: string,
   now: Date = new Date(),
-): DiaryDay[] {
+): DiaryDay<T>[] {
   const today = dateIn(now, timeZone);
   const yesterday = dateIn(new Date(now.getTime() - 24 * 60 * 60 * 1000), timeZone);
-  const days = new Map<string, DiaryEntry[]>();
+  const days = new Map<string, T[]>();
   for (const entry of entries) {
     const date = dateIn(new Date(entry.at), timeZone);
     days.set(date, [...(days.get(date) ?? []), entry]);

@@ -118,7 +118,7 @@ describe("the diary", () => {
         animeId: WATCHING,
         before: { episodesWatched: 7 },
         after: { episodesWatched: 8 },
-        note: { id: note?.id, text: "THAT twist was insane" },
+        note: { id: note?.id, text: "THAT twist was insane", shared: false },
       }),
     ]);
   });

@@ -18,7 +18,8 @@ export interface DiaryEntryRow {
   before: ListChange;
   after: ListChange;
   at: Date;
-  note: { id: string; text: string } | null;
+  /** shared: whether the user showed it to their friends. */
+  note: { id: string; text: string; shared: boolean } | null;
 }
 
 /**
@@ -43,6 +44,7 @@ export async function loadDiary(
       at: changes.committedAt,
       noteId: diaryNotes.id,
       noteText: diaryNotes.text,
+      noteShared: diaryNotes.shared,
     })
     .from(changes)
     .innerJoin(proposals, eq(proposals.id, changes.proposalId))
@@ -77,10 +79,13 @@ export async function loadDiary(
 
   const kinds = { added: "add", updated: "update", removed: "remove" } as const;
   const entries: DiaryEntryRow[] = [
-    ...ours.map(({ noteId, noteText, ...row }) => ({
+    ...ours.map(({ noteId, noteText, noteShared, ...row }) => ({
       ...row,
       origin: "kurisu" as const,
-      note: noteId !== null && noteText !== null ? { id: noteId, text: noteText } : null,
+      note:
+        noteId !== null && noteText !== null
+          ? { id: noteId, text: noteText, shared: noteShared ?? false }
+          : null,
     })),
     ...theirs.map((row) => ({
       ...row,

@@ -100,14 +100,19 @@ export async function findOpenInvite(
 }
 
 /**
- * Uses up an invite for a new account. A single conditional UPDATE, so two sign-ups racing on
- * one link can't both get in. Returns false if it was used, revoked or expired meanwhile.
+ * Uses up an invite for a new account, returning who sent it. A single conditional UPDATE, so two
+ * sign-ups racing on one link can't both get in. Returns null if it was used, revoked or expired
+ * meanwhile.
  */
-export async function useInvite(db: Executor, inviteId: string, userId: string): Promise<boolean> {
+export async function useInvite(
+  db: Executor,
+  inviteId: string,
+  userId: string,
+): Promise<string | null> {
   const used = await db
     .update(invites)
     .set({ usedBy: userId, usedAt: new Date() })
     .where(and(eq(invites.id, inviteId), isNull(invites.usedAt), gt(invites.expiresAt, new Date())))
-    .returning({ id: invites.id });
-  return used.length > 0;
+    .returning({ inviter: invites.createdBy });
+  return used[0]?.inviter ?? null;
 }

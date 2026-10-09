@@ -28,7 +28,8 @@ export default async function DiaryPage() {
       />
       <p className="k-field__hint py-4">
         When you say how you felt about a show with an update (&ldquo;finished frieren, that finale
-        was insane&rdquo;), your words are kept here.
+        was insane&rdquo;), your words are kept here. They&apos;re private: share one and your
+        friends see it with that update.
       </p>
       <DiaryTimeline initial={diary} />
     </main>

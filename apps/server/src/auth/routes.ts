@@ -8,6 +8,7 @@ import type { Config } from "../config.js";
 import type { TokenCipher } from "../crypto/tokenCipher.js";
 import type { Db } from "../db/client.js";
 import { malTokens, users } from "../db/schema.js";
+import { addFriendship } from "../friends/friendships.js";
 import { findOpenInvite, useInvite } from "../invites/invites.js";
 import { fetchMe } from "../mal/client.js";
 import { buildAuthorizeUrl, exchangeCode, type MalOAuthConfig } from "../mal/oauth.js";
@@ -141,10 +142,12 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
           .returning({ id: users.id });
         if (!user) throw new Error("user upsert returned no row");
         // A new account uses up its invite, in the same transaction, so a link that was used
-        // or revoked since the login started leaves no account behind.
+        // or revoked since the login started leaves no account behind. The new user and the
+        // person who invited them become friends.
         if (isNew && pending.inviteId !== null) {
-          const used = await useInvite(tx, pending.inviteId, user.id);
-          if (!used && closed && !isOwner) throw new InviteUnavailableError();
+          const inviter = await useInvite(tx, pending.inviteId, user.id);
+          if (inviter === null && closed && !isOwner) throw new InviteUnavailableError();
+          if (inviter !== null) await addFriendship(tx, inviter, user.id, "invite");
         }
         await tokenStore.save(user.id, tokens, tx);
         return user.id;

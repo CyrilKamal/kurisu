@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -54,6 +55,9 @@ export const users = pgTable("users", {
   malUsername: text("mal_username").notNull(),
   // The MAL account named by OWNER_MAL_USERNAME, set at each login. Only the owner invites.
   isOwner: boolean("is_owner").notNull().default(false),
+  // Whether friends see what this user watches (episodes, finishes, scores, drops). Off, they
+  // see only the taste match.
+  shareActivity: boolean("share_activity").notNull().default(true),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
@@ -106,6 +110,42 @@ export const sessions = pgTable(
   },
   (table) => [index("sessions_user_id_idx").on(table.userId)],
 );
+
+/**
+ * Two users who are friends, stored once with the smaller id first. Made by joining with an
+ * invite (the inviter and the new user) or by opening someone's friend link.
+ */
+export const friendships = pgTable(
+  "friendships",
+  {
+    userA: uuid("user_a")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    userB: uuid("user_b")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    via: text("via", { enum: ["invite", "link"] }).notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userA, table.userB] }),
+    index("friendships_user_b_idx").on(table.userB),
+    check("friendships_ordered", sql`${table.userA} < ${table.userB}`),
+  ],
+);
+
+/**
+ * Each user's friend link, which any logged-in user can open to become their friend. The code is
+ * kept encrypted, so the link can be copied again, and hashed, so it can be looked up.
+ */
+export const friendLinks = pgTable("friend_links", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  codeHash: text("code_hash").notNull().unique(),
+  codeEnc: text("code_enc").notNull(),
+  createdAt: timestamptz("created_at").notNull().defaultNow(),
+});
 
 /** Pending MAL logins: one row per authorize redirect, consumed exactly once by the callback. */
 export const oauthStates = pgTable("oauth_states", {
@@ -399,6 +439,9 @@ export const diaryNotes = pgTable(
       .unique()
       .references((): AnyPgColumn => changes.id, { onDelete: "set null" }),
     text: text("text").notNull(),
+    // Shown to friends with the update, like a review. Notes are saved from chat on their own,
+    // so each stays private until its owner shares it.
+    shared: boolean("shared").notNull().default(false),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
   (table) => [index("diary_notes_user_idx").on(table.userId, table.createdAt.desc())],

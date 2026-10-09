@@ -69,9 +69,12 @@ function sendErrorMessage(status: number, error: string): string {
 export function ChatView({
   conversation,
   initialMessages,
+  initialDraft = "",
 }: {
   conversation: ConversationView | null;
   initialMessages: ChatMessageView[];
+  /** Text already in the command line, unsent (another screen's "Add", say). */
+  initialDraft?: string;
 }) {
   const router = useRouter();
   const { chats, refreshChats, openChats } = useChatShell();
@@ -80,7 +83,7 @@ export function ChatView({
     ? (chats.find((c) => c.id === conversation.id)?.title ?? conversation.title)
     : "New chat";
   const [messages, setMessages] = useState(initialMessages);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(initialDraft);
   const [sentAt, setSentAt] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const bottom = useRef<HTMLDivElement>(null);

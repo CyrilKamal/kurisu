@@ -91,6 +91,97 @@ export const createdInviteSchema = z.object({
 /** GET /invites/code/:code, for the invite page: the link still works, and who sent it. */
 export const inviteCodeResponseSchema = z.object({ inviter: z.string() });
 
+/** What a friend did, as the Friends feed shows it. Never a drop's reason or an unshared note. */
+export const ACTIVITY_KINDS = [
+  "finished",
+  "dropped",
+  "started",
+  "watched",
+  "planned",
+  "rated",
+] as const;
+
+export const activityItemSchema = z.object({
+  friendId: z.uuid(),
+  friend: z.string(),
+  at: z.iso.datetime(),
+  kind: z.enum(ACTIVITY_KINDS),
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  /** For "watched" and "started": the episodes, which can span a day's updates. */
+  fromEpisode: z.number().int().nullable(),
+  toEpisode: z.number().int().nullable(),
+  /** Their score, when the update set one. */
+  score: z.number().int().min(1).max(10).nullable(),
+  /** A diary note they shared with the update. */
+  note: z.string().nullable(),
+});
+export type ActivityItemView = z.infer<typeof activityItemSchema>;
+
+export const friendViewSchema = z.object({
+  id: z.uuid(),
+  malUsername: z.string(),
+  since: z.iso.datetime(),
+  /** Whether they share what they watch; off, only the taste match shows. */
+  sharing: z.boolean(),
+  /** 0–100, or null with too little in common; sharedScored: shows both scored. */
+  match: z.object({
+    percent: z.number().int().min(0).max(100).nullable(),
+    sharedScored: z.number().int().min(0),
+  }),
+});
+export type FriendView = z.infer<typeof friendViewSchema>;
+
+/** GET /friends: your friend link, whether you share, your friends, and what they watched. */
+export const friendsResponseSchema = z.object({
+  /** The viewer's time zone, for the feed's days. */
+  timeZone: z.string(),
+  link: z.url(),
+  shareActivity: z.boolean(),
+  friends: z.array(friendViewSchema),
+  activity: z.array(activityItemSchema),
+});
+
+const matchShowSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+});
+const scorePair = { mine: z.number().int(), theirs: z.number().int() };
+
+/** GET /friends/:id: the taste match in full, and their activity (empty when not shared). */
+export const friendDetailResponseSchema = z.object({
+  timeZone: z.string(),
+  friend: friendViewSchema,
+  bothLoved: z.array(matchShowSchema.extend(scorePair)),
+  disagreements: z.array(matchShowSchema.extend(scorePair)),
+  /** Shows they scored highly that aren't on your list. */
+  theyLoved: z.array(matchShowSchema.extend({ theirs: z.number().int() })),
+  activity: z.array(activityItemSchema),
+});
+export type FriendDetailResponse = z.infer<typeof friendDetailResponseSchema>;
+
+export const friendLinkResponseSchema = z.object({ link: z.url() });
+
+/** GET /friends/links/:code, for the page a friend link opens. */
+export const friendLinkCheckSchema = z.object({
+  owner: z.string(),
+  self: z.boolean(),
+  alreadyFriends: z.boolean(),
+});
+
+/** POST /friends: the code from someone's friend link. */
+export const friendLinkAcceptSchema = z.object({ code: z.string().min(1).max(128) }).strict();
+export const friendAddedSchema = z.object({ friendId: z.uuid() });
+
+/** PUT /friends/sharing. */
+export const sharingRequestSchema = z.object({ shareActivity: z.boolean() }).strict();
+export const sharingResponseSchema = sharingRequestSchema;
+
+/** PATCH /diary/notes/:id: show a note to friends, or stop. */
+export const diaryNotePatchSchema = z.object({ shared: z.boolean() }).strict();
+
 export const listEntrySchema = z.object({
   animeId: z.number().int().positive(),
   title: z.string(),
@@ -627,8 +718,8 @@ export const diaryEntrySchema = z.object({
   before: listChangeSchema,
   after: listChangeSchema,
   at: z.iso.datetime(),
-  /** What the user said about the show with this update, in their own words. */
-  note: z.object({ id: z.uuid(), text: z.string() }).nullable(),
+  /** What the user said about the show with this update, in their own words; shared with friends or not. */
+  note: z.object({ id: z.uuid(), text: z.string(), shared: z.boolean() }).nullable(),
 });
 export type DiaryEntry = z.infer<typeof diaryEntrySchema>;
 

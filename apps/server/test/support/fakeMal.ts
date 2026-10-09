@@ -60,6 +60,8 @@ export class FakeMal {
   user: { id: number; name: string };
   /** The user's list as MAL would return it. */
   list: FakeListItem[] = [];
+  /** Other users' own lists, by MAL user id; anyone without one sees `list`. */
+  readonly lists = new Map<number, FakeListItem[]>();
   /** Page size the fake uses, whatever `limit` the client asks for, so tests can force paging. */
   pageSize = 1000;
   /** Status codes to return for the next anime-list requests, in order (e.g. [503, 429]). */
@@ -85,6 +87,8 @@ export class FakeMal {
   private readonly codes = new Map<string, IssuedCode>();
   private readonly accessTokens = new Map<string, number>(); // token -> expiry (ms epoch)
   private readonly refreshTokens = new Set<string>();
+  /** Who each token was issued to, so every user sees their own list. */
+  private readonly tokenUsers = new Map<string, { id: number; name: string }>();
 
   private constructor(
     private readonly options: FakeMalOptions,
@@ -130,6 +134,8 @@ export class FakeMal {
 
   reset(): void {
     this.user = this.options.user;
+    this.lists.clear();
+    this.tokenUsers.clear();
     this.tokenGrants.length = 0;
     this.codes.clear();
     this.accessTokens.clear();
@@ -182,7 +188,8 @@ export class FakeMal {
         json(res, 401, { error: "invalid_token" });
         return;
       }
-      json(res, 200, { id: this.user.id, name: this.user.name });
+      const holder = this.holderOf(req);
+      json(res, 200, { id: holder.id, name: holder.name });
       return;
     }
     const patch = /^\/v2\/anime\/(\d+)\/my_list_status$/.exec(url.pathname);
@@ -198,7 +205,8 @@ export class FakeMal {
     if (req.method === "GET" && details?.[1]) {
       const id = Number(details[1]);
       const node =
-        this.list.find((i) => i.node.id === id)?.node ?? this.catalog.find((n) => n.id === id);
+        this.listOf(req).find((i) => i.node.id === id)?.node ??
+        this.catalog.find((n) => n.id === id);
       if (!this.isAuthorized(req)) json(res, 401, { error: "invalid_token" });
       else if (!node) json(res, 404, { error: "not_found" });
       else json(res, 200, node);
@@ -228,7 +236,8 @@ export class FakeMal {
       json(res, 401, { error: "invalid_token" });
       return;
     }
-    let item = this.list.find((i) => i.node.id === animeId);
+    const list = this.listOf(req);
+    let item = list.find((i) => i.node.id === animeId);
     if (!item) {
       // Updating a show that isn't on the list adds it, as on MAL.
       const node = this.catalog.find((n) => n.id === animeId);
@@ -246,7 +255,7 @@ export class FakeMal {
           updated_at: new Date().toISOString(),
         },
       };
-      this.list.push(item);
+      list.push(item);
     }
     const ls = item.list_status;
     const status = form.get("status");
@@ -274,13 +283,14 @@ export class FakeMal {
       json(res, 401, { error: "invalid_token" });
       return;
     }
-    const index = this.list.findIndex((i) => i.node.id === animeId);
+    const list = this.listOf(req);
+    const index = list.findIndex((i) => i.node.id === animeId);
     if (index === -1) {
       json(res, 404, { error: "not_found" });
       return;
     }
     // MAL still knows the show, so it can be put back on the list (undoing a removal).
-    const [removed] = this.list.splice(index, 1);
+    const [removed] = list.splice(index, 1);
     if (removed && !this.catalog.some((n) => n.id === animeId)) this.catalog.push(removed.node);
     res.writeHead(200).end();
   }
@@ -302,9 +312,10 @@ export class FakeMal {
       res.writeHead(503).end();
       return;
     }
-    const data = this.list.slice(offset, offset + this.pageSize);
+    const list = this.listOf(req);
+    const data = list.slice(offset, offset + this.pageSize);
     const paging: { next?: string } = {};
-    if (offset + this.pageSize < this.list.length) {
+    if (offset + this.pageSize < list.length) {
       const next = new URL(url);
       next.searchParams.set("offset", String(offset + this.pageSize));
       paging.next = this.nextPageOverride ?? next.toString();
@@ -375,7 +386,7 @@ export class FakeMal {
         return;
       }
       issued.used = true;
-      json(res, 200, this.issueTokens());
+      json(res, 200, this.issueTokens(this.user));
       return;
     }
 
@@ -385,18 +396,20 @@ export class FakeMal {
         json(res, 400, { error: "invalid_grant" });
         return;
       }
-      json(res, 200, this.issueTokens());
+      json(res, 200, this.issueTokens(this.tokenUsers.get(refreshToken) ?? this.user));
       return;
     }
 
     json(res, 400, { error: "unsupported_grant_type" });
   }
 
-  private issueTokens() {
+  private issueTokens(holder: { id: number; name: string }) {
     const accessToken = secret();
     const refreshToken = secret();
     this.accessTokens.set(accessToken, Date.now() + this.accessTokenLifetimeSeconds * 1000);
     this.refreshTokens.add(refreshToken);
+    this.tokenUsers.set(accessToken, holder);
+    this.tokenUsers.set(refreshToken, holder);
     this.issuedSecrets.push(accessToken, refreshToken);
     return {
       token_type: "Bearer",
@@ -404,6 +417,18 @@ export class FakeMal {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  /** Whose token this request carries (the current `user` if the token is unknown). */
+  private holderOf(req: IncomingMessage): { id: number; name: string } {
+    const token = /^Bearer (.+)$/.exec(req.headers.authorization ?? "")?.[1];
+    const holder = token === undefined ? undefined : this.tokenUsers.get(token);
+    return holder ?? this.user;
+  }
+
+  /** The list of whoever the request's token belongs to. */
+  private listOf(req: IncomingMessage): FakeListItem[] {
+    return this.lists.get(this.holderOf(req).id) ?? this.list;
   }
 
   private isAuthorized(req: IncomingMessage): boolean {
