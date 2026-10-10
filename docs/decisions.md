@@ -2252,3 +2252,30 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **A show's names carry little meaning beyond their words,** which trigram already has. Synopsis vectors (semantic recommendations) carry what trigram can't.
 - **Nothing is embedded unless the flag is on.** When on, title vectors are embedded after each sync, and if the embedding model fails, search falls back to the words alone.
 
+## 2026-10-10 — Semantic recommendations: measured, left off (Milestone 7)
+**Decision:** With `RECOMMEND_SEMANTIC_WEIGHT` above 0, `find_candidates` adds each show's semantic fit to its score. The fit is the cosine of its synopsis with the user's message, minus its mean cosine with six casual requests ("rec me anything", …), times `SEMANTIC_SCALE` (5) and the weight. The model sees no new fields. It stays at 0 (off): the labels can't see a gain.
+
+**Alternatives:**
+- **A baseline of one neutral request.** It left "hub" synopses (Super Crooks) on top of every casual request worded unlike it.
+- **No baseline at all.**
+- **A new tool argument ("about"/"like") for the model to fill.** The lesson from recommend v16 was that new fields shift the model's behaviour.
+
+**Why:**
+- **Calibration over the 544 eval synopses (EmbeddingGemma):** mood requests spread about twice as much as casual ones (sd 0.04–0.06 against 0.02–0.025). Their tops read right: "make me cry" ranks Grave of the Fireflies, then the Violet Evergarden movie; "a thriller" ranks Monster, then Perfect Blue.
+- **Replay of the 2026-10-09 Flash run's searches** (`eval:recommend --replay`, top 3 of the ranking, no model):
+  - weights 0, 0.5 and 1 all keep 107/110 picks within the labels;
+  - genre fit goes from 31/36 to 32/36;
+  - the top 3 change in 29 of 41 cases.
+  - Mood requests improve:
+    - "cry" gains Your Lie in April;
+    - "dark" goes from Shiguang Dailiren twice and Monster to Pluto, Monster and Parasyte;
+    - "thriller" puts Monster first.
+  - Generic ones reshuffle: "any movie" gets Grave of the Fireflies and REDLINE.
+- **End to end on qwen3.6:27b** (it picks from the 15 reranked candidates): weights 0, 0.5 and 1 all give 38/41 right and 115/115 picks within the labels. Genre fit is 31, 30 and 31 of 33. The model already brings its own knowledge to the 15 candidates (Clannad and Your Lie in April for "cry" at weight 0), so the weight mostly changes the third pick.
+
+**Consequences:**
+- **The recommendation labels measure constraints (length, kind, genre), not "about" or mood fit.** To measure this, Cyril's optional cases asking for a mood, a subject or "something like X" would need labels such as must-include shows.
+- **`eval:recommend --replay` makes ranking changes free to compare** from now on.
+- **Every eval reset empties the embeddings table.** It runs `TRUNCATE users … CASCADE`, which empties every referencing table entirely, so the eval reloads synopsis vectors per case.
+- **Fixed on the way:** `nearest()` now turns on pgvector's iterative scan. Without it, a filter on one user's vectors among many returned nothing once the HNSW index was in use (shown in `labEmbeddings.test.ts`).
+
