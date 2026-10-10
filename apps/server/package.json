@@ -29,9 +29,11 @@
     "eval:synopses": "tsx eval/src/cli/exportSynopses.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "lab:synopses": "tsx src/scripts/labSynopses.ts",
+    "lab:ask": "tsx src/scripts/labAsk.ts",
     "lab:search-replay": "tsx eval/src/cli/searchReplay.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",
     "eval": "tsx eval/src/cli/run.ts",
+    "eval:rag": "tsx eval/src/cli/rag.ts",
     "review": "tsx eval/src/cli/review.ts"
   },
   "dependencies": {

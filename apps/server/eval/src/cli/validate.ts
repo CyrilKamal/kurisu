@@ -14,6 +14,7 @@ import {
   PRIVATE_DIR,
 } from "../private.js";
 import { loadImportCases } from "../importCases.js";
+import { loadRagCases } from "../ragCases.js";
 import { loadRecommendCases } from "../recommendCases.js";
 import { loadDetails, loadDiscovery } from "../recommendData.js";
 import { loadSeason } from "../season.js";
@@ -33,6 +34,8 @@ errors.push(...recommend.errors);
 warnings.push(...recommend.warnings);
 const imported = loadImportCases(loadCatalog());
 errors.push(...imported.errors);
+const rag = loadRagCases();
+errors.push(...rag.errors);
 // The review queue's cases, on the PC that has them (eval/private/ is gitignored).
 if (hasPrivateCases()) {
   const labeled = loadCases(PRIVATE_DIR, loadPrivateSnapshot, loadPrivateAiring());
@@ -104,7 +107,19 @@ if (verbose) {
   }
 }
 
-for (const { file, case: c } of [...cases, ...recommend.cases, ...imported.cases]) {
+if (verbose) {
+  for (const { case: c, sources } of rag.cases) {
+    const e = c.expect;
+    const expectation = e.not_on_list
+      ? "says it isn't on the list"
+      : e.unanswerable
+        ? "says the list can't tell"
+        : `states ${e.facts.join("; ")}`;
+    console.log(`${c.id.padEnd(28)} rag: ${expectation}; sources ${sources.join(", ") || "none"}`);
+  }
+}
+
+for (const { file, case: c } of [...cases, ...recommend.cases, ...imported.cases, ...rag.cases]) {
   byFile.set(file, (byFile.get(file) ?? 0) + 1);
   for (const tag of c.tags) byTag.set(tag, (byTag.get(tag) ?? 0) + 1);
 }
@@ -115,7 +130,7 @@ const list = (m: Map<string, number>) =>
     .join(", ");
 
 console.log(
-  `\n${String(cases.length + recommend.cases.length + imported.cases.length)} valid cases${byFile.size ? ` (${list(byFile)})` : ""}`,
+  `\n${String(cases.length + recommend.cases.length + imported.cases.length + rag.cases.length)} valid cases${byFile.size ? ` (${list(byFile)})` : ""}`,
 );
 if (byTag.size) console.log(`tags: ${list(byTag)}`);
 console.log(`${String(errors.length)} errors, ${String(warnings.length)} warnings`);

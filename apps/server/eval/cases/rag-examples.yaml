@@ -1,0 +1,42 @@
+# Examples of the RAG eval's format (Milestone 7): questions about the list, answered from its
+# documents. The real questions are Cyril's, in their own rag-*.yaml files. The format is in
+# eval/README.md.
+snapshot: my-list
+cases:
+  - id: rag-example-what-is-it-about
+    question: what's uzumaki about again?
+    tags: [synopsis]
+    expect:
+      sources: [Uzumaki]
+      facts:
+        - A small town is cursed by spirals
+
+  - id: rag-example-did-i-drop-it
+    question: did I drop back arrow?
+    tags: [status]
+    expect:
+      sources: [Back Arrow]
+      facts:
+        - You dropped Back Arrow
+
+  - id: rag-example-on-hold
+    question: which show do I have on hold?
+    tags: [status]
+    expect:
+      sources: ["Nanatsu no Taizai: Kamigami no Gekirin"]
+      facts:
+        - "The Seven Deadly Sins: Imperial Wrath of the Gods is on hold"
+
+  - id: rag-example-not-on-my-list
+    question: did I like evangelion?
+    tags: [not-on-list]
+    expect:
+      not_on_list: true
+
+  - id: rag-example-no-scores
+    question: what score did I give cowboy bebop?
+    tags: [unanswerable]
+    notes: The snapshot holds no scores, so the list can't say.
+    expect:
+      sources: [Cowboy Bebop]
+      unanswerable: true
