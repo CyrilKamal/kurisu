@@ -15,6 +15,8 @@ import {
   ModelProviderError,
   type ChatRequest,
   type ChatResponse,
+  type EmbedRequest,
+  type EmbedResponse,
   type LlmMessage,
   type ModelProvider,
   type ThinkingLevel,
@@ -83,27 +85,7 @@ export function createGeminiProvider(options: GeminiOptions): ModelProvider {
           },
         });
       } catch (err) {
-        if (err instanceof ApiError) {
-          throw new ModelProviderError(
-            "gemini",
-            kindForStatus(err.status),
-            // Google's error text (e.g. "model is overloaded") never contains the API key.
-            `HTTP ${String(err.status)}: ${err.message.slice(0, 200)}`,
-            err.status,
-          );
-        }
-        // The key travels in a header, so SDK error messages don't contain it.
-        const detail = err instanceof Error ? `${err.name}: ${err.message}`.slice(0, 200) : "";
-        // Network failures and timeouts are transient; anything else is the SDK rejecting the
-        // request before sending it.
-        const transient =
-          err instanceof TypeError ||
-          (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError"));
-        throw new ModelProviderError(
-          "gemini",
-          transient ? "unavailable" : "bad_request",
-          `request failed (${detail})`,
-        );
+        throw providerError(err);
       }
 
       const content = response.candidates?.[0]?.content;
@@ -128,7 +110,63 @@ export function createGeminiProvider(options: GeminiOptions): ModelProvider {
         providerState: content,
       };
     },
+
+    async embed(request: EmbedRequest): Promise<EmbedResponse> {
+      const started = performance.now();
+      let response;
+      try {
+        response = await ai.models.embedContent({
+          model: request.model,
+          contents: request.texts,
+          config: {
+            taskType: request.purpose === "query" ? "RETRIEVAL_QUERY" : "RETRIEVAL_DOCUMENT",
+            outputDimensionality: request.dimensions,
+            ...(request.signal ? { abortSignal: request.signal } : {}),
+          },
+        });
+      } catch (err) {
+        throw providerError(err);
+      }
+      const vectors = (response.embeddings ?? []).map((e) => e.values ?? []);
+      if (
+        vectors.length !== request.texts.length ||
+        vectors.some((v) => v.length !== request.dimensions)
+      ) {
+        throw new ModelProviderError("gemini", "bad_response", "unexpected embedContent response");
+      }
+      return {
+        vectors,
+        // The response doesn't count tokens; about four characters make one.
+        inputTokens: Math.ceil(request.texts.reduce((n, t) => n + t.length, 0) / 4),
+        latencyMs: Math.round(performance.now() - started),
+      };
+    },
   };
+}
+
+/** A failed SDK call as a ModelProviderError: retryable, or the request's fault. */
+function providerError(err: unknown): ModelProviderError {
+  if (err instanceof ApiError) {
+    return new ModelProviderError(
+      "gemini",
+      kindForStatus(err.status),
+      // Google's error text (e.g. "model is overloaded") never contains the API key.
+      `HTTP ${String(err.status)}: ${err.message.slice(0, 200)}`,
+      err.status,
+    );
+  }
+  // The key travels in a header, so SDK error messages don't contain it.
+  const detail = err instanceof Error ? `${err.name}: ${err.message}`.slice(0, 200) : "";
+  // Network failures and timeouts are transient; anything else is the SDK rejecting the request
+  // before sending it.
+  const transient =
+    err instanceof TypeError ||
+    (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError"));
+  return new ModelProviderError(
+    "gemini",
+    transient ? "unavailable" : "bad_request",
+    `request failed (${detail})`,
+  );
 }
 
 function toContents(messages: LlmMessage[]): Content[] {

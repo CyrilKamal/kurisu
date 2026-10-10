@@ -23,6 +23,10 @@ backups/
 # Eval cases from the hosted app's review queue: real people's messages and lists, never committed
 apps/server/eval/private/
 
+# Milestone 7's lab, rebuilt on each machine: AniList's synopses (publishers' text, not ours to
+# publish in this public repo, from pnpm eval:synopses) and cached vectors
+apps/server/eval/local/
+
 # Logs
 *.log
 npm-debug.log*

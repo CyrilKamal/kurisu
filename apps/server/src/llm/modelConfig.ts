@@ -69,6 +69,19 @@ const modelsFileSchema = z.object({
     })
     .strict()
     .optional(),
+  /**
+   * The model that turns text into vectors (Milestone 7's lab), and its vector size, which the
+   * database's column fixes. `prefixes` are the task words some models expect before a query or
+   * a document (EmbeddingGemma's "task: search result | query: ").
+   */
+  embedding: z
+    .object({
+      model: z.string(),
+      dimensions: z.number().int().positive(),
+      prefixes: z.object({ query: z.string(), document: z.string() }).partial().default({}),
+      note: z.string().optional(),
+    })
+    .optional(),
   /** USD per 1M tokens. Keys are model refs; "provider:*" matches any model of a provider. */
   pricesPerMillionTokens: z.record(z.string(), priceSchema),
 });
@@ -98,6 +111,22 @@ export function resolveRoles(
     brief: pick("brief"),
     recommend: pick("recommend"),
   };
+}
+
+/** The embedding model, its vector size and its task prefixes. */
+export interface EmbeddingRef extends ModelRef {
+  dimensions: number;
+  prefixes: { query?: string; document?: string };
+}
+
+/** The embedding model from config/models.json, or the EMBEDDING_MODEL override. */
+export function resolveEmbedding(file: ModelsFile, override?: string): EmbeddingRef {
+  const config = file.embedding;
+  if (!config) throw new Error('No "embedding" model configured in config/models.json.');
+  const ref = parseModelRef(override ?? config.model);
+  // An override's prefixes would be the configured model's, so only keep them for that model.
+  const prefixes = ref.ref === config.model ? config.prefixes : {};
+  return { ...ref, dimensions: config.dimensions, prefixes };
 }
 
 /**

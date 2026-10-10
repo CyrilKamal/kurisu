@@ -2197,3 +2197,36 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - The count is the reason to look at Today, so it stays visible, without changing the rail's rhythm.
 
 **Consequences:** the 404 and error pages are unaffected. New signed-in screens get the check by living under `app/(app)/`.
+
+## 2026-10-10 — The lab's foundation: pgvector, EmbeddingGemma, one embeddings table (Milestone 7)
+**Decision:**
+- **The database image** is `pgvector/pgvector:pg18-trixie`, pinned by digest, in dev, tests and the hosted stack.
+  - It's the same Postgres package and the same glibc as the `postgres:18` image it replaces, so existing data directories and their collations carry over.
+  - Before the switch, the hosted app's latest backup was restored into the new image, and every migration ran on it.
+  - Migration 0029 creates the extension.
+- **Vectors** go in one `embeddings` table, holding a show's names, its synopsis, or one of a user's history documents:
+  - one row per text and model, since one model's vectors can't be compared with another's;
+  - the text and its hash are kept, so only changed text is embedded again;
+  - an HNSW cosine index;
+  - a null owner counts as one value (`NULLS NOT DISTINCT`), so shared show text is stored once.
+- **The embedding model** is `ollama:embeddinggemma`: 300M parameters, local and free, 768 dimensions.
+  - It's configured in `models.json` with the task prefixes its model card asks for.
+  - Gemini's `gemini-embedding-001` at 768 dimensions is implemented as the paid option, and used only if an experiment ships.
+- **Code:** embeddings go through the provider module, as `createEmbedder()` next to `createModelClient()`. It's a separate interface, so chat clients and their test doubles are untouched. Vectors are scaled to unit length.
+- **Synopses for evals** are frozen into `eval/local/` and gitignored. They're publishers' text, and this repo is public.
+
+**Alternatives:**
+- **Plain `pgvector/pgvector:pg18`** (Debian 12): an older glibc than the current data directory's, so text indexes could disagree with their collation.
+- **Vectors in JSON columns** with similarity in code: fine at this size, but it skips the pgvector work the lab is for.
+- **One table per kind.**
+- **Committing the synopses** like the other snapshots.
+
+**Why:**
+- The lab is meant to be hands-on with pgvector and embeddings, while keeping the rules that every model call goes through the provider module and that a model swap is a config change.
+- A quick check with EmbeddingGemma: "the eater one" lands on Soul Eater, "that cooking show" on Food Wars, and "jjk" on Jujutsu Kaisen. "Elf mage after the hero dies" misses Frieren on titles alone, which is the job of synopsis vectors.
+
+**Consequences:**
+- **The dev database** moves to the new image with `pnpm db:down` / `pnpm db:up` from the main checkout, after this merges. The hosted one moves with the next deploy.
+- **Changing the vector size** means a new migration and re-embedding everything.
+- **Eval synopses on a new machine:** run `pnpm eval:synopses` there first. Each lab result records which freeze it used.
+

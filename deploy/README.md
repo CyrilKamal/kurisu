@@ -36,7 +36,7 @@ Then copy `deploy/env.prod.example` to `../kurisu-prod/.env.prod` and fill it in
 bash deploy/deploy.sh
 ```
 
-It fetches `main`, checks it out, rebuilds the images and restarts what changed. It refuses to run in a checkout that's on a branch, so it can't move the dev checkout off `main`. A deploy takes a few minutes; the app is down for the seconds the containers swap.
+The database runs `pgvector/pgvector:pg18-trixie` (Postgres 18 with pgvector, on the same Debian as `postgres:18`, so the data directory carries over when the image changes; check a backup restores into a new image before switching). It fetches `main`, checks it out, rebuilds the images and restarts what changed. It refuses to run in a checkout that's on a branch, so it can't move the dev checkout off `main`. A deploy takes a few minutes; the app is down for the seconds the containers swap.
 
 ## Looking at it
 

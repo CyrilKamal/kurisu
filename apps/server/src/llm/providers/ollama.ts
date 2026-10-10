@@ -7,6 +7,8 @@ import {
   ModelProviderError,
   type ChatRequest,
   type ChatResponse,
+  type EmbedRequest,
+  type EmbedResponse,
   type LlmMessage,
   type ModelProvider,
   type ToolCall,
@@ -43,6 +45,11 @@ const responseSchema = z.object({
   eval_count: z.number().int().nonnegative().default(0),
 });
 
+const embedResponseSchema = z.object({
+  embeddings: z.array(z.array(z.number())),
+  prompt_eval_count: z.number().int().nonnegative().default(0),
+});
+
 export function createOllamaProvider(options: OllamaOptions): ModelProvider {
   const baseUrl = options.baseUrl.replace(/\/+$/, "");
   const timeoutMs = options.timeoutMs ?? 120_000;
@@ -64,33 +71,8 @@ export function createOllamaProvider(options: OllamaOptions): ModelProvider {
         })),
       };
 
-      const signals = [AbortSignal.timeout(timeoutMs)];
-      if (request.signal) signals.push(request.signal);
       const started = performance.now();
-      let res: Response;
-      try {
-        res = await fetch(`${baseUrl}/api/chat`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(body),
-          signal: AbortSignal.any(signals),
-        });
-      } catch (err) {
-        throw new ModelProviderError("ollama", "unavailable", `request failed: ${describe(err)}`);
-      }
-      if (!res.ok) {
-        // Ollama errors are {"error": "..."} about the model or request; they never hold secrets.
-        const detail = errorMessage(await res.text().catch(() => ""));
-        const notPulled = res.status === 404 && /not found/i.test(detail);
-        throw new ModelProviderError(
-          "ollama",
-          kindForStatus(res.status),
-          notPulled
-            ? `model "${request.model}" isn't pulled (run: ollama pull ${request.model})`
-            : `HTTP ${String(res.status)}${detail ? `: ${detail}` : ""}`,
-          res.status,
-        );
-      }
+      const res = await post("/api/chat", body, request.model, request.signal);
 
       const parsed = responseSchema.safeParse(await res.json());
       if (!parsed.success) {
@@ -112,7 +94,67 @@ export function createOllamaProvider(options: OllamaOptions): ModelProvider {
         latencyMs: Math.round(performance.now() - started),
       };
     },
+
+    async embed(request: EmbedRequest): Promise<EmbedResponse> {
+      const started = performance.now();
+      // truncate: a text longer than the model's window is cut rather than refused.
+      const body = { model: request.model, input: request.texts, truncate: true };
+      const res = await post("/api/embed", body, request.model, request.signal);
+      const parsed = embedResponseSchema.safeParse(await res.json());
+      if (!parsed.success || parsed.data.embeddings.length !== request.texts.length) {
+        throw new ModelProviderError("ollama", "bad_response", "unexpected /api/embed response");
+      }
+      const wrongSize = parsed.data.embeddings.find((v) => v.length !== request.dimensions);
+      if (wrongSize) {
+        throw new ModelProviderError(
+          "ollama",
+          "bad_response",
+          `${request.model} returned ${String(wrongSize.length)}-dimension vectors, not ${String(request.dimensions)}`,
+        );
+      }
+      return {
+        vectors: parsed.data.embeddings,
+        inputTokens: parsed.data.prompt_eval_count,
+        latencyMs: Math.round(performance.now() - started),
+      };
+    },
   };
+
+  /** POSTs to Ollama and turns its failures into ModelProviderErrors. */
+  async function post(
+    path: string,
+    body: unknown,
+    model: string,
+    signal: AbortSignal | undefined,
+  ): Promise<Response> {
+    const signals = [AbortSignal.timeout(timeoutMs)];
+    if (signal) signals.push(signal);
+    let res: Response;
+    try {
+      res = await fetch(`${baseUrl}${path}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.any(signals),
+      });
+    } catch (err) {
+      throw new ModelProviderError("ollama", "unavailable", `request failed: ${describe(err)}`);
+    }
+    if (!res.ok) {
+      // Ollama errors are {"error": "..."} about the model or request; they never hold secrets.
+      const detail = errorMessage(await res.text().catch(() => ""));
+      const notPulled = res.status === 404 && /not found/i.test(detail);
+      throw new ModelProviderError(
+        "ollama",
+        kindForStatus(res.status),
+        notPulled
+          ? `model "${model}" isn't pulled (run: ollama pull ${model})`
+          : `HTTP ${String(res.status)}${detail ? `: ${detail}` : ""}`,
+        res.status,
+      );
+    }
+    return res;
+  }
 }
 
 function toOllama(message: LlmMessage) {
