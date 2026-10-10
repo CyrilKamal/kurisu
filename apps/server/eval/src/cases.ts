@@ -23,6 +23,8 @@ export const CASES_DIR = fileURLToPath(new URL("../cases/", import.meta.url));
 export const RECOMMEND_FILE = /^recommend-.*\.ya?ml$/;
 /** Import cases too (importCases.ts). */
 export const IMPORT_FILE = /^import-.*\.ya?ml$/;
+/** And questions about the list, for Milestone 7's RAG (ragCases.ts). */
+export const RAG_FILE = /^rag-.*\.ya?ml$/;
 
 const expectedWriteSchema = z
   .object({
@@ -126,7 +128,13 @@ export function loadCases(
   catalog: CatalogFreeze | null = loadCatalog(),
 ): LoadResult {
   const files = readdirSync(casesDir)
-    .filter((f) => /\.(ya?ml|txt)$/.test(f) && !RECOMMEND_FILE.test(f) && !IMPORT_FILE.test(f))
+    .filter(
+      (f) =>
+        /\.(ya?ml|txt)$/.test(f) &&
+        !RECOMMEND_FILE.test(f) &&
+        !IMPORT_FILE.test(f) &&
+        !RAG_FILE.test(f),
+    )
     .sort();
   const result: LoadResult = { cases: [], errors: [], warnings: [] };
   const seenIds = new Map<string, string>();

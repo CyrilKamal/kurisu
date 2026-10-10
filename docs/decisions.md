@@ -2279,3 +2279,31 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Every eval reset empties the embeddings table.** It runs `TRUNCATE users … CASCADE`, which empties every referencing table entirely, so the eval reloads synopsis vectors per case.
 - **Fixed on the way:** `nearest()` now turns on pgvector's iterative scan. Without it, a filter on one user's vectors among many returned nothing once the HNSW index was in use (shown in `labEmbeddings.test.ts`).
 
+## 2026-10-10 — RAG over the list: one document per show, hybrid retrieval, a judge model (Milestone 7)
+**Decision:**
+- **Documents:** each list entry becomes one document. It holds the show's names, kind, length, genres and MAL score, the user's status, progress, score and dates, the synopsis, and the user's own words: diary notes (quotes from their Chat messages) and drop reasons. Documents are stored as the user's `history` vectors; a show that leaves the list loses its document.
+- **Retrieval** fuses the 20 nearest documents by meaning with up to 10 shows whose names appear in the question (`word_similarity` ≥ 0.6), by reciprocal rank, and keeps 8.
+- **Answers:** prompt `ask.v1` answers from those 8 alone and cites each fact as `[malId]`; citations of documents it wasn't given are counted.
+- **The eval** (`pnpm eval:rag`, Cyril's questions in `rag-*.yaml`) reports recall@8 (fused and per channel), citation precision, facts stated, claims supported and answers right. A judge model (`rag-judge@1`, local qwen3.6:27b) grades with one tool call.
+- **Scope:** a CLI (`pnpm lab:ask`) and the eval only. Chat never calls it.
+
+**Alternatives:**
+- **Diary notes, drop reasons and chat lines as separate documents:** Cyril's history is nearly empty (0 notes, 0 drop reasons), so there'd be almost nothing to retrieve.
+- **Raw chat messages:** diary notes are already their quotes about a show.
+- **Vectors alone:** names in a question ("how far am I in jjk?") are what trigram is good at.
+- **Answer correctness by string match:** answers are free text.
+- **Gemini as the judge:** the first runs stay free, with one paid confirmation later.
+
+**Why:** Per-show documents give every question about a show something to retrieve today, and pick up notes as they're written. Citing every fact lets an answer be checked against its sources, which is what the milestone measures.
+
+**Consequences:**
+- **Out of reach:** counting questions ("how many did I finish?"), "all my X" with more than 8 answers, and anything about scores or dates on the eval's snapshot (it has none).
+- **Judge bias:** the judge runs on the same local model as the answerer, so its grades are kept in each report for reading, and a Gemini judge run should confirm the final numbers.
+- **First run, the five example questions:**
+  - recall@8 100%;
+  - citation precision 100%;
+  - every fact stated and every claim supported;
+  - the two declines right.
+
+  The measured entry follows once Cyril's questions are in.
+

@@ -13,6 +13,7 @@ import { PROGRESS_SYNC_V13 } from "./progressSync.v13.js";
 import { PROGRESS_SYNC_V14 } from "./progressSync.v14.js";
 import { PROGRESS_SYNC_V15 } from "./progressSync.v15.js";
 import { PROGRESS_SYNC_V17 } from "./progressSync.v17.js";
+import { ASK_V1 } from "./ask.v1.js";
 import { DIARY_V1 } from "./diary.v1.js";
 import { RECOMMEND_V1 } from "./recommend.v1.js";
 import { RECOMMEND_V2 } from "./recommend.v2.js";
@@ -68,4 +69,12 @@ export const DIARY_PROMPT = DIARY_V1;
 /** Every diary prompt by version, for the diary eval. */
 export const DIARY_PROMPTS = {
   [DIARY_V1.version]: DIARY_V1,
+} as const;
+
+/** The lab's question answerer over the user's list (Milestone 7's RAG, lab/ask.ts). */
+export const ASK_PROMPT = ASK_V1;
+
+/** Every ask prompt by version, for the RAG eval. */
+export const ASK_PROMPTS = {
+  [ASK_V1.version]: ASK_V1,
 } as const;

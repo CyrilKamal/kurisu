@@ -24,6 +24,11 @@
     },
     "note": "Milestone 7's lab. EmbeddingGemma (300M, local, free) gives 768-d vectors, the size of the embeddings table's column. Its model card asks for these task prefixes. Gemini's gemini-embedding-001 at 768 dimensions is the paid option if anything ships; it uses task types instead of prefixes."
   },
+  "lab": {
+    "ask": "ollama:qwen3.6:27b",
+    "judge": "ollama:qwen3.6:27b",
+    "note": "Milestone 7's RAG over the list, outside the app: ask answers questions about the list from retrieved documents (pnpm lab:ask, pnpm eval:rag), judge grades those answers in the eval. Local and free; --model / --judge compare others."
+  },
   "pricesPerMillionTokens": {
     "gemini:gemini-3.5-flash-lite": {
       "input": 0.3,

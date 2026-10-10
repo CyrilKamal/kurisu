@@ -460,3 +460,65 @@ cases:
 - [ ] a title that only looks like another show's ("perfect blue" vs "Blue Period")
 
 `cases/import-examples.yaml` and `cases/import-examples-onboarding.yaml` show the format with three examples.
+
+## Questions about your list (RAG, Milestone 7)
+
+RAG cases ask a question about your list. The lab answers it from your list's documents: one per show, holding the snapshot's status and progress, the frozen details (kind, episodes, genres, MAL score) and AniList's synopsis. The cases live in `rag-<anything>.yaml` and run with `pnpm eval:rag`. It's a lab experiment; nothing in the app calls it.
+
+```yaml
+snapshot: my-list
+cases:
+  - id: rag-how-far-in-jjk
+    question: how far am I in jjk?
+    tags: [progress, nickname]
+    expect:
+      sources: [Jujutsu Kaisen]        # the shows a right answer draws on: titles or MAL ids
+      facts:                           # what a right answer says, one fact each, in any words
+        - You're on episode 12 of 24
+  - id: rag-evangelion
+    question: did I like evangelion?
+    expect:
+      not_on_list: true                # it should say the show isn't on your list
+  - id: rag-my-score
+    question: what did I score cowboy bebop?
+    expect:
+      sources: [Cowboy Bebop]
+      unanswerable: true               # the snapshot has no scores: it should say it can't tell
+```
+
+**Fields:**
+- **`sources`:** the shows a right answer draws on. Retrieval should find them, and the answer should cite them. Give at least one unless the case is `not_on_list` or `unanswerable`.
+- **`facts`:** what a right answer states. The judge checks each, in any words. Keep each to one fact.
+- **`not_on_list` / `unanswerable`:** the answer should say so instead of answering. Such a case has no facts.
+
+**What the report shows:**
+- **Recall@8**, the share of the sources among the 8 documents the model gets. Also by meaning alone and by name alone.
+- **Citation precision:** the share of cited documents that are sources. Citing a document it wasn't given counts too.
+- **Facts stated**, and **claims supported:** each thing the answer says, checked against the documents it cites.
+- **Answers right:** every fact stated, or a decline when one is expected.
+
+The judge is a local model (`config/models.json` `lab.judge`), so read the grades the report keeps before trusting a number.
+
+**What this can't answer:** each document is one show, and the model sees 8. Counting questions ("how many did I finish this year?") or "all my X" questions with more than 8 answers are out of reach, and so are scores and dates, which the snapshot doesn't hold.
+
+### Checklist (yours to write; aim for about 25)
+
+- [ ] a show's progress or status ("how far am I in…", "did I finish…", "did I drop…")
+- [ ] the same, by nickname or abbreviation ("jjk", "aot")
+- [ ] what a show is about ("what's … about again?")
+- [ ] a show described, not named ("the one with the alchemist brothers")
+- [ ] shows of one kind or mood among a few ("any movies in my plan to watch?", "which of my on-hold shows is a comedy?")
+- [ ] two shows compared ("which am I further into, … or …?")
+- [ ] a show that isn't on the list (`not_on_list`)
+- [ ] something the list can't tell: a score or a date (`unanswerable`)
+- [ ] a question with a typo, or in your texting style
+
+`cases/rag-examples.yaml` shows the format with five examples.
+
+```bash
+pnpm eval:rag                                   # every question, on the lab's local models
+pnpm eval:rag --case rag-how-far-in-jjk
+pnpm eval:rag --model gemini:gemini-3.5-flash-lite   # another answering model (paid: about 0.05¢ a question)
+```
+
+It needs `eval/local/synopses.json` from `pnpm eval:synopses` (kept out of git). A question takes about 15 seconds locally, judge included.

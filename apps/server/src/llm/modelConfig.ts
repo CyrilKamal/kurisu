@@ -82,6 +82,11 @@ const modelsFileSchema = z.object({
       note: z.string().optional(),
     })
     .optional(),
+  /**
+   * Milestone 7's lab models, outside the app: the one that answers questions about the list
+   * (`ask`) and the one that grades those answers in the RAG eval (`judge`).
+   */
+  lab: z.object({ ask: z.string(), judge: z.string(), note: z.string().optional() }).optional(),
   /** USD per 1M tokens. Keys are model refs; "provider:*" matches any model of a provider. */
   pricesPerMillionTokens: z.record(z.string(), priceSchema),
 });
@@ -111,6 +116,17 @@ export function resolveRoles(
     brief: pick("brief"),
     recommend: pick("recommend"),
   };
+}
+
+/** The lab's answering and judging models, from config/models.json or a "provider:model" each. */
+export function resolveLab(
+  file: ModelsFile,
+  overrides: { ask?: string | undefined; judge?: string | undefined } = {},
+): { ask: ModelRef; judge: ModelRef } {
+  const ask = overrides.ask ?? file.lab?.ask;
+  const judge = overrides.judge ?? file.lab?.judge;
+  if (!ask || !judge) throw new Error('No "lab" models configured in config/models.json.');
+  return { ask: parseModelRef(ask), judge: parseModelRef(judge) };
 }
 
 /** The embedding model, its vector size and its task prefixes. */

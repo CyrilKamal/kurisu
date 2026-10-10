@@ -1,6 +1,16 @@
 import { createHash } from "node:crypto";
 
-import { and, asc, cosineDistance, eq, inArray, isNull, sql, type SQL } from "drizzle-orm";
+import {
+  and,
+  asc,
+  cosineDistance,
+  eq,
+  inArray,
+  isNull,
+  notInArray,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
 import { embeddings } from "../db/schema.js";
@@ -89,6 +99,30 @@ export async function ensureEmbeddings(
       });
   }
   return { embedded: due.length, kept: unique.length - due.length, inputTokens };
+}
+
+/**
+ * Removes this embedder's vectors of one kind and owner whose refs aren't in `keep`: a show that
+ * left the list takes its document with it.
+ */
+export async function pruneEmbeddings(
+  deps: { db: Db; embedder: Embedder },
+  kind: EmbeddingKind,
+  keep: string[],
+  options: { userId?: string | null } = {},
+): Promise<number> {
+  const removed = await deps.db
+    .delete(embeddings)
+    .where(
+      and(
+        eq(embeddings.kind, kind),
+        eq(embeddings.model, deps.embedder.model),
+        ownedBy(options.userId ?? null),
+        keep.length > 0 ? notInArray(embeddings.ref, keep) : undefined,
+      ),
+    )
+    .returning({ id: embeddings.id });
+  return removed.length;
 }
 
 export interface Neighbor {
