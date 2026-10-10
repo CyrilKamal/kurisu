@@ -408,7 +408,14 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     config,
     db,
     models,
-    ...(embedder && { meaning: { embedder } }),
+    ...(embedder && {
+      meaning: {
+        embedder,
+        onError: (err: unknown) => {
+          app.log.warn({ err: { name: (err as Error).name } }, "list search by meaning failed");
+        },
+      },
+    }),
     writeListStatus: writeDeps.writeListStatus,
     removeListStatus: writeDeps.removeListStatus,
     refreshAnime: writeDeps.refreshAnime,

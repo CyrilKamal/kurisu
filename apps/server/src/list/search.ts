@@ -35,6 +35,8 @@ export interface MeaningSearch {
    * meaning-only shows right 2 times in 258.
    */
   extras?: "never" | "always";
+  /** Called when the embedder fails; the search then answers from the words alone. */
+  onError?: (err: unknown) => void;
 }
 /** Closest names looked at per query. */
 const MEANING_K = 5;
@@ -149,7 +151,14 @@ export async function searchMyList(
   // Clear matches come from the words alone, exactly as without vectors.
   const marked = markClear(pool, cleaned, options);
   if (!options.meaning) return clearFirst(marked, options.limit);
-  const meant = await meaningMatches(db, userId, cleaned, options.meaning);
+  let meant: Map<number, number>;
+  try {
+    meant = await meaningMatches(db, userId, cleaned, options.meaning);
+  } catch (err) {
+    // The lab's channel must never break a search.
+    options.meaning.onError?.(err);
+    return clearFirst(marked, options.limit);
+  }
   const extra: SearchCandidate[] = [];
   for (const [animeId, similarity] of options.meaning.extras === "always" ? meant : []) {
     if (marked.some((c) => c.animeId === animeId)) continue;

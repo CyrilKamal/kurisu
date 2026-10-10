@@ -133,4 +133,23 @@ describe("list search with the lab's vector channel", () => {
     });
     expect(answering.some((c) => c.clear)).toBe(false);
   });
+
+  it("answers from the words alone when the embedder fails", async () => {
+    const embedder = new ConceptEmbedder({});
+    await addShows(embedder, [
+      { id: BLUE_SLOPE, title: "Blue Slope Diaries" },
+      { id: SUN_SLOPE, title: "Slope of the Sun" },
+    ]);
+    const failures: unknown[] = [];
+    const down: Embedder = {
+      model: embedder.model,
+      dimensions: embedder.dimensions,
+      embed: () => Promise.reject(new Error("ollama is down")),
+    };
+    const found = await searchMyList(h.db, userId, ["slope"], {
+      meaning: { embedder: down, extras: "always", onError: (err) => failures.push(err) },
+    });
+    expect(found).toEqual(await searchMyList(h.db, userId, ["slope"]));
+    expect(failures).toHaveLength(1);
+  });
 });
