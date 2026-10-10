@@ -2181,3 +2181,19 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Sequel cache:** the sheet reads the cached sequels. A show completed for the first time may show none until its page has refreshed them (in the background, the first time it opens).
 - **Two lookups per finish:** the sheet asks `/shows/:id` and `/stats` each time a show is finished.
 
+
+## 2026-10-10 — The sign-in check moves to the signed-in layout; the rail's count sits on its icon (between Milestones 6 and 7)
+**Decision:**
+- **Sign-in check:** the signed-in screens' shared layout checks the session (`getMe()`, once per request with React's `cache`, which the pages reuse) and redirects to login before anything renders. Each screen's loading skeleton had been streamed first, so a logged-out visit showed a screen loading, then jumped to login. Now it gets a 307.
+- **Rail count:** on the rail, Today's count sits at its icon's top right. It no longer stacks under the label, which made Today taller than the other items. This is design system v9.2 (artifact version 12), copied into `apps/web/design/`.
+
+**Alternatives:**
+- **Next's proxy (middleware) checking the cookie.** It costs no request, but it only knows a cookie exists: an expired session would still flash.
+- **Removing the loading skeletons.**
+- **Hiding the count on the rail.**
+
+**Why:**
+- A real session check above the loading boundaries costs nothing extra, because the pages share its answer.
+- The count is the reason to look at Today, so it stays visible, without changing the rail's rhythm.
+
+**Consequences:** the 404 and error pages are unaffected. New signed-in screens get the check by living under `app/(app)/`.

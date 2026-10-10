@@ -1,10 +1,10 @@
-import { friendsResponseSchema, invitesResponseSchema, meResponseSchema } from "@kurisu/shared";
+import { friendsResponseSchema, invitesResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
 import { matchLabel } from "@/lib/friends";
 
 import { ActivityFeed } from "./ActivityFeed";
@@ -18,10 +18,7 @@ export const metadata: Metadata = { title: "Friends · kurisu" };
  * for the owner, invites too.
  */
 export default async function FriendsPage() {
-  const [me, data] = await Promise.all([
-    apiGet("/me", meResponseSchema),
-    apiGet("/friends", friendsResponseSchema),
-  ]);
+  const [me, data] = await Promise.all([getMe(), apiGet("/friends", friendsResponseSchema)]);
   if (!me || !data) redirect("/");
   const invites = me.user.isOwner ? await apiGet("/invites", invitesResponseSchema) : null;
 

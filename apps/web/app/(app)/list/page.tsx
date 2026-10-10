@@ -1,11 +1,11 @@
-import { listResponseSchema, meResponseSchema } from "@kurisu/shared";
+import { listResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Icon } from "@/components/Icon";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
 import { lastSyncLabel } from "@/lib/format";
 import { readListView } from "@/lib/listFilters";
 
@@ -16,10 +16,7 @@ import { SyncBanner } from "./SyncBanner";
 export const metadata: Metadata = { title: "My list · kurisu" };
 
 export default async function ListPage(props: PageProps<"/list">) {
-  const [me, list] = await Promise.all([
-    apiGet("/me", meResponseSchema),
-    apiGet("/list", listResponseSchema),
-  ]);
+  const [me, list] = await Promise.all([getMe(), apiGet("/list", listResponseSchema)]);
   if (!me || !list) redirect("/");
 
   const initialView = readListView(await props.searchParams);
