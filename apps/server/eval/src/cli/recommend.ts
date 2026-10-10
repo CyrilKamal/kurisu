@@ -9,12 +9,16 @@
  *   pnpm eval:recommend --prompt recommend@3                 compare another recommender prompt
  *   pnpm eval:recommend --thinking low                       the recommender's thinking level
  *   pnpm eval:recommend --agent-prompt progress-sync@14      another progress agent prompt
+ *   pnpm eval:recommend --semantic 0.5     also rank by synopsis fit (Milestone 7's lab), at this weight
+ *   pnpm eval:recommend --replay <run.json> --semantic 1
+ *       no models: replays a recorded run's last find_candidates per case and picks the top 3 of
+ *       its ranking, so ranking changes can be compared for free and without the model's noise
  *
  * Needs Docker (a throwaway Postgres) and the frozen data from pnpm eval:recommend-data. Taste is
  * neutral here (the snapshot has no scores), so this measures following the request, not taste.
  * Writes a full JSON report to eval/results/.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
@@ -29,16 +33,22 @@ import {
 import { runAgent } from "../../../src/agent/runAgent.js";
 import { agentRunSteps, anime, briefSettings, listEntries } from "../../../src/db/schema.js";
 import { loadLocalEnvFile } from "../../../src/env.js";
-import { createModelClient } from "../../../src/llm/modelClient.js";
+import {
+  createEmbedder,
+  createModelClient,
+  type ModelClient,
+} from "../../../src/llm/modelClient.js";
 import {
   costUsd,
   loadModelsFile,
   parseModelRef,
+  resolveEmbedding,
   resolveRoles,
 } from "../../../src/llm/modelConfig.js";
 import { THINKING_LEVELS } from "../../../src/llm/types.js";
 import { runRecommender } from "../../../src/recommend/agent.js";
 import { startYearOf } from "../../../src/recommend/candidates.js";
+import { ensureSynopsisEmbeddings, type SemanticRanking } from "../../../src/recommend/semantic.js";
 import { loadAiring } from "../airing.js";
 import { frozenCatalogSearch, loadCatalog } from "../catalog.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
@@ -54,6 +64,8 @@ import {
 } from "../recommendScore.js";
 import { loadSnapshot, type Snapshot } from "../snapshot.js";
 import { loadSeason, loadSeasonIntoDb } from "../season.js";
+import { cachedEmbedder } from "../embedCache.js";
+import { loadSynopses } from "../synopses.js";
 import { linksByMalId, loadStreaming } from "../streaming.js";
 import { throttle } from "../throttle.js";
 
@@ -72,6 +84,10 @@ const { values } = parseArgs({
     prompt: { type: "string" },
     "agent-prompt": { type: "string" },
     thinking: { type: "string" },
+    /** Weight of the synopsis fit in the ranking, 0 to 1 (Milestone 7's lab). */
+    semantic: { type: "string" },
+    /** A recorded run whose searches to replay without models. */
+    replay: { type: "string" },
   },
 });
 
@@ -117,6 +133,40 @@ if (rpm !== null && !(rpm > 0)) {
 }
 const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm);
 
+const semanticWeight = values.semantic === undefined ? 0 : Number(values.semantic);
+if (!(semanticWeight >= 0 && semanticWeight <= 1)) {
+  console.error("--semantic takes a weight from 0 to 1.");
+  process.exit(1);
+}
+const synopses = semanticWeight > 0 ? loadSynopses() : null;
+if (semanticWeight > 0 && !synopses) {
+  console.error("--semantic needs the frozen synopses: run pnpm eval:synopses first.");
+  process.exit(1);
+}
+const embedder =
+  semanticWeight > 0
+    ? cachedEmbedder(
+        createEmbedder({
+          ref: resolveEmbedding(modelsFile, nonEmpty(process.env.EMBEDDING_MODEL) ?? undefined),
+          geminiApiKey: nonEmpty(process.env.GEMINI_API_KEY),
+          ollamaBaseUrl: nonEmpty(process.env.OLLAMA_BASE_URL) ?? "http://127.0.0.1:11434",
+          ollama: modelsFile.ollama,
+        }),
+      )
+    : null;
+const semantic: SemanticRanking | null = embedder
+  ? {
+      embedder,
+      weight: semanticWeight,
+      onError: (err) => {
+        console.error(`semantic fit failed: ${(err as Error).message}`);
+      },
+    }
+  : null;
+
+/** Each recorded case's last find_candidates arguments, when replaying a run. */
+const replays = values.replay ? loadReplays(values.replay) : null;
+
 const details = loadDetails();
 const pool = loadDiscovery();
 const streaming = loadStreaming();
@@ -154,7 +204,7 @@ const streamingLinks = new Map([
 const snapshots = new Map<string, Snapshot>();
 
 console.log(
-  `Recommendation eval: ${String(selected.length)} cases; ${agentRef.ref} (${CURRENT_PROMPT.version}) hands off to ${recommendRef.ref}${recommendRef.thinking ? `, thinking ${recommendRef.thinking}` : ""} (${RECOMMEND_PROMPT.version})`,
+  `Recommendation eval: ${String(selected.length)} cases; ${agentRef.ref} (${CURRENT_PROMPT.version}) hands off to ${recommendRef.ref}${recommendRef.thinking ? `, thinking ${recommendRef.thinking}` : ""} (${RECOMMEND_PROMPT.version})${embedder ? `, synopsis fit at weight ${String(semanticWeight)} (${embedder.model})` : ""}`,
 );
 if (rpm !== null)
   console.log(`At most ${String(rpm)} model calls a minute (waiting is left out of latency).`);
@@ -162,6 +212,7 @@ console.log("Starting a throwaway Postgres...");
 const database = await startEvalDatabase();
 
 try {
+  if (synopses) console.log(`Synopses frozen ${synopses.frozenAt}.`);
   const scored: { run: RecommendRun; score: RecommendScore; resolved: ResolvedRecommendCase }[] =
     [];
   for (const [i, resolved] of selected.entries()) {
@@ -179,7 +230,7 @@ try {
 
   mkdirSync(RESULTS_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const path = `${RESULTS_DIR}recommend-${stamp}-${recommendRef.ref.replace(/[^a-z0-9.-]+/gi, "_")}.json`;
+  const path = `${RESULTS_DIR}recommend-${stamp}-${replays ? "replay" : recommendRef.ref.replace(/[^a-z0-9.-]+/gi, "_")}${embedder ? `-semantic${String(semanticWeight)}` : ""}.json`;
   writeFileSync(
     path,
     `${JSON.stringify(
@@ -189,6 +240,15 @@ try {
         recommendModel: recommendRef.ref,
         recommendThinking: recommendRef.thinking ?? null,
         recommendPrompt: RECOMMEND_PROMPT.version,
+        replayOf: values.replay ?? null,
+        semantic:
+          embedder && synopses
+            ? {
+                weight: semanticWeight,
+                embedding: embedder.model,
+                synopsesFrozenAt: synopses.frozenAt,
+              }
+            : null,
         ranAt: new Date().toISOString(),
         metrics,
         cases: scored.map(({ run, score }) => ({ ...run, score })),
@@ -199,6 +259,7 @@ try {
   );
   console.log(`\nFull report: ${path}`);
 } finally {
+  embedder?.save();
   await database.close();
 }
 
@@ -213,26 +274,42 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
   const userId = await loadSnapshotIntoDb(db, snapshot, airing);
   await loadRecommendDataIntoDb(db, userId, details, pool, streaming);
   if (season) await loadSeasonIntoDb(db, season);
+  if (embedder && synopses) {
+    // Again for each case: the reset's TRUNCATE users … CASCADE empties the whole embeddings
+    // table, shared rows too. The cache makes it cheap.
+    await ensureSynopsisEmbeddings({ db, embedder }, synopses.shows);
+  }
   const c = resolved.case;
   if (c.services.length > 0)
     await db.insert(briefSettings).values({ userId, services: c.services });
   const { writer } = createFakeWriter(db);
 
   const waitedBefore = models.waitedMs;
-  const agent = await runAgent(
-    { db, models, writeListStatus: writer, prompt: CURRENT_PROMPT, catalog },
-    { userId, conversationId: null, history: c.history, message: c.message, model: agentRef },
-  );
-  const recommendation = agent.handedOff
+  // A replay skips the progress agent and the recommender's model: the recorded search runs
+  // again, and the top of its ranking is picked.
+  const replayed = replays?.get(c.id);
+  const agent = replays
+    ? null
+    : await runAgent(
+        { db, models, writeListStatus: writer, prompt: CURRENT_PROMPT, catalog },
+        { userId, conversationId: null, history: c.history, message: c.message, model: agentRef },
+      );
+  const handedOff = replays ? replayed !== undefined : (agent?.handedOff ?? false);
+  const recommendation = handedOff
     ? await runRecommender(
-        { db, models, prompt: RECOMMEND_PROMPT },
+        {
+          db,
+          models: replayed ? replayModels(replayed) : models,
+          prompt: RECOMMEND_PROMPT,
+          ...(semantic && { semantic }),
+        },
         {
           userId,
           conversationId: null,
           history: c.history,
           message: c.message,
           model: recommendRef,
-          handedOffFromRunId: agent.runId,
+          handedOffFromRunId: agent?.runId ?? null,
         },
       )
     : null;
@@ -284,7 +361,10 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
 
   // The progress agent's steps, then the recommender's.
   const steps = [];
-  for (const runId of [agent.runId, ...(recommendation ? [recommendation.runId] : [])]) {
+  for (const runId of [
+    ...(agent ? [agent.runId] : []),
+    ...(recommendation ? [recommendation.runId] : []),
+  ]) {
     steps.push(
       ...(await db
         .select({
@@ -299,21 +379,22 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
     );
   }
 
-  const agentCost = costUsd(modelsFile, agentRef, agent);
-  const recommendCost = recommendation ? costUsd(modelsFile, recommendRef, recommendation) : 0;
+  const agentCost = agent ? costUsd(modelsFile, agentRef, agent) : 0;
+  const recommendCost =
+    recommendation && !replays ? costUsd(modelsFile, recommendRef, recommendation) : 0;
   return {
     file: resolved.file,
     caseId: c.id,
     tags: c.tags,
     message: c.message,
-    handedOff: agent.handedOff,
+    handedOff,
     picks,
-    reply: recommendation?.reply ?? agent.reply,
-    error: agent.error ?? recommendation?.error ?? null,
-    latencyMs: agent.latencyMs + (recommendation?.latencyMs ?? 0) - waited,
+    reply: recommendation?.reply ?? agent?.reply ?? "",
+    error: agent?.error ?? recommendation?.error ?? null,
+    latencyMs: (agent?.latencyMs ?? 0) + (recommendation?.latencyMs ?? 0) - waited,
     costUsd: agentCost === null || recommendCost === null ? null : agentCost + recommendCost,
-    inputTokens: agent.inputTokens + (recommendation?.inputTokens ?? 0),
-    outputTokens: agent.outputTokens + (recommendation?.outputTokens ?? 0),
+    inputTokens: (agent?.inputTokens ?? 0) + (recommendation?.inputTokens ?? 0),
+    outputTokens: (agent?.outputTokens ?? 0) + (recommendation?.outputTokens ?? 0),
     toolCalls: steps
       .filter((s) => s.kind === "tool_call")
       .map((s) => `${s.tool ?? "?"}(${JSON.stringify(s.args)})${s.error ? ` -> ${s.error}` : ""}`),
@@ -372,6 +453,70 @@ function printReport(
       for (const call of run.toolCalls) console.log(`  tool:     ${call.slice(0, 240)}`);
     }
   }
+}
+
+/**
+ * Each case's last find_candidates arguments in a recorded report: the search its picks came
+ * from. Cases that never searched are left out (nothing to replay).
+ */
+function loadReplays(file: string): Map<string, Record<string, unknown>> {
+  if (!existsSync(file)) {
+    console.error(`No report at ${file}.`);
+    process.exit(1);
+  }
+  const report = JSON.parse(readFileSync(file, "utf8")) as {
+    cases: { caseId: string; toolCalls: string[] }[];
+  };
+  const replays = new Map<string, Record<string, unknown>>();
+  for (const run of report.cases) {
+    for (const call of run.toolCalls) {
+      const match = /^find_candidates\((\{.*\})\)(?: -> .*)?$/s.exec(call);
+      if (match?.[1]) replays.set(run.caseId, JSON.parse(match[1]) as Record<string, unknown>);
+    }
+  }
+  return replays;
+}
+
+/**
+ * A stand-in for the recommender's model: it searches with the recorded arguments, then picks the
+ * top 3 of the ranking (or none when nothing fits).
+ */
+function replayModels(args: Record<string, unknown>): ModelClient {
+  const usage = { inputTokens: 0, outputTokens: 0 };
+  return {
+    chat(_ref, request) {
+      const last = request.messages.at(-1);
+      if (last?.role !== "tool") {
+        return Promise.resolve({
+          text: "",
+          toolCalls: [{ id: "replay-search", name: "find_candidates", arguments: args }],
+          usage,
+          latencyMs: 0,
+        });
+      }
+      const found = (JSON.parse(last.content) as { candidates?: { anime_id: number }[] })
+        .candidates;
+      const picks = (found ?? [])
+        .slice(0, 3)
+        .map((c) => ({ anime_id: c.anime_id, why: "Top of the ranking." }));
+      return Promise.resolve(
+        picks.length > 0
+          ? {
+              text: "",
+              toolCalls: [
+                {
+                  id: "replay-picks",
+                  name: "present_picks",
+                  arguments: { picks, reply: "Replayed." },
+                },
+              ],
+              usage,
+              latencyMs: 0,
+            }
+          : { text: "Nothing fits.", toolCalls: [], usage, latencyMs: 0 },
+      );
+    },
+  };
 }
 
 /** .env files write unset variables as empty strings. */

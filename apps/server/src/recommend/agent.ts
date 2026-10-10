@@ -25,6 +25,7 @@ import {
 } from "./candidates.js";
 import { rememberDiscovered } from "./discovery.js";
 import { seasonRows } from "./season.js";
+import { semanticFit, type SemanticRanking } from "./semantic.js";
 
 /** Picks per recommendation (the user's choice). */
 export const MAX_PICKS = 3;
@@ -179,6 +180,9 @@ const MAX_REPLY = 240;
 interface RecContext {
   db: Db;
   userId: string;
+  /** What the user asked, for the lab's semantic fit. */
+  message: string;
+  semantic: SemanticRanking | null;
   /** Candidates any search in this run returned, with that search's constraints. */
   offered: Map<number, { candidate: Candidate; constraints: Constraints }>;
   genres: string[] | null;
@@ -198,7 +202,7 @@ interface RecContext {
  * search in this run returned. Logged like every agent run.
  */
 export async function runRecommender(
-  deps: { db: Db; models: ModelClient; prompt: Prompt },
+  deps: { db: Db; models: ModelClient; prompt: Prompt; semantic?: SemanticRanking },
   input: RecommendInput,
 ): Promise<RecommendResult> {
   const { db } = deps;
@@ -218,6 +222,8 @@ export async function runRecommender(
   const ctx: RecContext = {
     db,
     userId: input.userId,
+    message: input.message,
+    semantic: deps.semantic ?? null,
     offered: new Map(),
     genres: null,
     services: null,
@@ -364,11 +370,13 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
   const season = a.airing_now
     ? (await seasonRows(ctx.db, ctx.userId)).filter((row) => !inPool.has(row.animeId))
     : [];
+  const rows = [...(await candidateRows(ctx.db, ctx.userId)), ...pool, ...season];
   const ranked = rankCandidates(
-    [...(await candidateRows(ctx.db, ctx.userId)), ...pool, ...season],
+    rows,
     await tasteSignals(ctx.db, ctx.userId),
     constraints,
     ctx.services,
+    await fitFor(ctx, rows),
   );
   const shown = ranked.slice(0, CANDIDATES_SHOWN);
   // Right after the first sync, the pool of new shows may still be building.
@@ -411,6 +419,26 @@ async function findCandidatesTool(ctx: RecContext, raw: unknown): Promise<ToolOu
           }),
     },
   };
+}
+
+/** The lab's semantic fit for these shows, when it's on. It never fails a search. */
+async function fitFor(
+  ctx: RecContext,
+  rows: { animeId: number }[],
+): Promise<{ fit: Map<number, number>; weight: number } | null> {
+  const semantic = ctx.semantic;
+  if (!semantic || semantic.weight === 0) return null;
+  try {
+    const fit = await semanticFit(
+      { db: ctx.db, embedder: semantic.embedder },
+      ctx.message,
+      rows.map((row) => row.animeId),
+    );
+    return { fit, weight: semantic.weight };
+  } catch (err) {
+    semantic.onError?.(err);
+    return null;
+  }
 }
 
 async function presentPicksTool(ctx: RecContext, raw: unknown): Promise<ToolOutcome> {

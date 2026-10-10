@@ -29,6 +29,9 @@
     "eval:recommend-data": "pnpm --filter @kurisu/server eval:recommend-data",
     "eval:streaming": "pnpm --filter @kurisu/server eval:streaming",
     "eval:season": "pnpm --filter @kurisu/server eval:season",
+    "eval:synopses": "pnpm --filter @kurisu/server eval:synopses",
+    "lab:synopses": "pnpm --filter @kurisu/server lab:synopses",
+    "lab:search-replay": "pnpm --filter @kurisu/server lab:search-replay",
     "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",
     "eval": "pnpm --filter @kurisu/server eval",
     "review": "pnpm --filter @kurisu/server review"

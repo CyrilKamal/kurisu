@@ -163,6 +163,11 @@ const LIST_BOOST = 1;
 /** A new show's pull from AniList (its discovery strength) counts this much, up to a cap. */
 const DISCOVERY_WEIGHT = 0.25;
 const MAX_DISCOVERY_STRENGTH = 2;
+/**
+ * Milestone 7's lab: a show's semantic fit (how much closer its synopsis is to the request than to
+ * a neutral one, `semanticFit`) counts this much per unit of cosine, at weight 1.
+ */
+export const SEMANTIC_SCALE = 5;
 
 /**
  * Filters the user's entries and the shows new to them to the ones that meet every constraint and
@@ -171,8 +176,9 @@ const MAX_DISCOVERY_STRENGTH = 2;
  * new show, and penalties for genres they drop and, if they've dropped shows for being too long,
  * long shows. Shows that fit the time and years come first; when fewer than a full set of picks
  * fit, shows up to TIME_GRACE_MINUTES over or YEAR_GRACE years outside follow them. Where a show
- * streams only filters (when services are asked for); it never changes the ranking. Pure, so the
- * ranking is unit-tested apart from the database.
+ * streams only filters (when services are asked for); it never changes the ranking. With the lab's
+ * semantic fit, shows whose synopses suit the request rise. Pure, so the ranking is unit-tested
+ * apart from the database.
  */
 export function rankCandidates(
   rows: CandidateRow[],
@@ -180,6 +186,8 @@ export function rankCandidates(
   constraints: Constraints,
   /** The streaming services the user subscribes to (brief settings), to say where each streams. */
   userServices: readonly string[] = [],
+  /** Each show's semantic fit to the request, and how much it counts (0 is off). */
+  semantic: { fit: ReadonlyMap<number, number>; weight: number } | null = null,
 ): Candidate[] {
   const wanted = lowerSet(constraints.genresAny);
   const unwanted = lowerSet(constraints.genresNone);
@@ -316,7 +324,14 @@ export function rankCandidates(
       minutesOver,
       yearsOff,
       streamsOn: watchOn(row.streamingLinks, shownServices).map((w) => w.service),
-      score: round(tasteFit + quality + progressBoost + dropPenalty + lengthPenalty),
+      score: round(
+        tasteFit +
+          quality +
+          progressBoost +
+          dropPenalty +
+          lengthPenalty +
+          (semantic ? semantic.weight * SEMANTIC_SCALE * (semantic.fit.get(row.animeId) ?? 0) : 0),
+      ),
       facts,
     });
   }

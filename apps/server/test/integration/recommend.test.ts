@@ -2,10 +2,19 @@ import * as contract from "@kurisu/shared";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
+import { RECOMMEND_PROMPT } from "../../src/agent/prompts/index.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
-import { agentRuns, recommendations } from "../../src/db/schema.js";
+import { agentRuns, anime, recommendations, users } from "../../src/db/schema.js";
 import { parseModelRef } from "../../src/llm/modelConfig.js";
+import { runRecommender } from "../../src/recommend/agent.js";
+import {
+  ensureSynopsisEmbeddings,
+  listedSynopses,
+  NEUTRAL_REQUESTS,
+  type SemanticRanking,
+} from "../../src/recommend/semantic.js";
 import { fixtureList } from "../fixtures/animeList.js";
+import { ConceptEmbedder } from "../support/conceptEmbedder.js";
 import type { FakeListItem } from "../support/fakeMal.js";
 import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
 import { lastToolResult, ScriptedModels, type ScriptStep } from "../support/scriptedModels.js";
@@ -253,5 +262,89 @@ describe("recommendations in Chat", () => {
       .from(agentRuns)
       .where(eq(agentRuns.promptVersion, "recommend@9"));
     expect(rec?.outcome).toBe("error");
+  });
+});
+
+describe("the lab's semantic fit", () => {
+  const SAD = "a drama about grief and saying goodbye";
+  const embedder = new ConceptEmbedder({
+    "anything that makes me cry": "tears",
+    [SAD]: "tears",
+  });
+
+  /** One recommender run that searches with no constraints; returns the candidates' order. */
+  async function candidatesFor(message: string, semantic?: SemanticRanking): Promise<number[]> {
+    const [user] = await h.db.select({ id: users.id }).from(users);
+    if (!user) throw new Error("no user");
+    let order: number[] = [];
+    models.script(RECOMMEND.ref, [
+      { toolCalls: [{ name: "find_candidates", arguments: {} }] },
+      (req) => {
+        const found = lastToolResult(req).candidates as { anime_id: number }[];
+        order = found.map((c) => c.anime_id);
+        return {
+          toolCalls: [
+            {
+              name: "present_picks",
+              arguments: { picks: [{ anime_id: order[0], why: "Fits." }], reply: "Here." },
+            },
+          ],
+        };
+      },
+    ]);
+    await runRecommender(
+      { db: h.db, models, prompt: RECOMMEND_PROMPT, ...(semantic && { semantic }) },
+      {
+        userId: user.id,
+        conversationId: null,
+        history: [],
+        message,
+        model: RECOMMEND,
+        handedOffFromRunId: null,
+      },
+    );
+    return order;
+  }
+
+  beforeEach(async () => {
+    await h.db.update(anime).set({ synopsis: SAD }).where(eq(anime.malId, MOVIE));
+    await h.db
+      .update(anime)
+      .set({ synopsis: "A calm countryside story." })
+      .where(eq(anime.malId, CHILL));
+    const [user] = await h.db.select({ id: users.id }).from(users);
+    if (!user) throw new Error("no user");
+    await ensureSynopsisEmbeddings({ db: h.db, embedder }, await listedSynopses(h.db, user.id));
+  });
+
+  it("ranks a show whose synopsis suits the request higher, by its weight", async () => {
+    const plain = await candidatesFor("anything that makes me cry");
+    expect(plain[0]).not.toBe(MOVIE);
+
+    embedder.calls.length = 0;
+    const fitted = await candidatesFor("anything that makes me cry", { embedder, weight: 1 });
+    expect(fitted[0]).toBe(MOVIE);
+    expect(embedder.calls).toEqual([
+      { texts: ["anything that makes me cry", ...NEUTRAL_REQUESTS], purpose: "query" },
+    ]);
+    expect(await candidatesFor("anything that makes me cry", { embedder, weight: 0 })).toEqual(
+      plain,
+    );
+  });
+
+  it("ranks as before when the embedder fails", async () => {
+    const plain = await candidatesFor("anything that makes me cry");
+    const failures: unknown[] = [];
+    const down: SemanticRanking = {
+      embedder: {
+        model: embedder.model,
+        dimensions: embedder.dimensions,
+        embed: () => Promise.reject(new Error("ollama is down")),
+      },
+      weight: 1,
+      onError: (err) => failures.push(err),
+    };
+    expect(await candidatesFor("anything that makes me cry", down)).toEqual(plain);
+    expect(failures).toHaveLength(1);
   });
 });

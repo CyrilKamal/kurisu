@@ -42,6 +42,7 @@ import {
   type ModelRef,
 } from "./llm/modelConfig.js";
 import { ensureTitleEmbeddings } from "./lab/titles.js";
+import { ensureSynopsisEmbeddings, listedSynopses } from "./recommend/semantic.js";
 import type { RetryOptions } from "./mal/client.js";
 import { registerPushRoutes } from "./push/routes.js";
 import { createPushSender } from "./push/send.js";
@@ -185,21 +186,26 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       .catch((err: unknown) => {
         app.log.warn({ err: { name: (err as Error).name } }, "could not refresh discovery");
       })
-      // Milestone 7's lab: title vectors for the list's shows, for search by meaning (only
-      // new or renamed shows are embedded).
+      // Milestone 7's lab: title vectors for the list's shows, for search by meaning, and
+      // synopsis vectors for recommendations (only new or changed text is embedded).
       .then(async () => {
         if (!embedder) return;
-        const listed = await db
-          .select({ id: listEntries.animeId })
-          .from(listEntries)
-          .where(eq(listEntries.userId, userId));
-        await ensureTitleEmbeddings(
-          { db, embedder },
-          listed.map((row) => row.id),
-        );
+        if (config.lab.searchVectors) {
+          const listed = await db
+            .select({ id: listEntries.animeId })
+            .from(listEntries)
+            .where(eq(listEntries.userId, userId));
+          await ensureTitleEmbeddings(
+            { db, embedder },
+            listed.map((row) => row.id),
+          );
+        }
+        if (config.lab.semanticWeight > 0) {
+          await ensureSynopsisEmbeddings({ db, embedder }, await listedSynopses(db, userId));
+        }
       })
       .catch((err: unknown) => {
-        app.log.warn({ err: { name: (err as Error).name } }, "could not embed list titles");
+        app.log.warn({ err: { name: (err as Error).name } }, "could not embed for the lab");
       })
       .finally(() => airingRefreshes.delete(userId));
     airingRefreshes.set(userId, task);
@@ -233,15 +239,17 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       ollamaBaseUrl: config.llm.ollamaBaseUrl,
       ollama: modelsFile.ollama,
     });
-  // Milestone 7's lab: list search by meaning, only when SEARCH_VECTORS is on.
-  const embedder = config.lab.searchVectors
-    ? createEmbedder({
-        ref: resolveEmbedding(modelsFile, config.llm.embeddingModel ?? undefined),
-        geminiApiKey: config.llm.geminiApiKey,
-        ollamaBaseUrl: config.llm.ollamaBaseUrl,
-        ollama: modelsFile.ollama,
-      })
-    : null;
+  // Milestone 7's lab: list search by meaning (SEARCH_VECTORS) and recommendations ranked by
+  // synopsis (RECOMMEND_SEMANTIC_WEIGHT), only when switched on.
+  const embedder =
+    config.lab.searchVectors || config.lab.semanticWeight > 0
+      ? createEmbedder({
+          ref: resolveEmbedding(modelsFile, config.llm.embeddingModel ?? undefined),
+          geminiApiKey: config.llm.geminiApiKey,
+          ollamaBaseUrl: config.llm.ollamaBaseUrl,
+          ollama: modelsFile.ollama,
+        })
+      : null;
   const malWrites = {
     tokenStore,
     apiBaseUrl: config.mal.apiBaseUrl,
@@ -408,14 +416,25 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     config,
     db,
     models,
-    ...(embedder && {
-      meaning: {
-        embedder,
-        onError: (err: unknown) => {
-          app.log.warn({ err: { name: (err as Error).name } }, "list search by meaning failed");
+    ...(embedder &&
+      config.lab.searchVectors && {
+        meaning: {
+          embedder,
+          onError: (err: unknown) => {
+            app.log.warn({ err: { name: (err as Error).name } }, "list search by meaning failed");
+          },
         },
-      },
-    }),
+      }),
+    ...(embedder &&
+      config.lab.semanticWeight > 0 && {
+        semantic: {
+          embedder,
+          weight: config.lab.semanticWeight,
+          onError: (err: unknown) => {
+            app.log.warn({ err: { name: (err as Error).name } }, "semantic fit failed");
+          },
+        },
+      }),
     writeListStatus: writeDeps.writeListStatus,
     removeListStatus: writeDeps.removeListStatus,
     refreshAnime: writeDeps.refreshAnime,
