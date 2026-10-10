@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
@@ -197,6 +197,21 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     },
   );
 
+  /** The user finished or skipped the welcome steps; they don't come back. */
+  app.post(
+    "/me/welcomed",
+    { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] },
+    async (request) => {
+      const user = request.user;
+      if (!user) throw new Error("requireUser did not set request.user");
+      await db
+        .update(users)
+        .set({ welcomedAt: new Date() })
+        .where(and(eq(users.id, user.id), isNull(users.welcomedAt)));
+      return { welcomed: true };
+    },
+  );
+
   app.get("/me", { preHandler: requireUser(db) }, async (request) => {
     const user = request.user;
     if (!user) throw new Error("requireUser did not set request.user");
@@ -205,8 +220,13 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       .from(malTokens)
       .where(eq(malTokens.userId, user.id))
       .limit(1);
+    const [account] = await db
+      .select({ welcomedAt: users.welcomedAt })
+      .from(users)
+      .where(eq(users.id, user.id));
     return {
       user: { malUsername: user.malUsername, isOwner: user.isOwner },
+      welcomed: account !== undefined && account.welcomedAt !== null,
       needsReauth: tokens?.needsReauth ?? true,
       lastSync: toLastSync(await latestSyncRun(db, user.id)),
     };

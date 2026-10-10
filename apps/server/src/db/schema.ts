@@ -58,6 +58,8 @@ export const users = pgTable("users", {
   // Whether friends see what this user watches (episodes, finishes, scores, drops). Off, they
   // see only the taste match.
   shareActivity: boolean("share_activity").notNull().default(true),
+  // When they finished or skipped the welcome steps; null sends a new account through them.
+  welcomedAt: timestamptz("welcomed_at"),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
@@ -191,6 +193,9 @@ export const anime = pgTable("anime", {
   episodeMinutes: integer("episode_minutes"),
   // MAL's community score.
   malMean: real("mal_mean"),
+  // AniList's description as plain text, fetched the first time someone opens the show's page.
+  // Null until then; "" when AniList has none. Syncs never touch it.
+  synopsis: text("synopsis"),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
 

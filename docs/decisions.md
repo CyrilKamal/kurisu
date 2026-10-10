@@ -2022,3 +2022,34 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Consequences:**
 - A small icon button's hit area is 40 × 48, so a phone's main actions use `k-btn--icon`.
 - Until PR 3 the rail still shows only Chat and List.
+
+## 2026-10-10 — The new screens' data: Today, show pages, Search and the Journal (between Milestones 6 and 7)
+**Decision:** The second step of the mobile-first refactor adds the server side of the new screens. The screens themselves come in the next PRs.
+- **Today** (`GET /today`) reads only what's stored: AniList's cached schedule, the list, the latest brief and friends' activity. It never calls AniList, unlike building a brief.
+  - "Out now" is a Watching show whose latest aired episode is past the user's progress.
+  - "Coming up" is the next week's episodes of Watching shows, plus Plan to Watch shows only when they premiere.
+  - "Continue" is a Watching show that finished airing with episodes left.
+- **Show pages** (`GET /shows/:id`) get the synopsis from AniList's description, fetched on the first view of each show and cached in `anime.synopsis`. AniList's spoiler blocks are removed.
+- **Search** (`GET /search`) uses AniList's title search, the same as Chat's, limited per user. With no words, it shows this season's popular shows.
+- **Adding outside Chat** (`POST /list/add`): the user's tap on Add is the confirmation. It goes through `commitProposal` as a `source: "user"` add, like an import's adds, and can be undone.
+- **The Journal** (`GET /journal`) merges History and the Diary into one timeline:
+  - kurisu's changes with their notes, where an undone change is marked and the undo itself isn't a line;
+  - MAL-site changes;
+  - each import as one line.
+- **`/me` gains `welcomed`** for the first-run steps. Existing accounts are marked welcomed.
+
+**Alternatives:**
+- **Synopsis:** MAL's synopsis, which needs a MAL API call per show (MAL's limits are undocumented, and the rules keep reads local). Or fetching every list show's synopsis after a sync, which is many AniList calls for pages few people open.
+- **Adds:** sending every add through Chat, as now. That's a model call and a confirm tap for something the user already chose.
+- **Journal:** keeping History and the Diary as two screens, which list the same updates twice.
+
+**Why:**
+- AniList is already the airing source and is free. Fetching on first view costs one request per show anyone actually opens.
+- A tap on Add is as clear a confirmation as Chat's confirm button.
+- The hard rules stay intact: every write goes through propose → commit, is logged and is undoable, and reads stay local, apart from the AniList calls a person is waiting on.
+
+**Consequences:**
+- **First view:** a show's first page view can wait up to 4 s for AniList.
+- **Synopsis stays fixed:** a synopsis is never refreshed once stored.
+- **Callback redirect:** sending new accounts to `/welcome` waits for the welcome screen (PR 5), so the MAL callback still goes to `/list`.
+- **Search pacing:** searches share AniList's pace with everything else. Twenty a minute per user keeps one person from slowing the rest.
