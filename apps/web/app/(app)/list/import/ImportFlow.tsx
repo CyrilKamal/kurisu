@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { Banner } from "@/components/Banner";
 import { Icon } from "@/components/Icon";
 import { ProgressMeter } from "@/components/ProgressMeter";
+import { useConfirm } from "@/components/Sheet";
 import { getApi, postApi, sendApi } from "@/lib/clientApi";
 import { FOLDED, progress, rowError, rowsIn, SECTIONS, unanswered } from "@/lib/importView";
 
@@ -27,6 +28,7 @@ const POLL_MS = 1200;
  */
 export function ImportFlow({ initial }: { initial: ImportView | null }) {
   const [view, setView] = useState(initial);
+  const { confirm, sheet } = useConfirm();
   // The paste box shows when there's no import, or the last one is over.
   const [pasting, setPasting] = useState(
     initial === null || initial.status === "undone" || initial.status === "failed",
@@ -84,7 +86,12 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
     if (!view) return;
     if (
       path === "undo" &&
-      !window.confirm("Undo this import? Everything it wrote goes back to how it was.")
+      !(await confirm({
+        title: "Undo this import?",
+        body: "Everything it wrote goes back to how it was, on MyAnimeList too.",
+        action: "Undo import",
+        danger: true,
+      }))
     ) {
       return;
     }
@@ -249,7 +256,7 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
         );
       })}
 
-      <div className="fixed inset-x-0 bottom-(--nav-height) z-20 border-t border-line bg-surface lg:bottom-0 lg:left-(--rail-width)">
+      <div className="fixed inset-x-0 bottom-bar z-20 border-t border-line bg-surface lg:left-(--rail-width)">
         <div className="mx-auto flex max-w-(--content-max) flex-wrap items-center gap-2 px-4 py-2">
           <div className="k-field__hint min-w-0 flex-1">
             {notice ? (
@@ -278,6 +285,7 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
           </button>
         </div>
       </div>
+      {sheet}
     </>
   );
 }

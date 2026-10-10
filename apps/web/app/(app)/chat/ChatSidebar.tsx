@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
+import { Sheet } from "@/components/Sheet";
 import { groupChats } from "@/lib/chatGroups";
 import { useIsBrowser } from "@/lib/useIsBrowser";
 
@@ -19,7 +20,8 @@ function chatTime(iso: string, recent: boolean): string {
 
 /**
  * The list of chats (the design system's ChatList): New chat, then chats by day with briefs
- * tagged and times in mono. Rename and delete take the time's place on hover or focus.
+ * tagged and times in mono. With a mouse, rename and delete take the time's place on hover or
+ * focus; on a touch screen, each chat has a ⋯ that opens them in a sheet.
  */
 export function ChatSidebar({
   chats,
@@ -41,6 +43,8 @@ export function ChatSidebar({
   const inBrowser = useIsBrowser();
   const groups = inBrowser ? groupChats(chats, new Date()) : [{ label: null, chats }];
   const [editing, setEditing] = useState<{ id: string; draft: string } | null>(null);
+  // The chat whose ⋯ was tapped, on a touch screen.
+  const [actionsFor, setActionsFor] = useState<ConversationView | null>(null);
   // Set by Escape, so leaving the box doesn't save the draft.
   const cancelled = useRef(false);
 
@@ -108,23 +112,33 @@ export function ChatSidebar({
                       );
                     }
                     return (
-                      <li key={chat.id} className="group relative">
+                      <li key={chat.id} className="group relative pointer-coarse:flex">
                         <Link
                           href={`/chat/${chat.id}`}
                           onClick={onNavigate}
                           aria-current={chat.id === activeId ? "page" : undefined}
                           title={chat.title}
-                          className="k-chatitem"
+                          className="k-chatitem pointer-coarse:min-w-0 pointer-coarse:flex-1"
                         >
                           <span className="k-chatitem__title">{chat.title}</span>
                           <span className="k-chatitem__side">
                             {chat.isBrief && <span className="k-tag k-tag--word">Brief</span>}
-                            <span className="group-focus-within:invisible group-hover:invisible">
+                            <span className="pointer-fine:group-focus-within:invisible pointer-fine:group-hover:invisible">
                               {inBrowser ? chatTime(chat.lastMessageAt, recent) : ""}
                             </span>
                           </span>
                         </Link>
-                        <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 group-focus-within:flex group-hover:flex">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActionsFor(chat);
+                          }}
+                          aria-label={`Rename or delete chat: ${chat.title}`}
+                          className="k-btn k-btn--icon k-btn--ghost hidden shrink-0 self-center pointer-coarse:inline-flex"
+                        >
+                          <Icon name="more" />
+                        </button>
+                        <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 pointer-fine:group-focus-within:flex pointer-fine:group-hover:flex">
                           <button
                             type="button"
                             onClick={() => {
@@ -158,6 +172,77 @@ export function ChatSidebar({
           })
         )}
       </div>
+      {actionsFor && (
+        <ChatActions
+          chat={actionsFor}
+          onClose={() => {
+            setActionsFor(null);
+          }}
+          onRename={(title) => {
+            setActionsFor(null);
+            void onRename(actionsFor, title);
+          }}
+          onDelete={() => {
+            // This sheet closes first: the delete asks in its own.
+            setActionsFor(null);
+            void onDelete(actionsFor);
+          }}
+        />
+      )}
     </nav>
+  );
+}
+
+/** A chat's name to change, or the chat to delete, for a touch screen. */
+function ChatActions({
+  chat,
+  onClose,
+  onRename,
+  onDelete,
+}: {
+  chat: ConversationView;
+  onClose: () => void;
+  onRename: (title: string) => void;
+  onDelete: () => void;
+}) {
+  const [draft, setDraft] = useState(chat.title);
+  return (
+    <Sheet
+      title="Chat"
+      onClose={onClose}
+      onSubmit={() => {
+        onRename(draft);
+      }}
+    >
+      <div className="k-sheet__body">
+        <div className="k-field">
+          <label className="k-field__label" htmlFor="chat-name">
+            Name
+          </label>
+          <input
+            id="chat-name"
+            className="k-input"
+            value={draft}
+            maxLength={CHAT_TITLE_MAX}
+            onChange={(event) => {
+              setDraft(event.target.value);
+            }}
+          />
+        </div>
+      </div>
+      <div className="k-sheet__actions">
+        <button type="button" className="k-btn k-btn--danger" onClick={onDelete}>
+          <Icon name="trash" />
+          Delete
+        </button>
+        <span className="flex-1" />
+        <button type="button" className="k-btn k-btn--ghost" onClick={onClose}>
+          Cancel
+        </button>
+        <button type="submit" className="k-btn k-btn--primary" disabled={!draft.trim()}>
+          Save
+        </button>
+      </div>
+    </Sheet>
   );
 }

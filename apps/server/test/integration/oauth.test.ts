@@ -34,7 +34,7 @@ beforeEach(async () => {
 async function loginOk() {
   const result = await login(h);
   expect(result.callbackResponse.statusCode).toBe(302);
-  expect(result.callbackResponse.headers.location).toBe("/list");
+  expect(result.callbackResponse.headers.location).toBe("/today");
   if (!result.sessionCookie) throw new Error("expected a session cookie");
   sessionCookies.push(result.sessionCookie);
   return result.sessionCookie;
@@ -83,7 +83,7 @@ describe("GET /auth/mal/callback", () => {
       TEST_MAL_CLIENT.redirectUri,
     );
     expect(result.callbackResponse.statusCode).toBe(302);
-    expect(result.callbackResponse.headers.location).toBe("/list");
+    expect(result.callbackResponse.headers.location).toBe("/today");
     expect(h.fakeMal.tokenGrants).toEqual(["authorization_code"]);
 
     const session = result.callbackResponse.cookies.find((c) => c.name === SESSION_COOKIE);
@@ -154,7 +154,7 @@ describe("GET /auth/mal/callback", () => {
 
   it("rejects a replayed callback (state is single-use)", async () => {
     const first = await login(h);
-    expect(first.callbackResponse.headers.location).toBe("/list");
+    expect(first.callbackResponse.headers.location).toBe("/today");
 
     const replay = await h.app.inject({
       method: "GET",

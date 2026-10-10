@@ -6,9 +6,10 @@ import {
   type ChangeView,
   type ListEntry,
 } from "@kurisu/shared";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
+import { Sheet } from "@/components/Sheet";
 import { sendApi } from "@/lib/clientApi";
 import { editErrorMessage, editPayload, formFrom } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
@@ -17,8 +18,8 @@ const SCORES = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
 /**
  * Edits one entry: status, episodes, score and rewatching, or takes it off the list. Saving goes
- * through the same write path as Chat, so it shows in History and can be undone. Built from the
- * design system's Field controls in a panel.
+ * through the same write path as Chat, so it shows in History and can be undone. A Sheet of the
+ * design system's Field controls; Remove asks in the same sheet, never a second one.
  */
 export function EditSheet({
   entry,
@@ -29,15 +30,10 @@ export function EditSheet({
   onClose: () => void;
   onSaved: (change: ChangeView) => void;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
   const [form, setForm] = useState(() => formFrom(entry));
   const [busy, setBusy] = useState<"save" | "remove" | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Opened as a modal, so focus stays inside and Escape closes it.
-    if (dialog.current && !dialog.current.open) dialog.current.showModal();
-  }, []);
+  const [removing, setRemoving] = useState(false);
 
   const payload = editPayload(entry, form);
   const total = entry.numEpisodes;
@@ -63,24 +59,58 @@ export function EditSheet({
     setForm((f) => ({ ...f, episodesWatched: capped }));
   }
 
-  return (
-    <dialog
-      ref={dialog}
-      onClose={onClose}
-      aria-labelledby="edit-title"
-      className="k-panel m-auto w-[min(26rem,calc(100%-2rem))] p-0 text-ink backdrop:bg-scrim"
-    >
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (payload) void send("save", `/list/${String(entry.animeId)}/edit`, payload);
-        }}
-        className="flex flex-col gap-4 p-4"
-      >
-        <h2 id="edit-title" className="k-write__title whitespace-normal">
-          {entry.title}
-        </h2>
+  const errorLine = error && (
+    <p className="k-cmd__notice" role="alert">
+      <span className="k-tag k-tag--word text-accent-text">Err</span>
+      {error}
+    </p>
+  );
 
+  if (removing) {
+    return (
+      <Sheet title={entry.title} onClose={onClose}>
+        <div className="k-sheet__body">
+          <p className="text-ink-muted">
+            Take it off your list, on MyAnimeList too? You can put it back from History.
+          </p>
+          {errorLine}
+        </div>
+        <div className="k-sheet__actions">
+          <button
+            type="button"
+            className="k-btn k-btn--ghost"
+            disabled={busy !== null}
+            onClick={() => {
+              setRemoving(false);
+              setError(null);
+            }}
+          >
+            Keep it
+          </button>
+          <button
+            type="button"
+            className="k-btn k-btn--danger"
+            disabled={busy !== null}
+            aria-busy={busy === "remove"}
+            onClick={() => void send("remove", `/list/${String(entry.animeId)}/remove`, {})}
+          >
+            <Icon name="trash" />
+            {busy === "remove" ? "Removing…" : "Remove"}
+          </button>
+        </div>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Sheet
+      title={entry.title}
+      onClose={onClose}
+      onSubmit={() => {
+        if (payload) void send("save", `/list/${String(entry.animeId)}/edit`, payload);
+      }}
+    >
+      <div className="k-sheet__body">
         <div className="k-field">
           <label className="k-field__label" htmlFor="edit-status">
             Status
@@ -178,43 +208,34 @@ export function EditSheet({
           </label>
         )}
 
-        {error && (
-          <p className="k-cmd__notice" role="alert">
-            <span className="k-tag k-tag--word text-accent-text">Err</span>
-            {error}
-          </p>
-        )}
-
-        <div className="flex items-center gap-2 border-t border-line pt-4">
-          <button
-            type="button"
-            className="k-btn k-btn--danger"
-            disabled={busy !== null}
-            aria-busy={busy === "remove"}
-            onClick={() => {
-              const question = `Remove ${entry.title} from your list? You can put it back from History.`;
-              if (window.confirm(question)) {
-                void send("remove", `/list/${String(entry.animeId)}/remove`, {});
-              }
-            }}
-          >
-            <Icon name="trash" />
-            {busy === "remove" ? "Removing…" : "Remove"}
-          </button>
-          <span className="flex-1" />
-          <button type="button" className="k-btn" onClick={() => dialog.current?.close()}>
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="k-btn k-btn--primary"
-            disabled={!payload || busy !== null}
-            aria-busy={busy === "save"}
-          >
-            {busy === "save" ? "Saving…" : "Save"}
-          </button>
-        </div>
-      </form>
-    </dialog>
+        {errorLine}
+      </div>
+      <div className="k-sheet__actions">
+        <button
+          type="button"
+          className="k-btn k-btn--danger"
+          disabled={busy !== null}
+          onClick={() => {
+            setError(null);
+            setRemoving(true);
+          }}
+        >
+          <Icon name="trash" />
+          Remove
+        </button>
+        <span className="flex-1" />
+        <button type="button" className="k-btn k-btn--ghost" onClick={onClose}>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="k-btn k-btn--primary"
+          disabled={!payload || busy !== null}
+          aria-busy={busy === "save"}
+        >
+          {busy === "save" ? "Saving…" : "Save"}
+        </button>
+      </div>
+    </Sheet>
   );
 }

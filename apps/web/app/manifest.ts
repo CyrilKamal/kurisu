@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "kurisu",
     short_name: "kurisu",
     description: "Your anime list, kept in sync by conversation.",
-    start_url: "/chat",
+    start_url: "/today",
     scope: "/",
     display: "standalone",
     background_color: "#0d0e12",

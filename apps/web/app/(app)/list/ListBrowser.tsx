@@ -1,15 +1,12 @@
 "use client";
 
 import { changeResponseSchema, type ChangeView, type ListEntry } from "@kurisu/shared";
-import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
-import { Banner } from "@/components/Banner";
-import { Icon } from "@/components/Icon";
-import { postApi, sendApi } from "@/lib/clientApi";
-import { describeWrite } from "@/lib/describeChange";
-import { canAddEpisode, editErrorMessage } from "@/lib/editEntry";
+import { sendApi } from "@/lib/clientApi";
+import { canAddEpisode } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
+import { useWriteToast } from "@/lib/useWriteToast";
 import {
   clearFilters,
   countMatches,
@@ -57,32 +54,15 @@ export function ListBrowser({
     window.history.replaceState(null, "", listHref(next));
   }
 
-  const router = useRouter();
-  const [, startRefresh] = useTransition();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
-  const [notice, setNotice] = useState<{
-    level: "info" | "error";
-    text: string;
-    undoId: string | null;
-  } | null>(null);
+  const toast = useWriteToast();
   const editing = entries.find((e) => e.animeId === editingId) ?? null;
 
-  /** After a write: say what changed, offer Undo, and reload the list from the server. */
-  function written(change: ChangeView, undoable = true) {
+  /** After a write: say what changed with Undo, and reload the list from the server. */
+  function written(change: ChangeView) {
     setEditingId(null);
-    setNotice({
-      level: "info",
-      text: `${change.title}: ${describeWrite(change.kind, change.before, change.after)}`,
-      undoId: undoable ? change.id : null,
-    });
-    startRefresh(() => {
-      router.refresh();
-    });
-  }
-
-  function failed(error: string) {
-    setNotice({ level: "error", text: editErrorMessage(error), undoId: null });
+    toast.written(change);
   }
 
   async function addEpisode(entry: ListEntry) {
@@ -95,13 +75,7 @@ export function ListBrowser({
     );
     setSavingId(null);
     if (result.ok && result.data) written(result.data.change);
-    else if (!result.ok) failed(result.error);
-  }
-
-  async function undo(changeId: string) {
-    const result = await postApi(`/changes/${changeId}/undo`, changeResponseSchema);
-    if (result.ok && result.data) written(result.data.change, false);
-    else if (!result.ok) failed(result.error);
+    else if (!result.ok) toast.failed(result.error);
   }
 
   const filtered = isFiltered(view);
@@ -173,40 +147,6 @@ export function ListBrowser({
           }}
           onSaved={written}
         />
-      )}
-
-      {notice && (
-        <Banner
-          level={notice.level}
-          className="fixed inset-x-4 bottom-[calc(var(--nav-height)+var(--space-16))] z-20 mx-auto max-w-(--content-max) lg:bottom-6 lg:left-[calc(var(--rail-width)+var(--space-16))]"
-          action={
-            <span className="flex items-center gap-2">
-              {notice.undoId && (
-                <button
-                  type="button"
-                  className="k-link"
-                  onClick={() => {
-                    if (notice.undoId) void undo(notice.undoId);
-                  }}
-                >
-                  Undo
-                </button>
-              )}
-              <button
-                type="button"
-                className="k-btn k-btn--ghost k-btn--icon k-btn--sm"
-                aria-label="Dismiss"
-                onClick={() => {
-                  setNotice(null);
-                }}
-              >
-                <Icon name="clear" />
-              </button>
-            </span>
-          }
-        >
-          {notice.text}
-        </Banner>
       )}
     </>
   );

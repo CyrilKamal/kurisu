@@ -168,7 +168,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     // Sync on login, so the List screen opens on fresh data. A failed sync doesn't fail the
     // login: the run is recorded and the List screen offers a retry.
     await listSync.run(userId, "login");
-    return reply.redirect("/list");
+    return reply.redirect("/today");
   });
 
   app.post(
@@ -221,11 +221,15 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       .where(eq(malTokens.userId, user.id))
       .limit(1);
     const [account] = await db
-      .select({ welcomedAt: users.welcomedAt })
+      .select({ welcomedAt: users.welcomedAt, shareActivity: users.shareActivity })
       .from(users)
       .where(eq(users.id, user.id));
     return {
-      user: { malUsername: user.malUsername, isOwner: user.isOwner },
+      user: {
+        malUsername: user.malUsername,
+        isOwner: user.isOwner,
+        shareActivity: account?.shareActivity ?? true,
+      },
       welcomed: account !== undefined && account.welcomedAt !== null,
       needsReauth: tokens?.needsReauth ?? true,
       lastSync: toLastSync(await latestSyncRun(db, user.id)),

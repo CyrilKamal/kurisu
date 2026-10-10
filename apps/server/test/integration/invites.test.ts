@@ -77,7 +77,7 @@ describe("invites", () => {
     expect(check.json()).toEqual({ inviter: "Cyril" });
 
     const joined = await loginAs(ALEX, code);
-    expect(joined.callbackResponse.headers.location).toBe("/list");
+    expect(joined.callbackResponse.headers.location).toBe("/today");
     expect(joined.sessionCookie).toBeDefined();
     expect(await accountFor(ALEX.id)).toMatchObject({ malUsername: "alex", isOwner: false });
     expect(await accountFor(TEST_MAL_USER.id)).toMatchObject({ isOwner: true });
@@ -101,7 +101,7 @@ describe("invites", () => {
     await loginAs(ALEX, await invite(owner));
 
     const again = await loginAs(ALEX);
-    expect(again.callbackResponse.headers.location).toBe("/list");
+    expect(again.callbackResponse.headers.location).toBe("/today");
   });
 
   it("turns away an expired invite", async () => {

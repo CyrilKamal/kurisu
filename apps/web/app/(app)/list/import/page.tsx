@@ -1,6 +1,5 @@
 import { latestImportResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -17,15 +16,7 @@ export default async function ImportPage() {
 
   return (
     <main className="mx-auto max-w-(--content-max) px-4 pb-40">
-      <ScreenHeader
-        title="Import"
-        sub="from your notes: paste, review, one tap"
-        actions={
-          <Link href="/list" className="k-btn k-btn--ghost">
-            Back to list
-          </Link>
-        }
-      />
+      <ScreenHeader title="Import" sub="from your notes: paste, review, one tap" back="/list" />
       <ImportFlow initial={latest.import} />
     </main>
   );

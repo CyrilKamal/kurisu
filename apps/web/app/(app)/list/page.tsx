@@ -1,14 +1,15 @@
 import { listResponseSchema, meResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Icon } from "@/components/Icon";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { apiGet } from "@/lib/api";
 import { lastSyncLabel } from "@/lib/format";
 import { readListView } from "@/lib/listFilters";
 
 import { ListBrowser } from "./ListBrowser";
-import { ListMenu } from "./ListMenu";
 import { ResyncButton } from "./ResyncButton";
 import { SyncBanner } from "./SyncBanner";
 
@@ -24,7 +25,7 @@ export default async function ListPage(props: PageProps<"/list">) {
   const initialView = readListView(await props.searchParams);
 
   return (
-    <main className="mx-auto max-w-(--content-max) px-4 pb-16">
+    <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
       <ListBrowser
         entries={list.entries}
         initialView={initialView}
@@ -36,7 +37,13 @@ export default async function ListPage(props: PageProps<"/list">) {
               actions={
                 <>
                   <ResyncButton />
-                  <ListMenu />
+                  <Link
+                    href="/list/import"
+                    className="k-btn k-btn--icon"
+                    aria-label="Import from notes"
+                  >
+                    <Icon name="plus" />
+                  </Link>
                 </>
               }
             />
