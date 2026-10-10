@@ -5,6 +5,7 @@ import { agentRuns, anime } from "../db/schema.js";
 import type { ModelClient } from "../llm/modelClient.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import type { LlmMessage } from "../llm/types.js";
+import type { MeaningSearch } from "../list/search.js";
 import type { Change, CommitErrorCode, ListWriter } from "../writes/commit.js";
 import type { Proposal } from "../writes/propose.js";
 import { namedShows } from "./briefReply.js";
@@ -73,6 +74,8 @@ export interface AgentDeps {
   prompt: Prompt;
   /** Model turns before giving up. Each turn is one model call plus its tool calls. */
   maxTurns?: number;
+  /** Milestone 7's lab: list search also finds shows by what their names mean (SEARCH_VECTORS). */
+  meaning?: MeaningSearch;
 }
 
 const DEFAULT_MAX_TURNS = 6;
@@ -132,6 +135,7 @@ export async function runAgent(deps: AgentDeps, input: RunInput): Promise<RunRes
       input.history.at(-1)?.content.includes("?") === true,
     searches: new Map(),
     stop: null,
+    meaning: deps.meaning ?? null,
   };
   const messages: LlmMessage[] = [
     ...input.history.map((m): LlmMessage =>

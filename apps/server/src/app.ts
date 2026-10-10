@@ -1,7 +1,7 @@
 import { STATUS_CODES } from "node:http";
 
 import fastifyCookie from "@fastify/cookie";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { CURRENT_PROMPT, DIARY_PROMPT, RECOMMEND_PROMPT } from "./agent/prompts/index.js";
@@ -32,9 +32,16 @@ import { registerChatRoutes } from "./chat/routes.js";
 import type { Config } from "./config.js";
 import { createTokenCipher } from "./crypto/tokenCipher.js";
 import { createDb } from "./db/client.js";
+import { listEntries } from "./db/schema.js";
 import { registerListRoutes } from "./list/routes.js";
-import { createModelClient, type ModelClient } from "./llm/modelClient.js";
-import { loadModelsFile, resolveRoles, type ModelRef } from "./llm/modelConfig.js";
+import { createEmbedder, createModelClient, type ModelClient } from "./llm/modelClient.js";
+import {
+  loadModelsFile,
+  resolveEmbedding,
+  resolveRoles,
+  type ModelRef,
+} from "./llm/modelConfig.js";
+import { ensureTitleEmbeddings } from "./lab/titles.js";
 import type { RetryOptions } from "./mal/client.js";
 import { registerPushRoutes } from "./push/routes.js";
 import { createPushSender } from "./push/send.js";
@@ -178,6 +185,22 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       .catch((err: unknown) => {
         app.log.warn({ err: { name: (err as Error).name } }, "could not refresh discovery");
       })
+      // Milestone 7's lab: title vectors for the list's shows, for search by meaning (only
+      // new or renamed shows are embedded).
+      .then(async () => {
+        if (!embedder) return;
+        const listed = await db
+          .select({ id: listEntries.animeId })
+          .from(listEntries)
+          .where(eq(listEntries.userId, userId));
+        await ensureTitleEmbeddings(
+          { db, embedder },
+          listed.map((row) => row.id),
+        );
+      })
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not embed list titles");
+      })
       .finally(() => airingRefreshes.delete(userId));
     airingRefreshes.set(userId, task);
   };
@@ -210,6 +233,15 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       ollamaBaseUrl: config.llm.ollamaBaseUrl,
       ollama: modelsFile.ollama,
     });
+  // Milestone 7's lab: list search by meaning, only when SEARCH_VECTORS is on.
+  const embedder = config.lab.searchVectors
+    ? createEmbedder({
+        ref: resolveEmbedding(modelsFile, config.llm.embeddingModel ?? undefined),
+        geminiApiKey: config.llm.geminiApiKey,
+        ollamaBaseUrl: config.llm.ollamaBaseUrl,
+        ollama: modelsFile.ollama,
+      })
+    : null;
   const malWrites = {
     tokenStore,
     apiBaseUrl: config.mal.apiBaseUrl,
@@ -376,6 +408,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     config,
     db,
     models,
+    ...(embedder && { meaning: { embedder } }),
     writeListStatus: writeDeps.writeListStatus,
     removeListStatus: writeDeps.removeListStatus,
     refreshAnime: writeDeps.refreshAnime,

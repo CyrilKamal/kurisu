@@ -2,6 +2,8 @@ import { and, eq, sql } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
 import { anime, listEntries } from "../db/schema.js";
+import { nearest } from "../lab/embeddings.js";
+import type { Embedder } from "../llm/modelClient.js";
 import { NOT_YET_AIRED } from "../mal/client.js";
 import type { ListStatus } from "../writes/normalize.js";
 import { usersWords, wordsInName, type UsersWords } from "./grounding.js";
@@ -20,6 +22,26 @@ export const CLEAR_MARGIN = 0.15;
 export const PARTIAL_MATCH_CAP = 0.95;
 /** How many entries the clear-match rule looks at, so a hidden rival can't make one look unique. */
 const POOL_SIZE = 20;
+
+/**
+ * Milestone 7's lab: how close each show's names are in meaning to the words, from `title`
+ * vectors, used next to the trigram match. Behind SEARCH_VECTORS; off, search is as before.
+ */
+export interface MeaningSearch {
+  embedder: Embedder;
+  /**
+   * Whether shows only the meaning found may join the results ("always"), or meaning only
+   * reorders the shows the words found ("never", the default). The search replay found
+   * meaning-only shows right 2 times in 258.
+   */
+  extras?: "never" | "always";
+}
+/** Closest names looked at per query. */
+const MEANING_K = 5;
+/** Below this cosine similarity, a name doesn't mean the words. */
+export const MEANING_MIN = 0.3;
+/** Reciprocal rank fusion's damping: ranks 1 and 2 count about the same, a long tail barely. */
+const RRF_K = 60;
 
 export interface ListEntryView {
   animeId: number;
@@ -59,6 +81,11 @@ export interface SearchCandidate<S extends ListStatus | null = ListStatus> exten
    *   A show that hasn't aired yet isn't in progress, even if the list says watching.
    */
   clearBy: ClearBy | null;
+  /**
+   * Set when only the meaning of the words found it (the lab's vector channel): how close its
+   * names are, 0–1. Such a show is never clear; only the user's own words make a match clear.
+   */
+  byMeaning?: number;
 }
 
 export type ClearBy = "unique" | "only_in_progress";
@@ -99,6 +126,8 @@ interface SearchOptions {
   contested?: Set<number>;
   /** The user is answering the agent's question, so naming an entry exactly picks it. */
   answering?: boolean;
+  /** Also find shows by what their names mean (the lab's vector channel). */
+  meaning?: MeaningSearch;
 }
 
 /**
@@ -117,7 +146,79 @@ export async function searchMyList(
   const pool = (await scoredPool(db, userId, null, cleaned)).filter(
     (e): e is ScoredEntry => e.status !== null,
   );
-  return clearFirst(markClear(pool, cleaned, options), options.limit);
+  // Clear matches come from the words alone, exactly as without vectors.
+  const marked = markClear(pool, cleaned, options);
+  if (!options.meaning) return clearFirst(marked, options.limit);
+  const meant = await meaningMatches(db, userId, cleaned, options.meaning);
+  const extra: SearchCandidate[] = [];
+  for (const [animeId, similarity] of options.meaning.extras === "always" ? meant : []) {
+    if (marked.some((c) => c.animeId === animeId)) continue;
+    const entry = await getEntry(db, userId, animeId);
+    if (!entry) continue;
+    extra.push({
+      ...entry,
+      matchScore: 0,
+      matchedName: entry.title,
+      clear: false,
+      clearBy: null,
+      byMeaning: Math.round(similarity * 1000) / 1000,
+    });
+  }
+  return clearFirst(fuse(marked, meant, extra), options.limit);
+}
+
+/**
+ * The user's shows whose names are closest in meaning to any query, best first, with their best
+ * similarity: a query's vector against each show's `title` vector.
+ */
+async function meaningMatches(
+  db: Db,
+  userId: string,
+  queries: string[],
+  meaning: MeaningSearch,
+): Promise<Map<number, number>> {
+  const listed = await db
+    .select({ id: listEntries.animeId })
+    .from(listEntries)
+    .where(eq(listEntries.userId, userId));
+  const refs = listed.map((row) => String(row.id));
+  const { vectors } = await meaning.embedder.embed(queries, "query");
+  const best = new Map<number, number>();
+  for (const vector of vectors) {
+    const near = await nearest({ db, embedder: meaning.embedder }, "title", vector, {
+      k: MEANING_K,
+      refs,
+    });
+    for (const n of near) {
+      if (n.similarity < MEANING_MIN) continue;
+      const id = Number(n.ref);
+      best.set(id, Math.max(best.get(id) ?? 0, n.similarity));
+    }
+  }
+  return new Map([...best].sort((a, b) => b[1] - a[1]));
+}
+
+/**
+ * Clear matches first, as ever; the rest ranked by reciprocal rank fusion of the trigram order
+ * and the meaning order, so a show both find rises and a meaning-only one can join.
+ */
+function fuse<S extends ListStatus | null>(
+  marked: SearchCandidate<S>[],
+  meant: Map<number, number>,
+  extra: SearchCandidate<S>[],
+): SearchCandidate<S>[] {
+  const trigramRank = new Map(
+    marked.filter((c) => !c.clear).map((c, i) => [c.animeId, i] as const),
+  );
+  const meaningRank = new Map([...meant.keys()].map((id, i) => [id, i] as const));
+  const fused = (id: number) =>
+    (trigramRank.has(id) ? 1 / (RRF_K + (trigramRank.get(id) ?? 0)) : 0) +
+    (meaningRank.has(id) ? 1 / (RRF_K + (meaningRank.get(id) ?? 0)) : 0);
+  const all = [...marked, ...extra];
+  return [
+    ...all.filter((c) => c.clear),
+    ...all.filter((c) => !c.clear).sort((a, b) => fused(b.animeId) - fused(a.animeId)),
+  ];
 }
 
 /**
