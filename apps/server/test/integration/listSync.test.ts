@@ -42,7 +42,7 @@ interface ListResponse {
 
 async function loginOk(): Promise<string> {
   const result = await login(h);
-  expect(result.callbackResponse.headers.location).toBe("/list");
+  expect(result.callbackResponse.headers.location).toBe("/today");
   if (!result.sessionCookie) throw new Error("expected a session cookie");
   return result.sessionCookie;
 }
@@ -150,7 +150,7 @@ describe("sync on login", () => {
 
     const result = await login(h);
 
-    expect(result.callbackResponse.headers.location).toBe("/list");
+    expect(result.callbackResponse.headers.location).toBe("/today");
     const list = await getList(result.sessionCookie ?? "");
     expect(list.entries).toEqual([]);
     expect(list.lastSync).toMatchObject({ status: "failed", error: "mal_unavailable" });
