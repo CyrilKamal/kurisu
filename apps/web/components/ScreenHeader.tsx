@@ -13,7 +13,7 @@ export function ScreenHeader({
 }) {
   return (
     <header className="k-header flex-wrap">
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <h1 className="k-header__title">{title}</h1>
         {sub && <p className="k-header__sub">{sub}</p>}
       </div>

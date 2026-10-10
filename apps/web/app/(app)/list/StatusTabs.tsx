@@ -6,8 +6,9 @@ import { STATUS_LABELS } from "@/lib/format";
 
 /**
  * One tab per list status with its square mark and a mono count (the design system's
- * StatusTabs). The tabs are real links (so they open in a new tab too), but a plain click
- * switches in place without asking the server.
+ * StatusTabs). They wrap rather than scroll, so a phone shows all five at once, in two rows. The
+ * tabs are real links (so they open in a new tab too), but a plain click switches in place
+ * without asking the server.
  */
 export function StatusTabs({
   selected,
@@ -22,7 +23,7 @@ export function StatusTabs({
 }) {
   return (
     <nav aria-label="List status">
-      <ul className="k-tabs">
+      <ul className="k-tabs flex-wrap">
         {LIST_STATUSES.map((status) => (
           <li key={status}>
             <Link
@@ -34,7 +35,7 @@ export function StatusTabs({
                 event.preventDefault();
                 onSelect(status);
               }}
-              className={`k-tab k-tab--${STATUS_KEYS[status]}`}
+              className={`k-tab k-tab--${STATUS_KEYS[status]} max-sm:px-2`}
             >
               <span className="k-sq" />
               {STATUS_LABELS[status]}
