@@ -111,24 +111,57 @@ export async function nearest(
   const { db, embedder } = deps;
   if (options.refs?.length === 0) return [];
   const distance = cosineDistance(embeddings.embedding, vector);
-  const rows = await db
-    .select({ ref: embeddings.ref, text: embeddings.text, distance })
-    .from(embeddings)
-    .where(
-      and(
-        eq(embeddings.kind, kind),
-        eq(embeddings.model, embedder.model),
-        ownedBy(options.userId ?? null),
-        options.refs ? inArray(embeddings.ref, options.refs) : undefined,
-      ),
-    )
-    .orderBy(asc(distance))
-    .limit(options.k);
+  const rows = await db.transaction(async (tx) => {
+    // An HNSW scan takes the nearest vectors of every kind and owner first and filters after, so
+    // a narrow filter (one user's history among everyone's) could come back short. pgvector's
+    // iterative scan keeps going, in order, until it has k.
+    await tx.execute(sql`SET LOCAL hnsw.iterative_scan = strict_order`);
+    return tx
+      .select({ ref: embeddings.ref, text: embeddings.text, distance })
+      .from(embeddings)
+      .where(
+        and(
+          eq(embeddings.kind, kind),
+          eq(embeddings.model, embedder.model),
+          ownedBy(options.userId ?? null),
+          options.refs ? inArray(embeddings.ref, options.refs) : undefined,
+        ),
+      )
+      .orderBy(asc(distance))
+      .limit(options.k);
+  });
   return rows.map((row) => ({
     ref: row.ref,
     text: row.text,
     similarity: 1 - Number(row.distance),
   }));
+}
+
+/**
+ * How close each of these refs' vectors is to a vector (cosine similarity), for scoring a known
+ * set of shows. Exact: every listed vector is compared, without the index. Refs without a vector
+ * from this embedder are left out.
+ */
+export async function similarities(
+  deps: { db: Db; embedder: Embedder },
+  kind: EmbeddingKind,
+  vector: number[],
+  refs: string[],
+  options: { userId?: string | null } = {},
+): Promise<Map<string, number>> {
+  if (refs.length === 0) return new Map();
+  const rows = await deps.db
+    .select({ ref: embeddings.ref, distance: cosineDistance(embeddings.embedding, vector) })
+    .from(embeddings)
+    .where(
+      and(
+        eq(embeddings.kind, kind),
+        eq(embeddings.model, deps.embedder.model),
+        ownedBy(options.userId ?? null),
+        inArray(embeddings.ref, [...new Set(refs)]),
+      ),
+    );
+  return new Map(rows.map((row) => [row.ref, 1 - Number(row.distance)]));
 }
 
 /** A search's words as a vector, embedded as a query (some models embed queries differently). */

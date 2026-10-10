@@ -3,7 +3,7 @@ import { afterAll, beforeEach, describe, expect, inject, it } from "vitest";
 
 import { createDb } from "../../src/db/client.js";
 import { embeddings, users } from "../../src/db/schema.js";
-import { ensureEmbeddings, nearest, queryVector } from "../../src/lab/embeddings.js";
+import { ensureEmbeddings, nearest, queryVector, similarities } from "../../src/lab/embeddings.js";
 import { FakeEmbedder } from "../support/fakeEmbedder.js";
 
 const { db, close } = createDb(inject("databaseUrl"));
@@ -88,5 +88,37 @@ describe("lab embeddings (pgvector)", () => {
       sql`SELECT indexdef FROM pg_indexes WHERE indexname = 'embeddings_vector_idx'`,
     );
     expect(index.rows[0]?.indexdef).toMatch(/USING hnsw .*vector_cosine_ops/);
+  });
+
+  it("still finds k when the index's nearest vectors are all someone else's", async () => {
+    const [near, far] = await db
+      .insert(users)
+      .values([
+        { malUserId: 1, malUsername: "near" },
+        { malUserId: 2, malUsername: "far" },
+      ])
+      .returning({ id: users.id });
+    if (!near || !far) throw new Error("no users");
+    // Half the vectors are each user's, so Postgres scans the HNSW index and filters after.
+    const notes = (words: string) =>
+      Array.from({ length: 2000 }, (_, i) => ({ ref: String(i), text: `${words} ${String(i)}` }));
+    await ensureEmbeddings(deps, "history", notes("jazz night"), { userId: near.id });
+    await ensureEmbeddings(deps, "history", notes("rain on the roof"), { userId: far.id });
+    await db.execute(sql`ANALYZE embeddings`);
+
+    const jazz = await queryVector(embedder, "jazz night");
+    const found = await nearest(deps, "history", jazz, { k: 3, userId: far.id });
+    expect(found).toHaveLength(3);
+  });
+
+  it("scores a given set of texts exactly", async () => {
+    await ensureEmbeddings(deps, "synopsis", shows);
+    const jazz = await queryVector(embedder, "jazz music and friendship");
+    const scored = await similarities(deps, "synopsis", jazz, ["1", "2", "404"]);
+    expect([...scored.keys()].sort()).toEqual(["1", "2"]);
+    const [best] = await nearest(deps, "synopsis", jazz, { k: 1 });
+    expect(scored.get("2")).toBeCloseTo(best?.similarity ?? 0, 6);
+    expect(scored.get("2")).toBeGreaterThan(scored.get("1") ?? 1);
+    expect(await similarities(deps, "synopsis", jazz, [])).toEqual(new Map());
   });
 });

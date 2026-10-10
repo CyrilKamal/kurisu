@@ -4,6 +4,7 @@ import {
   eraYears,
   poolOf,
   rankCandidates,
+  SEMANTIC_SCALE,
   startYearOf,
   type CandidateRow,
   type TasteSignals,
@@ -281,5 +282,36 @@ describe("rankCandidates and what's airing now", () => {
     expect(ids(airing).sort()).toEqual([1, 3]);
     expect(airing.find((c) => c.animeId === 3)?.facts).toContain("#1 most popular show airing now");
     expect(ids(rankCandidates(rows, noTaste, {})).sort()).toEqual([1, 2, 3]);
+  });
+});
+
+describe("rankCandidates with the lab's semantic fit", () => {
+  // Two otherwise equal shows; the second's synopsis suits the request.
+  const rows = [row(1, {}), row(2, {})];
+  const fit = new Map([
+    [1, 0],
+    [2, 0.1],
+  ]);
+
+  it("lifts shows whose synopses fit the request, in proportion to the weight", () => {
+    expect(ids(rankCandidates(rows, noTaste, {}))).toEqual([1, 2]);
+    expect(ids(rankCandidates(rows, noTaste, {}, [], { fit, weight: 0 }))).toEqual([1, 2]);
+    const half = rankCandidates(rows, noTaste, {}, [], { fit, weight: 0.5 });
+    const full = rankCandidates(rows, noTaste, {}, [], { fit, weight: 1 });
+    expect(ids(half)).toEqual([2, 1]);
+    const gain = (ranked: typeof half) =>
+      (ranked.find((c) => c.animeId === 2)?.score ?? 0) -
+      (ranked.find((c) => c.animeId === 1)?.score ?? 0);
+    expect(gain(half)).toBeCloseTo(0.5 * SEMANTIC_SCALE * 0.1, 2);
+    expect(gain(full)).toBeCloseTo(SEMANTIC_SCALE * 0.1, 2);
+  });
+
+  it("never lets the fit bring in a show the constraints leave out", () => {
+    const long = [row(1, {}), row(2, { episodeMinutes: 90 })];
+    const ranked = rankCandidates(long, noTaste, { availableMinutes: 30 }, [], {
+      fit: new Map([[2, 1]]),
+      weight: 1,
+    });
+    expect(ids(ranked)).toEqual([1]);
   });
 });

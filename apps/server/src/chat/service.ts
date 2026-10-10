@@ -21,6 +21,7 @@ import {
 } from "../db/schema.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import { runRecommender, type RecommendResult } from "../recommend/agent.js";
+import type { SemanticRanking } from "../recommend/semantic.js";
 import { failureNote, type ReviewKind } from "../review/capture.js";
 import type { AnimeRefresher, CommitErrorCode, ListRemover } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
@@ -36,6 +37,8 @@ export interface ChatDeps extends AgentDeps {
   roles: { agent: ModelRef; escalation: ModelRef | null; recommend: ModelRef };
   /** The recommendation agent's prompt. */
   recommendPrompt: Prompt;
+  /** Milestone 7's lab: recommendations also ranked by synopsis, when it's on. */
+  semantic?: SemanticRanking;
   /**
    * Reads a message for reactions to the shows it updated and saves them to the diary, in the
    * background (see diary/reader.ts). Never throws.
@@ -250,7 +253,12 @@ export async function handleChatMessage(
   let recommendation: RecommendResult | null = null;
   if (run.handedOff) {
     recommendation = await runRecommender(
-      { db, models: deps.models, prompt: deps.recommendPrompt },
+      {
+        db,
+        models: deps.models,
+        prompt: deps.recommendPrompt,
+        ...(deps.semantic && { semantic: deps.semantic }),
+      },
       { ...input, model: deps.roles.recommend, handedOffFromRunId: run.runId },
     );
   }

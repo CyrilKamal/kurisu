@@ -58,6 +58,8 @@ const envSchema = z.object({
   BRIEF_SCHEDULER: optional(z.enum(["on", "off"]).default("on")),
   // Milestone 7's lab: "on" lets list search also rank shows by what their names mean.
   SEARCH_VECTORS: optional(z.enum(["on", "off"]).default("off")),
+  // Milestone 7's lab: how much a synopsis' fit to the request counts in recommendations (0 off).
+  RECOMMEND_SEMANTIC_WEIGHT: optional(z.coerce.number().min(0).max(1).default(0)),
 
   // The MAL account that owns this kurisu. When set, no other MAL account can sign up.
   // Required in production, where the app is reachable from the internet.
@@ -104,7 +106,7 @@ export interface Config {
   };
   brief: { scheduler: boolean };
   /** Milestone 7's lab experiments, off unless switched on. */
-  lab: { searchVectors: boolean };
+  lab: { searchVectors: boolean; semanticWeight: number };
   /**
    * The owner's MAL username, which alone can create an account without an invite, and what
    * invite pages call them.
@@ -172,7 +174,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       embeddingModel: parsed.EMBEDDING_MODEL ?? null,
     },
     brief: { scheduler: parsed.BRIEF_SCHEDULER === "on" },
-    lab: { searchVectors: parsed.SEARCH_VECTORS === "on" },
+    lab: {
+      searchVectors: parsed.SEARCH_VECTORS === "on",
+      semanticWeight: parsed.RECOMMEND_SEMANTIC_WEIGHT,
+    },
     owner: parsed.OWNER_MAL_USERNAME
       ? {
           malUsername: parsed.OWNER_MAL_USERNAME,

@@ -9,6 +9,7 @@
  *   pnpm eval:recommend --prompt recommend@3                 compare another recommender prompt
  *   pnpm eval:recommend --thinking low                       the recommender's thinking level
  *   pnpm eval:recommend --agent-prompt progress-sync@14      another progress agent prompt
+ *   pnpm eval:recommend --semantic 0.5     also rank by synopsis fit (Milestone 7's lab), at this weight
  *
  * Needs Docker (a throwaway Postgres) and the frozen data from pnpm eval:recommend-data. Taste is
  * neutral here (the snapshot has no scores), so this measures following the request, not taste.
@@ -29,16 +30,18 @@ import {
 import { runAgent } from "../../../src/agent/runAgent.js";
 import { agentRunSteps, anime, briefSettings, listEntries } from "../../../src/db/schema.js";
 import { loadLocalEnvFile } from "../../../src/env.js";
-import { createModelClient } from "../../../src/llm/modelClient.js";
+import { createEmbedder, createModelClient } from "../../../src/llm/modelClient.js";
 import {
   costUsd,
   loadModelsFile,
   parseModelRef,
+  resolveEmbedding,
   resolveRoles,
 } from "../../../src/llm/modelConfig.js";
 import { THINKING_LEVELS } from "../../../src/llm/types.js";
 import { runRecommender } from "../../../src/recommend/agent.js";
 import { startYearOf } from "../../../src/recommend/candidates.js";
+import { ensureSynopsisEmbeddings, type SemanticRanking } from "../../../src/recommend/semantic.js";
 import { loadAiring } from "../airing.js";
 import { frozenCatalogSearch, loadCatalog } from "../catalog.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
@@ -54,6 +57,8 @@ import {
 } from "../recommendScore.js";
 import { loadSnapshot, type Snapshot } from "../snapshot.js";
 import { loadSeason, loadSeasonIntoDb } from "../season.js";
+import { cachedEmbedder } from "../embedCache.js";
+import { loadSynopses } from "../synopses.js";
 import { linksByMalId, loadStreaming } from "../streaming.js";
 import { throttle } from "../throttle.js";
 
@@ -72,6 +77,8 @@ const { values } = parseArgs({
     prompt: { type: "string" },
     "agent-prompt": { type: "string" },
     thinking: { type: "string" },
+    /** Weight of the synopsis fit in the ranking, 0 to 1 (Milestone 7's lab). */
+    semantic: { type: "string" },
   },
 });
 
@@ -117,6 +124,37 @@ if (rpm !== null && !(rpm > 0)) {
 }
 const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm);
 
+const semanticWeight = values.semantic === undefined ? 0 : Number(values.semantic);
+if (!(semanticWeight >= 0 && semanticWeight <= 1)) {
+  console.error("--semantic takes a weight from 0 to 1.");
+  process.exit(1);
+}
+const synopses = semanticWeight > 0 ? loadSynopses() : null;
+if (semanticWeight > 0 && !synopses) {
+  console.error("--semantic needs the frozen synopses: run pnpm eval:synopses first.");
+  process.exit(1);
+}
+const embedder =
+  semanticWeight > 0
+    ? cachedEmbedder(
+        createEmbedder({
+          ref: resolveEmbedding(modelsFile, nonEmpty(process.env.EMBEDDING_MODEL) ?? undefined),
+          geminiApiKey: nonEmpty(process.env.GEMINI_API_KEY),
+          ollamaBaseUrl: nonEmpty(process.env.OLLAMA_BASE_URL) ?? "http://127.0.0.1:11434",
+          ollama: modelsFile.ollama,
+        }),
+      )
+    : null;
+const semantic: SemanticRanking | null = embedder
+  ? {
+      embedder,
+      weight: semanticWeight,
+      onError: (err) => {
+        console.error(`semantic fit failed: ${(err as Error).message}`);
+      },
+    }
+  : null;
+
 const details = loadDetails();
 const pool = loadDiscovery();
 const streaming = loadStreaming();
@@ -154,7 +192,7 @@ const streamingLinks = new Map([
 const snapshots = new Map<string, Snapshot>();
 
 console.log(
-  `Recommendation eval: ${String(selected.length)} cases; ${agentRef.ref} (${CURRENT_PROMPT.version}) hands off to ${recommendRef.ref}${recommendRef.thinking ? `, thinking ${recommendRef.thinking}` : ""} (${RECOMMEND_PROMPT.version})`,
+  `Recommendation eval: ${String(selected.length)} cases; ${agentRef.ref} (${CURRENT_PROMPT.version}) hands off to ${recommendRef.ref}${recommendRef.thinking ? `, thinking ${recommendRef.thinking}` : ""} (${RECOMMEND_PROMPT.version})${embedder ? `, synopsis fit at weight ${String(semanticWeight)} (${embedder.model})` : ""}`,
 );
 if (rpm !== null)
   console.log(`At most ${String(rpm)} model calls a minute (waiting is left out of latency).`);
@@ -162,6 +200,16 @@ console.log("Starting a throwaway Postgres...");
 const database = await startEvalDatabase();
 
 try {
+  if (embedder && synopses) {
+    // Shared rows, so they outlast each case's reset.
+    const { embedded } = await ensureSynopsisEmbeddings(
+      { db: database.db, embedder },
+      synopses.shows,
+    );
+    console.log(
+      `Synopsis vectors: ${String(embedded)} stored (synopses frozen ${synopses.frozenAt}; ${String(embedder.stats.misses)} newly embedded)`,
+    );
+  }
   const scored: { run: RecommendRun; score: RecommendScore; resolved: ResolvedRecommendCase }[] =
     [];
   for (const [i, resolved] of selected.entries()) {
@@ -179,7 +227,7 @@ try {
 
   mkdirSync(RESULTS_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const path = `${RESULTS_DIR}recommend-${stamp}-${recommendRef.ref.replace(/[^a-z0-9.-]+/gi, "_")}.json`;
+  const path = `${RESULTS_DIR}recommend-${stamp}-${recommendRef.ref.replace(/[^a-z0-9.-]+/gi, "_")}${embedder ? `-semantic${String(semanticWeight)}` : ""}.json`;
   writeFileSync(
     path,
     `${JSON.stringify(
@@ -189,6 +237,14 @@ try {
         recommendModel: recommendRef.ref,
         recommendThinking: recommendRef.thinking ?? null,
         recommendPrompt: RECOMMEND_PROMPT.version,
+        semantic:
+          embedder && synopses
+            ? {
+                weight: semanticWeight,
+                embedding: embedder.model,
+                synopsesFrozenAt: synopses.frozenAt,
+              }
+            : null,
         ranAt: new Date().toISOString(),
         metrics,
         cases: scored.map(({ run, score }) => ({ ...run, score })),
@@ -199,6 +255,7 @@ try {
   );
   console.log(`\nFull report: ${path}`);
 } finally {
+  embedder?.save();
   await database.close();
 }
 
@@ -225,7 +282,7 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
   );
   const recommendation = agent.handedOff
     ? await runRecommender(
-        { db, models, prompt: RECOMMEND_PROMPT },
+        { db, models, prompt: RECOMMEND_PROMPT, ...(semantic && { semantic }) },
         {
           userId,
           conversationId: null,
