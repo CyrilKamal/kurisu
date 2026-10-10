@@ -1,11 +1,11 @@
-import { meResponseSchema, statsResponseSchema } from "@kurisu/shared";
+import { statsResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Icon, type IconName } from "@/components/Icon";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
 import { goalProgress } from "@/lib/stats";
 
 export const metadata: Metadata = { title: "You · kurisu" };
@@ -35,10 +35,7 @@ const SCREENS: { href: string; label: string; about: string; icon: IconName }[] 
 
 /** You: this year's goal up top, then everything about you and your list. */
 export default async function YouPage() {
-  const [me, stats] = await Promise.all([
-    apiGet("/me", meResponseSchema),
-    apiGet("/stats", statsResponseSchema),
-  ]);
+  const [me, stats] = await Promise.all([getMe(), apiGet("/stats", statsResponseSchema)]);
   if (!me || !stats) redirect("/");
   const { year } = stats;
   const progress = year.goal === null ? null : goalProgress(year.completed, year.goal);

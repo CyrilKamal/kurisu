@@ -2,7 +2,7 @@
 
 The app's look comes from the design system "kurisu" on claude.ai: https://claude.ai/artifact/UoY3mvw8Z4Yf8uutvEDYLw. Its brand book (the artifact's `project/README.md`) and each component's guidelines are the rules. Every screen uses its tokens and its `k-` classes.
 
-These files are copies of version `1791615420-b9ef` (2026-10-09, the system's v9):
+These files are copies of version `1791632446-1558` (2026-10-10, the system's v9.2):
 
 - `tokens.json`: the tokens, verbatim.
 - `bundle.css`: the component classes (`k-btn`, `k-log`, `k-write`, `k-row`, ...), verbatim except its first line, a Google Fonts `@import`: `app/layout.tsx` loads Inter, Source Serif 4 and JetBrains Mono with `next/font` instead.

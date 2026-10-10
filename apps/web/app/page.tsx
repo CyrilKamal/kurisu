@@ -1,13 +1,12 @@
-import { meResponseSchema } from "@kurisu/shared";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { Banner } from "@/components/Banner";
-import { apiGet } from "@/lib/api";
+import { getMe } from "@/lib/api";
 import { loginErrorMessage } from "@/lib/format";
 
 export default async function LoginPage(props: PageProps<"/">) {
-  const me = await apiGet("/me", meResponseSchema);
+  const me = await getMe();
   if (me) redirect("/today");
 
   const { login_error: code } = await props.searchParams;

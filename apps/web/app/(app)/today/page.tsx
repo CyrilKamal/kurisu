@@ -1,4 +1,4 @@
-import { meResponseSchema, todayResponseSchema } from "@kurisu/shared";
+import { todayResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -7,7 +7,7 @@ import { Poster } from "@/components/Poster";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ShowLink } from "@/components/ShowLink";
 import { outLabel, untilLabel } from "@/lib/airing";
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
 
 import { ActivityFeed } from "../you/friends/ActivityFeed";
 import { EpisodeRows } from "./EpisodeRows";
@@ -32,10 +32,7 @@ function headerLine(timeZone: string, now: Date, outCount: number): string {
  * into Chat, at the bottom where a thumb is.
  */
 export default async function TodayPage() {
-  const [me, today] = await Promise.all([
-    apiGet("/me", meResponseSchema),
-    apiGet("/today", todayResponseSchema),
-  ]);
+  const [me, today] = await Promise.all([getMe(), apiGet("/today", todayResponseSchema)]);
   if (!me || !today) redirect("/");
   // A new account goes through the welcome steps once (they can skip them).
   if (!me.welcomed) redirect("/welcome");

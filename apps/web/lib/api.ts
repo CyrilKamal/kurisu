@@ -1,8 +1,9 @@
 import "server-only";
 
-import { SESSION_COOKIE } from "@kurisu/shared";
+import { meResponseSchema, SESSION_COOKIE } from "@kurisu/shared";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import type { z } from "zod";
 
 import { apiInternalUrl } from "./apiInternalUrl";
@@ -40,3 +41,9 @@ export async function apiGetPublic<T>(path: string, schema: z.ZodType<T>): Promi
   }
   return schema.parse(await res.json());
 }
+
+/**
+ * The signed-in user, or null: asked once per request, so the signed-in layout's check and the
+ * page share one answer.
+ */
+export const getMe = cache(() => apiGet("/me", meResponseSchema));

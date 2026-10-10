@@ -1,16 +1,16 @@
-import { inviteCodeResponseSchema, meResponseSchema } from "@kurisu/shared";
+import { inviteCodeResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { Banner } from "@/components/Banner";
-import { apiGet, apiGetPublic } from "@/lib/api";
+import { apiGetPublic, getMe } from "@/lib/api";
 
 export const metadata: Metadata = { title: "You're invited · kurisu" };
 
 /** Where an invite link lands: who sent it, what joining means, and the way in. */
 export default async function InvitePage(props: PageProps<"/invite/[code]">) {
-  const me = await apiGet("/me", meResponseSchema);
+  const me = await getMe();
   if (me) redirect("/list");
 
   const { code } = await props.params;

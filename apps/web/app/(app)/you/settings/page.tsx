@@ -1,14 +1,10 @@
-import {
-  briefSettingsResponseSchema,
-  meResponseSchema,
-  pushPublicKeyResponseSchema,
-} from "@kurisu/shared";
+import { briefSettingsResponseSchema, pushPublicKeyResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
 
 import { BriefSettingsForm } from "./BriefSettingsForm";
 import { DeleteAccount } from "./DeleteAccount";
@@ -24,7 +20,7 @@ export const metadata: Metadata = { title: "Settings · kurisu" };
  */
 export default async function SettingsPage() {
   const [me, settings, push] = await Promise.all([
-    apiGet("/me", meResponseSchema),
+    getMe(),
     apiGet("/brief/settings", briefSettingsResponseSchema),
     apiGet("/push/public-key", pushPublicKeyResponseSchema),
   ]);
