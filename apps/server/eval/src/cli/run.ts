@@ -31,6 +31,7 @@ import {
 import type { ListChange } from "../../../src/writes/normalize.js";
 import { loadCases, type ResolvedCase } from "../cases.js";
 import { loadAiring } from "../airing.js";
+import { loadPrivateAiring, loadPrivateSnapshot, PRIVATE_DIR } from "../private.js";
 import { frozenCatalogSearch, loadCatalog } from "../catalog.js";
 import { briefFromHistory } from "../brief.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
@@ -51,8 +52,15 @@ const { values } = parseArgs({
     limit: { type: "string" },
     prompt: { type: "string" },
     rpm: { type: "string" },
+    /** "private": the review queue's labeled cases in eval/private/ (never committed). */
+    dir: { type: "string" },
   },
 });
+if (values.dir !== undefined && values.dir !== "private") {
+  console.error('--dir takes "private" (eval/private/), or leave it out for eval/cases/.');
+  process.exit(1);
+}
+const privateRun = values.dir === "private";
 
 const promptVersion = values.prompt ?? CURRENT_PROMPT.version;
 if (!Object.hasOwn(PROMPTS, promptVersion)) {
@@ -81,10 +89,13 @@ if (rpm !== null && !(rpm > 0)) {
 const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm);
 
 /** Frozen AniList airing data, so "the newest episode" has a fixed answer. */
-const airing = loadAiring();
+const airing = privateRun ? loadPrivateAiring() : loadAiring();
 /** Frozen AniList title searches, for search_anime (prompts that offer it). */
 const catalog = frozenCatalogSearch(loadCatalog());
-const loaded = loadCases();
+const snapshotLoader = privateRun ? loadPrivateSnapshot : loadSnapshot;
+const loaded = privateRun
+  ? loadCases(PRIVATE_DIR, loadPrivateSnapshot, airing)
+  : loadCases(undefined, undefined, airing);
 if (loaded.errors.length > 0) {
   for (const e of loaded.errors)
     console.error(`ERROR ${e.file}${e.caseId ? ` [${e.caseId}]` : ""}: ${e.message}`);
@@ -164,7 +175,7 @@ async function runCase(
 ): Promise<CaseRun & { file: string; toolCalls: string[] }> {
   let snapshot = snapshots.get(resolved.snapshot);
   if (!snapshot) {
-    snapshot = loadSnapshot(resolved.snapshot);
+    snapshot = snapshotLoader(resolved.snapshot);
     snapshots.set(resolved.snapshot, snapshot);
   }
   const { db } = database;

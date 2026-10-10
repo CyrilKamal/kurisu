@@ -44,6 +44,7 @@ import { registerDiaryRoutes } from "./diary/routes.js";
 import { registerInviteRoutes } from "./invites/routes.js";
 import { checkBudget } from "./budget/budget.js";
 import { registerFriendRoutes } from "./friends/routes.js";
+import { captureReview } from "./review/capture.js";
 import { registerStatsRoutes } from "./stats/routes.js";
 import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
@@ -308,6 +309,21 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       .finally(() => diaryReads.delete(task));
     diaryReads.add(task);
   };
+  // Replies that may have gone wrong go to the review queue in the background, so a reply or an
+  // undo never waits on it. Shutdown waits for any still running.
+  const reviewCaptures = new Set<Promise<void>>();
+  app.addHook("onClose", async () => {
+    await Promise.allSettled(reviewCaptures);
+  });
+  const queueReview = (input: Parameters<typeof captureReview>[1]) => {
+    const task: Promise<void> = captureReview(db, input)
+      .then(() => undefined)
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not queue a reply for review");
+      })
+      .finally(() => reviewCaptures.delete(task));
+    reviewCaptures.add(task);
+  };
   registerChatRoutes(app, {
     config,
     db,
@@ -320,6 +336,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     recommendPrompt: RECOMMEND_PROMPT,
     budget,
     ...(options.diary !== false && { diary: readDiary }),
+    review: queueReview,
     roles: {
       agent: options.roles?.agent ?? configuredRoles.agent,
       escalation:

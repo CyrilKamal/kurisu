@@ -1,9 +1,14 @@
+import { reportRequestSchema } from "@kurisu/shared";
+import { and, eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
 import type { BudgetLimit } from "../budget/budget.js";
+import { chatRunOfChange, replyRunOf } from "../review/capture.js";
 import type { Config } from "../config.js";
+import type { Db } from "../db/client.js";
+import { chatMessages, conversations } from "../db/schema.js";
 import { commitProposal } from "../writes/commit.js";
 import { writeError } from "../writes/httpErrors.js";
 import { cancelProposal, undoChange } from "../writes/undo.js";
@@ -167,14 +172,48 @@ export function registerChatRoutes(
     const params = idParams.safeParse(request.params);
     if (!params.success) return reply.code(404).send({ error: "not_found" });
 
+    const runId = await chatRunOfChange(db, userId, params.data.id);
     const result = await undoChange(writeDeps, userId, params.data.id);
     if (result.status === "committed") {
+      // Undoing what Chat wrote within a day suggests it was wrong: the reply goes to review.
+      if (runId) {
+        deps.review?.({ userId, runId: await replyRunOf(db, runId), kind: "undone", note: null });
+      }
       return { change: await loadChange(db, userId, result.change.id) };
     }
     return writeError(reply, result.status === "failed" ? result.error : result.status);
   });
 
+  /** The user says a reply was wrong, with their own words if they gave any. */
+  app.post("/chat/messages/:id/report", guards, async (request, reply) => {
+    const userId = userOf(request);
+    const params = idParams.safeParse(request.params);
+    const body = reportRequestSchema.safeParse(request.body ?? {});
+    if (!params.success) return reply.code(404).send({ error: "not_found" });
+    if (!body.success) return reply.code(400).send({ error: "invalid_report" });
+    const runId = await assistantRunOf(db, userId, params.data.id);
+    if (!runId) return reply.code(404).send({ error: "not_found" });
+    deps.review?.({ userId, runId, kind: "report", note: body.data.note ?? null });
+    return reply.code(202).send({ reported: true });
+  });
+
   app.get("/changes", { preHandler: requireUser(db) }, async (request) => ({
     changes: await loadChanges(db, userOf(request)),
   }));
+}
+
+/** The run behind one of the user's assistant replies, or null. */
+async function assistantRunOf(db: Db, userId: string, messageId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ runId: chatMessages.runId })
+    .from(chatMessages)
+    .innerJoin(conversations, eq(conversations.id, chatMessages.conversationId))
+    .where(
+      and(
+        eq(chatMessages.id, messageId),
+        eq(chatMessages.role, "assistant"),
+        eq(conversations.userId, userId),
+      ),
+    );
+  return row?.runId ?? null;
 }

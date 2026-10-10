@@ -20,6 +20,9 @@ coverage/
 # The hosted app's daily database backups (deploy/README.md)
 backups/
 
+# Eval cases from the hosted app's review queue: real people's messages and lists, never committed
+apps/server/eval/private/
+
 # Logs
 *.log
 npm-debug.log*

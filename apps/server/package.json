@@ -28,7 +28,8 @@
     "eval:season": "tsx eval/src/cli/exportSeason.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",
-    "eval": "tsx eval/src/cli/run.ts"
+    "eval": "tsx eval/src/cli/run.ts",
+    "review": "tsx eval/src/cli/review.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",

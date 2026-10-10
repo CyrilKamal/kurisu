@@ -30,7 +30,8 @@
     "eval:streaming": "pnpm --filter @kurisu/server eval:streaming",
     "eval:season": "pnpm --filter @kurisu/server eval:season",
     "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",
-    "eval": "pnpm --filter @kurisu/server eval"
+    "eval": "pnpm --filter @kurisu/server eval",
+    "review": "pnpm --filter @kurisu/server review"
   },
   "devDependencies": {
     "prettier": "^3.9.9"

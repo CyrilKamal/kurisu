@@ -21,6 +21,7 @@ import {
 } from "../db/schema.js";
 import type { ModelRef } from "../llm/modelConfig.js";
 import { runRecommender, type RecommendResult } from "../recommend/agent.js";
+import { failureNote, type ReviewKind } from "../review/capture.js";
 import type { AnimeRefresher, CommitErrorCode, ListRemover } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
 import { mentionedShows } from "./mentions.js";
@@ -44,6 +45,13 @@ export interface ChatDeps extends AgentDeps {
     message: string,
     committed: { animeId: number; changeId: string }[],
   ) => void;
+  /** Puts a reply that may have gone wrong in the review queue, in the background. Never throws. */
+  review?: (input: {
+    userId: string;
+    runId: string;
+    kind: ReviewKind;
+    note: string | null;
+  }) => void;
 }
 
 /** Earlier messages the model sees for context. */
@@ -270,6 +278,16 @@ export async function handleChatMessage(
       .set({ chatMessageId: assistantMessage.id })
       .where(eq(recommendations.id, recommendation.recommendationId));
   }
+
+  // A reply that failed, or said it changed something it didn't, goes to the review queue.
+  const note = failureNote(
+    [
+      run.outcome === "error" ? run.error : null,
+      recommendation?.outcome === "error" ? recommendation.error : null,
+    ],
+    content.includes(NOTHING_CHANGED_REPLY),
+  );
+  if (note) deps.review?.({ userId, runId: run.runId, kind: "error", note });
 
   return {
     conversationId,
