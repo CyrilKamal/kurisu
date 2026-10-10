@@ -1,10 +1,10 @@
 import { NavBar } from "./NavBar";
 
-/** The signed-in screens (Chat and List) share a bottom tab bar. */
+/** The signed-in screens share the NavBar: a bottom bar on phones, a rail on the left from 1024px. */
 export default function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      {children}
+      <div className="lg:pl-(--rail-width)">{children}</div>
       <NavBar />
     </>
   );

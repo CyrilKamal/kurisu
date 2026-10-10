@@ -120,7 +120,7 @@ export function ChatShell({
 
   return (
     <ShellContext value={context}>
-      <div className="flex h-dvh pb-14">
+      <div className="flex h-dvh pb-14 lg:pb-0">
         <aside className="hidden w-(--sidebar-width) shrink-0 border-r border-line md:block">
           {sidebar()}
         </aside>

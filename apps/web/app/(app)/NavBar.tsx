@@ -10,11 +10,17 @@ const TABS = [
   { href: "/list", label: "List", icon: "list" },
 ] as const;
 
-/** The bottom bar (NavBar): solid surface, a 2px crimson bar over the active tab. */
+/**
+ * The NavBar: a bottom bar on phones and a rail on the left from 1024px (bundle.css), solid
+ * surface, with a 2px crimson bar on the active tab.
+ */
 export function NavBar() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Main" className="k-nav fixed inset-x-0 bottom-0 z-20">
+    <nav
+      aria-label="Main"
+      className="k-nav fixed inset-x-0 bottom-0 z-20 lg:inset-y-0 lg:right-auto"
+    >
       <ul>
         {TABS.map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);

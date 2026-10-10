@@ -178,7 +178,7 @@ export function ListBrowser({
       {notice && (
         <Banner
           level={notice.level}
-          className="fixed inset-x-4 bottom-[calc(var(--nav-height)+var(--space-16))] z-20 mx-auto max-w-(--content-max)"
+          className="fixed inset-x-4 bottom-[calc(var(--nav-height)+var(--space-16))] z-20 mx-auto max-w-(--content-max) lg:bottom-6 lg:left-[calc(var(--rail-width)+var(--space-16))]"
           action={
             <span className="flex items-center gap-2">
               {notice.undoId && (
