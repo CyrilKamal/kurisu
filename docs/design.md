@@ -36,7 +36,7 @@ The app has four screens, a bottom bar on phones and a rail on desktop:
 - **Today**, the home screen: episodes out that you haven't watched, each a tap from watched, what airs this week, shows in progress, the latest brief and what friends watched.
 - **List**, the mirrored MAL list.
 - **Chat**, for talking to the agent.
-- **You**: History (the change log, so every write, by the agent, the user or an import, is visible and reversible), the diary, stats, taste, friends and settings.
+- **You**: the Journal (every update, by the agent, the user, an import or on MAL's site, with Undo and the user's notes, so every write is visible and reversible), stats, taste, friends and settings.
 
 The look follows the kurisu design system (https://claude.ai/artifact/UoY3mvw8Z4Yf8uutvEDYLw; copied into `apps/web/design/`): dark only, crimson for actions, teal for writes, and Chat as a command log where every reply shows its run.
 

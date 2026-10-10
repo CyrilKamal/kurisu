@@ -2145,3 +2145,39 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - The offline list is from the last time the List screen was opened on that device.
 - Accounts made before this were marked welcomed by migration 0028, so only new ones see the steps.
 
+## 2026-10-10 — Finishing a show, the Journal, and Chat on phones (between Milestones 6 and 7)
+**Decision:** The last step of the mobile-first refactor.
+- **Finishing a show is the app's peak moment.** Any write outside Chat that moves a show to Completed opens a "Finished" sheet: from List, Today, the show page or an add. It holds:
+  - episodes and hours watched;
+  - a one-tap score;
+  - this year's goal meter filling by one, with the system's 240ms meter motion;
+  - the sequel to start, if AniList has one that isn't on the list.
+
+  Done closes it. In Chat, the latest reply that finished a show shows the same inline, under its write block.
+- **The Journal** (`/you/journal`) replaces History and the Diary, which listed the same updates twice. It's one dated log:
+  - Undo on kurisu's changes, with undone ones struck through;
+  - "On MyAnimeList" rows;
+  - each import as one line that undoes as one;
+  - notes under their update, with Share and Delete.
+
+  The old URLs redirect.
+- **Chat on phones:**
+  - Times move above each entry under 640px, so the text gets the width.
+  - "↵ send" is hidden on touch keyboards.
+  - "Report a problem" became a "Report" link at the end of RunMeta's line. RunMeta itself stays visible.
+  - An empty chat suggests "watched ep N of" your own Watching shows.
+
+**Alternatives:**
+- **Celebrating with confetti or a bounce.** The brand book bans both.
+- **Asking for a score before the write**, which puts friction on every finish.
+- **Keeping History and the Diary as tabs of one screen.**
+- **Sequels fetched live** when the sheet opens, which is an AniList call while someone waits.
+
+**Why:**
+- The peak-end rule: finishing a show is the moment people remember, and the score and goal are worth one tap there.
+- One timeline is less to learn, and nothing in it is duplicated.
+
+**Consequences:**
+- **Sequel cache:** the sheet reads the cached sequels. A show completed for the first time may show none until its page has refreshed them (in the background, the first time it opens).
+- **Two lookups per finish:** the sheet asks `/shows/:id` and `/stats` each time a show is finished.
+

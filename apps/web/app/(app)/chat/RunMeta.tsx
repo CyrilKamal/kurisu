@@ -12,14 +12,14 @@ import {
 /**
  * The run behind a reply, shown with it, never behind a tap (the design system's RunMeta):
  * "Model: Flash-Lite • 2.5s • 4 tools • 1,840 tok • progress-sync@17", with the tool calls
- * above it in a collapsed trace.
+ * above it in a collapsed trace, and `report` (Report a problem) at the end of the line.
  */
-export function RunMeta({ run }: { run: RunView }) {
+export function RunMeta({ run, report }: { run: RunView; report?: React.ReactNode }) {
   const tools = run.steps.length;
   return (
     <>
       {tools > 0 && <Trace steps={run.steps} />}
-      <p className="k-run">
+      <div className="k-run">
         <span>
           Model: <b>{modelLabel(run.escalatedFrom ?? run.model)}</b>
           {run.escalatedFrom && <span className="k-run__esc"> → {modelLabel(run.model)}</span>}
@@ -43,7 +43,8 @@ export function RunMeta({ run }: { run: RunView }) {
           {run.promptVersion}
           {run.handoff && ` + ${run.handoff.promptVersion}`}
         </span>
-      </p>
+        {report}
+      </div>
     </>
   );
 }

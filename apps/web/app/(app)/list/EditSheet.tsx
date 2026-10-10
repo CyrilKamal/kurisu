@@ -66,7 +66,7 @@ export function EditSheet({
       <Sheet title={entry.title} onClose={onClose}>
         <div className="k-sheet__body">
           <p className="text-ink-muted">
-            Take it off your list, on MyAnimeList too? You can put it back from History.
+            Take it off your list, on MyAnimeList too? You can put it back from your Journal.
           </p>
           {errorLine}
         </div>

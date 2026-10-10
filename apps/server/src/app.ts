@@ -234,19 +234,34 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       app.log.warn({ err: { name: (err as Error).name } }, "could not fetch a synopsis");
     },
   });
-  const showRefreshes = new Map<number, Promise<void>>();
+  const showRefreshes = new Map<string, Promise<void>>();
   app.addHook("onClose", async () => {
     await Promise.allSettled([synopsis.settle(), ...showRefreshes.values()]);
   });
-  const refreshShowAiring = (malId: number) => {
-    if (showRefreshes.has(malId)) return;
-    const task: Promise<void> = refreshAiring({ db, anilist: syncAniList, log: app.log }, [malId])
+  /** One background lookup per show and kind at a time, however many pages ask. */
+  const refreshInBackground = (key: string, work: () => Promise<unknown>, what: string) => {
+    if (showRefreshes.has(key)) return;
+    const task: Promise<void> = work()
       .then(() => undefined)
       .catch((err: unknown) => {
-        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh a show's airing");
+        app.log.warn({ err: { name: (err as Error).name } }, `could not refresh a show's ${what}`);
       })
-      .finally(() => showRefreshes.delete(malId));
-    showRefreshes.set(malId, task);
+      .finally(() => showRefreshes.delete(key));
+    showRefreshes.set(key, task);
+  };
+  const refreshShowAiring = (malId: number) => {
+    refreshInBackground(
+      `airing:${String(malId)}`,
+      () => refreshAiring({ db, anilist: syncAniList, log: app.log }, [malId]),
+      "airing",
+    );
+  };
+  const refreshShowSequels = (malId: number) => {
+    refreshInBackground(
+      `sequels:${String(malId)}`,
+      () => refreshSequels({ db, anilist: syncAniList }, [malId]),
+      "sequels",
+    );
   };
 
   const push = createPushSender({
@@ -307,6 +322,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     db,
     synopsis,
     refreshAiring: refreshShowAiring,
+    refreshSequels: refreshShowSequels,
     catalog: (queries) => chatAniList.searchAnime(queries),
   });
   registerPushRoutes(app, {

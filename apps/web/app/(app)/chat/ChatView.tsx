@@ -10,8 +10,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { FinishInline } from "@/components/FinishSheet";
 import { Icon } from "@/components/Icon";
 import { getApi, postApi } from "@/lib/clientApi";
+import { finishes } from "@/lib/finish";
 import { writeErrorMessage } from "@/lib/describeChange";
 
 import { BriefCard } from "./BriefCard";
@@ -24,6 +26,7 @@ import { RunMeta } from "./RunMeta";
 import { ChoiceList, ShowList } from "./Shows";
 import { HeldWrite, WriteBlock } from "./WriteBlock";
 
+/** What to try when there's nothing in the list to suggest. */
 const EXAMPLES = [
   "watched ep 3 of Frieren",
   "two more episodes of JJK",
@@ -71,9 +74,12 @@ export function ChatView({
   conversation,
   initialMessages,
   initialDraft = "",
+  examples = EXAMPLES,
 }: {
   conversation: ConversationView | null;
   initialMessages: ChatMessageView[];
+  /** Suggestions for an empty chat, made from the user's own shows when there are some. */
+  examples?: string[];
   /** Text already in the command line, unsent (another screen's "Add", say). */
   initialDraft?: string;
 }) {
@@ -219,6 +225,17 @@ export function ChatView({
                           onUndo={(id) => act(`/changes/${id}/undo`, changeResponseSchema)}
                         />
                       )}
+                      {/* The latest reply that finished a show: its score, and the year's goal. */}
+                      {index === latest &&
+                        message.changes
+                          .filter(finishes)
+                          .map((change) => (
+                            <FinishInline
+                              key={change.id}
+                              animeId={change.animeId}
+                              title={change.title}
+                            />
+                          ))}
                       {message.pending.map((proposal) => (
                         <HeldWrite
                           key={proposal.id}
@@ -267,8 +284,9 @@ export function ChatView({
                         ))}
                     </>
                   )}
-                  {message.run && <RunMeta run={message.run} />}
-                  {message.run && <ReportReply messageId={message.id} />}
+                  {message.run && (
+                    <RunMeta run={message.run} report={<ReportReply messageId={message.id} />} />
+                  )}
                 </LogEntry>
               ),
             )}
@@ -285,7 +303,7 @@ export function ChatView({
       <div className="px-4">
         {empty && (
           <div className="k-chips pt-2">
-            {EXAMPLES.map((example) => (
+            {examples.map((example) => (
               <button
                 key={example}
                 type="button"
