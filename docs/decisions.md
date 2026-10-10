@@ -2118,3 +2118,30 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - Countdowns use the viewer's clock, so they're drawn only in the browser: rows show no countdown until the page has loaded.
 - A show found by Search is stored as an `anime` row (as Chat's searches already are), so its page and Add work.
 
+## 2026-10-10 — A welcome for new accounts, install, and an offline page (between Milestones 6 and 7)
+**Decision:** The fifth step of the mobile-first refactor.
+- **Welcome:** a new account's login lands on `/welcome`. It has three steps, each skippable:
+  1. Install. The browser's prompt where there is one, the Share → Add to Home Screen steps on iPhone, and the step is left out when kurisu is already installed.
+  2. Notifications, plus the brief's time; Next turns the brief on.
+  3. Your streaming services.
+- **Finishing** sets `welcomed`. An empty list goes on to Import; anyone else goes to Today. Today sends an account that hasn't finished back to the steps, so leaving halfway doesn't skip them for good.
+- **Offline:** the service worker serves pages from the network only, and falls back to a precached `/offline`.
+  - Hashed built files and icons are cache-first.
+  - The API is never cached.
+  - `/offline` shows the list as this device last saw it, read-only, and says changes need a connection. The List screen saves that copy itself, with no extra request. Logout and account deletion clear it.
+
+**Alternatives:**
+- **Caching pages or API answers** for offline browsing. They could show stale or another account's data, and writes can't work offline anyway.
+- **A welcome made of tooltips over the real screens.** It's harder to skip, and it can't ask to install before the brief needs it.
+- **Caching in development too**, which serves stale chunks while editing.
+
+**Why:**
+- kurisu's one offline job is "what was I watching": the list read-only is enough.
+- Precaching only `/offline` and its files keeps the worker small and never stale.
+- iPhone notifications need the Home Screen app, so install comes first.
+
+**Consequences:**
+- A bumped `STATIC_CACHE` name clears old built files. Without a bump, files from older deploys stay cached until the next one.
+- The offline list is from the last time the List screen was opened on that device.
+- Accounts made before this were marked welcomed by migration 0028, so only new ones see the steps.
+

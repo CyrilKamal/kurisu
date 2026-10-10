@@ -168,7 +168,8 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     // Sync on login, so the List screen opens on fresh data. A failed sync doesn't fail the
     // login: the run is recorded and the List screen offers a retry.
     await listSync.run(userId, "login");
-    return reply.redirect("/today");
+    // A new account starts with the welcome steps; everyone else, with Today.
+    return reply.redirect(isNew ? "/welcome" : "/today");
   });
 
   app.post(

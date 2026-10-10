@@ -1,11 +1,12 @@
 "use client";
 
 import { changeResponseSchema, type ChangeView, type ListEntry } from "@kurisu/shared";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { sendApi } from "@/lib/clientApi";
 import { canAddEpisode } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
+import { rememberList } from "@/lib/offline";
 import { useWriteToast } from "@/lib/useWriteToast";
 import {
   clearFilters,
@@ -59,6 +60,11 @@ export function ListBrowser({
   const [savingId, setSavingId] = useState<number | null>(null);
   const toast = useWriteToast();
   const editing = entries.find((e) => e.animeId === editingId) ?? null;
+
+  // This device's copy of the list, for the offline page.
+  useEffect(() => {
+    void rememberList({ entries, lastSync: null });
+  }, [entries]);
 
   /** After a write: say what changed with Undo, and reload the list from the server. */
   function written(change: ChangeView) {

@@ -32,9 +32,11 @@ beforeEach(async () => {
 });
 
 async function loginOk() {
+  const existed = await h.db.select().from(users).where(eq(users.malUserId, TEST_MAL_USER.id));
   const result = await login(h);
   expect(result.callbackResponse.statusCode).toBe(302);
-  expect(result.callbackResponse.headers.location).toBe("/today");
+  // A new account starts with the welcome steps; a returning one with Today.
+  expect(result.callbackResponse.headers.location).toBe(existed.length > 0 ? "/today" : "/welcome");
   if (!result.sessionCookie) throw new Error("expected a session cookie");
   sessionCookies.push(result.sessionCookie);
   return result.sessionCookie;
@@ -83,7 +85,7 @@ describe("GET /auth/mal/callback", () => {
       TEST_MAL_CLIENT.redirectUri,
     );
     expect(result.callbackResponse.statusCode).toBe(302);
-    expect(result.callbackResponse.headers.location).toBe("/today");
+    expect(result.callbackResponse.headers.location).toBe("/welcome");
     expect(h.fakeMal.tokenGrants).toEqual(["authorization_code"]);
 
     const session = result.callbackResponse.cookies.find((c) => c.name === SESSION_COOKIE);
@@ -154,7 +156,7 @@ describe("GET /auth/mal/callback", () => {
 
   it("rejects a replayed callback (state is single-use)", async () => {
     const first = await login(h);
-    expect(first.callbackResponse.headers.location).toBe("/today");
+    expect(first.callbackResponse.headers.location).toBe("/welcome");
 
     const replay = await h.app.inject({
       method: "GET",

@@ -37,6 +37,8 @@ export default async function TodayPage() {
     apiGet("/today", todayResponseSchema),
   ]);
   if (!me || !today) redirect("/");
+  // A new account goes through the welcome steps once (they can skip them).
+  if (!me.welcomed) redirect("/welcome");
 
   const now = new Date();
   const outCount = today.outNow.reduce((n, s) => n + s.latestAired - s.episodesWatched, 0);
