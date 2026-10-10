@@ -1,9 +1,10 @@
 "use client";
 
 import type { ListEntry } from "@kurisu/shared";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { Icon } from "@/components/Icon";
+import { Sheet } from "@/components/Sheet";
 import { mediaTypeLabel } from "@/lib/format";
 import {
   AIRING_FILTERS,
@@ -232,22 +233,9 @@ function FilterSheet({
   onClear: () => void;
   onClose: () => void;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    if (dialog.current && !dialog.current.open) dialog.current.showModal();
-  }, []);
-
   return (
-    <dialog
-      ref={dialog}
-      onClose={onClose}
-      aria-labelledby="filters-title"
-      className="k-panel m-auto w-[min(26rem,calc(100%-2rem))] p-0 text-ink backdrop:bg-scrim"
-    >
-      <div className="flex flex-col gap-4 p-4">
-        <h2 id="filters-title" className="k-header__title">
-          Filters
-        </h2>
+    <Sheet title="Filters" onClose={onClose}>
+      <div className="k-sheet__body">
         {menus.map((menu) => {
           const id = `filter-${menu.label.toLowerCase().replace(/\s+/g, "-")}`;
           return (
@@ -268,23 +256,17 @@ function FilterSheet({
             </div>
           );
         })}
-        <div className="flex justify-end gap-2">
-          {canClear && (
-            <button type="button" className="k-btn k-btn--ghost" onClick={onClear}>
-              Clear filters
-            </button>
-          )}
-          <button
-            type="button"
-            className="k-btn k-btn--primary"
-            onClick={() => {
-              dialog.current?.close();
-            }}
-          >
-            Done
-          </button>
-        </div>
       </div>
-    </dialog>
+      <div className="k-sheet__actions">
+        {canClear && (
+          <button type="button" className="k-btn k-btn--ghost" onClick={onClear}>
+            Clear filters
+          </button>
+        )}
+        <button type="button" className="k-btn k-btn--primary" onClick={onClose}>
+          Done
+        </button>
+      </div>
+    </Sheet>
   );
 }

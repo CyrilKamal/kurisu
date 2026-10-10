@@ -59,8 +59,11 @@ export type LastSync = z.infer<typeof lastSyncSchema>;
 
 /** GET /me */
 export const meResponseSchema = z.object({
-  /** isOwner: the account named by OWNER_MAL_USERNAME, the only one that can invite. */
-  user: z.object({ malUsername: z.string(), isOwner: z.boolean() }),
+  /**
+   * isOwner: the account named by OWNER_MAL_USERNAME, the only one that can invite.
+   * shareActivity: whether friends see what they watch.
+   */
+  user: z.object({ malUsername: z.string(), isOwner: z.boolean(), shareActivity: z.boolean() }),
   /** Whether the user finished or skipped the welcome steps (POST /me/welcomed). */
   welcomed: z.boolean(),
   needsReauth: z.boolean(),

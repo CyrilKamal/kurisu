@@ -2053,3 +2053,46 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Synopsis stays fixed:** a synopsis is never refreshed once stored.
 - **Callback redirect:** sending new accounts to `/welcome` waits for the welcome screen (PR 5), so the MAL callback still goes to `/list`.
 - **Search pacing:** searches share AniList's pace with everything else. Twenty a minute per user keeps one person from slowing the rest.
+
+## 2026-10-10 — Four screens: Today, List, Chat and You; sheets and toasts (between Milestones 6 and 7)
+**Decision:** The third step of the mobile-first refactor builds the app's new shell.
+- **Navigation:**
+  - The NavBar holds Today, List, Chat and You: a bottom bar on phones, a rail from 1024px.
+  - Today is the home screen: the PWA's `start_url`, and where logins land.
+  - It has a count of episodes out on its tab.
+- **Today** has these sections:
+  - "Out for you": each show is one tap from "Watched ep N", through the List screen's edit path, with a Toast and Undo.
+  - "Coming up", with countdowns.
+  - "Continue".
+  - The latest brief.
+  - Friends lately.
+  - A command line that opens Chat. It only opens Chat: a link that sent a message could write to MAL.
+- **You** gathers History, Diary, Stats, Taste, Friends and Settings, with this year's goal as its hero metric. Settings merges the brief, notifications, services, the sharing switch (now on `/me`) and the account. The old `/list/*` URLs redirect (temporary, since the Journal will replace History and Diary).
+- **Sheets:** every task opens in one Sheet, from the bottom on phones. Every `window.confirm` became a confirmation Sheet. The edit sheet's Remove asks in place, so sheets never stack.
+- **Toasts:** a change made outside Chat confirms in a Toast with Undo that goes after 5 seconds.
+- **Phone details:**
+  - safe-area padding (`viewportFit: cover`);
+  - a Back chevron replaces "Back to list";
+  - a ⋯ on each chat for touch screens;
+  - loading skeletons and a root 404.
+
+**Alternatives:**
+- Keeping List's ☰ menu.
+- A fifth tab for Settings.
+- A Today command line that sends its message.
+- Toasts that stay until dismissed.
+
+**Why:**
+- Cyril chose Today · List · Chat · You.
+- The rest follows the design system's v9 rules:
+  - one sheet at a time;
+  - toasts for changes outside Chat;
+  - 48px hit areas;
+  - no browser dialogs.
+- The command line only opens Chat, because writes must never come from a URL.
+
+**Consequences:**
+- Today's first view on a phone needs one request, `/today`, which reads stored data only. The tab count asks for it again after each write.
+- Import stays under List, behind its "+", until Search & add joins it.
+- History and Diary stay separate until the Journal.
+

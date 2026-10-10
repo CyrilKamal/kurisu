@@ -40,7 +40,7 @@ describe("sign-up while kurisu has an owner", () => {
 
     const { callbackResponse, sessionCookie } = await login(h);
 
-    expect(callbackResponse.headers.location).toBe("/list");
+    expect(callbackResponse.headers.location).toBe("/today");
     expect(sessionCookie).toBeDefined();
   });
 
@@ -68,7 +68,7 @@ describe("the owner's first login", () => {
   it("creates the owner's account", async () => {
     const { callbackResponse, sessionCookie } = await login(h);
 
-    expect(callbackResponse.headers.location).toBe("/list");
+    expect(callbackResponse.headers.location).toBe("/today");
     expect(sessionCookie).toBeDefined();
     const rows = await h.db.select({ malUsername: users.malUsername }).from(users);
     expect(rows).toEqual([{ malUsername: TEST_MAL_USER.name }]);

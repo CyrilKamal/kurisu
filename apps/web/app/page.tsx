@@ -8,7 +8,7 @@ import { loginErrorMessage } from "@/lib/format";
 
 export default async function LoginPage(props: PageProps<"/">) {
   const me = await apiGet("/me", meResponseSchema);
-  if (me) redirect("/list");
+  if (me) redirect("/today");
 
   const { login_error: code } = await props.searchParams;
   const error = loginErrorMessage(typeof code === "string" ? code : undefined);

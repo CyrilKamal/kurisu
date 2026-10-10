@@ -8,6 +8,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
 
+import { useConfirm } from "@/components/Sheet";
 import { getApi, sendApi } from "@/lib/clientApi";
 
 import { ChatSidebar } from "./ChatSidebar";
@@ -51,6 +52,7 @@ export function ChatShell({
   const [chats, setChats] = useState(initialChats);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const { confirm, sheet } = useConfirm();
   const activeId = activeChatId(pathname);
 
   const refreshChats = useCallback(async () => {
@@ -94,8 +96,13 @@ export function ChatShell({
   }
 
   async function deleteChat(chat: ConversationView) {
-    const question = `Delete "${chat.title}"? Changes it made to your list stay in History, where you can still undo them.`;
-    if (!window.confirm(question)) return;
+    const yes = await confirm({
+      title: "Delete this chat?",
+      body: `"${chat.title}" goes. Changes it made to your list stay in History, where you can still undo them.`,
+      action: "Delete chat",
+      danger: true,
+    });
+    if (!yes) return;
     setNotice(null);
     const result = await sendApi("DELETE", `/chat/conversations/${chat.id}`, null);
     // A 404 means it's already gone.
@@ -120,7 +127,7 @@ export function ChatShell({
 
   return (
     <ShellContext value={context}>
-      <div className="flex h-dvh pb-14 lg:pb-0">
+      <div className="flex h-dvh pb-bar">
         <aside className="hidden w-(--sidebar-width) shrink-0 border-r border-line md:block">
           {sidebar()}
         </aside>
@@ -149,6 +156,7 @@ export function ChatShell({
         )}
         <div className="min-w-0 flex-1">{children}</div>
       </div>
+      {sheet}
     </ShellContext>
   );
 }

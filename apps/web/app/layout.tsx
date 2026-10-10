@@ -25,6 +25,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Edge to edge on phones with a notch or home indicator; the bars pad for the safe areas.
+  viewportFit: "cover",
   // The canvas (bg); the app is dark only.
   themeColor: "#0d0e12",
   colorScheme: "dark",
