@@ -26,6 +26,7 @@ function entry(animeId: number, fields: Partial<ListEntry> = {}): ListEntry {
     genres: [],
     episodeMinutes: 24,
     malMean: null,
+    airing: null,
     status: "plan_to_watch",
     score: 0,
     episodesWatched: 0,

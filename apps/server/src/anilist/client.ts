@@ -148,6 +148,12 @@ export interface AniListClient {
    * Ids AniList doesn't know are missing; a known show with no sequel maps to [].
    */
   sequelsOf(malIds: number[]): Promise<Map<number, SequelShow[]>>;
+  /**
+   * AniList's description of each MAL entry, as AniList writes it (with <br> and other markup),
+   * or null when it has none. For a show AniList splits into parts, the first part's. Ids AniList
+   * doesn't know are missing.
+   */
+  descriptions(malIds: number[]): Promise<Map<number, string | null>>;
 }
 
 /** A non-2xx response from AniList. */
@@ -347,6 +353,22 @@ const DETAILS_QUERY = `query ($ids: [Int], $page: Int) {
     }
   }
 }`;
+
+const DESCRIPTIONS_QUERY = `query ($ids: [Int], $page: Int) {
+  Page(page: $page, perPage: 50) {
+    pageInfo { hasNextPage }
+    media(idMal_in: $ids, type: ANIME, sort: [START_DATE]) { idMal description(asHtml: false) }
+  }
+}`;
+
+const descriptionsPageSchema = z.object({
+  Page: z.object({
+    pageInfo: z.object({ hasNextPage: z.boolean().nullish() }),
+    media: z.array(
+      z.object({ idMal: z.number().int().positive().nullish(), description: z.string().nullish() }),
+    ),
+  }),
+});
 
 const SEQUELS_QUERY = `query ($ids: [Int], $page: Int) {
   Page(page: $page, perPage: 50) {
@@ -655,6 +677,23 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
           });
         }
         out.set(prequel, found);
+      }
+      return out;
+    },
+
+    async descriptions(malIds) {
+      const media = await paged(malIds, DESCRIPTIONS_QUERY, {}, descriptionsPageSchema, (data) => ({
+        items: data.Page.media,
+        hasNextPage: data.Page.pageInfo.hasNextPage === true,
+      }));
+      const out = new Map<number, string | null>();
+      // Earliest part first, so a split show gets its first part's description.
+      for (const m of media) {
+        if (!m.idMal) continue;
+        const text = m.description?.trim() ? m.description : null;
+        if (!out.has(m.idMal) || (out.get(m.idMal) === null && text !== null)) {
+          out.set(m.idMal, text);
+        }
       }
       return out;
     },

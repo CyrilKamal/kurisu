@@ -17,6 +17,8 @@ export interface FakeAniListMedia {
     type: string | null;
     isDisabled: boolean | null;
   }[];
+  /** AniList's description, with its markup; missing or null when it has none. */
+  description?: string | null;
 }
 
 /** A show for title searches, in the shape AniList's search returns. */
@@ -233,6 +235,16 @@ export class FakeAniList {
         .sort((a, b) => a.airingAt - b.airingAt);
       const { items, hasNextPage } = paginate(matches, page);
       return { Page: { pageInfo: { hasNextPage }, airingSchedules: items } };
+    }
+    if (body.query.includes("description")) {
+      const matches = this.media.filter((m) => m.idMal !== null && ids.includes(m.idMal));
+      const { items, hasNextPage } = paginate(matches, page);
+      return {
+        Page: {
+          pageInfo: { hasNextPage },
+          media: items.map((m) => ({ idMal: m.idMal, description: m.description ?? null })),
+        },
+      };
     }
     if (body.query.includes("relationType")) {
       const known = ids.filter((id) => this.relations.has(id));

@@ -16,6 +16,7 @@ function entry(fields: Partial<ListEntry> = {}): ListEntry {
     genres: [],
     episodeMinutes: 24,
     malMean: null,
+    airing: null,
     status: "watching",
     score: 0,
     episodesWatched: 7,

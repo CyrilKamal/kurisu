@@ -4,7 +4,7 @@ import type { Db } from "../db/client.js";
 import { anime, listEntries } from "../db/schema.js";
 import { commitProposal, type CommitResult, type WriteDeps } from "./commit.js";
 import { normalizeChange, type ListState, type RequestedChange } from "./normalize.js";
-import type { ProposeError } from "./propose.js";
+import { addChange, type ProposeError } from "./propose.js";
 import { findProposal, stageProposal } from "./stage.js";
 
 /**
@@ -15,7 +15,8 @@ import { findProposal, stageProposal } from "./stage.js";
  */
 export type ManualEdit = RequestedChange;
 
-export type ManualResult = CommitResult | { status: "invalid"; error: ProposeError };
+export type ManualResult =
+  CommitResult | { status: "invalid"; error: ProposeError | "already_on_list" };
 
 /** One request id per tap: the same tap retried (a double tap, a lost response) writes once. */
 function keyFor(requestId: string): string {
@@ -95,6 +96,44 @@ export async function removeEntry(
     idempotencyKey: keyFor(requestId),
     before: stateOf(entry),
     change: {},
+  });
+  return commitProposal(deps, userId, proposal.id, { confirmed: true });
+}
+
+/**
+ * Puts a show on the list, at Plan to Watch unless the user picked another status, by the same
+ * rules as an add from Chat (finishing it completes it, and so on). The show must be one kurisu
+ * has seen, from the list or a search. The user's tap on Add is the confirmation, so nothing is
+ * held; undoing it takes the show off MAL again.
+ */
+export async function addEntry(
+  deps: WriteDeps,
+  userId: string,
+  animeId: number,
+  requested: Omit<RequestedChange, "isRewatching">,
+  requestId: string,
+): Promise<ManualResult> {
+  const earlier = await findProposal(deps.db, userId, keyFor(requestId));
+  if (earlier) return commitProposal(deps, userId, earlier.id, { confirmed: true });
+  const [show] = await deps.db
+    .select({ numEpisodes: anime.numEpisodes })
+    .from(anime)
+    .where(eq(anime.malId, animeId))
+    .limit(1);
+  if (!show) return { status: "invalid", error: "unknown_anime" };
+  if (await entryOf(deps.db, userId, animeId))
+    return { status: "invalid", error: "already_on_list" };
+  const normalized = addChange(show.numEpisodes, requested);
+  if (!normalized.ok) return { status: "invalid", error: normalized.error };
+
+  const proposal = await stageProposal(deps.db, {
+    userId,
+    animeId,
+    source: "user",
+    kind: "add",
+    idempotencyKey: keyFor(requestId),
+    before: null,
+    change: normalized.change,
   });
   return commitProposal(deps, userId, proposal.id, { confirmed: true });
 }

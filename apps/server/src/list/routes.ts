@@ -1,7 +1,10 @@
 import {
+  ADD_ERRORS,
   EDIT_ERRORS,
+  listAddRequestSchema,
   listEditRequestSchema,
   listRemoveRequestSchema,
+  type AddError,
   type EditError,
 } from "@kurisu/shared";
 import { desc, eq } from "drizzle-orm";
@@ -11,13 +14,15 @@ import { z } from "zod";
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
 import type { Config } from "../config.js";
 import type { Db } from "../db/client.js";
-import { anime, listEntries } from "../db/schema.js";
+import { airingView } from "../anilist/cache.js";
+import { anilistMedia, anime, listEntries } from "../db/schema.js";
 import { latestSyncRun, MANUAL_SYNC_COOLDOWN_MS, type ListSync } from "../sync/listSync.js";
 import { toLastSync } from "../sync/summary.js";
 import { loadChange } from "../chat/service.js";
 import type { WriteDeps } from "../writes/commit.js";
 import { writeError } from "../writes/httpErrors.js";
-import { editEntry, removeEntry, type ManualResult } from "../writes/manual.js";
+import { addEntry, editEntry, removeEntry, type ManualResult } from "../writes/manual.js";
+import { altTitles } from "./altTitles.js";
 
 export interface ListRouteDeps {
   config: Config;
@@ -44,6 +49,10 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
       return { change: await loadChange(db, userId, result.change.id) };
     }
     if (result.status === "invalid") {
+      if ((ADD_ERRORS as readonly string[]).includes(result.error)) {
+        const error = result.error as AddError;
+        return reply.code(error === "already_on_list" ? 409 : 404).send({ error });
+      }
       const error: EditError = (EDIT_ERRORS as readonly string[]).includes(result.error)
         ? (result.error as EditError)
         : "invalid_edit";
@@ -65,6 +74,15 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
       userId,
       await editEntry(writes, userId, params.data.animeId, edit, requestId),
     );
+  });
+
+  /** Puts a show the user found (Search, a show's page) on the list; History can take it off. */
+  app.post("/list/add", guards, async (request, reply) => {
+    const body = listAddRequestSchema.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ error: "invalid_edit" });
+    const { animeId, requestId, ...requested } = body.data;
+    const userId = userIdOf(request);
+    return sendResult(reply, userId, await addEntry(writes, userId, animeId, requested, requestId));
   });
 
   /** Takes a show off the list; History can put it back. */
@@ -104,17 +122,21 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
         episodesWatched: listEntries.numEpisodesWatched,
         isRewatching: listEntries.isRewatching,
         updatedAt: listEntries.malUpdatedAt,
+        airing: anilistMedia,
       })
       .from(listEntries)
       .innerJoin(anime, eq(listEntries.animeId, anime.malId))
+      .leftJoin(anilistMedia, eq(anilistMedia.malId, listEntries.animeId))
       .where(eq(listEntries.userId, user.id))
       .orderBy(desc(listEntries.malUpdatedAt), listEntries.animeId);
 
+    const now = new Date();
     return {
-      entries: rows.map(({ titleEn, synonyms, ...row }) => ({
+      entries: rows.map(({ titleEn, synonyms, airing, ...row }) => ({
         ...row,
         altTitles: altTitles(row.title, titleEn, synonyms),
         updatedAt: row.updatedAt.toISOString(),
+        airing: airingView(airing ?? undefined, now),
       })),
       lastSync: toLastSync(await latestSyncRun(db, user.id)),
     };
@@ -147,18 +169,4 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
       return reply.code(502).send({ error: "sync_failed", lastSync });
     },
   );
-}
-
-/** The English title and synonyms, without blanks or repeats of the main title. */
-function altTitles(title: string, titleEn: string | null, synonyms: string[]): string[] {
-  const seen = new Set([title.toLowerCase()]);
-  const result: string[] = [];
-  for (const name of [titleEn ?? "", ...synonyms]) {
-    const key = name.trim().toLowerCase();
-    if (key && !seen.has(key)) {
-      seen.add(key);
-      result.push(name.trim());
-    }
-  }
-  return result;
 }

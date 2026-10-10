@@ -1,3 +1,4 @@
+import type { AiringView } from "@kurisu/shared";
 import { and, eq, gte, inArray, or, sql } from "drizzle-orm";
 import type { FastifyBaseLogger } from "fastify";
 
@@ -147,6 +148,20 @@ export function latestAiredEpisode(
   if (row.status === "FINISHED") return row.episodes;
   if (row.status === "NOT_YET_RELEASED") return 0;
   return null;
+}
+
+/**
+ * A cached row as the app shows it: the latest episode out, and the next one while it's still
+ * ahead. Null when AniList has no match for the show.
+ */
+export function airingView(row: AiringRow | undefined, now: Date): AiringView | null {
+  if (row?.anilistId == null) return null;
+  const ahead = row.nextAiringAt !== null && row.nextAiringAt.getTime() > now.getTime();
+  return {
+    latestAired: latestAiredEpisode(row, now),
+    nextEpisode: ahead ? row.nextEpisode : null,
+    nextAiringAt: ahead && row.nextAiringAt ? row.nextAiringAt.toISOString() : null,
+  };
 }
 
 /**

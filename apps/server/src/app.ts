@@ -46,6 +46,8 @@ import { checkBudget } from "./budget/budget.js";
 import { registerFriendRoutes } from "./friends/routes.js";
 import { captureReview } from "./review/capture.js";
 import { registerStatsRoutes } from "./stats/routes.js";
+import { createSynopsisLoader } from "./anilist/synopsis.js";
+import { registerShowRoutes } from "./shows/routes.js";
 import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
 import { createMalListRemover, createMalListWriter } from "./writes/commit.js";
@@ -223,6 +225,30 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     urgent: true,
   });
 
+  // A show's page fetches its synopsis the first time anyone opens it, while they wait, and its
+  // airing and where to watch in the background when they're missing or old.
+  const synopsis = createSynopsisLoader({
+    db,
+    anilist: chatAniList,
+    onError: (err) => {
+      app.log.warn({ err: { name: (err as Error).name } }, "could not fetch a synopsis");
+    },
+  });
+  const showRefreshes = new Map<number, Promise<void>>();
+  app.addHook("onClose", async () => {
+    await Promise.allSettled([synopsis.settle(), ...showRefreshes.values()]);
+  });
+  const refreshShowAiring = (malId: number) => {
+    if (showRefreshes.has(malId)) return;
+    const task: Promise<void> = refreshAiring({ db, anilist: syncAniList, log: app.log }, [malId])
+      .then(() => undefined)
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh a show's airing");
+      })
+      .finally(() => showRefreshes.delete(malId));
+    showRefreshes.set(malId, task);
+  };
+
   const push = createPushSender({
     db,
     vapid: config.push,
@@ -277,6 +303,12 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   registerTasteRoutes(app, { config, db });
   registerStatsRoutes(app, { config, db });
   registerDiaryRoutes(app, { config, db });
+  registerShowRoutes(app, {
+    db,
+    synopsis,
+    refreshAiring: refreshShowAiring,
+    catalog: (queries) => chatAniList.searchAnime(queries),
+  });
   registerPushRoutes(app, {
     config,
     db,

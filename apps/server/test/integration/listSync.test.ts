@@ -118,6 +118,8 @@ describe("sync on login", () => {
       episodesWatched: 7,
       isRewatching: false,
       updatedAt: "2026-09-28T10:00:00.000Z",
+      // AniList knows nothing of the fixture shows.
+      airing: null,
     });
 
     // Unknown episode count (MAL's 0) and a missing picture come through as null.

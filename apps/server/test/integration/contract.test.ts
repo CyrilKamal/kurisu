@@ -157,6 +157,34 @@ describe("responses match the contract", () => {
     expect(parsed.entries).toHaveLength(fixtureList().length);
   });
 
+  it("the Today, Journal, show, search and add endpoints", async () => {
+    const send = (url: string, payload?: object) =>
+      h.app.inject({
+        method: "POST",
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        ...(payload ? { payload: payload as Record<string, unknown> } : {}),
+      });
+    const today = await get("/today");
+    expect(() => contract.todayResponseSchema.parse(today.json())).not.toThrow();
+    const journal = await get("/journal");
+    expect(() => contract.journalResponseSchema.parse(journal.json())).not.toThrow();
+    const show = await get("/shows/900001");
+    expect(show.statusCode).toBe(200);
+    expect(() => contract.showResponseSchema.parse(show.json())).not.toThrow();
+    const search = await get("/search");
+    expect(search.statusCode).toBe(200);
+    expect(() => contract.searchResponseSchema.parse(search.json())).not.toThrow();
+
+    const added = await send("/list/add", { animeId: 900001, requestId: crypto.randomUUID() });
+    expect(added.statusCode).toBe(409);
+    expect(contract.addErrorResponseSchema.parse(added.json()).error).toBe("already_on_list");
+
+    const welcomed = await send("/me/welcomed");
+    expect(contract.welcomedResponseSchema.parse(welcomed.json())).toEqual({ welcomed: true });
+  });
+
   it("GET /taste", async () => {
     const res = await get("/taste");
     expect(res.statusCode).toBe(200);

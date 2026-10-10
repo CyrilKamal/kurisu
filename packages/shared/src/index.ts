@@ -61,6 +61,8 @@ export type LastSync = z.infer<typeof lastSyncSchema>;
 export const meResponseSchema = z.object({
   /** isOwner: the account named by OWNER_MAL_USERNAME, the only one that can invite. */
   user: z.object({ malUsername: z.string(), isOwner: z.boolean() }),
+  /** Whether the user finished or skipped the welcome steps (POST /me/welcomed). */
+  welcomed: z.boolean(),
   needsReauth: z.boolean(),
   lastSync: lastSyncSchema.nullable(),
 });
@@ -188,6 +190,20 @@ export const reportResponseSchema = z.object({ reported: z.literal(true) });
 /** PATCH /diary/notes/:id: show a note to friends, or stop. */
 export const diaryNotePatchSchema = z.object({ shared: z.boolean() }).strict();
 
+/** A show's airing, from AniList's cached schedule (refreshed after syncs; never a live call). */
+export const airingViewSchema = z.object({
+  /** The latest episode out, in MAL's numbering; null when we can't tell. 0: none yet. */
+  latestAired: z.number().int().nonnegative().nullable(),
+  /** The next episode and when it airs, when AniList has it scheduled. */
+  nextEpisode: z.number().int().positive().nullable(),
+  nextAiringAt: z.iso.datetime().nullable(),
+});
+export type AiringView = z.infer<typeof airingViewSchema>;
+
+/** Where a show streams among the user's services, from AniList's official links only. */
+export const watchOnSchema = z.object({ service: z.string(), url: z.string().nullable() });
+export type WatchOnView = z.infer<typeof watchOnSchema>;
+
 export const listEntrySchema = z.object({
   animeId: z.number().int().positive(),
   title: z.string(),
@@ -207,6 +223,8 @@ export const listEntrySchema = z.object({
   episodesWatched: z.number().int().nonnegative(),
   isRewatching: z.boolean(),
   updatedAt: z.iso.datetime(),
+  /** Null when AniList has nothing cached for it (it isn't airing, or doesn't map). */
+  airing: airingViewSchema.nullable(),
 });
 export type ListEntry = z.infer<typeof listEntrySchema>;
 
@@ -314,7 +332,7 @@ export const pickViewSchema = z.object({
    * Where it streams, among the user's services and any the request named, from AniList's
    * official links: a label like "Crunchyroll" and AniList's https link there (or null).
    */
-  watchOn: z.array(z.object({ service: z.string(), url: z.string().nullable() })),
+  watchOn: z.array(watchOnSchema),
 });
 export type PickView = z.infer<typeof pickViewSchema>;
 
@@ -846,3 +864,212 @@ export const importItemResponseSchema = z.object({ item: importItemViewSchema })
 export const IMPORT_ERRORS = ["not_found", "not_ready", "busy", "invalid"] as const;
 export type ImportError = (typeof IMPORT_ERRORS)[number];
 export const importErrorResponseSchema = z.object({ error: z.enum(IMPORT_ERRORS) });
+
+/** A diary note on an update, in the user's own words; shared with friends or not. */
+const noteViewSchema = z.object({ id: z.uuid(), text: z.string(), shared: z.boolean() });
+
+/**
+ * One line of the Journal: a change made through kurisu (with Undo, until it's undone), a change
+ * a sync found on MAL's site, or a whole import, which undoes as one.
+ */
+export const journalItemSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("change"),
+    /** The change's id, for POST /changes/:id/undo. */
+    id: z.uuid(),
+    animeId: z.number().int().positive(),
+    title: z.string(),
+    pictureUrl: z.string().nullable(),
+    numEpisodes: z.number().int().positive().nullable(),
+    kind: z.enum(WRITE_KINDS),
+    before: listChangeSchema,
+    after: listChangeSchema,
+    at: z.iso.datetime(),
+    /** Who made it: Chat, the user's own tap, or an import (on a show's page). Never "undo". */
+    source: z.enum(CHANGE_SOURCES),
+    undone: z.boolean(),
+    note: noteViewSchema.nullable(),
+  }),
+  z.object({
+    type: z.literal("mal"),
+    /** The list event's id. */
+    id: z.uuid(),
+    animeId: z.number().int().positive(),
+    title: z.string(),
+    pictureUrl: z.string().nullable(),
+    numEpisodes: z.number().int().positive().nullable(),
+    kind: z.enum(WRITE_KINDS),
+    before: listChangeSchema,
+    after: listChangeSchema,
+    at: z.iso.datetime(),
+  }),
+  z.object({
+    type: z.literal("import"),
+    /** The import's id, for POST /imports/:id/undo. */
+    id: z.uuid(),
+    at: z.iso.datetime(),
+    /** Rows it wrote. */
+    count: z.number().int().positive(),
+    undone: z.boolean(),
+  }),
+]);
+export type JournalItem = z.infer<typeof journalItemSchema>;
+
+/** GET /journal: the latest updates, newest first, and the time zone their days follow. */
+export const journalResponseSchema = z.object({
+  timeZone: z.string(),
+  items: z.array(journalItemSchema),
+});
+export type JournalResponse = z.infer<typeof journalResponseSchema>;
+
+const todayShowFields = {
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  numEpisodes: z.number().int().positive().nullable(),
+  episodesWatched: z.number().int().nonnegative(),
+};
+
+/** GET /today: what's out for the user, what's next, and what they're in the middle of. */
+export const todayResponseSchema = z.object({
+  timeZone: z.string(),
+  /** Watching shows with aired episodes not watched yet, fewest behind first. */
+  outNow: z.array(
+    z.object({
+      ...todayShowFields,
+      latestAired: z.number().int().positive(),
+      watchOn: z.array(watchOnSchema),
+    }),
+  ),
+  /** The next episode of each Watching or Plan to Watch show airing in the coming week, soonest first. */
+  comingUp: z.array(
+    z.object({
+      ...todayShowFields,
+      status: listStatusSchema,
+      episode: z.number().int().positive(),
+      airingAt: z.iso.datetime(),
+    }),
+  ),
+  /** Watching shows with episodes left that aren't waiting on new ones, last touched first. */
+  continueWatching: z.array(
+    z.object({ ...todayShowFields, episodeMinutes: z.number().int().positive().nullable() }),
+  ),
+  /** The latest morning brief that went out, opening its chat. */
+  brief: z
+    .object({
+      conversationId: z.uuid(),
+      localDate: z.string().nullable(),
+      summary: z.string().nullable(),
+      at: z.iso.datetime(),
+      /** New episodes it listed, and shows it said started airing. */
+      episodes: z.number().int().nonnegative(),
+      premieres: z.number().int().nonnegative(),
+    })
+    .nullable(),
+  /** What friends who share watched lately. */
+  friends: z.array(activityItemSchema),
+});
+export type TodayResponse = z.infer<typeof todayResponseSchema>;
+
+/** GET /shows/:animeId: one show, the user's entry for it, and everything kurisu knows. */
+export const showResponseSchema = z.object({
+  show: z.object({
+    animeId: z.number().int().positive(),
+    title: z.string(),
+    altTitles: z.array(z.string()),
+    pictureUrl: z.string().nullable(),
+    mediaType: z.string().nullable(),
+    numEpisodes: z.number().int().positive().nullable(),
+    episodeMinutes: z.number().int().positive().nullable(),
+    airingStatus: z.string().nullable(),
+    /** "2026-03-19", or partial ("2026-03"). */
+    startDate: z.string().nullable(),
+    genres: z.array(z.string()),
+    malMean: z.number().positive().nullable(),
+    /** AniList's description as plain text, without spoilers; null when there's none (yet). */
+    synopsis: z.string().nullable(),
+  }),
+  /** Null when it isn't on the user's list. */
+  entry: z
+    .object({
+      status: listStatusSchema,
+      score: z.number().int().min(0).max(10),
+      episodesWatched: z.number().int().nonnegative(),
+      isRewatching: z.boolean(),
+      /** MAL's dates, possibly partial. */
+      startDate: z.string().nullable(),
+      finishDate: z.string().nullable(),
+      updatedAt: z.iso.datetime(),
+    })
+    .nullable(),
+  airing: airingViewSchema.nullable(),
+  watchOn: z.array(watchOnSchema),
+  /** The user's updates of this show, newest first (never import groups). */
+  journal: z.array(journalItemSchema),
+  /** Friends who share their activity and have it on their list. */
+  friends: z.array(
+    z.object({
+      friendId: z.uuid(),
+      malUsername: z.string(),
+      status: listStatusSchema,
+      score: z.number().int().min(0).max(10),
+      episodesWatched: z.number().int().nonnegative(),
+    }),
+  ),
+});
+export type ShowResponse = z.infer<typeof showResponseSchema>;
+
+/** A show found by Search, with where it stands on the user's list. */
+export const searchResultSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  titleEn: z.string().nullable(),
+  pictureUrl: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  numEpisodes: z.number().int().positive().nullable(),
+  airingStatus: z.string().nullable(),
+  year: z.number().int().nullable(),
+  /** Null when it isn't on the list. */
+  entry: z
+    .object({ status: listStatusSchema, episodesWatched: z.number().int().nonnegative() })
+    .nullable(),
+});
+export type SearchResult = z.infer<typeof searchResultSchema>;
+
+/** GET /search?q=: AniList's matches, or, with no words, what's popular this season. */
+export const searchResponseSchema = z.object({
+  query: z.string(),
+  results: z.array(searchResultSchema),
+});
+export type SearchResponse = z.infer<typeof searchResponseSchema>;
+
+export const SEARCH_ERRORS = ["rate_limited", "search_unavailable"] as const;
+export type SearchError = (typeof SEARCH_ERRORS)[number];
+export const searchErrorResponseSchema = z.object({ error: z.enum(SEARCH_ERRORS) });
+
+/** Longest search the server accepts. */
+export const SEARCH_MAX_CHARS = 100;
+
+/**
+ * POST /list/add: puts a show on the list (Plan to Watch unless the user picked another
+ * status). The user's tap is the confirmation; History can undo it.
+ */
+export const listAddRequestSchema = z
+  .object({
+    animeId: z.number().int().positive(),
+    status: listStatusSchema.optional(),
+    episodesWatched: z.number().int().nonnegative().max(100_000).optional(),
+    score: z.number().int().min(0).max(10).optional(),
+    requestId: z.uuid(),
+  })
+  .strict();
+export type ListAddRequest = z.infer<typeof listAddRequestSchema>;
+
+export const ADD_ERRORS = ["already_on_list", "unknown_anime"] as const;
+export type AddError = (typeof ADD_ERRORS)[number];
+export const addErrorResponseSchema = z.object({
+  error: z.enum([...WRITE_ERRORS, ...EDIT_ERRORS, ...ADD_ERRORS]),
+});
+
+/** POST /me/welcomed */
+export const welcomedResponseSchema = z.object({ welcomed: z.literal(true) });
