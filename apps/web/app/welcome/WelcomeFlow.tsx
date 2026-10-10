@@ -66,7 +66,13 @@ export function WelcomeFlow({
 
   async function finish() {
     setBusy(true);
-    await postApi("/me/welcomed", welcomedResponseSchema);
+    const done = await postApi("/me/welcomed", welcomedResponseSchema);
+    // Unsaved, Today would only send them back here: stay, and say so.
+    if (!done.ok) {
+      setBusy(false);
+      setMessage("Couldn't finish just now. Check your connection and try again.");
+      return;
+    }
     router.replace(listSize === 0 ? "/list/import" : "/today");
   }
 
