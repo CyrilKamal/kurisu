@@ -1979,3 +1979,19 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
   - shows changed after the message by something other than that run are in their later state;
   - when two captures freeze the same show's airing, the later one wins.
 - CI never sees private cases, so they're checked only on Cyril's PC.
+
+## 2026-10-09 — The List header on a phone: one menu, wrapped tabs, a Filters sheet (Milestone 6)
+**Decision:** On a phone, the List screen had three rows that each scrolled sideways and cut off at the edge: the screens around the list, the status tabs, and the filter menus. Now:
+- **The screens** (Brief, Stats, Diary, Taste, Friends, Import, History, Account) sit in one menu button next to Re-sync. Log out lives only on Account.
+- **The five status tabs** wrap instead of scrolling, two rows on a phone and one on wider screens, so each is still one tap.
+- **Type, genre, airing and sort** fold into one Filters button beside the title filter on phones. It opens a sheet and shows how many filters are on, with a crimson edge. Wider screens keep the inline menus.
+
+**Alternatives:**
+- A status dropdown as well, which is more compact but takes two taps to switch.
+- Wrapping every row, which nearly doubles the header's height.
+
+**Why:** Cyril's call. Nothing hides off-screen, and the list starts higher.
+
+**Consequences:**
+- Every screen header's title block now takes the free space, so its actions stay on the title's row.
+- The design system's StatusTabs is defined as scrolling; the app wraps it.
