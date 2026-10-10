@@ -43,7 +43,7 @@ describe("loadConfig", () => {
     );
 
     expect(config.nodeEnv).toBe("production");
-    expect(config.owner).toEqual({ malUsername: "Cyril" });
+    expect(config.owner).toEqual({ malUsername: "Cyril", displayName: "Cyril" });
     expect(config.server.port).toBe(8080);
     expect(config.webOrigin).toBe("https://kurisu.example");
     expect(config.mal.apiBaseUrl).toBe("http://127.0.0.1:9999/v2");

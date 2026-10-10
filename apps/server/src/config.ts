@@ -59,6 +59,8 @@ const envSchema = z.object({
   // The MAL account that owns this kurisu. When set, no other MAL account can sign up.
   // Required in production, where the app is reachable from the internet.
   OWNER_MAL_USERNAME: optional(z.string().min(1).optional()),
+  // What invite pages call the owner ("Cyril invited you"); the MAL username when unset.
+  OWNER_DISPLAY_NAME: optional(z.string().trim().min(1).max(40).optional()),
 
   // While sign-up is closed, what each friend may spend on models: runs in any 24 hours, and
   // everyone but the owner together in a calendar month (estimated at list prices, in USD).
@@ -96,8 +98,11 @@ export interface Config {
     };
   };
   brief: { scheduler: boolean };
-  /** The owner's MAL username; when set, only that account can create a kurisu account. */
-  owner: { malUsername: string } | null;
+  /**
+   * The owner's MAL username, which alone can create an account without an invite, and what
+   * invite pages call them.
+   */
+  owner: { malUsername: string; displayName: string } | null;
   /** Friends' model limits; null while sign-up is open (no owner), when nothing is limited. */
   budget: { dailyRuns: number; monthlyUsd: number } | null;
 }
@@ -159,7 +164,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       },
     },
     brief: { scheduler: parsed.BRIEF_SCHEDULER === "on" },
-    owner: parsed.OWNER_MAL_USERNAME ? { malUsername: parsed.OWNER_MAL_USERNAME } : null,
+    owner: parsed.OWNER_MAL_USERNAME
+      ? {
+          malUsername: parsed.OWNER_MAL_USERNAME,
+          displayName: parsed.OWNER_DISPLAY_NAME ?? parsed.OWNER_MAL_USERNAME,
+        }
+      : null,
     budget: parsed.OWNER_MAL_USERNAME
       ? { dailyRuns: parsed.FRIEND_DAILY_RUNS, monthlyUsd: parsed.MONTHLY_MODEL_BUDGET_USD }
       : null,

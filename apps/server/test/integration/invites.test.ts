@@ -20,7 +20,9 @@ const SAM = { id: 6262, name: "sam" };
 let h: Harness;
 
 beforeAll(async () => {
-  h = await startHarness({ env: { OWNER_MAL_USERNAME: TEST_MAL_USER.name } });
+  h = await startHarness({
+    env: { OWNER_MAL_USERNAME: TEST_MAL_USER.name, OWNER_DISPLAY_NAME: "Cyril" },
+  });
 });
 afterAll(() => h.close());
 beforeEach(async () => {
@@ -71,7 +73,8 @@ describe("invites", () => {
 
     const check = await h.app.inject({ method: "GET", url: `/invites/code/${code}` });
     expect(check.statusCode).toBe(200);
-    expect(check.json()).toEqual({ inviter: TEST_MAL_USER.name });
+    // The page names the owner as OWNER_DISPLAY_NAME says, not by their MAL username.
+    expect(check.json()).toEqual({ inviter: "Cyril" });
 
     const joined = await loginAs(ALEX, code);
     expect(joined.callbackResponse.headers.location).toBe("/list");

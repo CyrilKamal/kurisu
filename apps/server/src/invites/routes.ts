@@ -69,7 +69,8 @@ export function registerInviteRoutes(app: FastifyInstance, deps: InviteRouteDeps
     const params = codeParams.safeParse(request.params);
     const invite = params.success ? await findOpenInvite(db, params.data.code) : null;
     if (!invite) return reply.code(404).send({ error: "not_found" });
-    return { inviter: invite.inviter };
+    // Only the owner invites, so the page names them as they chose (OWNER_DISPLAY_NAME).
+    return { inviter: config.owner?.displayName ?? invite.inviter };
   });
 }
 
