@@ -70,7 +70,7 @@ export function CommandLine({
             }
           }}
         />
-        <span className="k-cmd__hint">↵ send</span>
+        <span className="k-cmd__hint pointer-coarse:hidden">↵ send</span>
         <button
           type="submit"
           className="k-btn k-btn--primary k-btn--icon"

@@ -20,7 +20,7 @@ const SCORES = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 /**
  * Puts a show on the list: Plan to Watch unless the user picks another status, and a score if
  * they give one. The tap on Add is the confirmation; it writes through the same path as Chat's
- * adds, so a Toast offers Undo and History keeps it.
+ * adds, so a Toast offers Undo and the Journal keeps it.
  */
 export function AddSheet({
   show,

@@ -5,8 +5,9 @@ import { useState } from "react";
 import { postApi } from "@/lib/clientApi";
 
 /**
- * "Report": tells the owner a reply was wrong, with what went wrong in the user's words if they
- * give any. The reply and the list as it was go to the review queue, privately.
+ * "Report", at the end of a reply's run line: tells the owner a reply was wrong, with what went
+ * wrong in the user's words if they give any. The reply and the list as it was go to the review
+ * queue, privately. Writing the note takes its own line under the run's.
  */
 export function ReportReply({ messageId }: { messageId: string }) {
   const [state, setState] = useState<"idle" | "writing" | "sending" | "sent" | "failed">("idle");
@@ -24,24 +25,29 @@ export function ReportReply({ messageId }: { messageId: string }) {
   }
 
   if (state === "sent") {
-    return <p className="k-field__hint">Reported. Thanks, that helps kurisu get it right.</p>;
+    return (
+      <span className="basis-full font-sans">
+        Reported. Thanks, that helps kurisu get it right.
+      </span>
+    );
   }
   if (state === "idle") {
     return (
       <button
         type="button"
-        className="k-link k-field__hint self-start"
+        className="k-link"
+        aria-label="Report a problem with this reply"
         onClick={() => {
           setState("writing");
         }}
       >
-        Report a problem
+        Report
       </button>
     );
   }
   return (
     <form
-      className="flex flex-col gap-2"
+      className="flex basis-full flex-col gap-2 pt-2 font-sans"
       onSubmit={(e) => {
         e.preventDefault();
         void send();

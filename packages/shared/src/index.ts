@@ -1009,6 +1009,19 @@ export const showResponseSchema = z.object({
   watchOn: z.array(watchOnSchema),
   /** The user's updates of this show, newest first (never import groups). */
   journal: z.array(journalItemSchema),
+  /**
+   * The series that follow it (AniList's sequels), with where each stands on the user's list,
+   * for "what's next" when they finish it. Empty until kurisu has looked them up.
+   */
+  sequels: z.array(
+    z.object({
+      animeId: z.number().int().positive(),
+      title: z.string(),
+      pictureUrl: z.string().nullable(),
+      startDate: z.string().nullable(),
+      status: listStatusSchema.nullable(),
+    }),
+  ),
   /** Friends who share their activity and have it on their list. */
   friends: z.array(
     z.object({

@@ -98,7 +98,7 @@ export function ChatShell({
   async function deleteChat(chat: ConversationView) {
     const yes = await confirm({
       title: "Delete this chat?",
-      body: `"${chat.title}" goes. Changes it made to your list stay in History, where you can still undo them.`,
+      body: `"${chat.title}" goes. Changes it made to your list stay in your Journal, where you can still undo them.`,
       action: "Delete chat",
       danger: true,
     });

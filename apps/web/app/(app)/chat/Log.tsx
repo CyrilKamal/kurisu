@@ -10,7 +10,8 @@ const STILL_WORKING_AFTER_MS = 8_000;
 
 /**
  * One entry of the chat log (the design system's LogEntry): the time in its gutter, then the
- * entry. Your lines sit on a surface band behind the crimson prompt.
+ * entry; on a phone the time sits above it, so the text gets the whole width. Your lines sit on a
+ * surface band behind the crimson prompt.
  */
 export function LogEntry({
   at,
@@ -30,9 +31,9 @@ export function LogEntry({
     sending && "k-log__entry--sending",
   ].filter(Boolean);
   return (
-    <li className={classes.join(" ")}>
+    <li className={`${classes.join(" ")} max-sm:grid-cols-1 max-sm:pl-4`}>
       {/* The viewer's time zone, so only once in the browser. */}
-      <time className="k-log__time" dateTime={at}>
+      <time className="k-log__time max-sm:pl-0 max-sm:leading-4" dateTime={at}>
         {inBrowser ? clockTime(at) : ""}
       </time>
       <div className="k-log__body">{children}</div>

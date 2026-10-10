@@ -11,8 +11,12 @@ import { goalProgress } from "@/lib/stats";
 export const metadata: Metadata = { title: "You · kurisu" };
 
 const SCREENS: { href: string; label: string; about: string; icon: IconName }[] = [
-  { href: "/you/history", label: "History", about: "Every change, with Undo", icon: "undo" },
-  { href: "/you/diary", label: "Diary", about: "What you said about shows", icon: "rename" },
+  {
+    href: "/you/journal",
+    label: "Journal",
+    about: "Every update, with Undo and your notes",
+    icon: "undo",
+  },
   { href: "/you/stats", label: "Stats", about: "Your week, your year, your list", icon: "grid" },
   { href: "/you/taste", label: "Taste", about: "Genres you rate, and why you drop", icon: "star" },
   {

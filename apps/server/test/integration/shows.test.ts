@@ -7,6 +7,7 @@ import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import {
   anilistCatalog,
   anilistMedia,
+  anilistSequels,
   anime,
   briefSettings,
   briefs,
@@ -256,6 +257,53 @@ describe("GET /shows/:animeId", () => {
 
     expect((await request("GET", "/shows/123456789")).statusCode).toBe(404);
     expect((await request("GET", "/shows/abc")).statusCode).toBe(404);
+  });
+});
+
+describe("a show's sequels", () => {
+  it("lists the series that follow a show, never a movie or an adult title", async () => {
+    const sequel = (malId: number, title: string, format: string, isAdult = false) => ({
+      anilistId: malId + 1,
+      malId,
+      title,
+      titleEn: null,
+      titleJa: null,
+      synonyms: [],
+      format,
+      status: "NOT_YET_RELEASED",
+      episodes: 12,
+      duration: 24,
+      coverUrl: null,
+      startDate: "2027-01",
+      isAdult,
+      streamingLinks: [],
+    });
+    // The login's background refresh already stored what AniList (knowing nothing) said.
+    await h.db.delete(anilistSequels).where(eq(anilistSequels.malId, COMPLETED));
+    await h.db.insert(anilistSequels).values({
+      malId: COMPLETED,
+      sequels: [
+        sequel(880200, "Fixture Film Sequel Series", "TV"),
+        sequel(880201, "Fixture Film Sequel Movie", "MOVIE"),
+        sequel(880202, "Fixture Adult Sequel", "TV", true),
+      ],
+      fetchedAt: new Date(),
+    });
+
+    const page = contract.showResponseSchema.parse(
+      (await request("GET", `/shows/${String(COMPLETED)}`)).json(),
+    );
+    expect(page.sequels).toEqual([
+      {
+        animeId: 880200,
+        title: "Fixture Film Sequel Series",
+        pictureUrl: null,
+        startDate: "2027-01",
+        status: null,
+      },
+    ]);
+    // Stored, so its page opens and it can be added.
+    expect((await request("GET", "/shows/880200")).statusCode).toBe(200);
   });
 });
 

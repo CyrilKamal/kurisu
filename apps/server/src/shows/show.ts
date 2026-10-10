@@ -2,10 +2,18 @@ import type { ShowResponse } from "@kurisu/shared";
 import { and, eq, inArray } from "drizzle-orm";
 
 import { airingView } from "../anilist/cache.js";
+import { rememberShows } from "../anilist/catalog.js";
 import type { SynopsisLoader } from "../anilist/synopsis.js";
 import { watchOn } from "../brief/services.js";
 import type { Db } from "../db/client.js";
-import { anilistCatalog, anilistMedia, anime, briefSettings, listEntries } from "../db/schema.js";
+import {
+  anilistCatalog,
+  anilistMedia,
+  anilistSequels,
+  anime,
+  briefSettings,
+  listEntries,
+} from "../db/schema.js";
 import { listFriends } from "../friends/friendships.js";
 import { loadJournal } from "../journal/load.js";
 import { altTitles } from "../list/altTitles.js";
@@ -21,7 +29,12 @@ export interface ShowDeps {
    * and where to watch are there on the next view. Never awaited by the page.
    */
   refreshAiring: (malId: number) => void;
+  /** Looks up what follows a show the user completed, in the background, for next time. */
+  refreshSequels: (malId: number) => void;
 }
+
+/** Series formats: what "start the sequel" can mean. */
+const SERIES_FORMATS = ["TV", "TV_SHORT", "ONA"];
 
 /**
  * One show as its page shows it: what kurisu knows of it, the user's entry, its airing and where
@@ -52,6 +65,31 @@ export async function loadShow(
         .from(anilistCatalog)
         .where(eq(anilistCatalog.malId, malId));
   deps.refreshAiring(malId);
+  if (entry?.status === "completed") deps.refreshSequels(malId);
+
+  // What follows it: series only, never adult, and only ones MAL knows, so they can be added.
+  const [sequelRow] = await db
+    .select({ sequels: anilistSequels.sequels })
+    .from(anilistSequels)
+    .where(eq(anilistSequels.malId, malId));
+  const followers = await rememberShows(
+    db,
+    (sequelRow?.sequels ?? []).filter(
+      (s) => !s.isAdult && s.format !== null && SERIES_FORMATS.includes(s.format),
+    ),
+  );
+  const followerIds = followers.map((s) => s.malId);
+  const followerStatus =
+    followerIds.length === 0
+      ? new Map<number, (typeof listEntries.$inferSelect)["status"]>()
+      : new Map(
+          (
+            await db
+              .select({ animeId: listEntries.animeId, status: listEntries.status })
+              .from(listEntries)
+              .where(and(eq(listEntries.userId, userId), inArray(listEntries.animeId, followerIds)))
+          ).map((row) => [row.animeId, row.status]),
+        );
 
   const [settings] = await db
     .select({ services: briefSettings.services })
@@ -118,6 +156,13 @@ export async function loadShow(
       settings?.services ?? [],
     ),
     journal: journal.items,
+    sequels: followers.map((s) => ({
+      animeId: s.malId,
+      title: s.title,
+      pictureUrl: s.coverUrl?.startsWith("https://") ? s.coverUrl : null,
+      startDate: s.startDate,
+      status: followerStatus.get(s.malId) ?? null,
+    })),
     friends: theirs
       .map((row) => ({
         friendId: row.userId,

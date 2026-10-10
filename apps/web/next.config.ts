@@ -8,16 +8,19 @@ const nextConfig: NextConfig = {
     // or a slow chat reply that escalates and hands off.
     proxyTimeout: 120_000,
   },
-  // The screens that moved under You when the app became four screens (Today, List, Chat, You).
-  // Temporary, so the next move can point them elsewhere.
+  // The screens that moved under You when the app became four screens (Today, List, Chat, You),
+  // and History and the Diary, which became the Journal. Temporary, so a later move can point
+  // them elsewhere.
   redirects() {
     return Promise.resolve([
       { source: "/list/stats", destination: "/you/stats", permanent: false },
       { source: "/list/taste", destination: "/you/taste", permanent: false },
       { source: "/list/friends", destination: "/you/friends", permanent: false },
       { source: "/list/friends/:id", destination: "/you/friends/:id", permanent: false },
-      { source: "/list/changes", destination: "/you/history", permanent: false },
-      { source: "/list/diary", destination: "/you/diary", permanent: false },
+      { source: "/list/changes", destination: "/you/journal", permanent: false },
+      { source: "/list/diary", destination: "/you/journal", permanent: false },
+      { source: "/you/history", destination: "/you/journal", permanent: false },
+      { source: "/you/diary", destination: "/you/journal", permanent: false },
       { source: "/list/brief", destination: "/you/settings", permanent: false },
       { source: "/list/account", destination: "/you/settings", permanent: false },
     ]);

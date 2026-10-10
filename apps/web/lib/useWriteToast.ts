@@ -4,6 +4,7 @@ import { changeResponseSchema, type ChangeView } from "@kurisu/shared";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
+import { useFinish } from "@/components/FinishSheet";
 import { useToast } from "@/components/Toast";
 
 import { postApi } from "./clientApi";
@@ -13,13 +14,15 @@ import { notifyListChanged } from "./listChanged";
 
 /**
  * After a write made outside Chat: says what changed in a Toast with Undo, and refreshes the
- * screen. Undo goes through the same undo path as History.
+ * screen; a write that finished a show also opens the "Finished" sheet. Undo goes through the
+ * same undo path as the Journal.
  */
 export function useWriteToast(): {
   written: (change: ChangeView) => void;
   failed: (error: string) => void;
 } {
   const toast = useToast();
+  const finish = useFinish();
   const router = useRouter();
 
   const refresh = useCallback(() => {
@@ -37,6 +40,7 @@ export function useWriteToast(): {
   const written = useCallback(
     (change: ChangeView) => {
       refresh();
+      finish(change);
       toast({
         text: `${change.title}: ${describeWrite(change.kind, change.before, change.after)}`,
         // An undo itself isn't undone from here; History still has it.
@@ -56,7 +60,7 @@ export function useWriteToast(): {
         }),
       });
     },
-    [failed, refresh, toast],
+    [failed, finish, refresh, toast],
   );
 
   return { written, failed };

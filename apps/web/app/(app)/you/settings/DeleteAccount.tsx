@@ -43,8 +43,8 @@ export function DeleteAccount() {
       <div className="k-panel flex flex-col gap-4 p-4">
         <p className="text-ink-muted">
           Deleting removes everything kurisu holds about you: its copy of your list, your chats,
-          History, diary, taste, stats and settings. Your MyAnimeList list stays exactly as it is.
-          It can&apos;t be undone.
+          Journal and notes, taste, stats and settings. Your MyAnimeList list stays exactly as it
+          is. It can&apos;t be undone.
         </p>
         <button
           type="button"
