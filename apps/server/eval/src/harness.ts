@@ -3,15 +3,12 @@ import { and, eq, sql } from "drizzle-orm";
 
 import { createDb, type Db } from "../../src/db/client.js";
 import { runMigrations } from "../../src/db/migrate.js";
+import { POSTGRES_IMAGE } from "../../src/db/postgresImage.js";
 import { anilistMedia, anime, listEntries, users } from "../../src/db/schema.js";
 import type { ListWriter } from "../../src/writes/commit.js";
 import type { ListChange } from "../../src/writes/normalize.js";
 import { airingRowsFor, type AiringFreeze } from "./airing.js";
 import type { Snapshot } from "./snapshot.js";
-
-// Same image as docker-compose.yml and the integration tests.
-const POSTGRES_IMAGE =
-  "postgres:18@sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722";
 
 export interface EvalDatabase {
   db: Db;

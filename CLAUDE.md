@@ -108,7 +108,7 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
 
 - Install: `pnpm install`
 - Dev servers: `pnpm dev` (server on :4000, web on :3000; web proxies `/api/*` to the server)
-- Local Postgres (reads `.env.local`): `pnpm db:up` / `pnpm db:down`. The image is `pgvector/pgvector:pg18-trixie` (Postgres 18 with pgvector, the same Debian as `postgres:18`), pinned by digest in `docker-compose.yml`, `deploy/compose.yaml` and `test/support/globalSetup.ts`; keep the three the same.
+- Local Postgres (reads `.env.local`): `pnpm db:up` / `pnpm db:down`. The image is `pgvector/pgvector:pg18-trixie` (Postgres 18 with pgvector, the same Debian as `postgres:18`), pinned by digest in `docker-compose.yml`, `deploy/compose.yaml` and `apps/server/src/db/postgresImage.ts` (which the integration tests and the eval harness share); keep the three the same.
 - Tests: `pnpm test` (all). Server only: `pnpm --filter @kurisu/server test:unit`, or `test:integration` (starts a Postgres container via Testcontainers; needs Docker running)
 - Lint, typecheck, format: `pnpm lint`, `pnpm typecheck`, `pnpm format` (CI runs `pnpm format:check`)
 - Build: `pnpm build`
