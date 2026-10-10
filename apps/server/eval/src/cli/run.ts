@@ -21,11 +21,13 @@ import { CURRENT_PROMPT, PROMPTS } from "../../../src/agent/prompts/index.js";
 import { runAgent } from "../../../src/agent/runAgent.js";
 import { agentRunSteps } from "../../../src/db/schema.js";
 import { loadLocalEnvFile } from "../../../src/env.js";
-import { createModelClient } from "../../../src/llm/modelClient.js";
+import { ensureTitleEmbeddings } from "../../../src/lab/titles.js";
+import { createEmbedder, createModelClient } from "../../../src/llm/modelClient.js";
 import {
   costUsd,
   loadModelsFile,
   parseModelRef,
+  resolveEmbedding,
   resolveRoles,
 } from "../../../src/llm/modelConfig.js";
 import type { ListChange } from "../../../src/writes/normalize.js";
@@ -36,6 +38,7 @@ import { frozenCatalogSearch, loadCatalog } from "../catalog.js";
 import { briefFromHistory } from "../brief.js";
 import { createFakeWriter, loadSnapshotIntoDb, startEvalDatabase } from "../harness.js";
 import { aggregate, scoreCase, type CaseRun, type Metrics } from "../score.js";
+import { cachedEmbedder } from "../embedCache.js";
 import { throttle } from "../throttle.js";
 import { loadSnapshot, TitleIndex, type Snapshot } from "../snapshot.js";
 
@@ -54,8 +57,15 @@ const { values } = parseArgs({
     rpm: { type: "string" },
     /** "private": the review queue's labeled cases in eval/private/ (never committed). */
     dir: { type: "string" },
+    /** "vectors": list search also finds shows by meaning (Milestone 7's lab). */
+    search: { type: "string" },
   },
 });
+if (values.search !== undefined && values.search !== "vectors" && values.search !== "trigram") {
+  console.error('--search takes "vectors" or "trigram" (the default).');
+  process.exit(1);
+}
+const searchMode = values.search === "vectors" ? "vectors" : "trigram";
 if (values.dir !== undefined && values.dir !== "private") {
   console.error('--dir takes "private" (eval/private/), or leave it out for eval/cases/.');
   process.exit(1);
@@ -87,6 +97,18 @@ if (rpm !== null && !(rpm > 0)) {
   process.exit(1);
 }
 const models = rpm === null ? { ...client, waitedMs: 0 } : throttle(client, rpm);
+// The lab's vector channel: the configured embedding model, remembered in eval/local/.
+const embedder =
+  searchMode === "vectors"
+    ? cachedEmbedder(
+        createEmbedder({
+          ref: resolveEmbedding(modelsFile, nonEmpty(process.env.EMBEDDING_MODEL) ?? undefined),
+          geminiApiKey: nonEmpty(process.env.GEMINI_API_KEY),
+          ollamaBaseUrl: nonEmpty(process.env.OLLAMA_BASE_URL) ?? "http://127.0.0.1:11434",
+          ollama: modelsFile.ollama,
+        }),
+      )
+    : null;
 
 /** Frozen AniList airing data, so "the newest episode" has a fixed answer. */
 const airing = privateRun ? loadPrivateAiring() : loadAiring();
@@ -114,7 +136,9 @@ if (selected.length === 0) {
   process.exit(1);
 }
 
-console.log(`Eval: ${String(selected.length)} cases on ${ref.ref} with ${PROMPT.version}`);
+console.log(
+  `Eval: ${String(selected.length)} cases on ${ref.ref} with ${PROMPT.version}${embedder ? `, list search by meaning (${embedder.model})` : ""}`,
+);
 if (rpm !== null)
   console.log(`At most ${String(rpm)} model calls a minute (waiting is left out of latency).`);
 console.log("Starting a throwaway Postgres...");
@@ -145,13 +169,14 @@ try {
 
   mkdirSync(RESULTS_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const path = `${RESULTS_DIR}${stamp}-${ref.ref.replace(/[^a-z0-9.-]+/gi, "_")}.json`;
+  const path = `${RESULTS_DIR}${stamp}-${ref.ref.replace(/[^a-z0-9.-]+/gi, "_")}${embedder ? "-vectors" : ""}.json`;
   writeFileSync(
     path,
     `${JSON.stringify(
       {
         model: ref.ref,
         promptVersion: PROMPT.version,
+        search: embedder ? { mode: "vectors", embedding: embedder.model } : { mode: "trigram" },
         ranAt: new Date().toISOString(),
         metrics,
         cases: runs.map((r) => ({
@@ -167,6 +192,7 @@ try {
   );
   console.log(`\nFull report: ${path}`);
 } finally {
+  embedder?.save();
   await database.close();
 }
 
@@ -180,12 +206,26 @@ async function runCase(
   }
   const { db } = database;
   const userId = await loadSnapshotIntoDb(db, snapshot, airing);
+  // Vectors survive the reload, so only the first case of a snapshot embeds anything.
+  if (embedder) {
+    await ensureTitleEmbeddings(
+      { db, embedder },
+      snapshot.entries.map((e) => e.id),
+    );
+  }
   const { writer } = createFakeWriter(db);
 
   const brief = briefFromHistory(resolved.case.history, new TitleIndex(snapshot));
   const waitedBefore = models.waitedMs;
   const result = await runAgent(
-    { db, models, writeListStatus: writer, prompt: PROMPT, catalog },
+    {
+      db,
+      models,
+      writeListStatus: writer,
+      prompt: PROMPT,
+      catalog,
+      ...(embedder && { meaning: { embedder } }),
+    },
     {
       userId,
       conversationId: null,

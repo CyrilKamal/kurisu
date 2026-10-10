@@ -5,7 +5,13 @@ import type { Db } from "../db/client.js";
 import { anime } from "../db/schema.js";
 import { rememberShows } from "../anilist/catalog.js";
 import type { CatalogShow } from "../anilist/client.js";
-import { getEntry, searchCatalog, searchMyList, type ListEntryView } from "../list/search.js";
+import {
+  getEntry,
+  searchCatalog,
+  searchMyList,
+  type ListEntryView,
+  type MeaningSearch,
+} from "../list/search.js";
 import type { ToolCall, ToolSpec } from "../llm/types.js";
 import { MAL_LIST_STATUSES } from "../mal/client.js";
 import {
@@ -83,6 +89,8 @@ export interface RunContext {
   searches: Map<string, number>;
   /** Set when the model keeps repeating itself; the run ends there. */
   stop: "repeated_commit" | "repeated_search" | "handoff" | null;
+  /** The lab's vector channel for list search, when SEARCH_VECTORS is on. */
+  meaning: MeaningSearch | null;
 }
 
 /** A model that runs the same search this many times is going in circles. */
@@ -263,6 +271,7 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
     groundIn: ctx.groundIn,
     contested: ctx.contested,
     answering: ctx.answering,
+    ...(ctx.meaning && { meaning: ctx.meaning }),
   });
   for (const c of candidates) {
     ctx.seen.add(c.animeId);
@@ -276,7 +285,12 @@ async function searchTool(ctx: RunContext, raw: unknown): Promise<ToolOutcome> {
   );
   return {
     result: {
-      results: candidates.map((c) => ({ ...entryForModel(ctx, c), clear_match: c.clear })),
+      results: candidates.map((c) => ({
+        ...entryForModel(ctx, c),
+        clear_match: c.clear,
+        // Found by what its name means, not by the words: at best an option to offer.
+        ...(c.byMeaning !== undefined && { matched_by_meaning: true }),
+      })),
       ...(times > 1 && { note: "Same results as your earlier identical search." }),
     },
   };

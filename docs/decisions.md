@@ -2230,3 +2230,25 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Changing the vector size** means a new migration and re-embedding everything.
 - **Eval synopses on a new machine:** run `pnpm eval:synopses` there first. Each lab result records which freeze it used.
 
+## 2026-10-10 — Hybrid title search: measured, left off (Milestone 7)
+**Decision:** With `SEARCH_VECTORS=on`, list search compares its queries' vectors with each listed show's `title` vector (its names). The meaning only reorders the shows the words found, by reciprocal rank fusion. Clear matches still come from the words alone, so it can't make a write go through without a question. It stays off (the default): it didn't improve updates.
+
+**Alternatives:**
+- **Letting shows only the meaning found join the results,** always, or only when the words matched no name well. Kept as `extras: "always"` for the replay.
+- **A similarity floor** to keep only good meaning-only shows.
+
+**Why:**
+- **Replay of Flash-Lite's 214 recorded searches** (`pnpm lab:search-replay`, the 2026-10-08 run): expected show first 53.3% → 57.0%, among the five shown 60.3% → 60.3%, clear 30.8% unchanged.
+- **Meaning-only shows were right 2 times in 258.** Right ones had median similarity 0.404 and wrong ones 0.413, so no floor separates them. "Only when the words matched no name" added 22, all wrong.
+- **Replay of qwen3.6:27b's 226 searches:** first 53.5% → 53.1%, top five 57.1% → 57.5%. It helps short or abbreviated names ("omp 3" found at all, "the eater", "jjk") and hurts long English subtitles (three Bleach brief cases fell from first to second).
+- **Full update eval on qwen3.6:27b, 141 cases:**
+  - trigram: 85.1% accuracy, 1 wrong write, clarification precision 55.3%;
+  - vectors: 83.7%, 3 wrong writes, 59.1%.
+
+  Rerunning the 6 cases that differed, 3 times per arm, gave the same outcomes in both arms and exactly 1 wrong write each time. The gap was the local model's noise, not the vectors.
+
+**Consequences:**
+- **Nothing changes for users.** The bar was "0 wrong writes and better accuracy or precision", and nothing local suggests Flash-Lite would clear it. The Flash-Lite confirmation run (about $0.30) is only worth it if Cyril wants the number.
+- **A show's names carry little meaning beyond their words,** which trigram already has. Synopsis vectors (semantic recommendations) carry what trigram can't.
+- **Nothing is embedded unless the flag is on.** When on, title vectors are embedded after each sync, and if the embedding model fails, search falls back to the words alone.
+

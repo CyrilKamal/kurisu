@@ -56,6 +56,8 @@ const envSchema = z.object({
 
   // "off" stops the daily brief job (the routes still work). Tests turn it off.
   BRIEF_SCHEDULER: optional(z.enum(["on", "off"]).default("on")),
+  // Milestone 7's lab: "on" lets list search also rank shows by what their names mean.
+  SEARCH_VECTORS: optional(z.enum(["on", "off"]).default("off")),
 
   // The MAL account that owns this kurisu. When set, no other MAL account can sign up.
   // Required in production, where the app is reachable from the internet.
@@ -101,6 +103,8 @@ export interface Config {
     embeddingModel: string | null;
   };
   brief: { scheduler: boolean };
+  /** Milestone 7's lab experiments, off unless switched on. */
+  lab: { searchVectors: boolean };
   /**
    * The owner's MAL username, which alone can create an account without an invite, and what
    * invite pages call them.
@@ -168,6 +172,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       embeddingModel: parsed.EMBEDDING_MODEL ?? null,
     },
     brief: { scheduler: parsed.BRIEF_SCHEDULER === "on" },
+    lab: { searchVectors: parsed.SEARCH_VECTORS === "on" },
     owner: parsed.OWNER_MAL_USERNAME
       ? {
           malUsername: parsed.OWNER_MAL_USERNAME,
