@@ -1,4 +1,4 @@
-/* kurisu v3, generated from tokens.json by build-tokens.mjs. Don't edit. */
+/* kurisu v4, generated from tokens.json by build-tokens.mjs. Don't edit. */
 :root {
   /* color */
   --bg: #0d0e12;
@@ -55,4 +55,6 @@
   --nav-height: 56px;
   --content-max: 720px;
   --sidebar-width: 288px;
+  --rail-width: 80px;
+  --sheet-max: 480px;
 }

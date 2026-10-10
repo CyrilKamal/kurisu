@@ -43,6 +43,11 @@ const ICONS = {
   ),
   clear: <path d="M6 6l12 12M18 6 6 18" />,
   "chevron-down": <path d="m6 9 6 6 6-6" />,
+  today: <path d="M4 6h16v14H4ZM4 10h16M8 3v4M16 3v4M8 14h3v3H8Z" />,
+  user: <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20v-1a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v1" />,
+  "chevron-left": <path d="m15 6-6 6 6 6" />,
+  external: <path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6" />,
+  more: <path d="M5 11h2v2H5ZM11 11h2v2h-2ZM17 11h2v2h-2Z" />,
 } as const;
 
 export type IconName = keyof typeof ICONS;

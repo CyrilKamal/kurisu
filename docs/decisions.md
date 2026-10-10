@@ -1995,3 +1995,30 @@ Nulls are rare and random, so the fix is in code, and the guard catches any read
 **Consequences:**
 - Every screen header's title block now takes the free space, so its actions stay on the title's row.
 - The design system's StatusTabs is defined as scrolling; the app wraps it.
+
+## 2026-10-09 — Design system v9: four screens, a nav rail, sheets from the bottom (between Milestones 6 and 7)
+**Decision:** The first step of the mobile-first refactor Cyril asked for. The "kurisu" artifact moves to v9 (version 11), and `apps/web/design/` copies it:
+- **Four screens:** Today, List, Chat and You. NavBar takes four items: a bottom bar on phones, and an 80px rail on the left from 1024px (`rail-width`). This reverses the system's "two screens, don't add tabs".
+- **New components:**
+  - Sheet: from the bottom on phones, with a grip; centred at 480px (`sheet-max`) from 640px.
+  - Toast: Banner styling above the nav, for "Saved · Undo" moments that go away on their own.
+  - ShowHero and EpisodeRow, for the show page and Today.
+  - WelcomeStep, for the first run.
+  - A back chevron in ScreenHeader.
+- **Touch:** small and icon buttons get an invisible hit area. It's 48px (`tap-min`) tall and reaches 8px sideways, never more, so it stops inside the 8px gap between buttons. StatusTabs wraps, as the app already did.
+- **Five new icons:** today, user, chevron-left, external and more.
+
+The app's shell honours the rail now: content moves right of it from 1024px, and Chat and the bottom bars drop the bar's height there. The screens themselves follow in the next PRs.
+
+**Alternatives:**
+- Keeping the ☰ menu with eight screens, which hides most of the app.
+- A tab bar on desktop too, which wastes width and reads as a phone.
+- 48 × 48 hit areas everywhere: in rows where buttons sit 8px apart, they cover 4px of the neighbour, so a tap near the edge of "+1 ep" would open Edit.
+
+**Why:**
+- Cyril asked for a mobile-first app that works on desktop, keeping kurisu's look (sharp, no shadows, no emoji or bounce).
+- The skill's audit found everything behind Chat and List, no home, centred sheets and 32px buttons under the 48px touch minimum.
+
+**Consequences:**
+- A small icon button's hit area is 40 × 48, so a phone's main actions use `k-btn--icon`.
+- Until PR 3 the rail still shows only Chat and List.
