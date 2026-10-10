@@ -4,6 +4,7 @@ import { changeResponseSchema } from "@kurisu/shared";
 import { useState } from "react";
 
 import { Poster, progressOf } from "@/components/Poster";
+import { ShowLink } from "@/components/ShowLink";
 import { sendApi } from "@/lib/clientApi";
 import { useWriteToast } from "@/lib/useWriteToast";
 
@@ -65,7 +66,9 @@ export function EpisodeRows({ items }: { items: EpisodeRowItem[] }) {
               progress={progressOf(item.episodesWatched, item.numEpisodes)}
             />
             <div className="k-row__main">
-              <span className="k-row__title">{item.title}</span>
+              <ShowLink animeId={item.animeId}>
+                <span className="k-row__title">{item.title}</span>
+              </ShowLink>
               <p className="k-row__meta">
                 <span className={item.out ? "k-airing k-airing--today" : "k-airing"}>
                   {item.meta}

@@ -47,6 +47,7 @@ describe("readListView and listHref", () => {
       genre: "Slice of Life",
       airing: "currently_airing",
       sort: "mal",
+      layout: "grid",
     });
     expect(read).toEqual({
       status: "dropped",
@@ -55,6 +56,7 @@ describe("readListView and listHref", () => {
       genre: "Slice of Life",
       airing: "currently_airing",
       sort: "mal",
+      layout: "grid",
     });
     expect(
       readListView(Object.fromEntries(new URL(listHref(read), "http://x").searchParams)),
@@ -62,9 +64,9 @@ describe("readListView and listHref", () => {
   });
 
   it("falls back to the defaults for missing or unknown values", () => {
-    expect(readListView({ status: "nope", sort: "nope", airing: "nope", q: "  " })).toEqual(
-      DEFAULT_VIEW,
-    );
+    expect(
+      readListView({ status: "nope", sort: "nope", airing: "nope", layout: "nope", q: "  " }),
+    ).toEqual(DEFAULT_VIEW);
     expect(readListView({ status: ["completed", "dropped"] }).status).toBe("completed");
   });
 

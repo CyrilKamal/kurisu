@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { Poster } from "@/components/Poster";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { ShowLink } from "@/components/ShowLink";
 import { outLabel, untilLabel } from "@/lib/airing";
 import { apiGet } from "@/lib/api";
 
@@ -89,7 +90,9 @@ export default async function TodayPage() {
               <li key={show.animeId} className="k-row">
                 <Poster url={show.pictureUrl} title={show.title} />
                 <div className="k-row__main">
-                  <span className="k-row__title">{show.title}</span>
+                  <ShowLink animeId={show.animeId}>
+                    <span className="k-row__title">{show.title}</span>
+                  </ShowLink>
                   <p className="k-row__meta">
                     <span className="k-airing">
                       ep {show.episode} in{" "}

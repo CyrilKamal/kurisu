@@ -6,6 +6,7 @@ import { Fragment, useState } from "react";
 import { Banner } from "@/components/Banner";
 import { Diff } from "@/components/Diff";
 import { Poster } from "@/components/Poster";
+import { ShowLink } from "@/components/ShowLink";
 import { getApi, postApi } from "@/lib/clientApi";
 import { sourceLabel, writeErrorMessage } from "@/lib/describeChange";
 import { byLocalDay, hourMinute } from "@/lib/runMeta";
@@ -75,7 +76,9 @@ export function ChangeLog({ initialChanges }: { initialChanges: ChangeView[] }) 
                 </time>
                 <Poster url={change.pictureUrl} title={change.title} />
                 <div className="min-w-0">
-                  <p className="k-write__title">{change.title}</p>
+                  <p className="k-write__title">
+                    <ShowLink animeId={change.animeId}>{change.title}</ShowLink>
+                  </p>
                   <Diff
                     kind={change.kind}
                     before={change.before}

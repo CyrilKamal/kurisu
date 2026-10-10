@@ -2096,3 +2096,25 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - Import stays under List, behind its "+", until Search & add joins it.
 - History and Diary stay separate until the Journal.
 
+## 2026-10-10 — Show pages, Search & add, and the List's countdowns and covers (between Milestones 6 and 7)
+**Decision:** The fourth step of the mobile-first refactor.
+- **Show pages** (`/shows/[id]`) carry the design system's ShowHero, the synopsis, where to watch on your services, your updates of the show, and friends who have it. Every title and poster in the app now opens that page instead of MyAnimeList in a new tab. The show page's "Open on MyAnimeList" is the only link out.
+- **Search & add** (`/search`) is never blank:
+  - this season's shows before you type, and recent searches kept on this device;
+  - after a 600ms pause, AniList's matches, each saying where it stands on your list, or with Add.
+- **Add** opens a Sheet with the status, which defaults to Plan to Watch, and an optional score. The tap writes through `POST /list/add`, with a Toast and Undo.
+- **The List** gets each row's AiringCountdown ("2 out · eps 8–9", "ep 10 in 2d 4h") and a rows/covers toggle (PosterGrid), kept in the URL with the rest of the view. Its "+" opens Search & add, which links to Import.
+
+**Alternatives:**
+- Keeping titles as MyAnimeList links, which leaves the app on every tap.
+- Searching on every keystroke, which is an AniList request per letter, against a limit shared with everyone.
+- A "+" menu with two items, instead of Search linking to Import.
+
+**Why:**
+- A show page keeps people in kurisu, and puts everything known about a show in one place.
+- The pause, and the server's 20 searches a minute per user, keep searching within AniList's pace.
+
+**Consequences:**
+- Countdowns use the viewer's clock, so they're drawn only in the browser: rows show no countdown until the page has loaded.
+- A show found by Search is stored as an `anime` row (as Chat's searches already are), so its page and Add work.
+

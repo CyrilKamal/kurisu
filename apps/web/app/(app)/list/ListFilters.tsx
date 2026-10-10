@@ -99,6 +99,28 @@ export function ListFilters({
         )}
       </div>
 
+      {/* Rows or a wall of covers (PosterGrid); kept in the URL with the rest of the view. */}
+      <div className="k-segmented flex-none" role="group" aria-label="Show the list as">
+        {(
+          [
+            ["rows", "list", "Rows"],
+            ["grid", "grid", "Covers"],
+          ] as const
+        ).map(([layout, icon, label]) => (
+          <button
+            key={layout}
+            type="button"
+            aria-label={label}
+            aria-pressed={view.layout === layout}
+            onClick={() => {
+              onChange({ ...view, layout });
+            }}
+          >
+            <Icon name={icon} />
+          </button>
+        ))}
+      </div>
+
       {sheetOpen && (
         <FilterSheet
           menus={menus}

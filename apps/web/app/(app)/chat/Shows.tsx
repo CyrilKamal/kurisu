@@ -1,7 +1,9 @@
 import type { ShowCard } from "@kurisu/shared";
+import Link from "next/link";
 
 import { Icon } from "@/components/Icon";
 import { Poster, progressOf } from "@/components/Poster";
+import { showHref } from "@/lib/airing";
 import { showDetails } from "@/lib/format";
 
 /**
@@ -66,14 +68,9 @@ export function ShowList({
             progress={progressOf(show.episodesWatched, show.numEpisodes)}
           />
           <div className="k-row__main">
-            <a
-              className="k-row__title"
-              href={`https://myanimelist.net/anime/${String(show.animeId)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link href={showHref(show.animeId)} className="k-row__title">
               {show.title}
-            </a>
+            </Link>
             <p className="k-row__meta">{showDetails(show)}</p>
           </div>
           <div className="k-row__data">

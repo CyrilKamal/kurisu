@@ -1,17 +1,12 @@
 "use client";
 
-import {
-  changeResponseSchema,
-  LIST_STATUSES,
-  type ChangeView,
-  type ListEntry,
-} from "@kurisu/shared";
+import { changeResponseSchema, LIST_STATUSES, type ChangeView } from "@kurisu/shared";
 import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { Sheet } from "@/components/Sheet";
 import { sendApi } from "@/lib/clientApi";
-import { editErrorMessage, editPayload, formFrom } from "@/lib/editEntry";
+import { editErrorMessage, editPayload, formFrom, type EditableEntry } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
 
 const SCORES = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -26,7 +21,7 @@ export function EditSheet({
   onClose,
   onSaved,
 }: {
-  entry: ListEntry;
+  entry: EditableEntry;
   onClose: () => void;
   onSaved: (change: ChangeView) => void;
 }) {

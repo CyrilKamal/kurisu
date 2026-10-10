@@ -37,11 +37,7 @@ export default async function ListPage(props: PageProps<"/list">) {
               actions={
                 <>
                   <ResyncButton />
-                  <Link
-                    href="/list/import"
-                    className="k-btn k-btn--icon"
-                    aria-label="Import from notes"
-                  >
+                  <Link href="/search" className="k-btn k-btn--icon" aria-label="Add shows">
                     <Icon name="plus" />
                   </Link>
                 </>

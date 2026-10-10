@@ -1,9 +1,11 @@
 import type { PickView } from "@kurisu/shared";
 import { Fragment } from "react";
+import Link from "next/link";
 
 import { Icon } from "@/components/Icon";
 import { Poster, progressOf } from "@/components/Poster";
 import { StatusBadge } from "@/components/StatusBadge";
+import { showHref } from "@/lib/airing";
 import { durationLabel } from "@/lib/format";
 
 /** "ep 3 of 12" for a show under way, "12 eps" otherwise. */
@@ -48,13 +50,7 @@ export function Picks({
             />
             <div className="k-pick__body">
               <p className="k-pick__title">
-                <a
-                  href={`https://myanimelist.net/anime/${String(pick.animeId)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {pick.title}
-                </a>
+                <Link href={showHref(pick.animeId)}>{pick.title}</Link>
               </p>
               <p className="k-pick__meta">
                 {pick.status === null ? (

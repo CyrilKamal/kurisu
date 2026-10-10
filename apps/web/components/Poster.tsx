@@ -1,6 +1,7 @@
 import Image from "next/image";
 
-const WIDTHS = { sm: 32, md: 64, lg: 96 } as const;
+// `fill` takes its cell's width (PosterGrid); 160 is enough pixels for the widest cell.
+const WIDTHS = { sm: 32, md: 64, lg: 96, fill: 160 } as const;
 
 /**
  * A show's cover at 2:3 with a hairline edge (the design system's Poster): 32×48 in rows, the

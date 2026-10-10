@@ -16,7 +16,12 @@ export interface ListView {
   genre: string | null;
   airing: AiringFilter | null;
   sort: ListSort;
+  /** Rows, or a grid of posters. */
+  layout: ListLayout;
 }
+
+export const LIST_LAYOUTS = ["rows", "grid"] as const;
+export type ListLayout = (typeof LIST_LAYOUTS)[number];
 
 export const LIST_SORTS = ["updated", "title", "score", "mal", "shortest"] as const;
 export type ListSort = (typeof LIST_SORTS)[number];
@@ -45,6 +50,7 @@ export const DEFAULT_VIEW: ListView = {
   genre: null,
   airing: null,
   sort: "updated",
+  layout: "rows",
 };
 
 type Params = Record<string, string | string[] | undefined>;
@@ -68,6 +74,7 @@ export function readListView(params: Params): ListView {
     genre: one(params, "genre"),
     airing: oneOf(AIRING_FILTERS, one(params, "airing")),
     sort: oneOf(LIST_SORTS, one(params, "sort")) ?? DEFAULT_VIEW.sort,
+    layout: oneOf(LIST_LAYOUTS, one(params, "layout")) ?? DEFAULT_VIEW.layout,
   };
 }
 
@@ -80,6 +87,7 @@ export function listHref(view: ListView): string {
   if (view.genre) params.set("genre", view.genre);
   if (view.airing) params.set("airing", view.airing);
   if (view.sort !== DEFAULT_VIEW.sort) params.set("sort", view.sort);
+  if (view.layout !== DEFAULT_VIEW.layout) params.set("layout", view.layout);
   const search = params.toString();
   return search ? `/list?${search}` : "/list";
 }

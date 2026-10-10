@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Diff } from "@/components/Diff";
 import { Poster, progressOf } from "@/components/Poster";
+import { ShowLink } from "@/components/ShowLink";
 import { addButtonLabel, confirmationReasonLabel, sourceLabel } from "@/lib/describeChange";
 import { showDetails } from "@/lib/format";
 
@@ -58,7 +59,9 @@ export function WriteRow({
         progress={change.kind === "remove" ? null : progressOf(watched, change.numEpisodes)}
       />
       <div className="min-w-0">
-        <p className="k-write__title">{change.title}</p>
+        <p className="k-write__title">
+          <ShowLink animeId={change.animeId}>{change.title}</ShowLink>
+        </p>
         <Diff
           kind={change.kind}
           before={change.before}
@@ -131,7 +134,9 @@ export function HeldWrite({
             }
           />
           <div className="min-w-0">
-            <p className="k-write__title">{proposal.title}</p>
+            <p className="k-write__title">
+              <ShowLink animeId={proposal.animeId}>{proposal.title}</ShowLink>
+            </p>
             {add && proposal.show ? (
               <p className="k-diff">{showDetails(proposal.show)}</p>
             ) : (
