@@ -2,6 +2,12 @@ import type { ListEntry, ListStatus } from "@kurisu/shared";
 
 import { writeErrorMessage } from "./describeChange";
 
+/** An entry as the edit sheet needs it: from the List screen or a show's page. */
+export type EditableEntry = Pick<
+  ListEntry,
+  "animeId" | "title" | "numEpisodes" | "status" | "score" | "episodesWatched" | "isRewatching"
+>;
+
 /** The fields the edit sheet shows, as they stand. */
 export interface EditForm {
   status: ListStatus;
@@ -10,7 +16,7 @@ export interface EditForm {
   isRewatching: boolean;
 }
 
-export function formFrom(entry: ListEntry): EditForm {
+export function formFrom(entry: EditableEntry): EditForm {
   return {
     status: entry.status,
     episodesWatched: entry.episodesWatched,
@@ -20,7 +26,7 @@ export function formFrom(entry: ListEntry): EditForm {
 }
 
 /** Only the fields the user changed, or null when nothing did. */
-export function editPayload(entry: ListEntry, form: EditForm): Partial<EditForm> | null {
+export function editPayload(entry: EditableEntry, form: EditForm): Partial<EditForm> | null {
   const before = formFrom(entry);
   const changed: Partial<EditForm> = {};
   if (form.status !== before.status) changed.status = form.status;
@@ -33,7 +39,7 @@ export function editPayload(entry: ListEntry, form: EditForm): Partial<EditForm>
 }
 
 /** Whether a show is under way with episodes left, so "+1 ep" makes sense. */
-export function canAddEpisode(entry: ListEntry): boolean {
+export function canAddEpisode(entry: EditableEntry): boolean {
   const underWay =
     entry.status === "watching" ||
     entry.status === "on_hold" ||
@@ -60,5 +66,21 @@ export function editErrorMessage(error: string): string {
       return "This show isn't on your list anymore. Re-sync to refresh.";
     default:
       return writeErrorMessage(error);
+  }
+}
+
+/** Why an add didn't go through, in words. */
+export function addErrorMessage(error: string): string {
+  switch (error) {
+    case "already_on_list":
+      return "It's already on your list.";
+    case "unknown_anime":
+      return "kurisu doesn't know this show. Search for it again.";
+    case "stale":
+      return "It's already on your list. Re-sync to see it.";
+    case "network":
+      return "You're offline. Adding needs a connection.";
+    default:
+      return editErrorMessage(error);
   }
 }

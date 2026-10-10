@@ -1,3 +1,5 @@
+import type { AiringView, ListStatus } from "@kurisu/shared";
+
 const MINUTE_MS = 60_000;
 
 /**
@@ -23,4 +25,33 @@ export function outLabel(episodesWatched: number, latestAired: number): string {
   const behind = latestAired - episodesWatched;
   if (behind <= 1) return `ep ${String(latestAired)} out`;
   return `${String(behind)} out · eps ${String(episodesWatched + 1)}–${String(latestAired)}`;
+}
+
+/**
+ * A show's airing line for a row (the design system's AiringCountdown): its new episodes when
+ * you're watching it and behind, else when the next one airs. Null when AniList has nothing.
+ */
+export function airingLine(
+  airing: AiringView | null,
+  entry: { status: ListStatus; episodesWatched: number },
+  now: Date,
+): { text: string; out: boolean } | null {
+  if (!airing) return null;
+  if (
+    entry.status === "watching" &&
+    airing.latestAired !== null &&
+    airing.latestAired > entry.episodesWatched
+  ) {
+    return { text: outLabel(entry.episodesWatched, airing.latestAired), out: true };
+  }
+  if (airing.nextEpisode !== null && airing.nextAiringAt !== null) {
+    const when = untilLabel(new Date(airing.nextAiringAt), now);
+    return { text: `ep ${String(airing.nextEpisode)} in ${when}`, out: false };
+  }
+  return null;
+}
+
+/** A show's page in kurisu. */
+export function showHref(animeId: number): string {
+  return `/shows/${String(animeId)}`;
 }

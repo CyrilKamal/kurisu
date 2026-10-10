@@ -2,11 +2,13 @@
 
 import type { DropReasonView } from "@kurisu/shared";
 import { useState } from "react";
+import Link from "next/link";
 
 import { Banner } from "@/components/Banner";
 import { Icon } from "@/components/Icon";
 import { Poster } from "@/components/Poster";
 import { useConfirm } from "@/components/Sheet";
+import { showHref } from "@/lib/airing";
 import { sendApi } from "@/lib/clientApi";
 import { relativeTime } from "@/lib/format";
 import { DROP_CATEGORY_LABELS } from "@/lib/taste";
@@ -62,14 +64,9 @@ export function DropReasons({ initialReasons }: { initialReasons: DropReasonView
             <Poster url={reason.pictureUrl} title={reason.title} />
             <div className="min-w-0">
               <div className="k-drop__head">
-                <a
-                  className="k-drop__title hover:underline"
-                  href={`https://myanimelist.net/anime/${String(reason.animeId)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <Link href={showHref(reason.animeId)} className="k-drop__title hover:underline">
                   {reason.title}
-                </a>
+                </Link>
                 <span className="k-tag k-tag--word">{DROP_CATEGORY_LABELS[reason.category]}</span>
                 <span className="k-mono">{relativeTime(reason.createdAt)}</span>
               </div>

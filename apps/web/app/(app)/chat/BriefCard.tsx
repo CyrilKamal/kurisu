@@ -2,6 +2,7 @@ import type { BriefCardView, ShowCard } from "@kurisu/shared";
 
 import { Icon } from "@/components/Icon";
 import { Poster, progressOf } from "@/components/Poster";
+import { ShowLink } from "@/components/ShowLink";
 import { durationLabel } from "@/lib/format";
 import { dateTime } from "@/lib/runMeta";
 import { useIsBrowser } from "@/lib/useIsBrowser";
@@ -91,7 +92,9 @@ export function BriefCard({
                   progress={progressOf(item.episodesWatched, item.numEpisodes)}
                 />
                 <div className="min-w-0">
-                  <p className="k-brief__title">{item.title}</p>
+                  <p className="k-brief__title">
+                    <ShowLink animeId={item.animeId}>{item.title}</ShowLink>
+                  </p>
                   <p className="k-brief__where">
                     <Where services={item.services} />
                     {item.services.length === 0 && " "}
@@ -124,7 +127,9 @@ export function BriefCard({
                 <li key={alert.animeId} className="k-brief__item">
                   <Poster url={show?.pictureUrl ?? null} title={title} />
                   <div className="min-w-0">
-                    <p className="k-brief__title">{title}</p>
+                    <p className="k-brief__title">
+                      <ShowLink animeId={alert.animeId}>{title}</ShowLink>
+                    </p>
                     <p className="k-brief__where">
                       {alert.kind === "sequel_started" && alert.after
                         ? `You finished ${alert.after}`

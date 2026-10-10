@@ -7,6 +7,7 @@ import { Metric, Metrics } from "@/components/Metrics";
 import { Poster } from "@/components/Poster";
 import { Score } from "@/components/Score";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { showHref } from "@/lib/airing";
 import { apiGet } from "@/lib/api";
 import { addInChat, matchLabel } from "@/lib/friends";
 
@@ -114,14 +115,12 @@ function ShowRow({
   return (
     <li className="flex items-center gap-4 border-b border-line py-2">
       <Poster url={show.pictureUrl} title={show.title} />
-      <a
+      <Link
+        href={showHref(show.animeId)}
         className="k-row__title min-w-0 flex-1 truncate hover:underline"
-        href={`https://myanimelist.net/anime/${String(show.animeId)}`}
-        target="_blank"
-        rel="noopener noreferrer"
       >
         {show.title}
-      </a>
+      </Link>
       <span className="k-field__hint whitespace-nowrap">{detail}</span>
       {children}
     </li>

@@ -154,5 +154,8 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
   - **Changes made outside Chat confirm in a `Toast`** (`components/Toast.tsx`, through `lib/useWriteToast.ts`), with Undo through the change log.
   - **Safe areas:** `viewportFit: "cover"`. The `pb-nav`, `pb-bar` and `bottom-bar` utilities (`app/globals.css`) keep content clear of the bar and the home indicator.
   - **Touch:** Chat's list gives each chat a ⋯ (rename, delete) on touch screens (`pointer-coarse:`), where hover never happens.
+  - **Show pages** (`/shows/[id]`): the ShowHero, synopsis, where to watch, your updates and friends who have the show. Every show title and poster in the app links here (`showHref`, `components/ShowLink.tsx`), and only the show page links out to MyAnimeList. Its "+1 ep", Edit and Add use the List screen's write paths.
+  - **Search & add** (`/search`, from the List's "+"): this season's shows before you type, recent searches kept on this device, then AniList's matches after a pause in typing. Add opens `components/AddSheet.tsx` (`POST /list/add`).
+  - **The List** shows each row's AiringCountdown (`components/AiringLine.tsx`, drawn in the browser) and a rows/covers toggle (PosterGrid, `?layout=grid`).
 
 Next.js 16 ships version-matched docs in `apps/web/node_modules/next/dist/docs/`; read them before writing web code (see `apps/web/AGENTS.md`).

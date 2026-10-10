@@ -2,12 +2,14 @@
 
 import type { DiaryEntry, DiaryResponse } from "@kurisu/shared";
 import { Fragment, useState } from "react";
+import Link from "next/link";
 
 import { Banner } from "@/components/Banner";
 import { Diff } from "@/components/Diff";
 import { Icon } from "@/components/Icon";
 import { Poster } from "@/components/Poster";
 import { useConfirm } from "@/components/Sheet";
+import { showHref } from "@/lib/airing";
 import { sendApi } from "@/lib/clientApi";
 import { groupByDay } from "@/lib/diary";
 
@@ -102,14 +104,12 @@ export function DiaryTimeline({ initial }: { initial: DiaryResponse }) {
                 </time>
                 <Poster url={entry.pictureUrl} title={entry.title} />
                 <div className="min-w-0">
-                  <a
+                  <Link
+                    href={showHref(entry.animeId)}
                     className="k-write__title block hover:underline"
-                    href={`https://myanimelist.net/anime/${String(entry.animeId)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     {entry.title}
-                  </a>
+                  </Link>
                   <Diff
                     kind={entry.kind}
                     before={entry.before}

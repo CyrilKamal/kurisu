@@ -1,8 +1,10 @@
 import type { ActivityItemView } from "@kurisu/shared";
 import { Fragment } from "react";
+import Link from "next/link";
 
 import { Poster } from "@/components/Poster";
 import { Score } from "@/components/Score";
+import { showHref } from "@/lib/airing";
 import { groupByDay } from "@/lib/diary";
 import { activityText } from "@/lib/friends";
 
@@ -61,14 +63,9 @@ export function ActivityFeed({
                 <p className="text-ink">
                   {showFriend && <span className="font-semibold">{item.friend} </span>}
                   <span className="text-ink-muted">{activityText(item).lead} </span>
-                  <a
-                    className="k-write__title hover:underline"
-                    href={`https://myanimelist.net/anime/${String(item.animeId)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <Link href={showHref(item.animeId)} className="k-write__title hover:underline">
                     {item.title}
-                  </a>
+                  </Link>
                   <span className="text-ink-muted">{activityText(item).tail}</span>
                 </p>
                 {item.note && <p className="k-drop__said">{item.note}</p>}

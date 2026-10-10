@@ -19,6 +19,7 @@ import {
 import { EditSheet } from "./EditSheet";
 import { EntryRow } from "./EntryRow";
 import { ListFilters } from "./ListFilters";
+import { PosterGrid } from "./PosterGrid";
 import { StatusTabs } from "./StatusTabs";
 
 /**
@@ -100,7 +101,9 @@ export function ListBrowser({
 
       {banner}
 
-      {visible.length > 0 ? (
+      {visible.length > 0 && view.layout === "grid" ? (
+        <PosterGrid entries={visible} />
+      ) : visible.length > 0 ? (
         <ul className="k-rows -mx-2">
           {visible.map((entry) => (
             <EntryRow
