@@ -60,9 +60,30 @@ export interface ChatResponse {
   providerState?: unknown;
 }
 
+/** What a text is embedded as: the thing searched for, or a thing to be found. */
+export type EmbedPurpose = "query" | "document";
+
+export interface EmbedRequest {
+  model: string;
+  texts: string[];
+  purpose: EmbedPurpose;
+  /** The vector size the caller stores; a model that returns another size is an error. */
+  dimensions: number;
+  signal?: AbortSignal;
+}
+
+export interface EmbedResponse {
+  /** One vector per text, in order. */
+  vectors: number[][];
+  /** Tokens embedded, for cost; estimated where the provider doesn't say. */
+  inputTokens: number;
+  latencyMs: number;
+}
+
 export interface ModelProvider {
   readonly name: ProviderName;
   chat(request: ChatRequest): Promise<ChatResponse>;
+  embed(request: EmbedRequest): Promise<EmbedResponse>;
 }
 
 export const PROVIDER_NAMES = ["gemini", "ollama"] as const;

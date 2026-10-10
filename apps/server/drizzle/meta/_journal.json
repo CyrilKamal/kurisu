@@ -204,6 +204,13 @@
       "when": 1791615801797,
       "tag": "0028_show_synopsis_and_welcome",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791636623256,
+      "tag": "0029_lab_embeddings",
+      "breakpoints": true
     }
   ]
 }

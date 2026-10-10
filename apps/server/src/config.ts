@@ -52,6 +52,7 @@ const envSchema = z.object({
   EVAL_MODEL: optional(z.string().optional()),
   BRIEF_MODEL: optional(z.string().optional()),
   RECOMMEND_MODEL: optional(z.string().optional()),
+  EMBEDDING_MODEL: optional(z.string().optional()),
 
   // "off" stops the daily brief job (the routes still work). Tests turn it off.
   BRIEF_SCHEDULER: optional(z.enum(["on", "off"]).default("on")),
@@ -96,6 +97,8 @@ export interface Config {
       brief?: string;
       recommend?: string;
     };
+    /** Overrides config/models.json's embedding model, as a "provider:model" ref. */
+    embeddingModel: string | null;
   };
   brief: { scheduler: boolean };
   /**
@@ -162,6 +165,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         ...(parsed.BRIEF_MODEL ? { brief: parsed.BRIEF_MODEL } : {}),
         ...(parsed.RECOMMEND_MODEL ? { recommend: parsed.RECOMMEND_MODEL } : {}),
       },
+      embeddingModel: parsed.EMBEDDING_MODEL ?? null,
     },
     brief: { scheduler: parsed.BRIEF_SCHEDULER === "on" },
     owner: parsed.OWNER_MAL_USERNAME

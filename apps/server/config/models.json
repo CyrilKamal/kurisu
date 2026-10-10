@@ -15,6 +15,15 @@
     "think": false,
     "note": "numCtx caps the context window. Some models default to 256K, which makes Ollama reserve more memory than a 16 GB GPU has and crash."
   },
+  "embedding": {
+    "model": "ollama:embeddinggemma",
+    "dimensions": 768,
+    "prefixes": {
+      "query": "task: search result | query: ",
+      "document": "title: none | text: "
+    },
+    "note": "Milestone 7's lab. EmbeddingGemma (300M, local, free) gives 768-d vectors, the size of the embeddings table's column. Its model card asks for these task prefixes. Gemini's gemini-embedding-001 at 768 dimensions is the paid option if anything ships; it uses task types instead of prefixes."
+  },
   "pricesPerMillionTokens": {
     "gemini:gemini-3.5-flash-lite": {
       "input": 0.3,
@@ -30,6 +39,11 @@
       "input": 0,
       "output": 0,
       "note": "Local models."
+    },
+    "gemini:gemini-embedding-001": {
+      "input": 0.15,
+      "output": 0,
+      "note": "Paid tier, as last published (2025); check Google's pricing page before any paid run. Only used if a lab experiment ships."
     }
   }
 }

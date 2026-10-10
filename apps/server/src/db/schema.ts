@@ -11,8 +11,10 @@ import {
   real,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
+  vector,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
@@ -932,5 +934,41 @@ export const reviewItems = pgTable(
   (table) => [
     uniqueIndex("review_items_run_kind_idx").on(table.runId, table.kind),
     index("review_items_status_idx").on(table.status, table.createdAt.desc()),
+  ],
+);
+
+/** The size of every stored vector: config/models.json's embedding model must give this. */
+export const EMBEDDING_DIMENSIONS = 768;
+
+export const embeddingKind = pgEnum("embedding_kind", ["title", "synopsis", "history"]);
+
+/**
+ * Text as vectors, for Milestone 7's lab: a show's names (title), its AniList synopsis
+ * (synopsis), or one of a user's history documents (history). One row per text and model, since
+ * one model's vectors can't be compared with another's; the text and its hash are kept, so a
+ * changed text is embedded again and a search can show what it matched.
+ */
+export const embeddings = pgTable(
+  "embeddings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: embeddingKind("kind").notNull(),
+    // What it's of: a show's MAL id for title and synopsis, a document's id for history.
+    ref: text("ref").notNull(),
+    // Null for a show's own text, shared by everyone; the owner for their history.
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    // "ollama:embeddinggemma".
+    model: text("model").notNull(),
+    textHash: text("text_hash").notNull(),
+    text: text("text").notNull(),
+    embedding: vector("embedding", { dimensions: EMBEDDING_DIMENSIONS }).notNull(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    // A shared text has no owner: null counts as one value here, so it's stored once.
+    unique("embeddings_text_key")
+      .on(table.kind, table.model, table.ref, table.userId)
+      .nullsNotDistinct(),
+    index("embeddings_vector_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
   ],
 );

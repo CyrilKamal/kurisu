@@ -26,7 +26,9 @@
     "eval:recommend-data": "tsx eval/src/cli/exportRecommendData.ts",
     "eval:streaming": "tsx eval/src/cli/exportStreaming.ts",
     "eval:season": "tsx eval/src/cli/exportSeason.ts",
+    "eval:synopses": "tsx eval/src/cli/exportSynopses.ts",
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
+    "lab:synopses": "tsx src/scripts/labSynopses.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",
     "eval": "tsx eval/src/cli/run.ts",
     "review": "tsx eval/src/cli/review.ts"

@@ -3,9 +3,10 @@ import type { TestProject } from "vitest/node";
 
 import { runMigrations } from "../../src/db/migrate.js";
 
-// Same image as docker-compose.yml, so tests run against the version we develop on.
+// Same image as docker-compose.yml (Postgres 18 with pgvector), so tests run against the version we
+// develop on.
 const POSTGRES_IMAGE =
-  "postgres:18@sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722";
+  "pgvector/pgvector:pg18-trixie@sha256:9d9c930220cb9bf2f956d10a8f909cf9973d9672ca0278aef2c1e6facccad2e0";
 
 declare module "vitest" {
   export interface ProvidedContext {
