@@ -74,7 +74,7 @@ export interface AgentDeps {
   prompt: Prompt;
   /** Model turns before giving up. Each turn is one model call plus its tool calls. */
   maxTurns?: number;
-  /** Milestone 7's lab: list search also finds shows by what their names mean (SEARCH_VECTORS). */
+  /** Milestone 7's lab: list search also ranks shows by what their names mean (SEARCH_VECTORS). */
   meaning?: MeaningSearch;
 }
 
