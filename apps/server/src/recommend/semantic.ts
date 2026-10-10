@@ -19,14 +19,23 @@ export interface SemanticRanking {
 }
 
 /**
- * A request that asks for nothing in particular. Some synopses are close to any request; a show's
- * closeness to this one is its baseline, taken off its closeness to the real request.
+ * Requests that ask for nothing in particular, in a few wordings. Some synopses are close to any
+ * casual request (hubs); a show's mean closeness to these is its baseline, taken off its
+ * closeness to the real request. Several wordings, because one left the hubs on top of every
+ * request worded differently from it (the calibration in the decision log).
  */
-export const NEUTRAL_REQUEST = "recommend me an anime to watch";
+export const NEUTRAL_REQUESTS = [
+  "recommend me an anime to watch",
+  "what should I watch",
+  "rec me anything",
+  "can you recommend me a show",
+  "idk what to watch tonight",
+  "any recs for me?",
+] as const;
 
 /**
- * Each show's fit: its synopsis' similarity to the request minus its similarity to
- * NEUTRAL_REQUEST, so a request that names no mood or subject leaves every show near 0. Shows
+ * Each show's fit: its synopsis' similarity to the request minus its mean similarity to the
+ * NEUTRAL_REQUESTS, so a request that names no mood or subject leaves every show near 0. Shows
  * without a synopsis vector are left out (no fit).
  */
 export async function semanticFit(
@@ -34,15 +43,22 @@ export async function semanticFit(
   message: string,
   animeIds: number[],
 ): Promise<Map<number, number>> {
-  const { vectors } = await deps.embedder.embed([message, NEUTRAL_REQUEST], "query");
-  const [asked, neutral] = vectors;
-  if (!asked || !neutral) throw new Error("the embedder returned no vector");
+  const { vectors } = await deps.embedder.embed([message, ...NEUTRAL_REQUESTS], "query");
+  const [asked, ...neutrals] = vectors;
+  if (!asked || neutrals.length !== NEUTRAL_REQUESTS.length) {
+    throw new Error("the embedder returned too few vectors");
+  }
   const refs = animeIds.map(String);
   const toAsked = await similarities(deps, "synopsis", asked, refs);
-  const toNeutral = await similarities(deps, "synopsis", neutral, refs);
+  const baseline = new Map<string, number>();
+  for (const neutral of neutrals) {
+    for (const [ref, similarity] of await similarities(deps, "synopsis", neutral, refs)) {
+      baseline.set(ref, (baseline.get(ref) ?? 0) + similarity / neutrals.length);
+    }
+  }
   const fit = new Map<number, number>();
   for (const [ref, similarity] of toAsked) {
-    fit.set(Number(ref), similarity - (toNeutral.get(ref) ?? similarity));
+    fit.set(Number(ref), similarity - (baseline.get(ref) ?? similarity));
   }
   return fit;
 }

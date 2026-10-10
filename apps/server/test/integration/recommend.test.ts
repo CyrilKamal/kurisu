@@ -10,7 +10,7 @@ import { runRecommender } from "../../src/recommend/agent.js";
 import {
   ensureSynopsisEmbeddings,
   listedSynopses,
-  NEUTRAL_REQUEST,
+  NEUTRAL_REQUESTS,
   type SemanticRanking,
 } from "../../src/recommend/semantic.js";
 import { fixtureList } from "../fixtures/animeList.js";
@@ -325,7 +325,7 @@ describe("the lab's semantic fit", () => {
     const fitted = await candidatesFor("anything that makes me cry", { embedder, weight: 1 });
     expect(fitted[0]).toBe(MOVIE);
     expect(embedder.calls).toEqual([
-      { texts: ["anything that makes me cry", NEUTRAL_REQUEST], purpose: "query" },
+      { texts: ["anything that makes me cry", ...NEUTRAL_REQUESTS], purpose: "query" },
     ]);
     expect(await candidatesFor("anything that makes me cry", { embedder, weight: 0 })).toEqual(
       plain,

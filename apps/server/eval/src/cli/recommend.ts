@@ -10,12 +10,15 @@
  *   pnpm eval:recommend --thinking low                       the recommender's thinking level
  *   pnpm eval:recommend --agent-prompt progress-sync@14      another progress agent prompt
  *   pnpm eval:recommend --semantic 0.5     also rank by synopsis fit (Milestone 7's lab), at this weight
+ *   pnpm eval:recommend --replay <run.json> --semantic 1
+ *       no models: replays a recorded run's last find_candidates per case and picks the top 3 of
+ *       its ranking, so ranking changes can be compared for free and without the model's noise
  *
  * Needs Docker (a throwaway Postgres) and the frozen data from pnpm eval:recommend-data. Taste is
  * neutral here (the snapshot has no scores), so this measures following the request, not taste.
  * Writes a full JSON report to eval/results/.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
@@ -30,7 +33,11 @@ import {
 import { runAgent } from "../../../src/agent/runAgent.js";
 import { agentRunSteps, anime, briefSettings, listEntries } from "../../../src/db/schema.js";
 import { loadLocalEnvFile } from "../../../src/env.js";
-import { createEmbedder, createModelClient } from "../../../src/llm/modelClient.js";
+import {
+  createEmbedder,
+  createModelClient,
+  type ModelClient,
+} from "../../../src/llm/modelClient.js";
 import {
   costUsd,
   loadModelsFile,
@@ -79,6 +86,8 @@ const { values } = parseArgs({
     thinking: { type: "string" },
     /** Weight of the synopsis fit in the ranking, 0 to 1 (Milestone 7's lab). */
     semantic: { type: "string" },
+    /** A recorded run whose searches to replay without models. */
+    replay: { type: "string" },
   },
 });
 
@@ -155,6 +164,9 @@ const semantic: SemanticRanking | null = embedder
     }
   : null;
 
+/** Each recorded case's last find_candidates arguments, when replaying a run. */
+const replays = values.replay ? loadReplays(values.replay) : null;
+
 const details = loadDetails();
 const pool = loadDiscovery();
 const streaming = loadStreaming();
@@ -200,16 +212,7 @@ console.log("Starting a throwaway Postgres...");
 const database = await startEvalDatabase();
 
 try {
-  if (embedder && synopses) {
-    // Shared rows, so they outlast each case's reset.
-    const { embedded } = await ensureSynopsisEmbeddings(
-      { db: database.db, embedder },
-      synopses.shows,
-    );
-    console.log(
-      `Synopsis vectors: ${String(embedded)} stored (synopses frozen ${synopses.frozenAt}; ${String(embedder.stats.misses)} newly embedded)`,
-    );
-  }
+  if (synopses) console.log(`Synopses frozen ${synopses.frozenAt}.`);
   const scored: { run: RecommendRun; score: RecommendScore; resolved: ResolvedRecommendCase }[] =
     [];
   for (const [i, resolved] of selected.entries()) {
@@ -227,7 +230,7 @@ try {
 
   mkdirSync(RESULTS_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const path = `${RESULTS_DIR}recommend-${stamp}-${recommendRef.ref.replace(/[^a-z0-9.-]+/gi, "_")}${embedder ? `-semantic${String(semanticWeight)}` : ""}.json`;
+  const path = `${RESULTS_DIR}recommend-${stamp}-${replays ? "replay" : recommendRef.ref.replace(/[^a-z0-9.-]+/gi, "_")}${embedder ? `-semantic${String(semanticWeight)}` : ""}.json`;
   writeFileSync(
     path,
     `${JSON.stringify(
@@ -237,6 +240,7 @@ try {
         recommendModel: recommendRef.ref,
         recommendThinking: recommendRef.thinking ?? null,
         recommendPrompt: RECOMMEND_PROMPT.version,
+        replayOf: values.replay ?? null,
         semantic:
           embedder && synopses
             ? {
@@ -270,26 +274,42 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
   const userId = await loadSnapshotIntoDb(db, snapshot, airing);
   await loadRecommendDataIntoDb(db, userId, details, pool, streaming);
   if (season) await loadSeasonIntoDb(db, season);
+  if (embedder && synopses) {
+    // Again for each case: the reset's TRUNCATE users … CASCADE empties the whole embeddings
+    // table, shared rows too. The cache makes it cheap.
+    await ensureSynopsisEmbeddings({ db, embedder }, synopses.shows);
+  }
   const c = resolved.case;
   if (c.services.length > 0)
     await db.insert(briefSettings).values({ userId, services: c.services });
   const { writer } = createFakeWriter(db);
 
   const waitedBefore = models.waitedMs;
-  const agent = await runAgent(
-    { db, models, writeListStatus: writer, prompt: CURRENT_PROMPT, catalog },
-    { userId, conversationId: null, history: c.history, message: c.message, model: agentRef },
-  );
-  const recommendation = agent.handedOff
+  // A replay skips the progress agent and the recommender's model: the recorded search runs
+  // again, and the top of its ranking is picked.
+  const replayed = replays?.get(c.id);
+  const agent = replays
+    ? null
+    : await runAgent(
+        { db, models, writeListStatus: writer, prompt: CURRENT_PROMPT, catalog },
+        { userId, conversationId: null, history: c.history, message: c.message, model: agentRef },
+      );
+  const handedOff = replays ? replayed !== undefined : (agent?.handedOff ?? false);
+  const recommendation = handedOff
     ? await runRecommender(
-        { db, models, prompt: RECOMMEND_PROMPT, ...(semantic && { semantic }) },
+        {
+          db,
+          models: replayed ? replayModels(replayed) : models,
+          prompt: RECOMMEND_PROMPT,
+          ...(semantic && { semantic }),
+        },
         {
           userId,
           conversationId: null,
           history: c.history,
           message: c.message,
           model: recommendRef,
-          handedOffFromRunId: agent.runId,
+          handedOffFromRunId: agent?.runId ?? null,
         },
       )
     : null;
@@ -341,7 +361,10 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
 
   // The progress agent's steps, then the recommender's.
   const steps = [];
-  for (const runId of [agent.runId, ...(recommendation ? [recommendation.runId] : [])]) {
+  for (const runId of [
+    ...(agent ? [agent.runId] : []),
+    ...(recommendation ? [recommendation.runId] : []),
+  ]) {
     steps.push(
       ...(await db
         .select({
@@ -356,21 +379,22 @@ async function runCase(resolved: ResolvedRecommendCase): Promise<RecommendRun> {
     );
   }
 
-  const agentCost = costUsd(modelsFile, agentRef, agent);
-  const recommendCost = recommendation ? costUsd(modelsFile, recommendRef, recommendation) : 0;
+  const agentCost = agent ? costUsd(modelsFile, agentRef, agent) : 0;
+  const recommendCost =
+    recommendation && !replays ? costUsd(modelsFile, recommendRef, recommendation) : 0;
   return {
     file: resolved.file,
     caseId: c.id,
     tags: c.tags,
     message: c.message,
-    handedOff: agent.handedOff,
+    handedOff,
     picks,
-    reply: recommendation?.reply ?? agent.reply,
-    error: agent.error ?? recommendation?.error ?? null,
-    latencyMs: agent.latencyMs + (recommendation?.latencyMs ?? 0) - waited,
+    reply: recommendation?.reply ?? agent?.reply ?? "",
+    error: agent?.error ?? recommendation?.error ?? null,
+    latencyMs: (agent?.latencyMs ?? 0) + (recommendation?.latencyMs ?? 0) - waited,
     costUsd: agentCost === null || recommendCost === null ? null : agentCost + recommendCost,
-    inputTokens: agent.inputTokens + (recommendation?.inputTokens ?? 0),
-    outputTokens: agent.outputTokens + (recommendation?.outputTokens ?? 0),
+    inputTokens: (agent?.inputTokens ?? 0) + (recommendation?.inputTokens ?? 0),
+    outputTokens: (agent?.outputTokens ?? 0) + (recommendation?.outputTokens ?? 0),
     toolCalls: steps
       .filter((s) => s.kind === "tool_call")
       .map((s) => `${s.tool ?? "?"}(${JSON.stringify(s.args)})${s.error ? ` -> ${s.error}` : ""}`),
@@ -429,6 +453,70 @@ function printReport(
       for (const call of run.toolCalls) console.log(`  tool:     ${call.slice(0, 240)}`);
     }
   }
+}
+
+/**
+ * Each case's last find_candidates arguments in a recorded report: the search its picks came
+ * from. Cases that never searched are left out (nothing to replay).
+ */
+function loadReplays(file: string): Map<string, Record<string, unknown>> {
+  if (!existsSync(file)) {
+    console.error(`No report at ${file}.`);
+    process.exit(1);
+  }
+  const report = JSON.parse(readFileSync(file, "utf8")) as {
+    cases: { caseId: string; toolCalls: string[] }[];
+  };
+  const replays = new Map<string, Record<string, unknown>>();
+  for (const run of report.cases) {
+    for (const call of run.toolCalls) {
+      const match = /^find_candidates\((\{.*\})\)(?: -> .*)?$/s.exec(call);
+      if (match?.[1]) replays.set(run.caseId, JSON.parse(match[1]) as Record<string, unknown>);
+    }
+  }
+  return replays;
+}
+
+/**
+ * A stand-in for the recommender's model: it searches with the recorded arguments, then picks the
+ * top 3 of the ranking (or none when nothing fits).
+ */
+function replayModels(args: Record<string, unknown>): ModelClient {
+  const usage = { inputTokens: 0, outputTokens: 0 };
+  return {
+    chat(_ref, request) {
+      const last = request.messages.at(-1);
+      if (last?.role !== "tool") {
+        return Promise.resolve({
+          text: "",
+          toolCalls: [{ id: "replay-search", name: "find_candidates", arguments: args }],
+          usage,
+          latencyMs: 0,
+        });
+      }
+      const found = (JSON.parse(last.content) as { candidates?: { anime_id: number }[] })
+        .candidates;
+      const picks = (found ?? [])
+        .slice(0, 3)
+        .map((c) => ({ anime_id: c.anime_id, why: "Top of the ranking." }));
+      return Promise.resolve(
+        picks.length > 0
+          ? {
+              text: "",
+              toolCalls: [
+                {
+                  id: "replay-picks",
+                  name: "present_picks",
+                  arguments: { picks, reply: "Replayed." },
+                },
+              ],
+              usage,
+              latencyMs: 0,
+            }
+          : { text: "Nothing fits.", toolCalls: [], usage, latencyMs: 0 },
+      );
+    },
+  };
 }
 
 /** .env files write unset variables as empty strings. */
