@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useConfirm } from "@/components/Sheet";
 import { sendApi } from "@/lib/clientApi";
+import { forgetOfflineData } from "@/lib/offline";
 import { forgetPushOnThisBrowser } from "@/lib/pushDevice";
 
 /** Deletes the account after a confirming sheet. MAL is never touched. */
@@ -31,6 +32,7 @@ export function DeleteAccount() {
       return;
     }
     await forgetPushOnThisBrowser(false);
+    await forgetOfflineData();
     router.replace("/");
     router.refresh();
   }

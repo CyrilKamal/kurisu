@@ -6,6 +6,7 @@ import {
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { apiGet } from "@/lib/api";
 
@@ -41,6 +42,13 @@ export default async function SettingsPage() {
       <Notifications publicKey={push.publicKey} />
       <BriefSettingsForm initial={settings} />
       <SharingSwitch initial={me.user.shareActivity} />
+
+      <section className="pt-6">
+        <h2 className="k-caps pb-2">Install</h2>
+        <div className="k-panel flex flex-col gap-2 p-4">
+          <InstallPrompt />
+        </div>
+      </section>
 
       <section className="pt-6">
         <h2 className="k-caps pb-2">This device</h2>

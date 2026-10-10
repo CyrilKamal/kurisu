@@ -77,7 +77,7 @@ describe("invites", () => {
     expect(check.json()).toEqual({ inviter: "Cyril" });
 
     const joined = await loginAs(ALEX, code);
-    expect(joined.callbackResponse.headers.location).toBe("/today");
+    expect(joined.callbackResponse.headers.location).toBe("/welcome");
     expect(joined.sessionCookie).toBeDefined();
     expect(await accountFor(ALEX.id)).toMatchObject({ malUsername: "alex", isOwner: false });
     expect(await accountFor(TEST_MAL_USER.id)).toMatchObject({ isOwner: true });

@@ -4,7 +4,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
 import { anime, listEntries, syncRuns, users } from "../../src/db/schema.js";
 import { fixtureList } from "../fixtures/animeList.js";
-import { login, resetDatabase, startHarness, type Harness } from "../support/harness.js";
+import {
+  login,
+  resetDatabase,
+  startHarness,
+  TEST_MAL_USER,
+  type Harness,
+} from "../support/harness.js";
 import { TEST_WEB_ORIGIN } from "../support/testConfig.js";
 
 let h: Harness;
@@ -41,8 +47,10 @@ interface ListResponse {
 }
 
 async function loginOk(): Promise<string> {
+  const existed = await h.db.select().from(users).where(eq(users.malUserId, TEST_MAL_USER.id));
   const result = await login(h);
-  expect(result.callbackResponse.headers.location).toBe("/today");
+  // A new account starts with the welcome steps; a returning one with Today.
+  expect(result.callbackResponse.headers.location).toBe(existed.length > 0 ? "/today" : "/welcome");
   if (!result.sessionCookie) throw new Error("expected a session cookie");
   return result.sessionCookie;
 }
@@ -150,7 +158,7 @@ describe("sync on login", () => {
 
     const result = await login(h);
 
-    expect(result.callbackResponse.headers.location).toBe("/today");
+    expect(result.callbackResponse.headers.location).toBe("/welcome");
     const list = await getList(result.sessionCookie ?? "");
     expect(list.entries).toEqual([]);
     expect(list.lastSync).toMatchObject({ status: "failed", error: "mal_unavailable" });
