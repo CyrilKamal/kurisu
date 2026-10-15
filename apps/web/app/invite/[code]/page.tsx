@@ -60,8 +60,8 @@ export default async function InvitePage(props: PageProps<"/invite/[code]">) {
                 {invite.inviter} may read that conversation to fix it. It stays private.
               </li>
               <li>
-                You can delete everything kurisu holds about you at any time, under List, then
-                Account. Your MyAnimeList list stays as it is.
+                You can delete everything kurisu holds about you at any time, under You, then
+                Settings. Your MyAnimeList list stays as it is.
               </li>
             </ul>
           </section>

@@ -2307,3 +2307,21 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 
   The measured entry follows once Cyril's questions are in.
 
+## 2026-10-14 — MAL's answer: the list copy is fine with consent; half a second between requests (Milestone 6)
+**Decision:**
+- **The list mirror stays as it is.** MAL's reply in the API Club says users' anime lists aren't user-generated content but "curated collections of public records". An app can keep a cached copy on its server as long as users agree to how their data is processed and stored. The invite page already says kurisu keeps a copy of your list, your chats and your diary, so nothing changes.
+- **At least 500 ms between MAL requests.** MAL publishes no rate limits and suggested at least half a second between requests. One gap now covers every MAL request the server makes (`MAL_REQUEST_GAP_MS` in `src/mal/client.ts`), including retries and token calls.
+
+**Alternatives:**
+- **A gap per user:** the limit is the app's (one Client ID), not each user's.
+- **Pacing only bulk work (sync, imports):** a chat with three updates writes three times in a row, and that's a burst too.
+- **An env setting:** nothing calls for tuning it yet.
+
+**Why:** It follows MAL's own advice, and costs little: kurisu makes a handful of MAL requests per action, so a wait only happens in a burst.
+
+**Consequences:**
+- **A burst takes longer:** a message updating three shows takes up to about a second more, and imports are unchanged (they already write about one a second).
+- **The 3(c) worry in the 2026-10-09 entry is settled** for the list mirror. Chats and diary notes are written in kurisu, not taken from MAL.
+- **This is not the written approval a paid plan needs** (section 3(a)(xiv)). That's the support ticket, still open.
+- **Fixed on the way:** the invite page's "delete everything" line pointed to the old List → Account; it now says You → Settings.
+

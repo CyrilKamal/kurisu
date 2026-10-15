@@ -66,6 +66,7 @@ export async function startHarness(
     logStream: logs,
     // Real backoff shape, millisecond delays, so retry tests stay fast.
     malRetry: { retries: 3, baseDelayMs: 1, maxDelayMs: 5 },
+    malRequestGapMs: 0,
     // No spacing between AniList requests and quick retries, so background refreshes after
     // each login never pile up.
     anilist: { minIntervalMs: 0, retry: { retries: 1, baseDelayMs: 1, maxDelayMs: 5 } },

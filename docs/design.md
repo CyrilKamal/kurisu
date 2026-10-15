@@ -96,7 +96,7 @@ The biggest risk is data sourcing, not the agent: MAL has no episode-level sched
 | Risk | Mitigation |
 | --- | --- |
 | MAL OAuth only supports the plain PKCE method | Implement the flow by hand; cover it with an integration test |
-| MAL rate limits are undocumented | Read from the local mirror; sync on login and after writes only |
+| MAL rate limits are undocumented | Read from the local mirror; sync on login and after writes only; at least half a second between requests, as MAL advised |
 | AniList-to-MAL mapping gaps | Map via AniList's MAL ID field; log and skip unmapped titles |
 | Streaming availability data is patchy | Show "where to watch" only when known; never guess |
 | Wrong writes erode trust | Proposal-then-commit, undo log, wrong-write rate as a tracked metric |

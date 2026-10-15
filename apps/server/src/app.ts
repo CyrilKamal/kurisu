@@ -43,7 +43,7 @@ import {
 } from "./llm/modelConfig.js";
 import { ensureTitleEmbeddings } from "./lab/titles.js";
 import { ensureSynopsisEmbeddings, listedSynopses } from "./recommend/semantic.js";
-import type { RetryOptions } from "./mal/client.js";
+import { MAL_REQUEST_GAP_MS, setMalRequestGap, type RetryOptions } from "./mal/client.js";
 import { registerPushRoutes } from "./push/routes.js";
 import { createPushSender } from "./push/send.js";
 import { createListSync } from "./sync/listSync.js";
@@ -65,6 +65,8 @@ export interface BuildAppOptions {
   logStream?: NodeJS.WritableStream;
   /** Backoff for MAL API retries. Tests shorten it. */
   malRetry?: RetryOptions;
+  /** The gap between MAL requests (MAL_REQUEST_GAP_MS). Tests pass 0. */
+  malRequestGapMs?: number;
   /** Tests inject a scripted model client and the models it answers as. */
   models?: ModelClient;
   roles?: { agent: ModelRef; escalation: ModelRef | null; brief?: ModelRef; recommend?: ModelRef };
@@ -112,6 +114,8 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     });
   }
 
+  // MAL's advice: at least half a second between requests, for the whole server.
+  setMalRequestGap(options.malRequestGapMs ?? MAL_REQUEST_GAP_MS);
   const cipher = createTokenCipher(config.tokenEncryptionKey);
   const tokenStore = createTokenStore({ db, cipher, oauth: config.mal });
   // After each list sync, refresh AniList airing data for the shows Chat may ask about ("the
