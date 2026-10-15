@@ -100,6 +100,31 @@ export interface RetryOptions {
 
 export const DEFAULT_RETRY: RetryOptions = { retries: 3, baseDelayMs: 500, maxDelayMs: 30_000 };
 
+/**
+ * The gap the server leaves between MAL requests. MAL publishes no rate limits; its API team
+ * suggested at least half a second between requests (MAL API Club, 2026-10). It's the app's
+ * limit, not a user's, so one gap covers every request this process makes, retries included.
+ */
+export const MAL_REQUEST_GAP_MS = 500;
+
+let requestGapMs = 0;
+let nextRequestAt = 0;
+
+/** Sets the gap between MAL requests (buildApp sets MAL_REQUEST_GAP_MS; tests pass 0). */
+export function setMalRequestGap(ms: number): void {
+  requestGapMs = Math.max(0, ms);
+  nextRequestAt = 0;
+}
+
+/** Waits for this request's turn: at least the gap after the one before it. */
+export async function malRequestTurn(): Promise<void> {
+  if (requestGapMs === 0) return;
+  const now = Date.now();
+  const at = Math.max(now, nextRequestAt);
+  nextRequestAt = at + requestGapMs;
+  if (at > now) await sleep(at - now);
+}
+
 const ANIME_FIELDS =
   "num_episodes,media_type,status,start_date,main_picture,alternative_titles,genres,average_episode_duration,mean";
 const LIST_FIELDS = `list_status,${ANIME_FIELDS}`;
@@ -182,6 +207,7 @@ export async function malRequestJson(
 ): Promise<unknown> {
   const path = url.pathname;
   for (let attempt = 0; ; attempt++) {
+    await malRequestTurn();
     let res: Response;
     try {
       res = await fetch(url, {

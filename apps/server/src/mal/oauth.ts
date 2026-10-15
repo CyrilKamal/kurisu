@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { malRequestTurn } from "./client.js";
 import { CODE_CHALLENGE_METHOD } from "./pkce.js";
 
 export interface MalOAuthConfig {
@@ -85,6 +86,7 @@ async function requestTokens(
     ...grant,
   });
 
+  await malRequestTurn();
   const res = await fetch(`${config.authBaseUrl}/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
