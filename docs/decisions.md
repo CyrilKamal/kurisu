@@ -2325,3 +2325,101 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **This is not the written approval a paid plan needs** (section 3(a)(xiv)). That's the support ticket, still open.
 - **Fixed on the way:** the invite page's "delete everything" line pointed to the old List → Account; it now says You → Settings.
 
+## 2026-10-19 — The AI lab splits around the paid plan (Milestone 8)
+**Decision:** Milestone 7 closes as "AI lab I": the foundation, hybrid title search and semantic recommendations, each measured and logged, plus the RAG infrastructure. The paid plan becomes Milestone 8, now. A new Milestone 9, "AI lab II", holds RAG's measurement (over Cyril's questions) and the LoRA fine-tune, and whatever ships from it reaches Pro first.
+
+**Alternatives:**
+- Pausing Milestone 7 and resuming it after the paid plan, which breaks the one-milestone-at-a-time rule.
+- Finishing the lab first.
+
+**Why:** MAL has approved commercial use in writing, with no conditions, and Gemini costs money now. The lab's remaining work waits on Cyril's questions and training lines, and it doesn't have to reach the paid app.
+
+**Consequences:**
+- CLAUDE.md and the design doc renumber.
+- The old plan's PRs 5 and 6 (the reader, its eval, and the fine-tune) move to Milestone 9.
+- "AI lab early access" gives Pro a home for the lab's features.
+
+## 2026-10-19 — Free, Premium and Pro: what each includes and costs (Milestone 8)
+**Decision:**
+- **Free keeps the whole habit loop:**
+  - the list, editing, search and show pages;
+  - the brief, alerts and the Sunday recap;
+  - stats, the goal and the journal;
+  - friends, where to watch, and export.
+  - **Limits:** 30 chat updates, 12 recommendations and one import (up to 500 lines) a month, resetting on the 1st (UTC). At a limit, nothing locks: Chat offers the quick-edit sheet and an upgrade.
+- **Premium ($2.99 a month, $24.99 a year)** raises the limits to fair use (1,000 updates, 300 recommendations, unlimited imports) and adds a supporter badge.
+- **Pro ($5.99 a month, $49.99 a year)** adds:
+  - the highest limits (3,000 and 1,000);
+  - a calendar feed of upcoming episodes;
+  - a full year in review (a basic one stays free);
+  - early access to the AI lab.
+- **Shared rules:**
+  - **Billing:** annual is the default choice.
+  - **Trials:** new accounts get 14 days of Premium, with no card.
+  - **The owner** is always Pro.
+  - **Configuration:** limits live in `config/plans.json`.
+  - **Safety caps:** a per-account daily cap per plan, and a server-wide monthly cap on Free's model spend. Paying users never pause on it.
+
+**Alternatives:**
+- Prices of $1.99/$4.99 or $3.99/$7.99.
+- A free allowance of 60 or 15 updates.
+- No trial, or a trial of Pro.
+- Gating features such as stats or the brief instead of AI volume.
+- Two tiers until the lab ships.
+- Ads.
+
+**Why:**
+- **Research** (three subagents: freemium apps, content-tracker apps, and billing):
+  - Trackers that charge without trouble keep logging free: Letterboxd ($19 and $49 a year), MAL Supporter ($30 a year), StoryGraph ($50 a year).
+  - Every backlash (Trakt 2025–26, Evernote, Duolingo's energy) came from taking away something users had or from taxing the habit.
+  - So kurisu charges for AI depth and volume, the one real per-use cost, and publishes limits it never cuts later.
+- **Unit economics:**
+  - At list prices, a chat update is about $0.004 and a recommendation about $0.006, so a free user's worst case is about $0.20 a month.
+  - Freemium converts about 2–5% of users (AI apps about 2.4%), so each payer carries 20–50 free users.
+  - AI apps convert best with a 10–14 day trial on day one.
+
+**Consequences:**
+- **Never cut a limit:** a limit can only grow, with 30 days' notice for any other change.
+- **Thin margins on monthly plans:** a heavy Premium user costs about $1.40 a month, against about $2.48 left after fees on a monthly plan.
+- **Pro's AI features grow with Milestone 9.**
+- **AniList's license** is needed before revenue passes $150 a month, about 50 annual payers.
+
+## 2026-10-19 — Payments through Stripe Managed Payments, a merchant of record (Milestone 8)
+**Decision:**
+- **The seller of record:** Stripe Managed Payments, Stripe's own merchant of record. It is the legal seller and handles VAT, GST and US sales tax worldwide, plus disputes and refunds.
+- **The build:** Checkout, the Customer Portal (one-tap cancel) and webhooks, behind `src/billing/provider.ts`. `src/billing/stripe.ts` is the only file that imports Stripe's SDK.
+- **The fallback:** Paddle, if Stripe doesn't accept the account (Managed Payments is in public preview and reviews eligibility).
+
+**Alternatives:**
+- Stripe directly, with Stripe Tax: registering for EU OSS and UK VAT from the first sale.
+- Paddle or Polar from the start (5% + 50¢).
+- Lemon Squeezy, which is being folded into Stripe.
+
+**Why:** A solo seller can't register for VAT in every country. A merchant of record's extra fee (3.5% on top of Stripe's) is cheaper than doing it alone. Its fees are about 17% of a $2.99 monthly charge and 8% of a $24.99 year, which is why annual is the default.
+
+**Consequences:**
+- **Statements:** customers see "Sold through Link".
+- **Terms** must name the merchant of record.
+- **Consent records:** auto-renewal consent is recorded and kept for 3 years (California's law).
+- **Still open:** a CPA should check California's SaaS tax from 2027 (SB 122).
+
+## 2026-10-19 — kurisu moves to a server: a DigitalOcean droplet with Caddy (Milestone 8)
+**Decision:**
+- **The server:** the hosted stack (`deploy/compose.yaml`) moves from Cyril's PC to a DigitalOcean droplet (2 GiB, about $12 a month).
+- **HTTPS:** Caddy on kurisu's own domain, replacing Tailscale Funnel.
+- **Backups:** daily dumps go off-site, to object storage.
+- **Monitoring:** an uptime monitor.
+- **Fixed on the way:** the backup's startup race, by waiting for the database.
+
+**Alternatives:**
+- Hetzner (cheaper, but plans showed unavailable).
+- Fly.io, Render or Railway with managed Postgres (more per month for the same size).
+- Staying on the PC.
+
+**Why:** The PC's Docker didn't start after two reboots, which took the app down for four days (2026-10-10 to 14) and again from 2026-10-15 to 19. A paid plan needs a server that stays up.
+
+**Consequences:**
+- **Cost:** about $20–25 a month with backups and the domain.
+- **New address:** the app moves to a new address, so it's installed again once and MAL's redirect URI changes.
+- **The PC's checkout stays** for local development only.
+

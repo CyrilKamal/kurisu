@@ -114,5 +114,13 @@ The biggest risk is data sourcing, not the agent: MAL has no episode-level sched
 4. Recommendations and taste memory.
 5. Your list, in your hands: in-app editing, import from notes, where to watch, sequel alerts, stats and recap, diary, what's good this season.
 6. Invite a handful of friends, with friend features (taste match, activity); add their failures to the eval set.
-7. AI lab: RAG over your own history, semantic recommendations from embedded synopses, hybrid title search, and a LoRA fine-tune of a small open model (1–3B) for the parsing step. Each is measured against an eval, whether or not it ships. Results so far (`docs/decisions.md`, 2026-10-10): hybrid title search was measured and left off (no gain in updates); semantic recommendations were measured and left off (better mood picks straight from the ranking, but no change the labels can see once the model picks).
-8. A paid plan: written approval from MAL (and AniList's license past $150 a month in revenue), a free tier and a paid tier through Stripe, terms and a privacy policy, on a server that stays up.
+7. AI lab I: embeddings in pgvector, hybrid title search, semantic recommendations from embedded synopses, and the RAG infrastructure. Each experiment was measured against an eval (`docs/decisions.md`, 2026-10-10): hybrid title search was left off (no gain in updates), and so were semantic recommendations (better mood picks straight from the ranking, but no change the labels can see once the model picks).
+8. A paid plan: Free, Premium and Pro, sold through Stripe.
+   - **Approvals:** MAL's written approval (in hand), and AniList's license past $150 a month in revenue.
+   - **Plans:**
+     - Free: 30 chat updates, 12 recommendations and one import a month, never locked out of the list.
+     - Premium: $2.99 a month or $24.99 a year.
+     - Pro: $5.99 a month or $49.99 a year, adding a calendar feed, a year in review and AI lab early access.
+   - **Trial:** new accounts get 14 days of Premium.
+   - **Also:** published limits, terms, privacy and refund policies, and a server that stays up.
+9. AI lab II: RAG over your list and history, measured on a question set you write, and a LoRA fine-tune of a small open model (1–3B) for the parsing step. Each is measured against an eval, whether or not it ships, and what ships reaches Pro first.
