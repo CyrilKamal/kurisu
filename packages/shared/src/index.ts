@@ -27,8 +27,15 @@ export const LOGIN_ERRORS = [
   "token_exchange_failed",
   "mal_unavailable",
   "invite_only",
+  "consent_needed",
 ] as const;
 export type LoginError = (typeof LOGIN_ERRORS)[number];
+
+/**
+ * The version of the terms and privacy policy people accept (the date they last changed). When
+ * it changes, everyone is asked again before using the app. The pages show it as their date.
+ */
+export const TERMS_VERSION = "2026-10-19";
 
 /**
  * Why Chat or an import turned a friend away before calling a model: their runs in the last 24
@@ -141,8 +148,47 @@ export const meResponseSchema = z.object({
   needsReauth: z.boolean(),
   lastSync: lastSyncSchema.nullable(),
   plan: planViewSchema,
+  /**
+   * Whether they've said they're 18 or older and accepted the current terms (TERMS_VERSION).
+   * Always true for the owner, and on a server without one.
+   */
+  termsAccepted: z.boolean(),
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;
+
+/** POST /me/terms: "I'm 18 or older and I accept these terms", for the version they read. */
+export const termsAcceptRequestSchema = z.object({ version: z.string().max(32) }).strict();
+export const termsAcceptResponseSchema = z.object({ termsAccepted: z.literal(true) });
+
+/**
+ * GET /me/export: everything kurisu holds about the user, as JSON (never their MAL tokens). Each
+ * part is a list of rows as stored; `account` is one.
+ */
+const exportRows = z.array(z.record(z.string(), z.unknown()));
+export const dataExportSchema = z.object({
+  kurisuExport: z.literal(1),
+  exportedAt: z.iso.datetime(),
+  account: z.record(z.string(), z.unknown()),
+  plan: z.record(z.string(), z.unknown()),
+  list: exportRows,
+  changes: exportRows,
+  listEvents: exportRows,
+  chats: exportRows,
+  diaryNotes: exportRows,
+  dropReasons: exportRows,
+  tasteGenres: exportRows,
+  yearlyGoals: exportRows,
+  briefSettings: exportRows,
+  briefs: exportRows,
+  recommendations: exportRows,
+  imports: exportRows,
+  friends: exportRows,
+  invites: exportRows,
+  calendarFeed: exportRows,
+  pushSubscriptions: exportRows,
+  agentRuns: exportRows,
+});
+export type DataExport = z.infer<typeof dataExportSchema>;
 
 /** One of the owner's invite links, without its code (kurisu keeps only a hash). */
 export const inviteViewSchema = z.object({

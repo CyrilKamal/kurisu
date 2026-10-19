@@ -8,6 +8,7 @@ import { Icon, type IconName } from "@/components/Icon";
 import { DemoLog } from "@/components/landing/DemoLog";
 import { Pricing } from "@/components/Pricing";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
+import { SignUpConsent } from "@/components/SignUpConsent";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getMe, getSite } from "@/lib/api";
 import { loginErrorMessage } from "@/lib/format";
@@ -51,14 +52,17 @@ const FEATURES: { icon: IconName; title: string; text: string }[] = [
   },
 ];
 
-const QUESTIONS: { q: string; a: React.ReactNode }[] = [
+/** The questions, with who can join answered for how sign-up works now. */
+const questions = (open: boolean): { q: string; a: React.ReactNode }[] => [
   {
     q: "Do I need a MyAnimeList account?",
     a: "Yes. kurisu keeps your MyAnimeList list in sync. You log in with MyAnimeList's own login, so kurisu never sees your password.",
   },
   {
     q: "Who can join?",
-    a: "Anyone 18 or older with a MyAnimeList account, by invite for now. Join the waitlist and an invite comes when there's a place.",
+    a: open
+      ? "Anyone 18 or older with a MyAnimeList account. Sign up free; new accounts get 14 days of Premium."
+      : "Anyone 18 or older with a MyAnimeList account, by invite for now. Join the waitlist and an invite comes when there's a place.",
   },
   {
     q: "Will it change my list without asking?",
@@ -84,7 +88,8 @@ const QUESTIONS: { q: string; a: React.ReactNode }[] = [
 
 /**
  * kurisu's front door for anyone not logged in: what it does, a real-looking Chat exchange, the
- * plans, and the waitlist while sign-up is invite-only. Invited people and the owner log in here.
+ * plans, and the way in: signing up (18 or older, the terms accepted) when sign-up is open, or
+ * the waitlist while it's invite-only. Everyone with an account logs in here.
  */
 export default async function LandingPage(props: PageProps<"/">) {
   const me = await getMe();
@@ -92,6 +97,7 @@ export default async function LandingPage(props: PageProps<"/">) {
 
   const [{ login_error: code }, site] = await Promise.all([props.searchParams, getSite()]);
   const error = loginErrorMessage(typeof code === "string" ? code : undefined);
+  const open = site.signup === "open";
 
   return (
     <div className="min-h-dvh bg-bg">
@@ -125,17 +131,17 @@ export default async function LandingPage(props: PageProps<"/">) {
             a brief of new episodes each morning, and picks what to watch next from your backlog.
           </p>
           <div className="flex flex-wrap gap-2">
-            <a href="#waitlist" className="k-btn k-btn--primary k-btn--lg">
-              Join the waitlist
+            <a href={open ? "#signup" : "#waitlist"} className="k-btn k-btn--primary k-btn--lg">
+              {open ? "Sign up free" : "Join the waitlist"}
             </a>
             <a href="/api/auth/mal/login" className="k-btn k-btn--lg">
-              Have an invite? Log in
+              {open ? "Log in" : "Have an invite? Log in"}
             </a>
           </div>
           <p className="k-field__hint">
-            {site.signup === "invite"
-              ? "Invite-only for now. For anyone 18 or older with a MyAnimeList account."
-              : "For anyone 18 or older with a MyAnimeList account."}
+            {open
+              ? "For anyone 18 or older with a MyAnimeList account. New accounts get 14 days of Premium."
+              : "Invite-only for now. For anyone 18 or older with a MyAnimeList account."}
           </p>
         </section>
 
@@ -189,23 +195,37 @@ export default async function LandingPage(props: PageProps<"/">) {
           <Pricing />
         </section>
 
-        <section id="waitlist" aria-labelledby="waitlist-title" className="scroll-mt-4">
-          <h2 id="waitlist-title" className="k-caps pb-2">
-            Join the waitlist
-          </h2>
-          <p className="pb-4 text-ink-muted">
-            kurisu is a small beta for now. Leave your email, and an invite comes when there&apos;s
-            a place.
-          </p>
-          <WaitlistForm />
-        </section>
+        {open ? (
+          <section id="signup" aria-labelledby="signup-title" className="scroll-mt-4">
+            <h2 id="signup-title" className="k-caps pb-2">
+              Sign up
+            </h2>
+            <p className="pb-4 text-ink-muted">
+              Free, with your MyAnimeList account. Your first 14 days are on Premium.
+            </p>
+            <div className="k-panel max-w-sm p-4">
+              <SignUpConsent action="Sign up with MyAnimeList" />
+            </div>
+          </section>
+        ) : (
+          <section id="waitlist" aria-labelledby="waitlist-title" className="scroll-mt-4">
+            <h2 id="waitlist-title" className="k-caps pb-2">
+              Join the waitlist
+            </h2>
+            <p className="pb-4 text-ink-muted">
+              kurisu is a small beta for now. Leave your email, and an invite comes when
+              there&apos;s a place.
+            </p>
+            <WaitlistForm />
+          </section>
+        )}
 
         <section aria-labelledby="questions">
           <h2 id="questions" className="k-caps pb-2">
             Questions
           </h2>
           <dl className="flex flex-col gap-4">
-            {QUESTIONS.map(({ q, a }) => (
+            {questions(open).map(({ q, a }) => (
               <div key={q}>
                 <dt className="font-serif text-base/6 font-semibold text-ink">{q}</dt>
                 <dd className="m-0 text-ink-muted">{a}</dd>

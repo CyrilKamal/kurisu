@@ -1,3 +1,4 @@
+import { TERMS_VERSION } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -12,7 +13,7 @@ export default async function TermsPage() {
   const site = await getSite();
   const operator = operatorName(site.operator);
   return (
-    <LegalPage title="Terms" updated="2026-10-19" contactEmail={site.contactEmail}>
+    <LegalPage title="Terms" updated={TERMS_VERSION} contactEmail={site.contactEmail}>
       <p>
         These terms are between you and {operator}, who runs kurisu (&ldquo;we&rdquo;). Using kurisu
         means you accept them.
@@ -21,14 +22,20 @@ export default async function TermsPage() {
       <h2>What kurisu is</h2>
       <p>
         kurisu keeps your MyAnimeList list in sync through a chat with an AI, and sends you briefs
-        of new episodes and recommendations. It&apos;s a small beta: features may change, and it may
+        of new episodes and recommendations. It&apos;s new: features may change, and it may
         sometimes be unavailable.
       </p>
 
       <h2>Who can use it</h2>
       <ul>
-        <li>You must be 18 or older, with a MyAnimeList account.</li>
-        <li>While kurisu is invite-only, creating an account takes an invite.</li>
+        <li>
+          You must be 18 or older, with a MyAnimeList account. When you sign up, you confirm your
+          age and accept these terms and the privacy policy; we keep a record of when, and of which
+          version.
+        </li>
+        {site.signup === "invite" && (
+          <li>While kurisu is invite-only, creating an account takes an invite.</li>
+        )}
         <li>You&apos;re responsible for what happens under your account.</li>
       </ul>
 
@@ -49,13 +56,34 @@ export default async function TermsPage() {
         describes.
       </p>
 
+      <h2>Private links</h2>
+      <p>
+        Your friend link, and with Pro your calendar link, work for anyone who has them: the
+        calendar link shows your upcoming episodes. Share them only with people you mean to. You can
+        replace either one at any time.
+      </p>
+
       <h2>Fair use</h2>
       <p>
         Don&apos;t misuse kurisu: don&apos;t try to break or overload it, get around its limits,
         scrape it, or use it to harm anyone. We may suspend an account that does.
       </p>
 
-      <h2>Plans and payments</h2>
+      <h2>Plans and limits</h2>
+      <ul>
+        <li>
+          kurisu has a Free plan and two paid plans, Premium and Pro, as the home page describes. A
+          new account gets 14 days of Premium, then moves to Free unless it subscribes.
+        </li>
+        <li>
+          Each plan has monthly allowances for chat updates, recommendations and imports from your
+          notes. They come back on the 1st of each month (UTC). Running out never locks your list:
+          editing it, the morning brief, your stats and friends keep working.
+        </li>
+        <li>We won&apos;t lower a plan&apos;s allowances for people already on it.</li>
+      </ul>
+
+      <h2>Payments</h2>
       <ul>
         <li>
           Paid plans aren&apos;t on sale yet. When they are, they renew each month or year until you
@@ -84,8 +112,8 @@ export default async function TermsPage() {
 
       <h2>Ending</h2>
       <p>
-        You can delete your account at any time (You, then Settings). We may end the service, or an
-        account that breaks these terms, with notice where we can.
+        You can download your data, and delete your account, at any time (You, then Settings). We
+        may end the service, or an account that breaks these terms, with notice where we can.
       </p>
 
       <h2>No warranty</h2>
@@ -96,8 +124,9 @@ export default async function TermsPage() {
 
       <h2>Changes and law</h2>
       <p>
-        We post changes here and update the date above; account holders hear about any big change in
-        the app. These terms are governed by the laws of California, USA.
+        When these terms or the privacy policy change, we post the new version here with a new date,
+        and the app asks you to accept it before you go on. These terms are governed by the laws of
+        California, USA.
       </p>
 
       <h2>Contact</h2>

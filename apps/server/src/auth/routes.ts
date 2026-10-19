@@ -1,9 +1,11 @@
 import { timingSafeEqual } from "node:crypto";
 
+import { TERMS_VERSION, termsAcceptRequestSchema } from "@kurisu/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
+import { exportUserData } from "../account/export.js";
 import type { Limits } from "../billing/limits.js";
 import { planJson } from "../billing/routes.js";
 import type { Config } from "../config.js";
@@ -41,9 +43,14 @@ export type LoginError =
   | "invalid_state"
   | "token_exchange_failed"
   | "mal_unavailable"
-  | "invite_only";
+  | "invite_only"
+  | "consent_needed";
 
-const loginQuerySchema = z.object({ invite: z.string().min(1).max(128).optional() });
+const loginQuerySchema = z.object({
+  invite: z.string().min(1).max(128).optional(),
+  // The terms version they ticked "18 or older" and "I accept" for, on the landing or invite page.
+  consent: z.string().max(32).optional(),
+});
 
 const callbackQuerySchema = z.object({
   code: z.string().min(1).max(4096).optional(),
@@ -82,7 +89,14 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     const query = loginQuerySchema.safeParse(request.query);
     const invite =
       query.success && query.data.invite ? await findOpenInvite(db, query.data.invite) : null;
-    const { state, codeChallenge } = await createOAuthState(db, cipher, invite?.id ?? null);
+    // Only the current terms count; an old page's version means they read older ones.
+    const consent = query.success && query.data.consent === TERMS_VERSION ? TERMS_VERSION : null;
+    const { state, codeChallenge } = await createOAuthState(
+      db,
+      cipher,
+      invite?.id ?? null,
+      consent,
+    );
     // Binds the callback to this browser, so a login link can't be replayed from elsewhere.
     reply.setCookie(OAUTH_STATE_COOKIE, state, {
       ...cookieBase,
@@ -126,9 +140,11 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       return fail("mal_unavailable");
     }
 
-    // While sign-up is closed (OWNER_MAL_USERNAME set), a new account must be the owner's or
-    // come from an invite. Refused logins drop the tokens MAL just issued, unstored.
-    const closed = config.owner !== null;
+    // On a server with an owner, a new account other than the owner's needs an invite while
+    // sign-up is closed (SIGNUP=invite), and must have said it's 18 or older and accepted the
+    // terms first (the boxes on the landing and invite pages). Refused logins drop the tokens
+    // MAL just issued, unstored.
+    const closed = config.owner !== null && config.signup === "invite";
     const isOwner = config.owner !== null && sameName(me.name, config.owner.malUsername);
     const isNew = (await findUserId(db, me.id)) === null;
     const refuse = () => {
@@ -136,6 +152,14 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       return fail("invite_only");
     };
     if (closed && isNew && !isOwner && pending.inviteId === null) return refuse();
+    if (config.owner !== null && isNew && !isOwner && pending.consentVersion === null) {
+      request.log.info("sign-up refused: the terms weren't accepted");
+      return fail("consent_needed");
+    }
+    const now = new Date();
+    const consent = pending.consentVersion
+      ? { ageConfirmedAt: now, termsAcceptedAt: now, termsVersion: pending.consentVersion }
+      : {};
 
     let userId: string;
     try {
@@ -147,11 +171,12 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
             malUserId: me.id,
             malUsername: me.name,
             isOwner,
-            trialEndsAt: isOwner ? null : new Date(Date.now() + deps.trialDays * DAY_MS),
+            trialEndsAt: isOwner ? null : new Date(now.getTime() + deps.trialDays * DAY_MS),
+            ...consent,
           })
           .onConflictDoUpdate({
             target: users.malUserId,
-            set: { malUsername: me.name, isOwner, updatedAt: new Date() },
+            set: { malUsername: me.name, isOwner, updatedAt: now, ...consent },
           })
           .returning({ id: users.id });
         if (!user) throw new Error("user upsert returned no row");
@@ -212,6 +237,40 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     },
   );
 
+  /** "I'm 18 or older, and I accept these terms": recorded for the version they read. */
+  app.post(
+    "/me/terms",
+    { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] },
+    async (request, reply) => {
+      const user = request.user;
+      if (!user) throw new Error("requireUser did not set request.user");
+      const body = termsAcceptRequestSchema.safeParse(request.body);
+      // Accepting an older version than the one in force doesn't count; the page reloads.
+      if (!body.success || body.data.version !== TERMS_VERSION) {
+        return reply.code(400).send({ error: "outdated_terms" });
+      }
+      const now = new Date();
+      await db
+        .update(users)
+        .set({ ageConfirmedAt: now, termsAcceptedAt: now, termsVersion: TERMS_VERSION })
+        .where(eq(users.id, user.id));
+      return { termsAccepted: true };
+    },
+  );
+
+  /** Everything kurisu holds about the user, as a JSON file to keep. */
+  app.get("/me/export", { preHandler: requireUser(db) }, async (request, reply) => {
+    const user = request.user;
+    if (!user) throw new Error("requireUser did not set request.user");
+    const now = new Date();
+    const data = await exportUserData(db, user.id, planJson(await deps.limits.plan(user.id)), now);
+    const file = `kurisu-${user.malUsername}-${now.toISOString().slice(0, 10)}.json`;
+    return reply
+      .header("content-disposition", `attachment; filename="${file}"`)
+      .header("cache-control", "no-store")
+      .send(data);
+  });
+
   /** The user finished or skipped the welcome steps; they don't come back. */
   app.post(
     "/me/welcomed",
@@ -236,7 +295,12 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       .where(eq(malTokens.userId, user.id))
       .limit(1);
     const [account] = await db
-      .select({ welcomedAt: users.welcomedAt, shareActivity: users.shareActivity })
+      .select({
+        welcomedAt: users.welcomedAt,
+        shareActivity: users.shareActivity,
+        ageConfirmedAt: users.ageConfirmedAt,
+        termsVersion: users.termsVersion,
+      })
       .from(users)
       .where(eq(users.id, user.id));
     return {
@@ -249,6 +313,11 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       needsReauth: tokens?.needsReauth ?? true,
       lastSync: toLastSync(await latestSyncRun(db, user.id)),
       plan: planJson(await deps.limits.plan(user.id)),
+      // A server without an owner asks no one; the owner wrote the terms.
+      termsAccepted:
+        config.owner === null ||
+        user.isOwner ||
+        (account?.termsVersion === TERMS_VERSION && account.ageConfirmedAt !== null),
     };
   });
 }

@@ -2534,3 +2534,31 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Consequences:**
 - **A first year looks thin:** episodes and hours start at the account's first sync.
 - **An image card can come later** without changing the API.
+
+## 2026-10-19 — Open sign-up, recorded consent, and a data export (Milestone 8)
+**Decision:**
+- **Open sign-up is a setting,** `SIGNUP=open`, off by default. The owner turns it on for launch; invites keep working either way.
+- **Consent is two ticked boxes before MyAnimeList's login:** "I'm 18 or older" (Gemini's terms) and "I accept the terms and privacy policy".
+  - The login carries the terms version through the OAuth state.
+  - The server records when, and which version, on the account. It refuses a new account without them (`consent_needed`).
+  - It applies on any server with an owner, which is every hosted one. The owner is exempt.
+- **One version for the terms and the privacy policy:** `TERMS_VERSION`, the date they changed.
+  - An account that hasn't accepted the current version (accounts from before this, and everyone after a change) is sent to `/accept` before any screen.
+  - There it ticks the same boxes, or logs out, or downloads and deletes its data.
+  - The gate is in the web app, not the API.
+- **A self-serve data export** (`GET /me/export`, JSON) for every plan, as the plan table promised. It leaves out secrets (MAL tokens, sessions, link codes, push keys) and the agent runs' steps.
+- **Chat says, under the command line,** that kurisu is an AI and can make mistakes.
+
+**Alternatives:**
+- Asking for consent after the MAL login (the list would be copied before anyone agreed).
+- A one-time gate only, without the version (no way to ask again when the terms change).
+- Enforcing the terms on every API call (more code on every route, for a gate the app already shows; the record is what matters).
+- Export by email request (slow, and it falls on the owner).
+- A ZIP or CSV export (JSON keeps the shape and the dates; it can be added later).
+
+**Why:** Selling to the public needs a record that each person is an adult and agreed to the current terms, and GDPR and California's rules give them a copy of their data and its deletion, which a small operator should make self-serve. Keeping open sign-up behind a setting lets the code ship before the owner decides to launch.
+
+**Consequences:**
+- **Changing the terms is a one-line release:** set `TERMS_VERSION` to the new date, and everyone is asked again.
+- **Accounts from before this are asked once;** the owner never is.
+- **A direct API client could skip `/accept`,** but it still can't create an account without consent.

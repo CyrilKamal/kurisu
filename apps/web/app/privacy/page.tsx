@@ -1,3 +1,4 @@
+import { TERMS_VERSION } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -12,7 +13,7 @@ export default async function PrivacyPage() {
   const site = await getSite();
   const contact = <ContactLink email={site.contactEmail} />;
   return (
-    <LegalPage title="Privacy" updated="2026-10-19" contactEmail={site.contactEmail}>
+    <LegalPage title="Privacy" updated={TERMS_VERSION} contactEmail={site.contactEmail}>
       <p>
         kurisu is a small app run by {operatorName(site.operator)} (&ldquo;we&rdquo;). This page
         says what kurisu keeps about you, why, who else sees it, and how to delete it. Questions go
@@ -57,6 +58,17 @@ export default async function PrivacyPage() {
         </li>
         <li>Your browser&apos;s push address, if you allow notifications.</li>
         <li>Your friends on kurisu, and the invites you made.</li>
+        <li>
+          When you confirmed you&apos;re 18 or older and accepted the terms, and which version.
+        </li>
+        <li>
+          Your plan, and how much of its monthly allowances you&apos;ve used, counted from your
+          chats and imports.
+        </li>
+        <li>
+          With Pro&apos;s calendar feed, its link (encrypted) and when a calendar app last fetched
+          it.
+        </li>
       </ul>
       <p>
         All of it is used to run the features you use. We don&apos;t sell it, show ads, or use it to
@@ -86,6 +98,10 @@ export default async function PrivacyPage() {
           seller. kurisu never sees your card number.
         </li>
         <li>
+          <strong>Calendar apps</strong> you subscribe with your calendar link fetch your upcoming
+          episodes from it: titles, episode numbers and times.
+        </li>
+        <li>
           <strong>Your friends on kurisu</strong> see your taste match and, unless you turn sharing
           off in Settings, what you watch: episodes, finishes, scores and drops. They see a diary
           note only if you share it.
@@ -101,6 +117,10 @@ export default async function PrivacyPage() {
       <ul>
         <li>kurisu keeps your data while you have an account.</li>
         <li>
+          You can download a copy of all of it as a file at any time (You, then Settings, then
+          Download my data).
+        </li>
+        <li>
           Deleting your account (You, then Settings) deletes everything kurisu holds about you at
           once. Your MyAnimeList list stays as it is.
         </li>
@@ -109,9 +129,10 @@ export default async function PrivacyPage() {
 
       <h2>Your rights</h2>
       <p>
-        You can ask for a copy of your data, have it corrected, or have it deleted, by writing to{" "}
-        {contact}. If you&apos;re in the EU or the UK, you can also object to how it&apos;s used,
-        and complain to your data protection authority.
+        You can download a copy of your data and delete it yourself, in Settings. Your list follows
+        MyAnimeList, so a correction there reaches kurisu at the next sync. For anything else, or to
+        have something corrected, write to {contact}. If you&apos;re in the EU or the UK, you can
+        also object to how your data is used, and complain to your data protection authority.
       </p>
 
       <h2>Cookies and your browser</h2>
@@ -137,8 +158,8 @@ export default async function PrivacyPage() {
 
       <h2>Changes</h2>
       <p>
-        When this page changes, so does the date above, and account holders hear about any big
-        change in the app.
+        When this page changes, so does the date above, and the app asks you to accept the new
+        version before you go on.
       </p>
     </LegalPage>
   );
