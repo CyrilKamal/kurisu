@@ -107,6 +107,11 @@ describe("responses match the contract", () => {
     expect(() => contract.planResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("GET /calendar", async () => {
+    const res = await get("/calendar");
+    expect(() => contract.calendarResponseSchema.parse(res.json())).not.toThrow();
+  });
+
   it("the /invites endpoints", async () => {
     // Only the owner invites; this harness has none, so make the test user one.
     await h.db.update(users).set({ isOwner: true });

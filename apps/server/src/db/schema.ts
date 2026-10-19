@@ -202,6 +202,21 @@ export const friendLinks = pgTable("friend_links", {
   createdAt: timestamptz("created_at").notNull().defaultNow(),
 });
 
+/**
+ * Each user's calendar feed (a Pro feature): a secret link calendar apps subscribe to. The token
+ * is kept encrypted, so Settings can show the link again, and hashed, so a fetch can be looked up.
+ */
+export const calendarFeeds = pgTable("calendar_feeds", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  tokenEnc: text("token_enc").notNull(),
+  createdAt: timestamptz("created_at").notNull().defaultNow(),
+  // When a calendar app last fetched it, so Settings can say the subscription works.
+  lastFetchedAt: timestamptz("last_fetched_at"),
+});
+
 /** Pending MAL logins: one row per authorize redirect, consumed exactly once by the callback. */
 export const oauthStates = pgTable("oauth_states", {
   state: text("state").primaryKey(),
@@ -306,6 +321,26 @@ export const anilistMedia = pgTable(
     fetchedAt: timestamptz("fetched_at").notNull(),
   },
   (table) => [index("anilist_media_anilist_id_idx").on(table.anilistId)],
+);
+
+/**
+ * When each episode airs or aired, in MAL's numbering, as AniList's next episode said at each
+ * airing refresh. `anilist_media` keeps only the next one; this keeps the ones before it too, so
+ * the calendar feed still shows an episode after it airs. Rows older than a month are dropped.
+ */
+export const airingEpisodes = pgTable(
+  "airing_episodes",
+  {
+    malId: integer("mal_id")
+      .notNull()
+      .references(() => anime.malId, { onDelete: "cascade" }),
+    episode: integer("episode").notNull(),
+    airingAt: timestamptz("airing_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.malId, table.episode] }),
+    index("airing_episodes_airing_at_idx").on(table.airingAt),
+  ],
 );
 
 /**

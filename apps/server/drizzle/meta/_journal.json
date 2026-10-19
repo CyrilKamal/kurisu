@@ -225,6 +225,13 @@
       "when": 1792412866435,
       "tag": "0031_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792414495599,
+      "tag": "0032_calendar",
+      "breakpoints": true
     }
   ]
 }

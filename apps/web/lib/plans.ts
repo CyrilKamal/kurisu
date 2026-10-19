@@ -141,3 +141,13 @@ export function planShortLine(plan: PlanView, now = new Date()): string {
       return "Free · this month's allowances";
   }
 }
+
+/** The paid plan someone supports kurisu with, for the badge: a subscription only, never a trial. */
+export function supporterOf(plan: PlanView): PlanId | null {
+  return plan.source === "subscription" && plan.features.supporterBadge ? plan.id : null;
+}
+
+/** Google Calendar's "add by URL" page for a webcal:// feed. */
+export function googleCalendarUrl(webcalUrl: string): string {
+  return `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalUrl)}`;
+}

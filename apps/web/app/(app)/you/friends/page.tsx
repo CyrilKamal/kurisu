@@ -8,6 +8,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { SupporterBadge } from "@/components/SupporterBadge";
 import { apiGet, getMe } from "@/lib/api";
 import { matchLabel } from "@/lib/friends";
 
@@ -53,7 +54,10 @@ export default async function FriendsPage() {
                     className="flex items-center justify-between gap-4 border-b border-line py-2 hover:bg-surface"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-ink">{friend.malUsername}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="truncate text-ink">{friend.malUsername}</span>
+                        <SupporterBadge plan={friend.supporter} />
+                      </span>
                       <span className="k-field__hint">
                         {match.basis}
                         {friend.sharing ? "" : " · not sharing activity"}

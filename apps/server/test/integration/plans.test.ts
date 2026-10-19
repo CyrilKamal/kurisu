@@ -120,9 +120,45 @@ describe("plans", () => {
     expect(days).toBeGreaterThan(13.9);
     expect(days).toBeLessThanOrEqual(14);
 
+    // A trial has Premium's features: everything but Pro's calendar, full year and lab.
+    expect(me.plan.features).toEqual({
+      supporterBadge: true,
+      calendar: false,
+      fullYear: false,
+      lab: false,
+    });
+
     const owner = await planOf(TEST_MAL_USER);
     expect(owner.plan).toMatchObject({ id: "pro", source: "owner" });
+    expect(owner.plan.features).toMatchObject({ calendar: true, fullYear: true, lab: true });
     expect(owner.usage.chat.allowance).toBeNull();
+  });
+
+  it("shows friends a supporter badge only while a paid plan counts", async () => {
+    const alexAs = async () => {
+      const res = await send(TEST_MAL_USER, "GET", "/friends");
+      const friend = contract.friendsResponseSchema
+        .parse(res.json())
+        .friends.find((f) => f.malUsername === ALEX.name);
+      if (!friend) throw new Error("Alex isn't a friend");
+      return friend;
+    };
+    // A trial is free, so no badge.
+    expect((await alexAs()).supporter).toBeNull();
+
+    const userId = await alexId();
+    await h.db
+      .insert(subscriptions)
+      .values({ userId, plan: "premium", status: "active", provider: "manual" });
+    expect((await alexAs()).supporter).toBe("premium");
+    const page = await send(TEST_MAL_USER, "GET", `/friends/${(await alexAs()).id}`);
+    expect(contract.friendDetailResponseSchema.parse(page.json()).friend.supporter).toBe("premium");
+
+    await h.db
+      .update(subscriptions)
+      .set({ status: "canceled" })
+      .where(eq(subscriptions.userId, userId));
+    expect((await alexAs()).supporter).toBeNull();
   });
 
   it("drops to Free when the trial ends, with Free's allowances", async () => {

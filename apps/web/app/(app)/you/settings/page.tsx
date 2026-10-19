@@ -1,4 +1,8 @@
-import { briefSettingsResponseSchema, pushPublicKeyResponseSchema } from "@kurisu/shared";
+import {
+  briefSettingsResponseSchema,
+  calendarResponseSchema,
+  pushPublicKeyResponseSchema,
+} from "@kurisu/shared";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -7,6 +11,7 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { apiGet, getMe } from "@/lib/api";
 
 import { BriefSettingsForm } from "./BriefSettingsForm";
+import { CalendarFeed } from "./CalendarFeed";
 import { DeleteAccount } from "./DeleteAccount";
 import { LogoutButton } from "./LogoutButton";
 import { Notifications } from "./Notifications";
@@ -16,15 +21,16 @@ export const metadata: Metadata = { title: "Settings · kurisu" };
 
 /**
  * Everything you set once: this device's notifications, the morning brief and your streaming
- * services, what friends see, and your account.
+ * services, the calendar feed, what friends see, and your account.
  */
 export default async function SettingsPage() {
-  const [me, settings, push] = await Promise.all([
+  const [me, settings, push, calendar] = await Promise.all([
     getMe(),
     apiGet("/brief/settings", briefSettingsResponseSchema),
     apiGet("/push/public-key", pushPublicKeyResponseSchema),
+    apiGet("/calendar", calendarResponseSchema),
   ]);
-  if (!me || !settings || !push) redirect("/");
+  if (!me || !settings || !push || !calendar) redirect("/");
 
   return (
     <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
@@ -37,6 +43,7 @@ export default async function SettingsPage() {
       </p>
       <Notifications publicKey={push.publicKey} />
       <BriefSettingsForm initial={settings} />
+      <CalendarFeed initial={calendar} />
       <SharingSwitch initial={me.user.shareActivity} />
 
       <section className="pt-6">
