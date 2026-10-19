@@ -2449,3 +2449,32 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Pricing moves to shared code:** `PLAN_CATALOG` holds the prices and headline limits, and the server's limits (the next PR) must match it.
 - **The pages are drafts** until a lawyer has read them.
 
+## 2026-10-19 — Plans and their limits, before payments (Milestone 8)
+**Decision:**
+- **Where the limits live:** `config/plans.json`, so changing one is a config change. `PLAN_CATALOG` in shared code repeats them for the pages, checked by a unit test.
+- **What counts, each UTC month:**
+  - chat messages, less the ones the recommender answered;
+  - recommender runs;
+  - imports started, with Free also capped at 500 lines an import.
+- **Counted from existing rows,** with no counter table: `chat_messages`, `agent_runs` and `imports`.
+- **When limits apply:** only while there's an owner. Development and tests without `OWNER_MAL_USERNAME` see `open`, with no limits.
+- **At a limit:**
+  - Chat and imports answer 429 `plan_limit`, with the allowance, what was used and when it resets.
+  - A recommendation past the limit gets a short reply instead of a recommender run, so the progress agent's own updates in the same message still commit.
+  - Nothing else locks.
+- **Budgets:** paying accounts skip the monthly spend cap and don't use it up. The daily cap stays for everyone but the owner, against abuse.
+- **Accounts made before this have no trial.** The hosted app has only the owner's.
+- **`plan:grant`** puts an account on a plan by hand, as a `manual` subscription, until payments exist.
+
+**Alternatives:**
+- A usage counter table, incremented per request (one more write on every message, and it can drift from the rows it counts).
+- Counting model calls or tokens instead of messages (fairer to cost, but nobody can predict it).
+- Limiting by locking screens or features (the research's backlash cases).
+- Refusing the whole message at the recommender's limit (it would drop the updates in it).
+
+**Why:** Counting what's already stored keeps one source of truth, and the user sees the same numbers we count. Message counts are what the landing page promises. Keeping the list, edits and the brief unlimited follows the research: trackers that charge without trouble never lock the logging.
+
+**Consequences:**
+- **Free accounts after the trial:** they see `UpgradeSheet` when they run out, but nothing can be bought until payments (the next PR); it says so.
+- **A message counts even when its run fails** (a model outage, say), since it's counted from the saved message.
+- **Payments only add rows:** they write `subscriptions` rows, and `planOf` already reads them.

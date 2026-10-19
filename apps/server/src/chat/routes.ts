@@ -4,7 +4,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
-import type { BudgetLimit } from "../budget/budget.js";
+import type { Limits } from "../billing/limits.js";
 import { chatRunOfChange, replyRunOf } from "../review/capture.js";
 import type { Config } from "../config.js";
 import type { Db } from "../db/client.js";
@@ -46,8 +46,8 @@ export function registerChatRoutes(
   app: FastifyInstance,
   deps: ChatDeps & {
     config: Config;
-    /** Whether a friend's model budget is spent (see budget/budget.ts). */
-    budget?: (user: { id: string; isOwner: boolean }) => Promise<BudgetLimit | null>;
+    /** Model budgets and plan limits (billing/limits.ts). */
+    limits?: Limits;
   },
 ): void {
   const { config, db } = deps;
@@ -114,8 +114,8 @@ export function registerChatRoutes(
     }
     if (busy.has(userId)) return reply.code(409).send({ error: "busy" });
     // Turned away before anything is saved or any model is called.
-    const limit = request.user && deps.budget ? await deps.budget(request.user) : null;
-    if (limit) return reply.code(429).send({ error: limit });
+    const refusal = deps.limits ? await deps.limits.check(userId, "chat") : null;
+    if (refusal) return reply.code(429).send(refusal);
     recent.set(userId, [...window, now]);
 
     busy.add(userId);

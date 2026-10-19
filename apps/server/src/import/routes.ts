@@ -3,7 +3,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
-import type { BudgetLimit } from "../budget/budget.js";
+import { importLines, type Limits } from "../billing/limits.js";
 import type { Config } from "../config.js";
 import {
   discardImport,
@@ -30,8 +30,8 @@ export function registerImportRoutes(
   app: FastifyInstance,
   deps: ImportDeps & {
     config: Config;
-    /** Whether a friend's model budget is spent (see budget/budget.ts). */
-    budget?: (user: { id: string; isOwner: boolean }) => Promise<BudgetLimit | null>;
+    /** Model budgets and plan limits (billing/limits.ts). */
+    limits?: Limits;
   },
 ): void {
   const { config, db } = deps;
@@ -44,9 +44,11 @@ export function registerImportRoutes(
     const userId = userOf(request);
     // One import at a time: two writing at once could step on each other.
     if (await importBusy(db, userId)) return reply.code(409).send({ error: "busy" });
-    // Reading the notes is a model run, so a spent budget stops it here.
-    const limit = request.user && deps.budget ? await deps.budget(request.user) : null;
-    if (limit) return reply.code(429).send({ error: limit });
+    // Reading the notes is a model run, so a spent budget or plan stops it here.
+    const refusal = deps.limits
+      ? await deps.limits.check(userId, "imports", importLines(body.data.text))
+      : null;
+    if (refusal) return reply.code(429).send(refusal);
     const id = await startImport(deps, userId, body.data.text);
     return reply.code(202).send({ import: await loadImport(db, userId, id) });
   });

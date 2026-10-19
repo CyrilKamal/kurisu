@@ -4,6 +4,8 @@ import { and, eq, isNull } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
+import type { Limits } from "../billing/limits.js";
+import { planJson } from "../billing/routes.js";
 import type { Config } from "../config.js";
 import type { TokenCipher } from "../crypto/tokenCipher.js";
 import type { Db } from "../db/client.js";
@@ -55,7 +57,13 @@ export interface AuthRouteDeps {
   cipher: TokenCipher;
   tokenStore: TokenStore;
   listSync: ListSync;
+  /** Plans (Milestone 8): /me says which one the user is on. */
+  limits: Limits;
+  /** How long a new account's trial lasts. */
+  trialDays: number;
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): void {
   const { config, db, cipher, tokenStore, listSync } = deps;
@@ -134,7 +142,13 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       userId = await db.transaction(async (tx) => {
         const [user] = await tx
           .insert(users)
-          .values({ malUserId: me.id, malUsername: me.name, isOwner })
+          // A new account starts with a trial; an existing one keeps what it had.
+          .values({
+            malUserId: me.id,
+            malUsername: me.name,
+            isOwner,
+            trialEndsAt: isOwner ? null : new Date(Date.now() + deps.trialDays * DAY_MS),
+          })
           .onConflictDoUpdate({
             target: users.malUserId,
             set: { malUsername: me.name, isOwner, updatedAt: new Date() },
@@ -234,6 +248,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
       welcomed: account !== undefined && account.welcomedAt !== null,
       needsReauth: tokens?.needsReauth ?? true,
       lastSync: toLastSync(await latestSyncRun(db, user.id)),
+      plan: planJson(await deps.limits.plan(user.id)),
     };
   });
 }

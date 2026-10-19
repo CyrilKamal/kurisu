@@ -62,6 +62,41 @@ export const users = pgTable("users", {
   shareActivity: boolean("share_activity").notNull().default(true),
   // When they finished or skipped the welcome steps; null sends a new account through them.
   welcomedAt: timestamptz("welcomed_at"),
+  // A new account has Premium until then (Milestone 8's trial); null for accounts from before.
+  trialEndsAt: timestamptz("trial_ends_at"),
+  createdAt: timestamptz("created_at").notNull().defaultNow(),
+  updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+});
+
+export const paidPlan = pgEnum("paid_plan", ["premium", "pro"]);
+export const subscriptionStatus = pgEnum("subscription_status", [
+  "active",
+  "trialing",
+  // A renewal's payment failed; the plan stays while the provider retries.
+  "past_due",
+  "canceled",
+  "incomplete",
+]);
+
+/**
+ * A user's paid plan (Milestone 8): one row per user, kept in step with the payment provider by
+ * its webhooks, or written by hand (`provider: "manual"`, `pnpm plan:grant`). The plan counts
+ * while the status is active, trialing or past due and `current_period_end` hasn't passed.
+ */
+export const subscriptions = pgTable("subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  plan: paidPlan("plan").notNull(),
+  status: subscriptionStatus("status").notNull(),
+  provider: text("provider").notNull(),
+  providerCustomerId: text("provider_customer_id"),
+  providerSubscriptionId: text("provider_subscription_id").unique(),
+  // When the paid period ends; null for a manual grant without an end.
+  currentPeriodEnd: timestamptz("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });

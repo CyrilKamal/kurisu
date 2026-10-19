@@ -57,6 +57,64 @@ export const lastSyncSchema = z.object({
 });
 export type LastSync = z.infer<typeof lastSyncSchema>;
 
+/** Milestone 8's plans, cheapest first. */
+export const PLAN_IDS = ["free", "premium", "pro"] as const;
+export const planIdSchema = z.enum(PLAN_IDS);
+
+/**
+ * Why someone is on their plan: the owner is always Pro, a subscription (paid, or granted by
+ * hand), a new account's trial, or Free. "open": limits are off (sign-up open with no owner, as in
+ * development).
+ */
+export const PLAN_SOURCES = ["owner", "subscription", "trial", "free", "open"] as const;
+export const planViewSchema = z.object({
+  id: planIdSchema,
+  source: z.enum(PLAN_SOURCES),
+  /** When it ends: the trial's end or the paid period's; null for none. */
+  until: z.iso.datetime().nullable(),
+  /** A subscription that won't renew. */
+  cancelAtPeriodEnd: z.boolean(),
+});
+export type PlanView = z.infer<typeof planViewSchema>;
+
+/** What a plan's monthly allowances are about. */
+export const LIMIT_KINDS = ["chat", "recommendations", "imports", "import_lines"] as const;
+export type LimitKind = (typeof LIMIT_KINDS)[number];
+
+/** Body of a 429 `plan_limit`: which allowance ran out, and when it comes back. */
+export const planLimitSchema = z.object({
+  kind: z.enum(LIMIT_KINDS),
+  plan: planIdSchema,
+  allowance: z.number().int().nonnegative(),
+  used: z.number().int().nonnegative(),
+  resetsAt: z.iso.datetime(),
+});
+export type PlanLimit = z.infer<typeof planLimitSchema>;
+export const planLimitErrorSchema = z.object({
+  error: z.literal("plan_limit"),
+  limit: planLimitSchema,
+});
+
+const usageItemSchema = z.object({
+  used: z.number().int().nonnegative(),
+  /** null: no monthly cap on this plan. */
+  allowance: z.number().int().nonnegative().nullable(),
+});
+
+/** GET /plan: the user's plan, and this month's use of its allowances. */
+export const planResponseSchema = z.object({
+  plan: planViewSchema,
+  usage: z.object({
+    chat: usageItemSchema,
+    recommendations: usageItemSchema,
+    imports: usageItemSchema,
+  }),
+  /** The most lines one import may have on this plan; null for no cap. */
+  importLines: z.number().int().positive().nullable(),
+  resetsAt: z.iso.datetime(),
+});
+export type PlanResponse = z.infer<typeof planResponseSchema>;
+
 /** GET /me */
 export const meResponseSchema = z.object({
   /**
@@ -68,6 +126,7 @@ export const meResponseSchema = z.object({
   welcomed: z.boolean(),
   needsReauth: z.boolean(),
   lastSync: lastSyncSchema.nullable(),
+  plan: planViewSchema,
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;
 
@@ -163,6 +222,8 @@ export const PLAN_CATALOG = [
     name: "Free",
     monthlyUsd: 0,
     yearlyUsd: 0,
+    /** A month's allowances (null: no monthly cap), as config/plans.json enforces them. */
+    limits: { chat: 30, recommendations: 12, imports: 1 },
     tagline: "Everything you need to keep your list.",
     features: [
       "30 chat updates a month",
@@ -177,6 +238,7 @@ export const PLAN_CATALOG = [
     name: "Premium",
     monthlyUsd: 2.99,
     yearlyUsd: 24.99,
+    limits: { chat: 1000, recommendations: 300, imports: null },
     tagline: "For logging everything by chat.",
     features: [
       "1,000 chat updates a month",
@@ -191,6 +253,7 @@ export const PLAN_CATALOG = [
     name: "Pro",
     monthlyUsd: 5.99,
     yearlyUsd: 49.99,
+    limits: { chat: 3000, recommendations: 1000, imports: null },
     tagline: "For superfans, and the AI lab first.",
     features: [
       "3,000 chat updates and 1,000 recommendations a month",
@@ -201,7 +264,7 @@ export const PLAN_CATALOG = [
     ],
   },
 ] as const;
-export type PlanId = (typeof PLAN_CATALOG)[number]["id"];
+export type PlanId = (typeof PLAN_IDS)[number];
 
 /** What a friend did, as the Friends feed shows it. Never a drop's reason or an unshared note. */
 export const ACTIVITY_KINDS = [

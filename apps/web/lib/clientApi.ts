@@ -1,6 +1,8 @@
 import type { z } from "zod";
 
-export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; error: string };
+/** A failure keeps the response's JSON body, for errors that carry details (`plan_limit`). */
+export type ApiResult<T> =
+  { ok: true; data: T } | { ok: false; status: number; error: string; body?: unknown };
 
 /**
  * POSTs to the server through the same-origin /api proxy (the browser sends the session cookie
@@ -39,6 +41,7 @@ export async function sendApi<T>(
       ok: false,
       status: res.status,
       error: typeof payload?.error === "string" ? payload.error : "unknown",
+      body: payload,
     };
   }
   if (schema === null || res.status === 204) return { ok: true, data: null };

@@ -30,6 +30,7 @@
     "llm:smoke": "tsx src/scripts/llmSmoke.ts",
     "lab:synopses": "tsx src/scripts/labSynopses.ts",
     "lab:ask": "tsx src/scripts/labAsk.ts",
+    "plan:grant": "tsx src/scripts/planGrant.ts",
     "lab:search-replay": "tsx eval/src/cli/searchReplay.ts",
     "push:keys": "tsx src/scripts/vapidKeys.ts",
     "eval": "tsx eval/src/cli/run.ts",
