@@ -145,6 +145,7 @@ export default async function LandingPage(props: PageProps<"/">) {
           writes={[
             {
               title: "Sousou no Frieren",
+              pictureUrl: "https://cdn.myanimelist.net/images/anime/1015/138006.webp",
               kind: "update",
               before: { status: "watching", episodesWatched: 26 },
               after: { status: "completed", episodesWatched: 28 },
@@ -152,6 +153,7 @@ export default async function LandingPage(props: PageProps<"/">) {
             },
             {
               title: "Jujutsu Kaisen",
+              pictureUrl: "https://cdn.myanimelist.net/images/anime/1171/109222.jpg",
               kind: "update",
               before: { episodesWatched: 12 },
               after: { episodesWatched: 14 },
