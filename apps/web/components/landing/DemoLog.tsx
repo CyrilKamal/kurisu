@@ -49,10 +49,17 @@ export function DemoLog({
               </div>
               <ul className="k-write__rows">
                 {writes.map((write) => (
-                  <li key={write.title} className="k-write__row">
+                  // The app's writes use the small poster; here the cover is the point, so it's
+                  // the medium one (as in recommendations).
+                  <li
+                    key={write.title}
+                    className="k-write__row grid-cols-[var(--poster-md)_minmax(0,1fr)_auto]"
+                  >
                     <Poster
                       url={write.pictureUrl}
                       title={write.title}
+                      size="md"
+                      eager
                       progress={progressOf(write.after.episodesWatched ?? 0, write.numEpisodes)}
                     />
                     <div className="min-w-0">

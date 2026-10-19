@@ -1,7 +1,16 @@
 import Image from "next/image";
 
-// `fill` takes its cell's width (PosterGrid); 160 is enough pixels for the widest cell.
-const WIDTHS = { sm: 32, md: 64, lg: 96, fill: 160 } as const;
+/**
+ * How wide each poster is drawn, as an `<img sizes>`: the browser then fetches as many pixels as
+ * the screen needs (96 for a small poster on a phone's 3x screen), not a fixed 1x/2x pair. A
+ * `fill` poster takes its PosterGrid cell, a third of a phone's width or at most 160px.
+ */
+const SIZES = {
+  sm: "32px",
+  md: "64px",
+  lg: "96px",
+  fill: "(max-width: 640px) 33vw, 160px",
+} as const;
 
 /**
  * A show's cover at 2:3 with a hairline edge (the design system's Poster): 32×48 in rows, the
@@ -13,18 +22,21 @@ export function Poster({
   title,
   size = "sm",
   progress = null,
+  eager = false,
 }: {
   url: string | null;
   title: string;
-  size?: keyof typeof WIDTHS;
+  size?: keyof typeof SIZES;
   /** Share of episodes watched (0–1), for a show in progress. */
   progress?: number | null;
+  /** Load at once rather than when scrolled near: for covers at the top of a page. */
+  eager?: boolean;
 }) {
-  const width = WIDTHS[size];
   return (
     <span className={`k-poster k-poster--${size}`}>
       {url ? (
-        <Image src={url} alt="" width={width} height={width * 1.5} />
+        // The poster box sets the size (2:3, position relative), so the image fills it.
+        <Image src={url} alt="" fill sizes={SIZES[size]} loading={eager ? "eager" : "lazy"} />
       ) : (
         <span className="k-poster__blank" data-initial={title.slice(0, 1).toUpperCase()}>
           {title}
