@@ -411,7 +411,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   };
   registerListRoutes(app, { config, db, listSync, writes: writeDeps });
   registerTasteRoutes(app, { config, db });
-  registerStatsRoutes(app, { config, db });
+  registerStatsRoutes(app, { config, db, limits });
   registerDiaryRoutes(app, { config, db });
   registerShowRoutes(app, {
     db,

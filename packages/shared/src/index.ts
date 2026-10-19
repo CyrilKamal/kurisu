@@ -940,6 +940,57 @@ export const statsResponseSchema = z.object({
 });
 export type StatsResponse = z.infer<typeof statsResponseSchema>;
 
+const yearShow = shownShow.extend({ pictureUrl: z.string().nullable() });
+const score = z.number().int().min(1).max(10);
+
+/**
+ * GET /year?year=YYYY: a year in review, on the user's clock. Shows finished count by MAL's finish
+ * date (as in Stats); episodes only since kurisu started counting (`countingSince`, when that's
+ * after the year began). `full` is Pro's, null when the plan doesn't include it.
+ */
+export const yearReviewSchema = z.object({
+  year: z.number().int(),
+  /** This year on the user's clock, for the year switcher. */
+  currentYear: z.number().int(),
+  timeZone: z.string(),
+  countingSince: z.string().nullable(),
+  basic: z.object({
+    completed: count,
+    episodes: count,
+    /** Minutes of those episodes, for shows whose episode length MAL knows. */
+    minutes: count,
+    topGenre: z.string().nullable(),
+    /** The best-scored show finished this year. */
+    favorite: yearShow.extend({ score }).nullable(),
+    goal: z.number().int().positive().nullable(),
+  }),
+  full: z
+    .object({
+      completedByMonth: z.array(count).length(12),
+      episodesByMonth: z.array(count).length(12),
+      topGenres: z.array(z.object({ genre: z.string(), shows: count })),
+      topRated: z.array(yearShow.extend({ score, on: z.string() })),
+      meanScore: z.number().nullable(),
+      scored: count,
+      /** The finished show that took the longest to watch, when MAL knows episode lengths. */
+      longest: yearShow.extend({ episodes: count, minutes: count }).nullable(),
+      first: yearShow.extend({ on: z.string() }).nullable(),
+      last: yearShow.extend({ on: z.string() }).nullable(),
+      /** Finished shows that started airing this year, and ones from earlier years. */
+      seasonal: count,
+      backlog: count,
+      /** Finished shows by MAL's media type ("tv", "movie"), most first. */
+      formats: z.array(z.object({ mediaType: z.string(), shows: count })),
+      /** Shows started (moved to Watching) and dropped this year, as kurisu saw it. */
+      started: count,
+      dropped: count,
+      /** The user's own diary notes from the year, newest first. */
+      notes: z.array(shownShow.extend({ text: z.string(), on: z.string() })),
+    })
+    .nullable(),
+});
+export type YearReview = z.infer<typeof yearReviewSchema>;
+
 /**
  * One update in the diary: made through kurisu (Chat, the List screen) or on MAL's site (found by
  * a sync), with the user's reaction when they gave one.

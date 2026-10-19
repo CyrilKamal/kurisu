@@ -145,13 +145,13 @@ export async function activityBetween(
 }
 
 /** The year in MAL's date ("2026-03-14", "2026-03" or "2026"), or null. */
-function yearIn(date: string | null): number | null {
+export function yearIn(date: string | null): number | null {
   const year = date ? Number(/^(\d{4})/.exec(date)?.[1]) : NaN;
   return Number.isFinite(year) ? year : null;
 }
 
 /** The month (1–12) in MAL's date, or null when it has none. */
-function monthIn(date: string): number | null {
+export function monthIn(date: string): number | null {
   const month = Number(/^\d{4}-(\d{2})/.exec(date)?.[1]);
   return month >= 1 && month <= 12 ? month : null;
 }
@@ -297,12 +297,20 @@ async function allTime(db: Db, userId: string): Promise<AllTimeStats> {
   };
 }
 
-export async function yearStats(
+/** A show finished in a year, and the day: MAL's finish date, or the day kurisu saw it. */
+export interface Completion {
+  animeId: number;
+  title: string;
+  on: string;
+}
+
+/** The shows the user finished in a year on their clock, in no order. */
+export async function completionsIn(
   db: Db,
   userId: string,
   year: number,
   timeZone: string,
-): Promise<YearStats> {
+): Promise<Completion[]> {
   // For each completed show, its MAL finish date and the last time a change completed it: through
   // kurisu (not an import or an undone change) or on MAL (an update, not an add).
   const rows = await db.execute<{
@@ -324,13 +332,22 @@ export async function yearStats(
     FROM ${listEntries} e JOIN ${anime} a ON a.mal_id = e.anime_id
     WHERE e.user_id = ${userId} AND e.status = 'completed'
   `);
-  const done = rows.rows.flatMap((row) => {
+  return rows.rows.flatMap((row) => {
     const at = row.completed_at === null ? null : new Date(row.completed_at);
     const on = finishedOn(row.finish_date, at, timeZone);
     return on !== null && yearIn(on) === year
       ? [{ animeId: row.anime_id, title: row.title, on }]
       : [];
   });
+}
+
+export async function yearStats(
+  db: Db,
+  userId: string,
+  year: number,
+  timeZone: string,
+): Promise<YearStats> {
+  const done = await completionsIn(db, userId, year, timeZone);
   const byMonth = Array.from({ length: 12 }, () => 0);
   for (const show of done) {
     const month = monthIn(show.on);

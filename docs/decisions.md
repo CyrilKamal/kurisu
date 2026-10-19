@@ -2506,3 +2506,31 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Times can be missing for some shows:** a show's times are only as complete as its refreshes, so an episode that aired between two refreshes six days apart may be missing. The brief, syncs, show pages and the feed's own fetches refresh often enough that this is rare.
 - **A leaked link shows that person's episodes** until it's replaced in Settings.
 - **The lab's flag is unused until Milestone 9:** `lab` is in the plan view already.
+
+## 2026-10-19 — The year in review (Milestone 8)
+**Decision:**
+- **A page anyone can open, for any year:** `/you/year`, built from the same rules as Stats.
+- **Free and Premium get the basics, made to share:** shows finished, episodes and hours, the top genre, and the favorite.
+- **Pro gets the full year:**
+  - finishes and episodes month by month;
+  - top rated, and genres;
+  - seasonal against backlog;
+  - the longest, first and latest finish;
+  - formats, and shows started and dropped;
+  - a few of the user's own diary notes.
+- **The server decides** what each plan sees (`full: null`), so nothing Pro-only reaches other plans.
+- **Sharing is text,** through the phone's share sheet or a copy.
+- **Episodes are counted only from kurisu's own records,** and the page says when that started.
+
+**Alternatives:**
+- A December-only "Wrapped" (a year page is useful all year, and past years too).
+- Hiding the whole page from Free (the backlash cases: a basic version keeps the habit free).
+- Sending the full review and blurring it on the page (the data would still reach other plans).
+- A shareable image card (Next's image generation needs fonts and a route of its own; text shares everywhere).
+- Estimating episodes from MAL's progress at the start of the year (MAL keeps no history, so it would be a guess).
+
+**Why:** A year in review is the tracker feature people share, so a basic one stays free and invites others in. The full one is what superfans pay for. Every number must be one kurisu actually saw, so episodes count only from when kurisu started recording changes.
+
+**Consequences:**
+- **A first year looks thin:** episodes and hours start at the account's first sync.
+- **An image card can come later** without changing the API.
