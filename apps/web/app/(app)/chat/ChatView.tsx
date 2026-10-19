@@ -5,6 +5,7 @@ import {
   chatThreadResponseSchema,
   type ChatMessageView,
   type ConversationView,
+  type PlanLimit,
 } from "@kurisu/shared";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,9 +13,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { FinishInline } from "@/components/FinishSheet";
 import { Icon } from "@/components/Icon";
+import { UpgradeSheet } from "@/components/UpgradeSheet";
 import { getApi, postApi } from "@/lib/clientApi";
 import { finishes } from "@/lib/finish";
 import { writeErrorMessage } from "@/lib/describeChange";
+import { limitText, planLimitOf } from "@/lib/plans";
 
 import { BriefCard } from "./BriefCard";
 import { useChatShell } from "./ChatShell";
@@ -93,6 +96,8 @@ export function ChatView({
   const [draft, setDraft] = useState(initialDraft);
   const [sentAt, setSentAt] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  /** The plan allowance that turned the last message away, for the upgrade sheet. */
+  const [limit, setLimit] = useState<PlanLimit | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   /** Numbers the messages shown while they're sent. */
   const sentCount = useRef(0);
@@ -136,7 +141,9 @@ export function ChatView({
       // Not sent: the message goes back to the command line to try again.
       setMessages(withoutShown);
       setDraft(trimmed);
-      setNotice(sendErrorMessage(result.status, result.error));
+      const planLimit = planLimitOf(result.body);
+      setLimit(planLimit);
+      setNotice(planLimit ? limitText(planLimit) : sendErrorMessage(result.status, result.error));
     }
   }
 
@@ -327,6 +334,14 @@ export function ChatView({
           notice={notice}
         />
       </div>
+      {limit && (
+        <UpgradeSheet
+          limit={limit}
+          onClose={() => {
+            setLimit(null);
+          }}
+        />
+      )}
     </main>
   );
 }

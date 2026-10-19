@@ -3,11 +3,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Banner } from "@/components/Banner";
 import { Poster } from "@/components/Poster";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ShowLink } from "@/components/ShowLink";
 import { outLabel, untilLabel } from "@/lib/airing";
 import { apiGet, getMe } from "@/lib/api";
+import { planName, trialDaysLeft } from "@/lib/plans";
 
 import { ActivityFeed } from "../you/friends/ActivityFeed";
 import { EpisodeRows } from "./EpisodeRows";
@@ -42,10 +44,27 @@ export default async function TodayPage() {
   const nothing =
     today.outNow.length === 0 && today.comingUp.length === 0 && today.continueWatching.length === 0;
   const streaming = today.outNow.filter((show) => show.watchOn.length > 0);
+  const trialDays = trialDaysLeft(me.plan, now);
 
   return (
     <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
       <ScreenHeader title="Today" sub={headerLine(today.timeZone, now, outCount)} />
+
+      {/* A quiet line through the trial, so its end isn't a surprise. */}
+      {trialDays !== null && (
+        <Banner
+          level={trialDays <= 3 ? "warn" : "info"}
+          className="mt-4"
+          action={
+            <Link href="/you/plan" className="k-btn k-btn--sm">
+              See plans
+            </Link>
+          }
+        >
+          {planName(me.plan.id)} trial: {trialDays} {trialDays === 1 ? "day" : "days"} left. Then
+          Free, which keeps your list, the brief and friends.
+        </Banner>
+      )}
 
       {nothing && (
         <div className="k-empty mt-6">

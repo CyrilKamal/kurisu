@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Banner } from "@/components/Banner";
 import { Icon, type IconName } from "@/components/Icon";
 import { DemoLog } from "@/components/landing/DemoLog";
-import { Pricing } from "@/components/landing/Pricing";
+import { Pricing } from "@/components/Pricing";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getMe, getSite } from "@/lib/api";

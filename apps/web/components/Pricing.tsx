@@ -1,15 +1,17 @@
 "use client";
 
-import { PLAN_CATALOG } from "@kurisu/shared";
+import { PLAN_CATALOG, type PlanId } from "@kurisu/shared";
 import { useState } from "react";
 
 import { priceLabel, yearlySaving, type BillingInterval } from "@/lib/plans";
 
 /**
  * Free, Premium and Pro side by side (stacked on phones), billed yearly unless the reader picks
- * monthly. The prices are what kurisu will charge at launch; nothing is on sale yet.
+ * monthly. The prices are what kurisu will charge at launch; nothing is on sale yet. In the app,
+ * `current` marks the reader's own plan; on the landing page Premium stands out instead.
  */
-export function Pricing() {
+export function Pricing({ current }: { current?: PlanId }) {
+  const highlighted = current ?? "premium";
   const [interval, setBilling] = useState<BillingInterval>("year");
   const saving = yearlySaving(PLAN_CATALOG[1]);
   return (
@@ -44,10 +46,13 @@ export function Pricing() {
           return (
             <li
               key={plan.id}
-              className={`k-panel flex flex-col gap-4 p-4 ${plan.id === "premium" ? "border-line-strong" : ""}`}
+              className={`k-panel flex flex-col gap-4 p-4 ${plan.id === highlighted ? "border-line-strong" : ""}`}
             >
               <div>
-                <h3 className="font-serif text-base/6 font-semibold text-ink">{plan.name}</h3>
+                <h3 className="flex items-center gap-2 font-serif text-base/6 font-semibold text-ink">
+                  {plan.name}
+                  {plan.id === current && <span className="k-tag k-tag--word">Your plan</span>}
+                </h3>
                 <p className="k-field__hint">{plan.tagline}</p>
               </div>
               <div>

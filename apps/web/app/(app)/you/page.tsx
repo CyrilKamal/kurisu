@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { Icon, type IconName } from "@/components/Icon";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { apiGet, getMe } from "@/lib/api";
+import { planShortLine } from "@/lib/plans";
 import { goalProgress } from "@/lib/stats";
 
 export const metadata: Metadata = { title: "You · kurisu" };
@@ -25,6 +26,8 @@ const SCREENS: { href: string; label: string; about: string; icon: IconName }[] 
     about: "Taste matches and what they watch",
     icon: "chat",
   },
+  // Its line is the account's plan, filled in below.
+  { href: "/you/plan", label: "Plan", about: "", icon: "ticket" },
   {
     href: "/you/settings",
     label: "Settings",
@@ -83,7 +86,9 @@ export default async function YouPage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block">{screen.label}</span>
-                  <span className="k-field__hint block truncate">{screen.about}</span>
+                  <span className="k-field__hint block truncate">
+                    {screen.href === "/you/plan" ? planShortLine(me.plan) : screen.about}
+                  </span>
                 </span>
                 <span className="text-ink-faint">
                   <Icon name="chevron-left" className="rotate-180" />

@@ -6,15 +6,18 @@ import {
   MAX_IMPORT_CHARS,
   type ImportItemView,
   type ImportView,
+  type PlanLimit,
 } from "@kurisu/shared";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Banner } from "@/components/Banner";
 import { Icon } from "@/components/Icon";
+import { UpgradeSheet } from "@/components/UpgradeSheet";
 import { ProgressMeter } from "@/components/ProgressMeter";
 import { useConfirm } from "@/components/Sheet";
 import { getApi, postApi, sendApi } from "@/lib/clientApi";
+import { limitText, planLimitOf } from "@/lib/plans";
 import { FOLDED, progress, rowError, rowsIn, SECTIONS, unanswered } from "@/lib/importView";
 
 import { ImportRow } from "./ImportRow";
@@ -36,6 +39,8 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  /** The plan allowance that turned the import away, for the upgrade sheet. */
+  const [limit, setLimit] = useState<PlanLimit | null>(null);
 
   const id = view?.id ?? null;
   const working = view !== null && WORKING.includes(view.status);
@@ -60,7 +65,9 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
       setView(result.data.import);
       setPasting(false);
     } else if (!result.ok) {
-      setNotice(startErrorMessage(result.error));
+      const planLimit = planLimitOf(result.body);
+      setLimit(planLimit);
+      setNotice(planLimit ? limitText(planLimit) : startErrorMessage(result.error));
     }
   }
 
@@ -286,6 +293,14 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
         </div>
       </div>
       {sheet}
+      {limit && (
+        <UpgradeSheet
+          limit={limit}
+          onClose={() => {
+            setLimit(null);
+          }}
+        />
+      )}
     </>
   );
 }

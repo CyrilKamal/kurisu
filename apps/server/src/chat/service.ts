@@ -1,4 +1,4 @@
-import type { BriefCardView, RunView } from "@kurisu/shared";
+import { PLAN_CATALOG, type BriefCardView, type PlanLimit, type RunView } from "@kurisu/shared";
 import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
 
 import { claimsChange, NOTHING_CHANGED_REPLY } from "../agent/claims.js";
@@ -22,6 +22,7 @@ import {
 import type { ModelRef } from "../llm/modelConfig.js";
 import { runRecommender, type RecommendResult } from "../recommend/agent.js";
 import type { SemanticRanking } from "../recommend/semantic.js";
+import type { Limits } from "../billing/limits.js";
 import { failureNote, type ReviewKind } from "../review/capture.js";
 import type { AnimeRefresher, CommitErrorCode, ListRemover } from "../writes/commit.js";
 import type { ListChange } from "../writes/normalize.js";
@@ -39,6 +40,8 @@ export interface ChatDeps extends AgentDeps {
   recommendPrompt: Prompt;
   /** Milestone 7's lab: recommendations also ranked by synopsis, when it's on. */
   semantic?: SemanticRanking;
+  /** Plan limits (Milestone 8): a handoff past the plan's recommendations gets a note instead. */
+  limits?: Limits;
   /**
    * Reads a message for reactions to the shows it updated and saves them to the diary, in the
    * background (see diary/reader.ts). Never throws.
@@ -251,7 +254,10 @@ export async function handleChatMessage(
   // The progress agent handed a recommendation request over: the recommender answers it,
   // after any updates in the same message.
   let recommendation: RecommendResult | null = null;
-  if (run.handedOff) {
+  const recommendLimit = run.handedOff
+    ? ((await deps.limits?.recommendation(userId)) ?? null)
+    : null;
+  if (run.handedOff && !recommendLimit) {
     recommendation = await runRecommender(
       {
         db,
@@ -263,7 +269,14 @@ export async function handleChatMessage(
     );
   }
 
-  const content = combinedReply(run, recommendation);
+  const content = recommendLimit
+    ? [
+        run.committed.length > 0 || run.pending.length > 0 ? replyFor(run) : "",
+        recommendationsUsedUp(recommendLimit),
+      ]
+        .filter((part) => part.length > 0)
+        .join("\n\n")
+    : combinedReply(run, recommendation);
   // Shows the reply names get cards, unless a change, Confirm or pick card already shows them.
   const carded = new Set([
     ...run.committed.map((c) => c.animeId),
@@ -307,6 +320,18 @@ export async function handleChatMessage(
 }
 
 /** The progress agent's reply about any changes, then the recommender's, when there was one. */
+/** What Chat says when the plan's recommendations for the month are used up. */
+export function recommendationsUsedUp(limit: PlanLimit): string {
+  const name = PLAN_CATALOG.find((plan) => plan.id === limit.plan)?.name ?? "your plan";
+  const next =
+    limit.plan === "free"
+      ? " Premium has 300 a month."
+      : limit.plan === "premium"
+        ? " Pro has 1,000 a month."
+        : "";
+  return `You've used this month's ${String(limit.allowance)} recommendations on ${name}. They come back on the 1st.${next}`;
+}
+
 function combinedReply(run: RunResult, recommendation: RecommendResult | null): string {
   if (!recommendation) return replyFor(run);
   const parts: string[] = [];

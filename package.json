@@ -34,6 +34,7 @@
     "lab:search-replay": "pnpm --filter @kurisu/server lab:search-replay",
     "lab:ask": "pnpm --filter @kurisu/server lab:ask",
     "eval:rag": "pnpm --filter @kurisu/server eval:rag",
+    "plan:grant": "pnpm --filter @kurisu/server plan:grant",
     "llm:smoke": "pnpm --filter @kurisu/server llm:smoke",
     "eval": "pnpm --filter @kurisu/server eval",
     "review": "pnpm --filter @kurisu/server review"

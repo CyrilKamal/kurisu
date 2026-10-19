@@ -51,7 +51,9 @@ import { saveReactionsFor } from "./diary/reader.js";
 import { registerDiaryRoutes } from "./diary/routes.js";
 import { registerInviteRoutes } from "./invites/routes.js";
 import { registerWaitlistRoutes } from "./waitlist/routes.js";
-import { checkBudget } from "./budget/budget.js";
+import { createLimits } from "./billing/limits.js";
+import { loadPlansFile } from "./billing/plans.js";
+import { registerPlanRoutes } from "./billing/routes.js";
 import { registerFriendRoutes } from "./friends/routes.js";
 import { captureReview } from "./review/capture.js";
 import { registerStatsRoutes } from "./stats/routes.js";
@@ -233,9 +235,16 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   });
 
   const modelsFile = loadModelsFile();
-  // Friends' model budgets; the owner, and everyone while sign-up is open, is never limited.
-  const budget = (user: { id: string; isOwner: boolean }) =>
-    checkBudget(db, modelsFile, config.budget, user);
+  // Plan limits on top of the model budgets (Milestone 8). With an owner they apply to everyone
+  // else; while sign-up is open with no owner (development), nothing is limited.
+  const plansFile = loadPlansFile();
+  const limits = createLimits({
+    db,
+    models: modelsFile,
+    plans: plansFile,
+    budget: config.budget,
+    limitsOn: config.owner !== null,
+  });
   const configuredRoles = resolveRoles(modelsFile, config.llm.overrides);
   const models =
     options.models ??
@@ -349,7 +358,16 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       return reply.code(503).send({ status: "unavailable" });
     }
   });
-  registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
+  registerAuthRoutes(app, {
+    config,
+    db,
+    cipher,
+    tokenStore,
+    listSync,
+    limits,
+    trialDays: plansFile.trial.days,
+  });
+  registerPlanRoutes(app, { db, limits });
   registerInviteRoutes(app, { config, db });
   registerWaitlistRoutes(app, { config, db });
   registerFriendRoutes(app, { config, db, cipher });
@@ -447,7 +465,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     catalog: (queries) => chatAniList.searchAnime(queries),
     prompt: options.prompt ?? CURRENT_PROMPT,
     recommendPrompt: RECOMMEND_PROMPT,
-    budget,
+    limits,
     ...(options.diary !== false && { diary: readDiary }),
     review: queueReview,
     roles: {
@@ -473,7 +491,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       app.log.error({ err }, message);
     },
   };
-  registerImportRoutes(app, { ...importDeps, config, budget });
+  registerImportRoutes(app, { ...importDeps, config, limits });
   app.addHook("onReady", async () => {
     try {
       await resumeImports(importDeps);

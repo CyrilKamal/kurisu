@@ -1,7 +1,7 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNull, notExists, or, sql } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
-import { agentRuns, users } from "../db/schema.js";
+import { agentRuns, subscriptions, users } from "../db/schema.js";
 import { costUsd, parseModelRef, type ModelsFile } from "../llm/modelConfig.js";
 
 /**
@@ -23,7 +23,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * Whether this account may start model work now. The owner always may, and so may everyone
  * while sign-up is open (local development): budgets protect the owner's credit from friends.
  * The monthly estimate uses list prices (config/models.json), which run higher than the bill,
- * so it errs on the side of stopping early.
+ * so it errs on the side of stopping early. It covers the accounts nobody pays for (Free and
+ * trials): a paying account (`paying`) is never stopped by it, only by the daily cap.
  */
 export async function checkBudget(
   db: Db,
@@ -31,6 +32,7 @@ export async function checkBudget(
   budget: Budget | null,
   user: { id: string; isOwner: boolean },
   now = new Date(),
+  paying = false,
 ): Promise<BudgetLimit | null> {
   if (budget === null || user.isOwner) return null;
 
@@ -45,11 +47,15 @@ export async function checkBudget(
     );
   if ((today?.runs ?? 0) >= budget.dailyRuns) return "daily_limit";
 
+  if (paying) return null;
   if ((await friendsSpendThisMonth(db, models, now)) >= budget.monthlyUsd) return "monthly_limit";
   return null;
 }
 
-/** Estimated model spend this calendar month (UTC) of every account but the owner's. */
+/**
+ * Estimated model spend this calendar month (UTC) of every account nobody pays for: all but the
+ * owner and accounts with a paid plan that still counts.
+ */
 export async function friendsSpendThisMonth(
   db: Db,
   models: ModelsFile,
@@ -65,7 +71,24 @@ export async function friendsSpendThisMonth(
     })
     .from(agentRuns)
     .innerJoin(users, eq(agentRuns.userId, users.id))
-    .where(and(eq(users.isOwner, false), gte(agentRuns.startedAt, monthStart)))
+    .where(
+      and(
+        eq(users.isOwner, false),
+        gte(agentRuns.startedAt, monthStart),
+        notExists(
+          db
+            .select({ id: subscriptions.id })
+            .from(subscriptions)
+            .where(
+              and(
+                eq(subscriptions.userId, users.id),
+                inArray(subscriptions.status, ["active", "trialing", "past_due"]),
+                or(isNull(subscriptions.currentPeriodEnd), gt(subscriptions.currentPeriodEnd, now)),
+              ),
+            ),
+        ),
+      ),
+    )
     .groupBy(agentRuns.model);
 
   let total = 0;
