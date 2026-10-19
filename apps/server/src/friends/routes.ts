@@ -3,12 +3,14 @@ import {
   sharingRequestSchema,
   type ActivityItemView,
   type FriendView,
+  type PlanId,
 } from "@kurisu/shared";
 import { eq } from "drizzle-orm";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 import { requireSameOrigin, requireUser } from "../auth/guards.js";
+import type { Limits } from "../billing/limits.js";
 import type { Config } from "../config.js";
 import type { TokenCipher } from "../crypto/tokenCipher.js";
 import type { Db } from "../db/client.js";
@@ -30,6 +32,7 @@ export interface FriendRouteDeps {
   config: Config;
   db: Db;
   cipher: TokenCipher;
+  limits: Limits;
 }
 
 /** Items in the Friends feed, and on one friend's page. */
@@ -45,12 +48,16 @@ function userOf(request: FastifyRequest): string {
 }
 
 export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps): void {
-  const { config, db, cipher } = deps;
+  const { config, db, cipher, limits } = deps;
   const read = { preHandler: requireUser(db) };
   const write = { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] };
   const linkUrl = (code: string) => `${config.webOrigin}/friend/${code}`;
 
-  const view = async (userId: string, friend: Friend): Promise<FriendView> => {
+  const view = async (
+    userId: string,
+    friend: Friend,
+    supporters: Map<string, PlanId>,
+  ): Promise<FriendView> => {
     const match = await tasteMatch(db, userId, friend.id);
     return {
       id: friend.id,
@@ -58,6 +65,7 @@ export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps
       since: friend.since.toISOString(),
       sharing: friend.shareActivity,
       match: { percent: match.percent, sharedScored: match.sharedScored },
+      supporter: supporters.get(friend.id) ?? null,
     };
   };
 
@@ -69,11 +77,12 @@ export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps
       .select({ shareActivity: users.shareActivity })
       .from(users)
       .where(eq(users.id, userId));
+    const supporters = await limits.supporters(friends.map((friend) => friend.id));
     return {
       timeZone: await userTimeZone(db, userId),
       link: linkUrl(await friendLinkCode(db, cipher, userId)),
       shareActivity: me?.shareActivity ?? true,
-      friends: await Promise.all(friends.map((friend) => view(userId, friend))),
+      friends: await Promise.all(friends.map((friend) => view(userId, friend, supporters))),
       activity: (await friendActivity(db, friends, FEED_LENGTH)).map(activityJson),
     };
   });
@@ -88,7 +97,7 @@ export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps
     const sharing = friend.shareActivity;
     return {
       timeZone: await userTimeZone(db, userId),
-      friend: await view(userId, friend),
+      friend: await view(userId, friend, await limits.supporters([friend.id])),
       // With sharing off, only the match itself: no shows, no scores.
       bothLoved: sharing ? match.bothLoved : [],
       disagreements: sharing ? match.disagreements : [],

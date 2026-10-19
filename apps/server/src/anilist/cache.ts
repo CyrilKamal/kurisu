@@ -1,9 +1,9 @@
 import type { AiringView } from "@kurisu/shared";
-import { and, eq, gte, inArray, or, sql } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import type { FastifyBaseLogger } from "fastify";
 
 import type { Db } from "../db/client.js";
-import { anilistMedia, anime, listEntries } from "../db/schema.js";
+import { airingEpisodes, anilistMedia, anime, listEntries } from "../db/schema.js";
 import type { AniListClient } from "./client.js";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -23,6 +23,8 @@ const STALE_AFTER_MS = 7 * DAY_MS;
  * later for a weekly show. Past this, the latest episode is unknown until the next refresh.
  */
 const NEXT_EPISODE_TRUSTED_FOR_MS = 6 * DAY_MS;
+/** How long an aired episode's time is kept, for the calendar feed. */
+const AIRED_KEPT_FOR_MS = 30 * DAY_MS;
 
 export type AiringRow = typeof anilistMedia.$inferSelect;
 
@@ -98,6 +100,7 @@ export async function refreshAiring(
         fetchedAt: sql`excluded.fetched_at`,
       },
     });
+  await recordEpisodes(db, rows, now);
 
   const unmapped = due.filter((id) => !found.has(id));
   if (unmapped.length > 0) {
@@ -116,6 +119,44 @@ export async function refreshAiring(
     }
   }
   return { fetched: due.length, unmapped };
+}
+
+/**
+ * Keeps each refreshed show's next episode and its time in `airing_episodes`, so the calendar
+ * still has an episode after it airs. Times AniList no longer stands by are dropped: episodes past
+ * the next one (it moved back), and any still ahead for a show with nothing scheduled.
+ */
+async function recordEpisodes(db: Db, rows: AiringRow[], now: Date): Promise<void> {
+  const next = rows.flatMap((row) =>
+    row.nextEpisode !== null && row.nextAiringAt !== null
+      ? [{ malId: row.malId, episode: row.nextEpisode, airingAt: row.nextAiringAt }]
+      : [],
+  );
+  const unscheduled = rows.filter((row) => row.nextEpisode === null).map((row) => row.malId);
+  const stale = [
+    ...next.map((row) =>
+      and(eq(airingEpisodes.malId, row.malId), gt(airingEpisodes.episode, row.episode)),
+    ),
+    unscheduled.length > 0
+      ? and(inArray(airingEpisodes.malId, unscheduled), gt(airingEpisodes.airingAt, now))
+      : undefined,
+    and(
+      inArray(
+        airingEpisodes.malId,
+        rows.map((row) => row.malId),
+      ),
+      lt(airingEpisodes.airingAt, new Date(now.getTime() - AIRED_KEPT_FOR_MS)),
+    ),
+  ];
+  await db.delete(airingEpisodes).where(or(...stale));
+  if (next.length === 0) return;
+  await db
+    .insert(airingEpisodes)
+    .values(next)
+    .onConflictDoUpdate({
+      target: [airingEpisodes.malId, airingEpisodes.episode],
+      set: { airingAt: sql`excluded.airing_at` },
+    });
 }
 
 /** Cached airing rows for these MAL ids, keyed by MAL id. */

@@ -2,12 +2,14 @@ import { PLAN_CATALOG, type PlanLimit, type PlanView } from "@kurisu/shared";
 import { describe, expect, it } from "vitest";
 
 import {
+  googleCalendarUrl,
   limitText,
   nextPlanLine,
   planLimitOf,
   planShortLine,
   planSourceLine,
   priceLabel,
+  supporterOf,
   trialDaysLeft,
   yearlySaving,
 } from "../lib/plans";
@@ -81,6 +83,9 @@ describe("plan limits", () => {
   });
 });
 
+const PREMIUM = { supporterBadge: true, calendar: false, fullYear: false, lab: false };
+const PRO = { supporterBadge: true, calendar: true, fullYear: true, lab: true };
+
 describe("plan lines", () => {
   const now = new Date("2026-10-19T12:00:00Z");
   const trial: PlanView = {
@@ -88,6 +93,7 @@ describe("plan lines", () => {
     source: "trial",
     until: "2026-10-28T09:00:00.000Z",
     cancelAtPeriodEnd: false,
+    features: PREMIUM,
   };
 
   it("counts a trial's days left, with today's part as one", () => {
@@ -106,6 +112,7 @@ describe("plan lines", () => {
       source: "subscription",
       until: "2027-10-19T00:00:00.000Z",
       cancelAtPeriodEnd: false,
+      features: PRO,
     };
     expect(planSourceLine(renewing, now)).toBe("Pro, renewing 2027-10-19.");
     expect(planShortLine({ ...renewing, cancelAtPeriodEnd: true }, now)).toBe(
@@ -114,8 +121,29 @@ describe("plan lines", () => {
     expect(planSourceLine({ ...renewing, cancelAtPeriodEnd: true }, now)).toBe(
       "Pro until 2027-10-19; it won't renew.",
     );
-    expect(
-      planShortLine({ id: "pro", source: "owner", until: null, cancelAtPeriodEnd: false }),
-    ).toBe("Pro · kurisu's owner");
+    const owner: PlanView = {
+      id: "pro",
+      source: "owner",
+      until: null,
+      cancelAtPeriodEnd: false,
+      features: PRO,
+    };
+    expect(planShortLine(owner)).toBe("Pro · kurisu's owner");
+  });
+
+  it("gives a supporter badge for a paid plan only, never a trial or the owner", () => {
+    const paid: PlanView = { ...trial, source: "subscription" };
+    expect(supporterOf(paid)).toBe("premium");
+    expect(supporterOf(trial)).toBeNull();
+    expect(supporterOf({ ...paid, id: "pro", source: "owner", features: PRO })).toBeNull();
+    expect(supporterOf({ ...paid, features: { ...PREMIUM, supporterBadge: false } })).toBeNull();
+  });
+});
+
+describe("calendar links", () => {
+  it("opens Google Calendar's add-by-URL page for the feed", () => {
+    expect(googleCalendarUrl("webcal://kurisu.example/api/calendar/feed/abc.ics")).toBe(
+      "https://calendar.google.com/calendar/render?cid=webcal%3A%2F%2Fkurisu.example%2Fapi%2Fcalendar%2Ffeed%2Fabc.ics",
+    );
   });
 });

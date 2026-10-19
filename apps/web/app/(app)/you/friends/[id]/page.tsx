@@ -7,6 +7,7 @@ import { Metric, Metrics } from "@/components/Metrics";
 import { Poster } from "@/components/Poster";
 import { Score } from "@/components/Score";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { SupporterBadge } from "@/components/SupporterBadge";
 import { showHref } from "@/lib/airing";
 import { apiGet } from "@/lib/api";
 import { addInChat, matchLabel } from "@/lib/friends";
@@ -28,7 +29,12 @@ export default async function FriendPage(props: PageProps<"/you/friends/[id]">) 
     <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
       <ScreenHeader
         title={friend.malUsername}
-        sub={friend.sharing ? "your friend" : "your friend · not sharing activity"}
+        sub={
+          <span className="flex items-center gap-2">
+            {friend.sharing ? "your friend" : "your friend · not sharing activity"}
+            <SupporterBadge plan={friend.supporter} />
+          </span>
+        }
         back="/you/friends"
       />
 

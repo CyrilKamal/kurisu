@@ -5,7 +5,7 @@ import { inject } from "vitest";
 import { airingRows, refreshAiring } from "../../src/anilist/cache.js";
 import { AniListApiError, createAniListClient } from "../../src/anilist/client.js";
 import { createDb, type Db } from "../../src/db/client.js";
-import { anime } from "../../src/db/schema.js";
+import { airingEpisodes, anime } from "../../src/db/schema.js";
 import { airingMedia, FakeAniList } from "../support/fakeAniList.js";
 import { resetDatabase } from "../support/harness.js";
 
@@ -113,6 +113,51 @@ describe("refreshAiring", () => {
       refreshAiring({ db, anilist: anilist(), log }, [1], { now: later(7) }),
     ).rejects.toBeInstanceOf(AniListApiError);
     expect((await airingRows(db, [1])).get(1)).toMatchObject({ nextEpisode: 8, fetchedAt: now });
+  });
+
+  it("keeps each next episode's time after it airs, for the calendar", async () => {
+    const episodes = async () =>
+      (
+        await db.select().from(airingEpisodes).orderBy(airingEpisodes.malId, airingEpisodes.episode)
+      ).map((row) => [row.malId, row.episode, row.airingAt.toISOString()]);
+    await refreshAiring({ db, anilist: anilist(), log }, [1, 2, 3], { now });
+    expect(await episodes()).toEqual([[1, 8, "2026-10-07T15:00:00.000Z"]]);
+
+    // A week on, episode 8 aired and 9 is next: both are kept.
+    fake.media[0] = airingMedia(101, 1, {
+      nextAiringEpisode: { episode: 9, airingAt: Date.parse("2026-10-14T15:00:00Z") / 1000 },
+    });
+    await refreshAiring({ db, anilist: anilist(), log }, [1], { now: later(7 * 24) });
+    expect(await episodes()).toEqual([
+      [1, 8, "2026-10-07T15:00:00.000Z"],
+      [1, 9, "2026-10-14T15:00:00.000Z"],
+    ]);
+
+    // Episode 9 is postponed a week: its time moves.
+    fake.media[0] = airingMedia(101, 1, {
+      nextAiringEpisode: { episode: 9, airingAt: Date.parse("2026-10-21T15:00:00Z") / 1000 },
+    });
+    await refreshAiring({ db, anilist: anilist(), log }, [1], { now: later(8 * 24) });
+    expect((await episodes()).at(-1)).toEqual([1, 9, "2026-10-21T15:00:00.000Z"]);
+  });
+
+  it("drops episode times AniList no longer stands by, and ones aired over a month ago", async () => {
+    await db.insert(airingEpisodes).values([
+      { malId: 1, episode: 2, airingAt: new Date("2026-08-19T15:00:00Z") },
+      { malId: 1, episode: 7, airingAt: new Date("2026-09-30T15:00:00Z") },
+      // Past the next episode AniList now has (8): no longer scheduled.
+      { malId: 1, episode: 9, airingAt: new Date("2026-10-14T15:00:00Z") },
+      // AniList has nothing scheduled for show 2: one still ahead goes, one aired stays.
+      { malId: 2, episode: 24, airingAt: new Date("2026-10-01T15:00:00Z") },
+      { malId: 2, episode: 25, airingAt: new Date("2026-10-20T15:00:00Z") },
+    ]);
+    await refreshAiring({ db, anilist: anilist(), log }, [1, 2], { now });
+    const rows = await db.select().from(airingEpisodes);
+    expect(rows.map((row) => [row.malId, row.episode]).sort()).toEqual([
+      [1, 7],
+      [1, 8],
+      [2, 24],
+    ]);
   });
 
   it("does nothing for an empty list", async () => {

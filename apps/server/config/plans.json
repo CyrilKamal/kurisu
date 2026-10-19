@@ -1,9 +1,45 @@
 {
-  "note": "Milestone 8's plans: what each may do in a calendar month (UTC), null for no monthly cap (the daily FRIEND_DAILY_RUNS cap still applies). The landing page's PLAN_CATALOG (@kurisu/shared) shows the same numbers, which a test checks. Limits only ever grow: never lower one people already have.",
-  "trial": { "days": 14, "plan": "premium" },
+  "note": "Milestone 8's plans: what each may do in a calendar month (UTC), null for no monthly cap (the daily FRIEND_DAILY_RUNS cap still applies), and what each includes. The landing page's PLAN_CATALOG (@kurisu/shared) shows the same numbers and features, which a test checks. Limits only ever grow: never lower one people already have.",
+  "trial": {
+    "days": 14,
+    "plan": "premium"
+  },
   "plans": {
-    "free": { "chat": 30, "recommendations": 12, "imports": 1, "importLines": 500 },
-    "premium": { "chat": 1000, "recommendations": 300, "imports": null, "importLines": null },
-    "pro": { "chat": 3000, "recommendations": 1000, "imports": null, "importLines": null }
+    "free": {
+      "chat": 30,
+      "recommendations": 12,
+      "imports": 1,
+      "importLines": 500,
+      "features": {
+        "supporterBadge": false,
+        "calendar": false,
+        "fullYear": false,
+        "lab": false
+      }
+    },
+    "premium": {
+      "chat": 1000,
+      "recommendations": 300,
+      "imports": null,
+      "importLines": null,
+      "features": {
+        "supporterBadge": true,
+        "calendar": false,
+        "fullYear": false,
+        "lab": false
+      }
+    },
+    "pro": {
+      "chat": 3000,
+      "recommendations": 1000,
+      "imports": null,
+      "importLines": null,
+      "features": {
+        "supporterBadge": true,
+        "calendar": true,
+        "fullYear": true,
+        "lab": true
+      }
+    }
   }
 }

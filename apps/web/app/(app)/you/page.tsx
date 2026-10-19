@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 
 import { Icon, type IconName } from "@/components/Icon";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { SupporterBadge } from "@/components/SupporterBadge";
 import { apiGet, getMe } from "@/lib/api";
-import { planShortLine } from "@/lib/plans";
+import { planShortLine, supporterOf } from "@/lib/plans";
 import { goalProgress } from "@/lib/stats";
 
 export const metadata: Metadata = { title: "You · kurisu" };
@@ -45,7 +46,15 @@ export default async function YouPage() {
 
   return (
     <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
-      <ScreenHeader title={me.user.malUsername} sub="on MyAnimeList" />
+      <ScreenHeader
+        title={me.user.malUsername}
+        sub={
+          <span className="flex items-center gap-2">
+            on MyAnimeList
+            <SupporterBadge plan={supporterOf(me.plan)} />
+          </span>
+        }
+      />
 
       {/* The screen's one hero metric (StatTile), opening Stats. */}
       <Link href="/you/stats" className="mt-6 block text-ink no-underline">

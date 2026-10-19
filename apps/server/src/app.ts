@@ -54,6 +54,7 @@ import { registerWaitlistRoutes } from "./waitlist/routes.js";
 import { createLimits } from "./billing/limits.js";
 import { loadPlansFile } from "./billing/plans.js";
 import { registerPlanRoutes } from "./billing/routes.js";
+import { registerCalendarRoutes } from "./calendar/routes.js";
 import { registerFriendRoutes } from "./friends/routes.js";
 import { captureReview } from "./review/capture.js";
 import { registerStatsRoutes } from "./stats/routes.js";
@@ -317,6 +318,29 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       "sequels",
     );
   };
+  // A calendar app's fetch brings its owner's airing data up to date for the next fetch, in the
+  // background: one refresh per user at a time, and rows younger than 6 hours aren't refetched.
+  const calendarRefreshes = new Map<string, Promise<void>>();
+  app.addHook("onClose", async () => {
+    await Promise.allSettled(calendarRefreshes.values());
+  });
+  const refreshCalendarAiring = (userId: string) => {
+    if (calendarRefreshes.has(userId)) return;
+    const task: Promise<void> = (async () => {
+      await refreshAiring(
+        { db, anilist: syncAniList, log: app.log },
+        await airingCandidateIds(db, userId),
+      );
+    })()
+      .catch((err: unknown) => {
+        app.log.warn(
+          { err: { name: (err as Error).name } },
+          "could not refresh airing data for a calendar",
+        );
+      })
+      .finally(() => calendarRefreshes.delete(userId));
+    calendarRefreshes.set(userId, task);
+  };
 
   const push = createPushSender({
     db,
@@ -370,7 +394,14 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   registerPlanRoutes(app, { db, limits });
   registerInviteRoutes(app, { config, db });
   registerWaitlistRoutes(app, { config, db });
-  registerFriendRoutes(app, { config, db, cipher });
+  registerFriendRoutes(app, { config, db, cipher, limits });
+  registerCalendarRoutes(app, {
+    config,
+    db,
+    cipher,
+    limits,
+    refreshAiring: refreshCalendarAiring,
+  });
   // Every write to MAL, from Chat, the List screen or an import, goes through these.
   const writeDeps = {
     db,

@@ -67,6 +67,19 @@ export const planIdSchema = z.enum(PLAN_IDS);
  * development).
  */
 export const PLAN_SOURCES = ["owner", "subscription", "trial", "free", "open"] as const;
+
+/**
+ * What a plan includes beyond its allowances: a supporter badge friends see (only while it's paid
+ * for), the calendar feed, the full year in review, and early access to the AI lab.
+ */
+export const planFeaturesSchema = z.object({
+  supporterBadge: z.boolean(),
+  calendar: z.boolean(),
+  fullYear: z.boolean(),
+  lab: z.boolean(),
+});
+export type PlanFeatures = z.infer<typeof planFeaturesSchema>;
+
 export const planViewSchema = z.object({
   id: planIdSchema,
   source: z.enum(PLAN_SOURCES),
@@ -74,6 +87,7 @@ export const planViewSchema = z.object({
   until: z.iso.datetime().nullable(),
   /** A subscription that won't renew. */
   cancelAtPeriodEnd: z.boolean(),
+  features: planFeaturesSchema,
 });
 export type PlanView = z.infer<typeof planViewSchema>;
 
@@ -305,6 +319,8 @@ export const friendViewSchema = z.object({
     percent: z.number().int().min(0).max(100).nullable(),
     sharedScored: z.number().int().min(0),
   }),
+  /** The paid plan they support kurisu with, for its badge; null on Free or a trial. */
+  supporter: planIdSchema.nullable(),
 });
 export type FriendView = z.infer<typeof friendViewSchema>;
 
@@ -338,6 +354,30 @@ export const friendDetailResponseSchema = z.object({
 export type FriendDetailResponse = z.infer<typeof friendDetailResponseSchema>;
 
 export const friendLinkResponseSchema = z.object({ link: z.url() });
+
+/**
+ * GET/POST/DELETE /calendar: whether the plan includes the calendar feed, and the user's feed
+ * link when it's on. `webcalUrl` is the same link for calendar apps to subscribe to;
+ * `lastFetchedAt` is when a calendar app last fetched it.
+ */
+export const calendarResponseSchema = z.object({
+  included: z.boolean(),
+  feed: z
+    .object({
+      url: z.url(),
+      webcalUrl: z.string().startsWith("webcal://"),
+      lastFetchedAt: z.iso.datetime().nullable(),
+    })
+    .nullable(),
+});
+export type CalendarResponse = z.infer<typeof calendarResponseSchema>;
+
+/** 403 when a feature isn't in the user's plan: which feature, and the plan that has it. */
+export const needsPlanErrorSchema = z.object({
+  error: z.literal("needs_plan"),
+  feature: z.enum(["calendar", "fullYear", "lab"]),
+  plan: planIdSchema,
+});
 
 /** GET /friends/links/:code, for the page a friend link opens. */
 export const friendLinkCheckSchema = z.object({

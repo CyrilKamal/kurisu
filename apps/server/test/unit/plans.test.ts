@@ -39,6 +39,24 @@ describe("the plans", () => {
     }
   });
 
+  it("include the features the landing page lists for them", () => {
+    const { plans } = loadPlansFile();
+    const none = { supporterBadge: false, calendar: false, fullYear: false, lab: false };
+    expect(plans.free.features).toEqual(none);
+    expect(shown("premium")).toContain("A supporter badge");
+    expect(plans.premium.features).toEqual({ ...none, supporterBadge: true });
+    expect(shown("pro")).toContain("Everything in Premium");
+    expect(shown("pro")).toContain("A calendar feed of upcoming episodes");
+    expect(shown("pro")).toContain("Your full year in review");
+    expect(shown("pro")).toContain("Early access to AI lab features");
+    expect(plans.pro.features).toEqual({
+      supporterBadge: true,
+      calendar: true,
+      fullYear: true,
+      lab: true,
+    });
+  });
+
   it("only grow from plan to plan", () => {
     const { plans } = loadPlansFile();
     for (const key of ["chat", "recommendations"] as const) {

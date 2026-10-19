@@ -2478,3 +2478,31 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Free accounts after the trial:** they see `UpgradeSheet` when they run out, but nothing can be bought until payments (the next PR); it says so.
 - **A message counts even when its run fails** (a model outage, say), since it's counted from the saved message.
 - **Payments only add rows:** they write `subscriptions` rows, and `planOf` already reads them.
+
+## 2026-10-19 — The calendar feed and the supporter badge (Milestone 8)
+**Decision:**
+- **The feed** is a secret link per user, kept like the friend link: encrypted, so Settings can show it again, and hashed, so a fetch can be looked up. Calendar apps fetch it with no session.
+- **What it holds:** each episode of a Watching show, and the premiere of a Plan to Watch show, from two weeks back to two months ahead.
+- **Where the times come from:** a new `airing_episodes` table, filled at every airing refresh with AniList's next episode and its time. `anilist_media` keeps only the next one, so this is what lets an episode stay in the calendar after it airs.
+  - Times AniList stops standing by are dropped: episodes past the new next one, future ones for a show with nothing scheduled, and anything over a month old.
+  - Nothing is projected ahead.
+  - Each fetch refreshes the user's stale rows in the background, through the shared AniList pacer.
+- **iCalendar is written by hand** (`calendar/ics.ts`). Events are transparent and say where to watch only on the user's own services.
+- **Without Pro,** the link still answers, with an empty calendar that says why, so a calendar app shows nothing rather than an error.
+- **The supporter badge** shows only for a subscription that counts, never a trial or the owner.
+- **Plan features live beside the limits** in `config/plans.json`.
+
+**Alternatives:**
+- Asking AniList for each show's schedule when a calendar fetches (slow, and every fetch would spend AniList's rate limit).
+- Projecting weekly episodes from the next one (a guess, which breaks on breaks and delays).
+- Only the next episode per show (episodes would vanish from calendars as soon as they aired).
+- An iCalendar library (the feed needs a handful of properties).
+- A 404 or 403 after a downgrade (calendar apps show errors and may stop polling).
+- A badge for trials.
+
+**Why:** The calendar should only ever show times AniList gave us, and it should keep a week's episodes after they air, like any calendar. Recording what each refresh already fetches does that with no new AniList calls. The badge means "pays for kurisu", which a free trial doesn't.
+
+**Consequences:**
+- **Times can be missing for some shows:** a show's times are only as complete as its refreshes, so an episode that aired between two refreshes six days apart may be missing. The brief, syncs, show pages and the feed's own fetches refresh often enough that this is rare.
+- **A leaked link shows that person's episodes** until it's replaced in Settings.
+- **The lab's flag is unused until Milestone 9:** `lab` is in the plan view already.

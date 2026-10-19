@@ -1,17 +1,21 @@
-import type { BudgetLimit, PlanLimit, PlanResponse } from "@kurisu/shared";
+import type { BudgetLimit, PlanFeatures, PlanId, PlanLimit, PlanResponse } from "@kurisu/shared";
 
 import { checkBudget, type Budget } from "../budget/budget.js";
 import type { Db } from "../db/client.js";
 import type { ModelsFile } from "../llm/modelConfig.js";
-import { isPaying, planOf, type PlansFile, type PlanView } from "./plans.js";
+import { isPaying, planOf, supportersOf, type PlansFile, type PlanView } from "./plans.js";
 import { usageOf } from "./usage.js";
 
 /** Why a request that would call a model is turned away. */
 export type Refusal = { error: BudgetLimit } | { error: "plan_limit"; limit: PlanLimit };
 
 export interface Limits {
-  /** The plan a user is on now. */
+  /** The plan a user is on now, with what it includes. */
   plan(userId: string): Promise<PlanView>;
+  /** Whether a user's plan includes a feature now (the calendar feed, the full year, the lab). */
+  has(userId: string, feature: Exclude<keyof PlanFeatures, "supporterBadge">): Promise<boolean>;
+  /** Which of these users pay for a plan with a supporter badge, and which plan. */
+  supporters(userIds: string[]): Promise<Map<string, PlanId>>;
   /**
    * Before Chat or an import calls a model: the daily cap, the monthly cap on everyone's
    * unpaid spend, and the plan's allowance (for an import, its count and its size in lines).
@@ -41,7 +45,10 @@ export function createLimits(deps: {
 }): Limits {
   const { db, plans } = deps;
   const options = { limitsOn: deps.limitsOn, trialPlan: plans.trial.plan };
-  const plan = (userId: string, now = new Date()) => planOf(db, userId, options, now);
+  const plan = async (userId: string, now = new Date()): Promise<PlanView> => {
+    const standing = await planOf(db, userId, options, now);
+    return { ...standing, features: plans.plans[standing.id].features };
+  };
 
   function exceeded(
     planView: PlanView,
@@ -56,6 +63,12 @@ export function createLimits(deps: {
 
   return {
     plan,
+
+    async has(userId, feature) {
+      return (await plan(userId)).features[feature];
+    },
+
+    supporters: (userIds) => supportersOf(db, plans, userIds),
 
     async check(userId, kind, lines) {
       const now = new Date();
