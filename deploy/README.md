@@ -65,6 +65,56 @@ docker compose -f deploy/compose.yaml --env-file .env.prod start server web
 - **Dev and hosted share your MAL list.** The dev app still writes to your real MAL, so a change made there reaches the hosted app as a change "on MAL's site" at its next sync, not as a kurisu change with Undo. Use the hosted app for real life, and the fake MAL (`pnpm --filter @kurisu/server dev:fake-mal`) for development.
 - **Funnel addresses are public.** They appear in certificate logs, so anyone can find the address. Only the owner (`OWNER_MAL_USERNAME`) and people who already have an account can log in.
 
-## Moving to a VPS
+## Running on a server
 
-On a Linux server with Docker: clone the repo, copy `.env.prod` across with a new `WEB_ORIGIN` and `MAL_REDIRECT_URI` (and the MAL app's redirect URL to match), restore the latest backup into a fresh `db`, then run `bash deploy/deploy.sh` and put a reverse proxy with HTTPS (Caddy, say) in front of port 3080. The address changes, so everyone reinstalls the app once.
+The hosted app's server is a DigitalOcean droplet: Ubuntu 24.04, Basic, 2 GB RAM, about $12 a month. The same stack runs there, with the `public` compose profile, which adds two services:
+- **`caddy`:** HTTPS on your own domain, with Let's Encrypt certificates, in front of the web app.
+- **`offsite`:** copies the daily dumps to S3-compatible storage (DigitalOcean Spaces or Backblaze B2) every 6 hours, and keeps 30 days there.
+
+Nothing else changes: `deploy/deploy.sh` deploys there the same way.
+
+### Setting it up (once)
+
+1. **Point the domain at the droplet.** Add an `A` record for the domain (or a subdomain) pointing to the droplet's IPv4 address. Wait until `nslookup <domain>` answers with that address.
+2. **On the droplet** (`ssh root@<ip>`), install Docker, open the firewall, and add swap. Building the web app needs more than 2 GB of memory.
+   ```bash
+   curl -fsSL https://get.docker.com | sh
+   ufw allow OpenSSH && ufw allow 80 && ufw allow 443 && ufw --force enable
+   fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+   echo '/swapfile none swap sw 0 0' >> /etc/fstab
+   git clone https://github.com/CyrilKamal/kurisu.git /opt/kurisu
+   cd /opt/kurisu && git checkout --detach origin/main
+   ```
+3. **Settings.**
+   1. Copy the PC's `.env.prod` across: `scp .env.prod root@<ip>:/opt/kurisu/`, from `C:\Users\megar\repos\kurisu-prod`.
+   2. Set the new address in `WEB_ORIGIN`, `MAL_REDIRECT_URI` and `KURISU_DOMAIN`.
+   3. Set `COMPOSE_PROFILES=public`.
+   4. Set the `BACKUP_S3_*` values (see `env.prod.example`).
+4. **Move the data.** Stop the PC's stack first so nothing is written after the last dump:
+   1. On the PC:
+      ```bash
+      docker compose -f deploy/compose.yaml --env-file .env.prod exec -T db sh -c 'pg_dump -Fc --exclude-schema=pgboss -U "$POSTGRES_USER" "$POSTGRES_DB"' > backups/kurisu-move.dump
+      docker compose -f deploy/compose.yaml --env-file .env.prod stop
+      ```
+   2. Copy the dump to the droplet with `scp`.
+   3. On the droplet:
+      ```bash
+      docker compose -f deploy/compose.yaml --env-file .env.prod up -d --wait db
+      docker compose -f deploy/compose.yaml --env-file .env.prod exec -T db sh -c 'pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < kurisu-move.dump
+      bash deploy/deploy.sh
+      ```
+5. **Switch MAL over.** On the hosted MAL app's page (https://myanimelist.net/apiconfig), set the App Redirect URL to the new `MAL_REDIRECT_URI`.
+6. **Check it.**
+   - `curl https://<domain>/api/health/db` answers `{"status":"ok"}`.
+   - Logging in works.
+   - The uptime monitor watches `https://<domain>/api/health/db`.
+7. **Retire the PC's copy.**
+   - Run `tailscale funnel --bg off`.
+   - Leave the stopped stack and its volume as a fallback for a while, then remove them.
+   - The app's address changed, so install it again from the new address.
+
+### Every deploy after that
+
+```bash
+ssh root@<ip> 'cd /opt/kurisu && bash deploy/deploy.sh'
+```
