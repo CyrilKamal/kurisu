@@ -66,6 +66,8 @@ const envSchema = z.object({
   OWNER_MAL_USERNAME: optional(z.string().min(1).optional()),
   // What invite pages call the owner ("Cyril invited you"); the MAL username when unset.
   OWNER_DISPLAY_NAME: optional(z.string().trim().min(1).max(40).optional()),
+  // Shown on the public pages (the landing page, terms, privacy) as how to reach kurisu.
+  CONTACT_EMAIL: optional(z.email().optional()),
 
   // While sign-up is closed, what each friend may spend on models: runs in any 24 hours, and
   // everyone but the owner together in a calendar month (estimated at list prices, in USD).
@@ -112,6 +114,8 @@ export interface Config {
    * invite pages call them.
    */
   owner: { malUsername: string; displayName: string } | null;
+  /** How the public pages say to reach kurisu (CONTACT_EMAIL). */
+  contactEmail: string | null;
   /** Friends' model limits; null while sign-up is open (no owner), when nothing is limited. */
   budget: { dailyRuns: number; monthlyUsd: number } | null;
 }
@@ -178,6 +182,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       searchVectors: parsed.SEARCH_VECTORS === "on",
       semanticWeight: parsed.RECOMMEND_SEMANTIC_WEIGHT,
     },
+    contactEmail: parsed.CONTACT_EMAIL ?? null,
     owner: parsed.OWNER_MAL_USERNAME
       ? {
           malUsername: parsed.OWNER_MAL_USERNAME,

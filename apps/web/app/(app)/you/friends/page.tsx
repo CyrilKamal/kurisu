@@ -1,4 +1,8 @@
-import { friendsResponseSchema, invitesResponseSchema } from "@kurisu/shared";
+import {
+  friendsResponseSchema,
+  invitesResponseSchema,
+  waitlistResponseSchema,
+} from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -10,6 +14,7 @@ import { matchLabel } from "@/lib/friends";
 import { ActivityFeed } from "./ActivityFeed";
 import { FriendLink } from "./FriendLink";
 import { InviteFriends } from "./InviteFriends";
+import { Waitlist } from "./Waitlist";
 
 export const metadata: Metadata = { title: "Friends · kurisu" };
 
@@ -21,6 +26,7 @@ export default async function FriendsPage() {
   const [me, data] = await Promise.all([getMe(), apiGet("/friends", friendsResponseSchema)]);
   if (!me || !data) redirect("/");
   const invites = me.user.isOwner ? await apiGet("/invites", invitesResponseSchema) : null;
+  const waitlist = me.user.isOwner ? await apiGet("/waitlist", waitlistResponseSchema) : null;
 
   return (
     <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
@@ -83,6 +89,7 @@ export default async function FriendsPage() {
           <InviteFriends initial={invites.invites} />
         </>
       )}
+      {waitlist && <Waitlist initial={waitlist.entries} />}
     </main>
   );
 }

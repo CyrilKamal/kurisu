@@ -128,6 +128,40 @@ describe("responses match the contract", () => {
     expect((await send("DELETE", `/invites/${invite.id}`)).statusCode).toBe(204);
   });
 
+  it("GET /site and the /waitlist endpoints", async () => {
+    const site = await h.app.inject({ method: "GET", url: "/site" });
+    expect(() => contract.siteResponseSchema.parse(site.json())).not.toThrow();
+
+    const joined = await h.app.inject({
+      method: "POST",
+      url: "/waitlist",
+      headers: { origin: TEST_WEB_ORIGIN },
+      payload: { email: "sam@example.com", malUsername: "sam_k", elapsedMs: 5000 },
+    });
+    const join = contract.waitlistJoinResponseSchema.parse(joined.json());
+
+    await h.db.update(users).set({ isOwner: true });
+    const listed = await get("/waitlist");
+    const [entry] = contract.waitlistResponseSchema.parse(listed.json()).entries;
+    if (!entry) throw new Error("no entry");
+    const invited = await h.app.inject({
+      method: "POST",
+      url: `/waitlist/${entry.id}/invite`,
+      headers: { origin: TEST_WEB_ORIGIN },
+      cookies: { [SESSION_COOKIE]: cookie },
+    });
+    expect(invited.statusCode).toBe(201);
+    expect(() => contract.waitlistInviteResponseSchema.parse(invited.json())).not.toThrow();
+
+    const left = await h.app.inject({
+      method: "POST",
+      url: "/waitlist/leave",
+      headers: { origin: TEST_WEB_ORIGIN },
+      payload: { token: join.leaveToken },
+    });
+    expect(left.statusCode).toBe(204);
+  });
+
   it("the /friends endpoints", async () => {
     const send = (method: "POST" | "PUT", url: string, payload?: object) =>
       h.app.inject({

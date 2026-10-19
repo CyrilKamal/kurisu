@@ -50,6 +50,7 @@ import { createListSync } from "./sync/listSync.js";
 import { saveReactionsFor } from "./diary/reader.js";
 import { registerDiaryRoutes } from "./diary/routes.js";
 import { registerInviteRoutes } from "./invites/routes.js";
+import { registerWaitlistRoutes } from "./waitlist/routes.js";
 import { checkBudget } from "./budget/budget.js";
 import { registerFriendRoutes } from "./friends/routes.js";
 import { captureReview } from "./review/capture.js";
@@ -350,6 +351,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   });
   registerAuthRoutes(app, { config, db, cipher, tokenStore, listSync });
   registerInviteRoutes(app, { config, db });
+  registerWaitlistRoutes(app, { config, db });
   registerFriendRoutes(app, { config, db, cipher });
   // Every write to MAL, from Chat, the List screen or an import, goes through these.
   const writeDeps = {
