@@ -1,6 +1,8 @@
-# The hosted kurisu. Run through deploy/deploy.ps1, or by hand from the repo root:
+# The hosted kurisu. Run through deploy/deploy.sh, or by hand from the repo root:
 #   docker compose -f deploy/compose.yaml --env-file .env.prod up -d --build --wait
 # Its own project name keeps it apart from the dev database (docker-compose.yml, project "kurisu").
+# On a server, COMPOSE_PROFILES=public in .env.prod also starts Caddy (HTTPS on KURISU_DOMAIN) and
+# the off-site copy of the backups (deploy/README.md, "Running on a server").
 name: kurisu-prod
 
 services:
@@ -59,7 +61,8 @@ services:
     environment:
       API_INTERNAL_URL: http://server:4000
     ports:
-      # Tailscale Funnel publishes this port: `tailscale funnel --bg 3080`.
+      # Loopback only. On the PC, Tailscale Funnel publishes it (`tailscale funnel --bg 3080`); on
+      # a server, Caddy reaches the web app over the compose network instead.
       - "127.0.0.1:${PROD_WEB_PORT:-3080}:3000"
     depends_on:
       server:
@@ -84,5 +87,52 @@ services:
       server:
         condition: service_healthy
 
+  caddy:
+    profiles: [public]
+    image: caddy:2.11-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
+    restart: unless-stopped
+    environment:
+      KURISU_DOMAIN: ${KURISU_DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+  # Copies the daily dumps to S3-compatible storage (DigitalOcean Spaces, Backblaze B2), so a lost
+  # server doesn't take its backups with it, and keeps 30 days there.
+  offsite:
+    profiles: [public]
+    image: rclone/rclone:1.73@sha256:1619a625f845e169c34b952cf40c483c0392965b821c5155cde8cbfd35254a96
+    restart: unless-stopped
+    environment:
+      RCLONE_CONFIG_OFFSITE_TYPE: s3
+      RCLONE_CONFIG_OFFSITE_PROVIDER: ${BACKUP_S3_PROVIDER:-Other}
+      RCLONE_CONFIG_OFFSITE_ENDPOINT: ${BACKUP_S3_ENDPOINT:-}
+      RCLONE_CONFIG_OFFSITE_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY_ID:-}
+      RCLONE_CONFIG_OFFSITE_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_ACCESS_KEY:-}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:-}
+    volumes:
+      - ${BACKUP_DIR:-../backups}:/backups:ro
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        while true; do
+          if rclone copy /backups "offsite:$$BACKUP_S3_BUCKET/kurisu" --include 'kurisu-*.dump' &&
+            rclone delete "offsite:$$BACKUP_S3_BUCKET/kurisu" --min-age 30d; then
+            echo "offsite: copied"
+          else
+            echo "offsite: copy failed" >&2
+          fi
+          sleep 21600
+        done
+
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,6 @@
+# The public front door on a server (the "public" compose profile): HTTPS for KURISU_DOMAIN, with
+# certificates from Let's Encrypt, in front of the web app. Ports 80 and 443 must be open.
+{$KURISU_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}
