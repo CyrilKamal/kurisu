@@ -80,6 +80,9 @@ export function CommandLine({
           <Icon name="send" />
         </button>
       </form>
+      <p className="k-field__hint text-center">
+        kurisu is an AI and can make mistakes. Every change it makes can be undone.
+      </p>
     </div>
   );
 }

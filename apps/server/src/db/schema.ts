@@ -62,6 +62,11 @@ export const users = pgTable("users", {
   shareActivity: boolean("share_activity").notNull().default(true),
   // When they finished or skipped the welcome steps; null sends a new account through them.
   welcomedAt: timestamptz("welcomed_at"),
+  // When they said they're 18 or older, and accepted the terms of `terms_version` (TERMS_VERSION
+  // in @kurisu/shared, the date the terms last changed). Null until they do.
+  ageConfirmedAt: timestamptz("age_confirmed_at"),
+  termsAcceptedAt: timestamptz("terms_accepted_at"),
+  termsVersion: text("terms_version"),
   // A new account has Premium until then (Milestone 8's trial); null for accounts from before.
   trialEndsAt: timestamptz("trial_ends_at"),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
@@ -226,6 +231,8 @@ export const oauthStates = pgTable("oauth_states", {
   consumedAt: timestamptz("consumed_at"),
   // The invite this login started from, if any; it's used up only when the account is created.
   inviteId: uuid("invite_id").references(() => invites.id, { onDelete: "set null" }),
+  // The terms version they ticked "18 or older" and "I accept" for before logging in, if any.
+  consentVersion: text("consent_version"),
 });
 
 /**

@@ -47,7 +47,7 @@ export function registerWaitlistRoutes(app: FastifyInstance, deps: WaitlistRoute
   app.get("/site", (): SiteResponse => ({
     operator: config.owner?.displayName ?? null,
     contactEmail: config.contactEmail,
-    signup: config.owner ? "invite" : "open",
+    signup: config.signup,
   }));
 
   const recentJoins: number[] = [];

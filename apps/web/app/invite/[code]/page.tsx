@@ -4,6 +4,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { Banner } from "@/components/Banner";
+import { SignUpConsent } from "@/components/SignUpConsent";
 import { apiGetPublic, getMe } from "@/lib/api";
 
 export const metadata: Metadata = { title: "You're invited · kurisu" };
@@ -66,18 +67,7 @@ export default async function InvitePage(props: PageProps<"/invite/[code]">) {
             </ul>
           </section>
 
-          <div className="flex flex-col gap-2">
-            {/* A full navigation: the server redirects to MAL's consent page. */}
-            <a
-              href={`/api/auth/mal/login?invite=${encodeURIComponent(code)}`}
-              className="k-btn k-btn--primary k-btn--lg k-btn--block"
-            >
-              Join with MyAnimeList
-            </a>
-            <p className="k-field__hint text-center">
-              You&apos;ll approve access on myanimelist.net, then come right back.
-            </p>
-          </div>
+          <SignUpConsent invite={code} action="Join with MyAnimeList" />
         </>
       ) : (
         <Banner level="error">

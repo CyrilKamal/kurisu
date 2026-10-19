@@ -107,6 +107,11 @@ describe("responses match the contract", () => {
     expect(() => contract.planResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("GET /me/export", async () => {
+    const res = await get("/me/export");
+    expect(() => contract.dataExportSchema.parse(res.json())).not.toThrow();
+  });
+
   it("GET /year", async () => {
     const res = await get("/year");
     expect(() => contract.yearReviewSchema.parse(res.json())).not.toThrow();

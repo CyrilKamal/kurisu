@@ -8,7 +8,10 @@ import { sendApi } from "@/lib/clientApi";
 import { forgetOfflineData } from "@/lib/offline";
 import { forgetPushOnThisBrowser } from "@/lib/pushDevice";
 
-/** Deletes the account after a confirming sheet. MAL is never touched. */
+/**
+ * The user's data: a download of everything kurisu holds about them, and deleting the account
+ * after a confirming sheet. MAL is never touched.
+ */
 export function DeleteAccount() {
   const router = useRouter();
   const { confirm, sheet } = useConfirm();
@@ -42,6 +45,13 @@ export function DeleteAccount() {
       <h2 className="k-caps pb-2">Your data</h2>
       <div className="k-panel flex flex-col gap-4 p-4">
         <p className="text-ink-muted">
+          Download a copy of everything kurisu holds about you, as a file to keep or take elsewhere.
+        </p>
+        {/* A plain download: the server names the file. */}
+        <a href="/api/me/export" download className="k-btn self-start">
+          Download my data
+        </a>
+        <p className="border-t border-line pt-4 text-ink-muted">
           Deleting removes everything kurisu holds about you: its copy of your list, your chats,
           Journal and notes, taste, stats and settings. Your MyAnimeList list stays exactly as it
           is. It can&apos;t be undone.

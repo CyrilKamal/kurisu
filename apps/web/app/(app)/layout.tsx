@@ -12,8 +12,11 @@ import { NavBar } from "./NavBar";
  */
 export default async function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // Checked here, above each screen's loading skeleton, so someone logged out is sent to log in
-  // straight away instead of seeing a screen load first. Pages reuse the same answer.
-  if (!(await getMe())) redirect("/");
+  // straight away instead of seeing a screen load first. Pages reuse the same answer. An account
+  // that hasn't accepted the current terms is asked once, before anything else.
+  const me = await getMe();
+  if (!me) redirect("/");
+  if (!me.termsAccepted) redirect("/accept");
   return (
     <ToastProvider>
       <FinishProvider>

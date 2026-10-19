@@ -68,6 +68,9 @@ const envSchema = z.object({
   OWNER_DISPLAY_NAME: optional(z.string().trim().min(1).max(40).optional()),
   // Shown on the public pages (the landing page, terms, privacy) as how to reach kurisu.
   CONTACT_EMAIL: optional(z.email().optional()),
+  // With an owner: "invite" (the default) lets new accounts in only with an invite; "open" lets
+  // anyone 18 or older sign up from the landing page. Plan limits apply either way.
+  SIGNUP: optional(z.enum(["invite", "open"]).default("invite")),
 
   // While sign-up is closed, what each friend may spend on models: runs in any 24 hours, and
   // everyone but the owner together in a calendar month (estimated at list prices, in USD).
@@ -114,6 +117,11 @@ export interface Config {
    * invite pages call them.
    */
   owner: { malUsername: string; displayName: string } | null;
+  /**
+   * Who can create an account: with "invite", only the owner and people with an invite; with
+   * "open", anyone. Always "open" without an owner.
+   */
+  signup: "invite" | "open";
   /** How the public pages say to reach kurisu (CONTACT_EMAIL). */
   contactEmail: string | null;
   /** Friends' model limits; null while sign-up is open (no owner), when nothing is limited. */
@@ -183,6 +191,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       semanticWeight: parsed.RECOMMEND_SEMANTIC_WEIGHT,
     },
     contactEmail: parsed.CONTACT_EMAIL ?? null,
+    // Without an owner (development, tests), anyone can sign up, as before.
+    signup: parsed.OWNER_MAL_USERNAME ? parsed.SIGNUP : "open",
     owner: parsed.OWNER_MAL_USERNAME
       ? {
           malUsername: parsed.OWNER_MAL_USERNAME,

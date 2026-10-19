@@ -132,6 +132,8 @@ export function loginErrorMessage(code: string | undefined): string | null {
     token_exchange_failed: "MyAnimeList didn't accept the login. Please try again.",
     mal_unavailable: "Couldn't reach MyAnimeList. Please try again in a minute.",
     invite_only: "kurisu is invite-only for now, so that MyAnimeList account can't sign up.",
+    consent_needed:
+      "To sign up, tick both boxes first: that you're 18 or older, and that you accept the terms.",
   };
   return code in messages ? messages[code as LoginError] : messages.invalid_request;
 }

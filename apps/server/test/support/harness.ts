@@ -1,5 +1,6 @@
 import { Writable } from "node:stream";
 
+import { TERMS_VERSION } from "@kurisu/shared";
 import { sql } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { inject } from "vitest";
@@ -141,11 +142,18 @@ export async function login(
   }) => void | Promise<void> = () => undefined,
   /** The code from an invite link, as /invite/<code> passes it on. */
   invite?: string,
+  /**
+   * Whether they ticked "18 or older" and "I accept the terms" first, as the landing and invite
+   * pages ask before a sign-up, or the terms version their page showed. On (the current terms) by
+   * default; a server with an owner refuses new accounts without it.
+   */
+  options: { consent?: boolean | string } = {},
 ): Promise<LoginResult> {
-  const start = await h.app.inject({
-    method: "GET",
-    url: invite === undefined ? "/auth/mal/login" : `/auth/mal/login?invite=${invite}`,
-  });
+  const params = new URLSearchParams();
+  if (invite !== undefined) params.set("invite", invite);
+  const accepted = options.consent ?? true;
+  if (accepted !== false) params.set("consent", accepted === true ? TERMS_VERSION : accepted);
+  const start = await h.app.inject({ method: "GET", url: `/auth/mal/login?${params.toString()}` });
   const authorizeUrl = new URL(String(start.headers.location));
   const stateCookie = start.cookies.find((c) => c.name === OAUTH_STATE_COOKIE)?.value ?? "";
 
