@@ -98,7 +98,7 @@ export default async function LandingPage(props: PageProps<"/">) {
       <header className="mx-auto flex max-w-(--content-max) items-center justify-between gap-4 px-4 py-4">
         <span className="flex items-center gap-2">
           {/* The mark stays as it's drawn today, until final art replaces it. */}
-          <Image src="/icons/192.png" alt="" width={24} height={24} priority />
+          <Image src="/icons/192.png" alt="" width={24} height={24} loading="eager" />
           <span className="font-serif text-base/6 font-bold text-ink">kurisu</span>
         </span>
         {/* A full navigation, not a client-side Link: the server redirects to MAL's consent page. */}
