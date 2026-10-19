@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { Histogram, modeOf } from "@/components/Histogram";
-import { Icon } from "@/components/Icon";
+import { Histogram } from "@/components/Histogram";
 import { Metric, Metrics } from "@/components/Metrics";
 import { Poster } from "@/components/Poster";
 import { Score } from "@/components/Score";
@@ -79,21 +78,13 @@ export default async function YearPage(props: PageProps<"/you/year">) {
         actions={
           <>
             {year > FIRST_YEAR && (
-              <Link
-                href={yearLink(year - 1)}
-                className="k-btn k-btn--ghost k-btn--icon"
-                aria-label={`Your ${String(year - 1)}`}
-              >
-                <Icon name="chevron-left" />
+              <Link href={yearLink(year - 1)} className="k-btn k-btn--ghost k-btn--sm">
+                {year - 1}
               </Link>
             )}
             {year < currentYear && (
-              <Link
-                href={yearLink(year + 1)}
-                className="k-btn k-btn--ghost k-btn--icon"
-                aria-label={`Your ${String(year + 1)}`}
-              >
-                <Icon name="chevron-left" className="rotate-180" />
+              <Link href={yearLink(year + 1)} className="k-btn k-btn--ghost k-btn--sm">
+                {year + 1}
               </Link>
             )}
           </>
@@ -118,7 +109,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
         </Metrics>
         {basic.favorite && (
           <div className="k-row">
-            <Poster url={basic.favorite.pictureUrl} title={basic.favorite.title} size="md" eager />
+            <Poster url={basic.favorite.pictureUrl} title={basic.favorite.title} eager />
             <div className="k-row__main">
               <p className="k-caps">Favorite</p>
               <ShowLink animeId={basic.favorite.animeId}>
@@ -145,7 +136,6 @@ export default async function YearPage(props: PageProps<"/you/year">) {
             <h2 className="k-caps pb-2">Month by month</h2>
             <Histogram
               summary={`Shows finished each month of ${String(year)}`}
-              modeIndex={modeOf(full.completedByMonth)}
               columns={full.completedByMonth.map((value, i) => ({
                 label: monthLabel(i + 1).slice(0, 1),
                 value,
@@ -157,7 +147,6 @@ export default async function YearPage(props: PageProps<"/you/year">) {
                 <h3 className="k-caps pb-2">Episodes</h3>
                 <Histogram
                   summary={`Episodes watched each month of ${String(year)}`}
-                  modeIndex={modeOf(full.episodesByMonth)}
                   columns={full.episodesByMonth.map((value, i) => ({
                     label: monthLabel(i + 1).slice(0, 1),
                     value,
