@@ -20,6 +20,12 @@ const SCREENS: { href: string; label: string; about: string; icon: IconName }[] 
     icon: "undo",
   },
   { href: "/you/stats", label: "Stats", about: "Your week, your year, your list", icon: "grid" },
+  {
+    href: "/you/year",
+    label: "Year in review",
+    about: "Your year in anime, to share",
+    icon: "today",
+  },
   { href: "/you/taste", label: "Taste", about: "Genres you rate, and why you drop", icon: "star" },
   {
     href: "/you/friends",

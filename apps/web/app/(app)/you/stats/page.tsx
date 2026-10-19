@@ -71,7 +71,12 @@ export default async function StatsPage() {
       </section>
 
       <section className="pt-8">
-        <h2 className="k-empty__title pb-2">{year.year}</h2>
+        <div className="flex items-baseline justify-between pb-2">
+          <h2 className="k-empty__title">{year.year}</h2>
+          <Link href="/you/year" className="k-link">
+            Year in review
+          </Link>
+        </div>
         <Metrics>
           <Metric
             hero
