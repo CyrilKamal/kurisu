@@ -5,6 +5,8 @@ import { Poster, progressOf } from "@/components/Poster";
 
 interface DemoWrite {
   title: string;
+  /** The show's cover on MyAnimeList's image server, as the app shows it. */
+  pictureUrl: string | null;
   kind: WriteKind;
   before: ListChange;
   after: ListChange;
@@ -49,7 +51,7 @@ export function DemoLog({
                 {writes.map((write) => (
                   <li key={write.title} className="k-write__row">
                     <Poster
-                      url={null}
+                      url={write.pictureUrl}
                       title={write.title}
                       progress={progressOf(write.after.episodesWatched ?? 0, write.numEpisodes)}
                     />
