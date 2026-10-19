@@ -49,7 +49,7 @@ Some work must be done by me, not you. When you reach one of these points, stop,
 - **Database:** Postgres, with pgvector for Milestone 7's lab.
 - **Scheduler:** queue-backed daily cron for morning briefs.
 - **Notifications:** Web Push.
-- **Python:** only for Milestone 7's fine-tuning experiment. Keep it in its own `ml/` directory.
+- **Python:** only for the fine-tuning experiment (Milestone 9, AI lab II). Keep it in its own `ml/` directory.
 
 TypeScript runs in strict mode. Prefer small modules with clear boundaries over large files.
 
@@ -95,12 +95,23 @@ These are non-negotiable. If a request conflicts with one, stop and ask.
 4. **Recommendations + taste memory.** Recommendations draw from Plan to Watch and in-progress shows, respect constraints like runtime and mood, and explain each pick in one line. Taste memory records drop reasons and rating patterns.
 5. **Your list, in your hands.** I can edit any entry and remove shows on the List screen, and every edit shows in History and can be undone. I can paste notes and import them through one review screen (grouped, adds and clear updates pre-checked, taps only on "?" rows, one Import tap, background writes with progress, one undo), from scratch or onto my MAL list, and my import eval cases pass at a level we've discussed with no wrong pre-checked rows. Picks show where to watch on my services, and "something on Netflix" works. The brief tells me when a sequel or new season of a show I finished, or a Plan to Watch show, starts airing. A Stats page and a Sunday recap show what I watched (including edits made on MAL's site), with a yearly goal. A diary keeps my reactions. "What's good this season" works.
 6. **Friends beta.** A handful of invited users, plus friend features (taste match, activity). Their failures flow into a review queue for me to label.
-7. **AI lab: embeddings, RAG and fine-tuning.** Four experiments. Each is measured against an eval and logged as a decision entry, whether or not it ships; nothing here has to reach the paid app.
-   - **RAG over my history:** questions about my diary, drop reasons and chats are answered from retrieved notes, with citations. It's measured on retrieval recall@k and on whether answers stick to their sources, over a question set I write.
-   - **Semantic recommendations:** show synopses embedded in pgvector, blended into ranking. It's measured on the recommendation eval.
-   - **Hybrid title search:** vectors plus trigram matching. It's measured on update accuracy and wrong-write rate.
+7. **AI lab I: embeddings and search.** Done (2026-10-10). Each experiment was measured against an eval and logged as a decision entry, whether or not it shipped.
+   - **The foundation:** pgvector and embeddings through the provider module.
+   - **Semantic recommendations:** show synopses embedded in pgvector, blended into ranking, measured on the recommendation eval (left off).
+   - **Hybrid title search:** vectors plus trigram matching, measured on update accuracy and wrong-write rate (left off).
+   - **The RAG infrastructure** (`lab:ask`, `eval:rag`), which AI lab II measures.
+8. **Paid plan.** MAL has approved kurisu's commercial use in writing (done), and AniList's license is in place before revenue passes $150 a month.
+   - **Sign-up:** anyone 18 or older can sign up, and new accounts start with 14 days of Premium.
+   - **Free:** 30 chat updates, 12 recommendations and one import a month, and it never locks anyone out of their list.
+   - **Paid plans, through Stripe:**
+     - Premium: $2.99 a month or $24.99 a year.
+     - Pro: $5.99 a month or $49.99 a year. It adds a calendar feed, a year in review and early access to the AI lab.
+   - **Rules:** limits are published at launch, and cancelling is one tap.
+   - **Legal:** terms, privacy and refund policies are published.
+   - **Hosting:** kurisu runs on a server that stays up.
+9. **AI lab II: RAG and fine-tuning.** Two experiments. Each is measured against an eval and logged as a decision entry, whether or not it ships. What ships reaches Pro first.
+   - **RAG over my list and history:** questions about my list, diary, drop reasons and chats are answered from retrieved documents, with citations. It's measured on retrieval recall@k and on whether answers stick to their sources, over a question set I write.
    - **Fine-tuning:** a LoRA fine-tune of a small open model (1–3B) on my labeled messages for the parsing step, served locally. It's compared with Flash-Lite on accuracy, latency and cost.
-8. **Paid plan.** MAL has approved kurisu's commercial use in writing, and AniList's license is in place before revenue passes $150 a month. Anyone can sign up for a free tier with limits, or pay for a plan through Stripe. Terms and a privacy policy are published, and kurisu runs on a server that stays up.
 
 ## Commands
 
