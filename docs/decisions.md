@@ -2423,3 +2423,29 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **New address:** the app moves to a new address, so it's installed again once and MAL's redirect URI changes.
 - **The PC's checkout stays** for local development only.
 
+## 2026-10-19 — A landing page and a waitlist before payments (Milestone 8)
+**Decision:**
+- **What the public site is:** logged-out visitors get a landing page instead of the bare login screen. It shows what kurisu does, a static Chat example built from the app's own components, the three plans with "prices at launch", a waitlist form and questions. Terms, privacy and refund pages come with it.
+- **How the waitlist works:**
+  - It lives in kurisu's own database: an email, an optional MAL username, and a leave token shown once.
+  - The owner turns an entry into an ordinary invite link on the Friends screen, and sends it.
+  - Sign-up stays invite-only.
+- **Bots** are kept out by a hidden field, the form's time open, a server-wide join rate and a cap on entries.
+- **Nothing is emailed yet.**
+
+**Alternatives:**
+- A form service (Tally, Google Forms), which hands the emails to a third party.
+- A static page on a separate host.
+- A CAPTCHA.
+- A per-IP limit (every request reaches the server through the web app's proxy, so all visitors share one address, and trusting forwarded headers lets them be faked).
+- Sending invites by email (needs an email service and its account).
+- A `pnpm waitlist` command, which couldn't reach the database once the app moves to a server.
+
+**Why:** Cyril's idea. Payment providers review the website before approving an account, and want to see the product, its prices, a contact, terms, privacy and a refund policy. The waitlist also finds the friends beta's first users.
+
+**Consequences:**
+- **Hosting matters:** the site has to stay up while Stripe reviews it, so it goes live on the server and domain (PR 1) before the application.
+- **Settings:** `CONTACT_EMAIL` has to be set in `.env.prod`.
+- **Pricing moves to shared code:** `PLAN_CATALOG` holds the prices and headline limits, and the server's limits (the next PR) must match it.
+- **The pages are drafts** until a lawyer has read them.
+

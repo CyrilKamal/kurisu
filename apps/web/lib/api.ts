@@ -1,6 +1,11 @@
 import "server-only";
 
-import { meResponseSchema, SESSION_COOKIE } from "@kurisu/shared";
+import {
+  meResponseSchema,
+  SESSION_COOKIE,
+  siteResponseSchema,
+  type SiteResponse,
+} from "@kurisu/shared";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -47,3 +52,21 @@ export async function apiGetPublic<T>(path: string, schema: z.ZodType<T>): Promi
  * page share one answer.
  */
 export const getMe = cache(() => apiGet("/me", meResponseSchema));
+
+/**
+ * Who runs kurisu and how to reach them, for the public pages. Asked once per request; if the
+ * server can't answer, the pages still render, without those details.
+ */
+export const getSite = cache(async (): Promise<SiteResponse> => {
+  try {
+    return (
+      (await apiGetPublic("/site", siteResponseSchema)) ?? {
+        operator: null,
+        contactEmail: null,
+        signup: "invite",
+      }
+    );
+  } catch {
+    return { operator: null, contactEmail: null, signup: "invite" };
+  }
+});

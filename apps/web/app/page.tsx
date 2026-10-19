@@ -1,38 +1,219 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Banner } from "@/components/Banner";
-import { getMe } from "@/lib/api";
+import { Icon, type IconName } from "@/components/Icon";
+import { DemoLog } from "@/components/landing/DemoLog";
+import { Pricing } from "@/components/landing/Pricing";
+import { WaitlistForm } from "@/components/landing/WaitlistForm";
+import { SiteFooter } from "@/components/SiteFooter";
+import { getMe, getSite } from "@/lib/api";
 import { loginErrorMessage } from "@/lib/format";
 
-export default async function LoginPage(props: PageProps<"/">) {
+export const metadata: Metadata = {
+  title: "kurisu · your anime list, kept in sync by conversation",
+  description:
+    "Tell kurisu what you watched. It updates your MyAnimeList, briefs you on new episodes each morning, and picks what to watch next from your backlog.",
+};
+
+const FEATURES: { icon: IconName; title: string; text: string }[] = [
+  {
+    icon: "chat",
+    title: "Updates by chat",
+    text: "Write it the way you'd text a friend: “finished frieren, 2 more eps of jjk”. kurisu finds the shows on your list and writes the changes to MyAnimeList.",
+  },
+  {
+    icon: "undo",
+    title: "Every change can be undone",
+    text: "Each write shows exactly what changed, with Undo. When it isn't sure which show you mean, it asks, and adding a show always waits for your OK.",
+  },
+  {
+    icon: "bell",
+    title: "A brief every morning",
+    text: "New episodes of what you're watching and where to stream them on your services, plus a note when a sequel or a show you planned starts airing.",
+  },
+  {
+    icon: "star",
+    title: "Picks from your own backlog",
+    text: "Ask what to watch tonight. It picks from your Plan to Watch and the shows you've started, fits your time and mood, and says why in one line.",
+  },
+  {
+    icon: "list",
+    title: "Your list, in your hands",
+    text: "Edit any show, import a list from your notes, and keep your stats, a goal for the year and a journal of what you watched.",
+  },
+  {
+    icon: "user",
+    title: "Friends",
+    text: "See how your taste matches your friends' and what they're watching. You choose what they see.",
+  },
+];
+
+const QUESTIONS: { q: string; a: React.ReactNode }[] = [
+  {
+    q: "Do I need a MyAnimeList account?",
+    a: "Yes. kurisu keeps your MyAnimeList list in sync. You log in with MyAnimeList's own login, so kurisu never sees your password.",
+  },
+  {
+    q: "Who can join?",
+    a: "Anyone 18 or older with a MyAnimeList account, by invite for now. Join the waitlist and an invite comes when there's a place.",
+  },
+  {
+    q: "Will it change my list without asking?",
+    a: "It writes the updates you tell it about, and shows each one with Undo. Adding a show, or anything it isn't sure about, waits for your OK.",
+  },
+  {
+    q: "Which AI does it use?",
+    a: "Google's Gemini, on the paid tier, which Google doesn't use to train its models. Every reply shows which model answered and how long it took.",
+  },
+  {
+    q: "What does kurisu keep about me?",
+    a: (
+      <>
+        A copy of your MyAnimeList list, your chats and your diary, so it can answer quickly. You
+        can delete all of it at any time; your MyAnimeList list stays as it is.{" "}
+        <Link className="k-link" href="/privacy">
+          Privacy
+        </Link>
+      </>
+    ),
+  },
+];
+
+/**
+ * kurisu's front door for anyone not logged in: what it does, a real-looking Chat exchange, the
+ * plans, and the waitlist while sign-up is invite-only. Invited people and the owner log in here.
+ */
+export default async function LandingPage(props: PageProps<"/">) {
   const me = await getMe();
   if (me) redirect("/today");
 
-  const { login_error: code } = await props.searchParams;
+  const [{ login_error: code }, site] = await Promise.all([props.searchParams, getSite()]);
   const error = loginErrorMessage(typeof code === "string" ? code : undefined);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-4">
-      {/* The mark stays as it's drawn today, until final art replaces it. */}
-      <Image src="/icons/192.png" alt="" width={48} height={48} priority />
-      <div>
-        {/* The design system's `display` style: the wordmark, and nowhere else. */}
-        <h1 className="font-serif text-[40px]/12 font-bold tracking-[-0.02em] text-ink">kurisu</h1>
-        <p className="text-ink-muted">Your anime list, kept in sync by conversation.</p>
-      </div>
-
-      {error && <Banner level="error">{error}</Banner>}
-
-      <div className="flex flex-col gap-2">
+    <div className="min-h-dvh bg-bg">
+      <header className="mx-auto flex max-w-(--content-max) items-center justify-between gap-4 px-4 py-4">
+        <span className="flex items-center gap-2">
+          {/* The mark stays as it's drawn today, until final art replaces it. */}
+          <Image src="/icons/192.png" alt="" width={24} height={24} priority />
+          <span className="font-serif text-base/6 font-bold text-ink">kurisu</span>
+        </span>
         {/* A full navigation, not a client-side Link: the server redirects to MAL's consent page. */}
-        <a href="/api/auth/mal/login" className="k-btn k-btn--primary k-btn--lg k-btn--block">
-          Log in with MyAnimeList
+        <a href="/api/auth/mal/login" className="k-btn k-btn--sm">
+          Log in
         </a>
-        <p className="k-field__hint text-center">
-          You&apos;ll approve access on myanimelist.net, then come right back.
-        </p>
-      </div>
-    </main>
+      </header>
+
+      <main className="mx-auto flex max-w-(--content-max) flex-col gap-12 px-4 pb-12">
+        {error && <Banner level="error">{error}</Banner>}
+
+        <section className="flex flex-col gap-6 pt-8">
+          <div>
+            {/* The design system's `display` style: the wordmark, and nowhere else. */}
+            <h1 className="font-serif text-[40px]/12 font-bold tracking-[-0.02em] text-ink">
+              kurisu
+            </h1>
+            <p className="font-serif text-2xl/8 text-ink">
+              Your anime list, kept in sync by conversation.
+            </p>
+          </div>
+          <p className="text-ink-muted">
+            Tell kurisu what you watched, in your own words. It updates your MyAnimeList, sends you
+            a brief of new episodes each morning, and picks what to watch next from your backlog.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <a href="#waitlist" className="k-btn k-btn--primary k-btn--lg">
+              Join the waitlist
+            </a>
+            <a href="/api/auth/mal/login" className="k-btn k-btn--lg">
+              Have an invite? Log in
+            </a>
+          </div>
+          <p className="k-field__hint">
+            {site.signup === "invite"
+              ? "Invite-only for now. For anyone 18 or older with a MyAnimeList account."
+              : "For anyone 18 or older with a MyAnimeList account."}
+          </p>
+        </section>
+
+        <DemoLog
+          message="finished frieren and watched 2 more eps of jjk"
+          reply="Done. Frieren is completed, and Jujutsu Kaisen is on ep 14 of 24."
+          writes={[
+            {
+              title: "Sousou no Frieren",
+              kind: "update",
+              before: { status: "watching", episodesWatched: 26 },
+              after: { status: "completed", episodesWatched: 28 },
+              numEpisodes: 28,
+            },
+            {
+              title: "Jujutsu Kaisen",
+              kind: "update",
+              before: { episodesWatched: 12 },
+              after: { episodesWatched: 14 },
+              numEpisodes: 24,
+            },
+          ]}
+          run={["Model: Flash-Lite", "2.4s", "4 tools", "1,840 tok", "progress-sync@17"]}
+        />
+
+        <section aria-labelledby="features">
+          <h2 id="features" className="k-caps pb-2">
+            What it does
+          </h2>
+          <ul className="grid gap-6 sm:grid-cols-2">
+            {FEATURES.map((feature) => (
+              <li key={feature.title} className="flex gap-4">
+                <span className="pt-1 text-ink-muted">
+                  <Icon name={feature.icon} />
+                </span>
+                <div>
+                  <h3 className="font-serif text-base/6 font-semibold text-ink">{feature.title}</h3>
+                  <p className="text-ink-muted">{feature.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section aria-labelledby="pricing">
+          <h2 id="pricing" className="k-caps pb-2">
+            Plans
+          </h2>
+          <Pricing />
+        </section>
+
+        <section id="waitlist" aria-labelledby="waitlist-title" className="scroll-mt-4">
+          <h2 id="waitlist-title" className="k-caps pb-2">
+            Join the waitlist
+          </h2>
+          <p className="pb-4 text-ink-muted">
+            kurisu is a small beta for now. Leave your email, and an invite comes when there&apos;s
+            a place.
+          </p>
+          <WaitlistForm />
+        </section>
+
+        <section aria-labelledby="questions">
+          <h2 id="questions" className="k-caps pb-2">
+            Questions
+          </h2>
+          <dl className="flex flex-col gap-4">
+            {QUESTIONS.map(({ q, a }) => (
+              <div key={q}>
+                <dt className="font-serif text-base/6 font-semibold text-ink">{q}</dt>
+                <dd className="m-0 text-ink-muted">{a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      </main>
+
+      <SiteFooter contactEmail={site.contactEmail} />
+    </div>
   );
 }

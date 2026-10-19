@@ -88,6 +88,22 @@ export const invites = pgTable(
   (table) => [index("invites_created_by_idx").on(table.createdBy)],
 );
 
+/**
+ * People who asked to be invited, from the landing page while sign-up is invite-only. The owner
+ * turns an entry into an invite link (`invite_id`) and sends it. The email is kept only for that;
+ * `leave_token_hash` lets the person take themselves off with the link they were shown.
+ */
+export const waitlist = pgTable("waitlist", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Trimmed and lowercased, so one person is one entry.
+  email: text("email").notNull().unique(),
+  malUsername: text("mal_username"),
+  leaveTokenHash: text("leave_token_hash").notNull().unique(),
+  createdAt: timestamptz("created_at").notNull().defaultNow(),
+  invitedAt: timestamptz("invited_at"),
+  inviteId: uuid("invite_id").references(() => invites.id, { onDelete: "set null" }),
+});
+
 /** MAL OAuth tokens, encrypted at rest (see crypto/tokenCipher.ts). Never log these columns. */
 export const malTokens = pgTable("mal_tokens", {
   userId: uuid("user_id")

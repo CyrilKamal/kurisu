@@ -96,6 +96,113 @@ export const createdInviteSchema = z.object({
 /** GET /invites/code/:code, for the invite page: the link still works, and who sent it. */
 export const inviteCodeResponseSchema = z.object({ inviter: z.string() });
 
+/** GET /site: what the public pages say about who runs kurisu, and whether sign-up is open. */
+export const siteResponseSchema = z.object({
+  /** OWNER_DISPLAY_NAME (else the owner's MAL username), or null when unset. */
+  operator: z.string().nullable(),
+  contactEmail: z.email().nullable(),
+  signup: z.enum(["invite", "open"]),
+});
+export type SiteResponse = z.infer<typeof siteResponseSchema>;
+
+/** MAL usernames: 2 to 16 letters, digits, underscores or hyphens. */
+export const MAL_USERNAME_PATTERN = /^[A-Za-z0-9_-]{2,16}$/;
+
+/** POST /waitlist, from the landing page. */
+export const waitlistJoinRequestSchema = z
+  .object({
+    email: z.string().trim().max(254).pipe(z.email()),
+    // An empty field is no username.
+    malUsername: z
+      .string()
+      .trim()
+      .transform((name) => (name === "" ? null : name))
+      .pipe(z.string().regex(MAL_USERNAME_PATTERN).nullable())
+      .optional(),
+    /** A field people never see: a bot that fills it in is quietly not added. */
+    website: z.string().max(200).optional(),
+    /** How long the form was open before it was sent; bots send at once. */
+    elapsedMs: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+export type WaitlistJoinRequest = z.infer<typeof waitlistJoinRequestSchema>;
+
+export const waitlistJoinResponseSchema = z.object({
+  status: z.enum(["joined", "already"]),
+  /** For the "leave the waitlist" link, shown once; null when already on the list. */
+  leaveToken: z.string().nullable(),
+});
+
+/** POST /waitlist/leave */
+export const waitlistLeaveRequestSchema = z.object({ token: z.string().min(16).max(128) }).strict();
+
+/** GET /waitlist, for the owner. */
+export const waitlistEntrySchema = z.object({
+  id: z.uuid(),
+  email: z.email(),
+  malUsername: z.string().nullable(),
+  createdAt: z.iso.datetime(),
+  invitedAt: z.iso.datetime().nullable(),
+});
+export type WaitlistEntry = z.infer<typeof waitlistEntrySchema>;
+export const waitlistResponseSchema = z.object({ entries: z.array(waitlistEntrySchema) });
+
+/** POST /waitlist/:id/invite: a new invite link for that person, shown only this once. */
+export const waitlistInviteResponseSchema = z.object({
+  url: z.url(),
+  expiresAt: z.iso.datetime(),
+});
+
+/**
+ * The plans as the public pages show them (Milestone 8; prices in USD, limits a month). The
+ * server's limits must match these numbers.
+ */
+export const PLAN_CATALOG = [
+  {
+    id: "free",
+    name: "Free",
+    monthlyUsd: 0,
+    yearlyUsd: 0,
+    tagline: "Everything you need to keep your list.",
+    features: [
+      "30 chat updates a month",
+      "12 recommendations a month",
+      "1 import from your notes a month",
+      "The morning brief, premiere alerts and Sunday recap",
+      "Editing, stats, your journal and friends",
+    ],
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    monthlyUsd: 2.99,
+    yearlyUsd: 24.99,
+    tagline: "For logging everything by chat.",
+    features: [
+      "1,000 chat updates a month",
+      "300 recommendations a month",
+      "Imports whenever you like",
+      "A supporter badge",
+      "Everything in Free",
+    ],
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    monthlyUsd: 5.99,
+    yearlyUsd: 49.99,
+    tagline: "For superfans, and the AI lab first.",
+    features: [
+      "3,000 chat updates and 1,000 recommendations a month",
+      "A calendar feed of upcoming episodes",
+      "Your full year in review",
+      "Early access to AI lab features",
+      "Everything in Premium",
+    ],
+  },
+] as const;
+export type PlanId = (typeof PLAN_CATALOG)[number]["id"];
+
 /** What a friend did, as the Friends feed shows it. Never a drop's reason or an unshared note. */
 export const ACTIVITY_KINDS = [
   "finished",

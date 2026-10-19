@@ -211,6 +211,13 @@
       "when": 1791636623256,
       "tag": "0029_lab_embeddings",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1792410390732,
+      "tag": "0030_waitlist",
+      "breakpoints": true
     }
   ]
 }
