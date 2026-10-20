@@ -107,6 +107,15 @@ export interface FanRecommendation {
 /** An anime season, as AniList names them. */
 export type AniListSeason = "WINTER" | "SPRING" | "SUMMER" | "FALL";
 
+/** One episode on AniList's airing schedule, of a show MAL knows (never an adult one). */
+export interface ScheduledEpisode {
+  show: CatalogShow & { malId: number };
+  /** AniList's own number, which can differ from MAL's for a show AniList splits into parts. */
+  episode: number;
+  airingAt: Date;
+  popularity: number | null;
+}
+
 /** A season's lineup to fetch: its series, most popular first; `airing` keeps those still airing. */
 export interface SeasonList {
   season: AniListSeason;
@@ -143,6 +152,16 @@ export interface AniListClient {
    * per season asked for, in one request. Adult titles are left out.
    */
   seasonLineup(lists: SeasonList[]): Promise<number[][]>;
+  /**
+   * Every episode AniList has scheduled after `from`, up to and including `to`, soonest first,
+   * of shows MAL knows. Adult shows are left out.
+   */
+  scheduleBetween(from: Date, to: Date): Promise<ScheduledEpisode[]>;
+  /**
+   * A season's most popular shows of every kind people chart (TV, TV short, ONA, movies and
+   * OVAs), as AniList ids, most popular first. Adult titles are left out.
+   */
+  seasonChart(season: AniListSeason, year: number): Promise<number[]>;
   /**
    * The anime that follow each of these MAL entries (AniList's SEQUEL relations), by MAL id.
    * Ids AniList doesn't know are missing; a known show with no sequel maps to [].
@@ -210,6 +229,20 @@ const AIRED_QUERY = `query ($ids: [Int], $after: Int, $before: Int, $page: Int) 
     }
   }
 }`;
+
+/** Everything on the schedule in a window, with each show's own fields. */
+function scheduleQuery(): string {
+  return `query ($after: Int, $before: Int, $page: Int) {
+  Page(page: $page, perPage: 50) {
+    pageInfo { hasNextPage }
+    airingSchedules(airingAt_greater: $after, airingAt_lesser: $before, sort: TIME) {
+      episode
+      airingAt
+      media { ${SEARCH_FIELDS} popularity }
+    }
+  }
+}`;
+}
 
 /** Results per title in a search. */
 const SEARCH_PER_QUERY = 8;
@@ -320,6 +353,19 @@ function topQuery(lists: TopList[]): string {
 
 /** Shows per season lineup. */
 export const SEASON_LIST_SIZE = 50;
+
+/** Pages of 50 in a season chart: its 100 most popular shows. */
+const SEASON_CHART_PAGES = 2;
+
+/** A season's chart as aliased pages (c1, c2), so it's a single request. */
+function seasonChartQuery(season: AniListSeason, year: number): string {
+  const filters = `type: ANIME, season: ${season}, seasonYear: ${String(year)}, isAdult: false, format_in: [TV, TV_SHORT, ONA, MOVIE, OVA], sort: [POPULARITY_DESC]`;
+  const pages = Array.from({ length: SEASON_CHART_PAGES }, (_, i) => {
+    const page = String(i + 1);
+    return `c${page}: Page(page: ${page}, perPage: 50) { media(${filters}) { id } }`;
+  });
+  return `query { ${pages.join(" ")} }`;
+}
 
 /** One aliased page per season, so a lineup is a single request. */
 function seasonQuery(lists: SeasonList[]): string {
@@ -482,6 +528,19 @@ const airedPageSchema = z.object({
         mediaId: z.number().int().positive(),
         episode: z.number().int().positive(),
         airingAt: z.number().int(),
+      }),
+    ),
+  }),
+});
+
+const schedulePageSchema = z.object({
+  Page: z.object({
+    pageInfo: pageInfoSchema,
+    airingSchedules: z.array(
+      z.object({
+        episode: z.number().int().positive(),
+        airingAt: z.number().int(),
+        media: searchMediaSchema.extend({ popularity: z.number().int().nullish() }).nullish(),
       }),
     ),
   }),
@@ -651,6 +710,36 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
       if (lists.length === 0) return [];
       const pages = await query(seasonQuery(lists), {}, topSchema);
       return lists.map((_, i) => (pages[`s${String(i)}`]?.media ?? []).map((m) => m.id));
+    },
+
+    async scheduleBetween(from, to) {
+      // AniList's bounds are exclusive; `before` is one second past `to` to include it.
+      const variables = { after: unixSeconds(from), before: unixSeconds(to) + 1 };
+      const episodes: ScheduledEpisode[] = [];
+      for (let page = 1; page <= MAX_PAGES; page++) {
+        const data = await query(scheduleQuery(), { ...variables, page }, schedulePageSchema);
+        for (const item of data.Page.airingSchedules) {
+          const m = item.media;
+          if (!m?.idMal || m.isAdult === true) continue;
+          episodes.push({
+            show: { ...toCatalogShow(m), malId: m.idMal },
+            episode: item.episode,
+            airingAt: new Date(item.airingAt * 1000),
+            popularity: m.popularity ?? null,
+          });
+        }
+        if (data.Page.pageInfo.hasNextPage !== true) break;
+      }
+      return episodes;
+    },
+
+    async seasonChart(season, year) {
+      const pages = await query(seasonChartQuery(season, year), {}, topSchema);
+      const ids = Array.from(
+        { length: SEASON_CHART_PAGES },
+        (_, i) => pages[`c${String(i + 1)}`]?.media ?? [],
+      ).flatMap((media) => media.map((m) => m.id));
+      return [...new Set(ids)];
     },
 
     async sequelsOf(malIds) {

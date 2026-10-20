@@ -55,6 +55,8 @@ import { createLimits } from "./billing/limits.js";
 import { loadPlansFile } from "./billing/plans.js";
 import { registerPlanRoutes } from "./billing/routes.js";
 import { registerCalendarRoutes } from "./calendar/routes.js";
+import { refreshSchedule, refreshSeasonCharts } from "./browse/refresh.js";
+import { registerBrowseRoutes } from "./browse/routes.js";
 import { registerFriendRoutes } from "./friends/routes.js";
 import { captureReview } from "./review/capture.js";
 import { registerStatsRoutes } from "./stats/routes.js";
@@ -63,6 +65,11 @@ import { registerShowRoutes } from "./shows/routes.js";
 import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
 import { createMalListRemover, createMalListWriter } from "./writes/commit.js";
+
+/** Browse's data: first checked a little after start, then every 15 minutes, retried at most every 10. */
+const BROWSE_FIRST_MS = 30_000;
+const BROWSE_TICK_MS = 15 * 60 * 1000;
+const BROWSE_RETRY_MS = 10 * 60 * 1000;
 
 export interface BuildAppOptions {
   /** Where log lines go; defaults to stdout. Tests pass a stream to inspect what gets logged. */
@@ -324,6 +331,39 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   app.addHook("onClose", async () => {
     await Promise.allSettled(calendarRefreshes.values());
   });
+  // Browse's shared schedule and season charts, rebuilt in the background when stale: one run
+  // at a time, tried at most every 10 minutes, so a failing AniList isn't asked again and again.
+  let browseRefresh: Promise<void> | null = null;
+  let browseTriedAt = 0;
+  const refreshBrowse = () => {
+    if (browseRefresh || Date.now() - browseTriedAt < BROWSE_RETRY_MS) return;
+    browseTriedAt = Date.now();
+    browseRefresh = (async () => {
+      await refreshSchedule({ db, anilist: syncAniList });
+      await refreshSeasonCharts({ db, anilist: syncAniList });
+    })()
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh Browse's data");
+      })
+      .finally(() => {
+        browseRefresh = null;
+      });
+  };
+  app.addHook("onClose", async () => {
+    await browseRefresh;
+  });
+  // A server running its background jobs keeps Browse fresh without waiting for a visit.
+  if (config.brief.scheduler) {
+    const timers = [
+      setTimeout(refreshBrowse, BROWSE_FIRST_MS),
+      setInterval(refreshBrowse, BROWSE_TICK_MS),
+    ];
+    for (const timer of timers) timer.unref();
+    app.addHook("onClose", () => {
+      for (const timer of timers) clearTimeout(timer);
+    });
+  }
+
   const refreshCalendarAiring = (userId: string) => {
     if (calendarRefreshes.has(userId)) return;
     const task: Promise<void> = (async () => {
@@ -395,6 +435,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   registerInviteRoutes(app, { config, db });
   registerWaitlistRoutes(app, { config, db });
   registerFriendRoutes(app, { config, db, cipher, limits });
+  registerBrowseRoutes(app, { db, refresh: refreshBrowse });
   registerCalendarRoutes(app, {
     config,
     db,

@@ -1366,6 +1366,76 @@ export const searchResponseSchema = z.object({
 });
 export type SearchResponse = z.infer<typeof searchResponseSchema>;
 
+/** Where a show stands on the user's list, or null when it isn't on it. */
+const browseEntrySchema = z
+  .object({ status: listStatusSchema, episodesWatched: z.number().int().nonnegative() })
+  .nullable();
+
+/** One episode on Browse's Schedule. */
+export const scheduleEpisodeSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  /** MAL's number for a show on the user's list; AniList's otherwise. */
+  episode: z.number().int().positive(),
+  airingAt: z.iso.datetime(),
+  popularity: z.number().int().nullable(),
+  entry: browseEntrySchema,
+  /** Where it streams on the user's services, for shows on their list ([] otherwise). */
+  watchOn: z.array(watchOnSchema),
+});
+export type ScheduleEpisode = z.infer<typeof scheduleEpisodeSchema>;
+
+/**
+ * GET /browse/schedule: every episode airing from a day back to 7 days ahead, soonest first,
+ * of shows MAL knows (never adult), and when AniList's schedule was last fetched.
+ */
+export const scheduleResponseSchema = z.object({
+  /** The user's time zone (their brief settings), which the days follow. */
+  timeZone: z.string(),
+  updatedAt: z.iso.datetime().nullable(),
+  episodes: z.array(scheduleEpisodeSchema),
+});
+export type ScheduleResponse = z.infer<typeof scheduleResponseSchema>;
+
+/** One show on a season's chart. */
+export const chartShowSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  numEpisodes: z.number().int().positive().nullable(),
+  episodeMinutes: z.number().int().positive().nullable(),
+  genres: z.array(z.string()),
+  /** AniList's average score, out of 10; null before anyone has scored it. */
+  score: z.number().nullable(),
+  popularity: z.number().int().nullable(),
+  /** "2027-01-09", or partial ("2027-01") when AniList isn't sure. */
+  startDate: z.string().nullable(),
+  airingStatus: z.string().nullable(),
+  entry: browseEntrySchema,
+});
+export type ChartShow = z.infer<typeof chartShowSchema>;
+
+/** A charted season: "2027-WINTER", and "Winter 2027" to show. */
+export const chartSeasonSchema = z.object({ season: z.string(), label: z.string() });
+
+/**
+ * GET /browse/seasons?season=2027-WINTER: a season's 100 most popular shows (TV, TV short, ONA,
+ * movies, OVAs), most popular first. Last, this and next season are charted; `seasons` lists
+ * them, and another season is a 404.
+ */
+export const seasonChartResponseSchema = z.object({
+  season: z.string(),
+  label: z.string(),
+  seasons: z.array(chartSeasonSchema),
+  /** When the chart was last fetched; null while it's on its way. */
+  updatedAt: z.iso.datetime().nullable(),
+  shows: z.array(chartShowSchema),
+});
+export type SeasonChartResponse = z.infer<typeof seasonChartResponseSchema>;
+
 export const SEARCH_ERRORS = ["rate_limited", "search_unavailable"] as const;
 export type SearchError = (typeof SEARCH_ERRORS)[number];
 export const searchErrorResponseSchema = z.object({ error: z.enum(SEARCH_ERRORS) });

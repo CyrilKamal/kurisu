@@ -12,6 +12,7 @@ import { LIST_CHANGED_EVENT } from "@/lib/listChanged";
 const TABS = [
   { href: "/today", label: "Today", icon: "today" },
   { href: "/list", label: "List", icon: "list" },
+  { href: "/browse", label: "Browse", icon: "search" },
   { href: "/chat", label: "Chat", icon: "chat" },
   { href: "/you", label: "You", icon: "user" },
 ] as const;

@@ -32,9 +32,10 @@ Four flows; progress sync is the core and shipped first.
 
 **4. Your list.** The user can also edit any entry on the List screen, or paste an unstructured list from their notes ("frieren 10/10, finished jjk s2, dropped csm ep 5") and import it. The agent reads each line, code matches it to a show and sorts it into one review screen (add, update, already up to date, notes and MAL disagree, which one?, couldn't find) with adds and clear updates pre-checked; the user answers the "?" rows and taps Import once, and writes go out in the background with one undo for the whole import. Around the list: where to watch on the user's services, alerts when a sequel or new season starts, stats with a Sunday recap and a yearly goal, a diary of reactions, and what's good this season.
 
-The app has four screens, a bottom bar on phones and a rail on desktop:
+The app has five screens, a bottom bar on phones and a rail on desktop:
 - **Today**, the home screen: episodes out that you haven't watched, each a tap from watched, what airs this week, shows in progress, the latest brief and what friends watched.
 - **List**, the mirrored MAL list.
+- **Browse**: what airs this week (every show, or only the user's), each season's most popular shows from last season to next, and AniList's search, each show a tap from the user's list.
 - **Chat**, for talking to the agent.
 - **You**: the Journal (every update, by the agent, the user, an import or on MAL's site, with Undo and the user's notes, so every write is visible and reversible), stats, taste, friends and settings.
 
