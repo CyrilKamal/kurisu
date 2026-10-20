@@ -77,6 +77,9 @@ describe("toMirrorRows", () => {
       genres: ["Slice of Life", "Iyashikei"],
       episodeMinutes: 24,
       malMean: 8.21,
+      studios: [],
+      broadcastDay: null,
+      broadcastTime: null,
       updatedAt: syncedAt,
     });
     expect(entry).toMatchObject({

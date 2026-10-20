@@ -148,6 +148,23 @@ export interface ShowPageExtras {
   recommendations: LinkedShow[];
   /** Official per-episode links, in order: "Episode 3 - The Promise" on Crunchyroll. */
   episodes: { title: string; url: string; site: string }[];
+  /** The most relevant staff, with their roles ("Director", "Music"). Missing before version 2. */
+  staff?: { name: string; role: string; image: string | null }[];
+  /** How many AniList users gave each score (10, 20 ... 100). Missing before version 2. */
+  scoreDistribution?: { score: number; amount: number }[];
+  /** Which fetch shape stored it: rows older than SHOW_EXTRAS_VERSION are refetched. */
+  version?: number;
+}
+
+/** The shape of extras fetched now; 2 added staff and the score spread. */
+export const SHOW_EXTRAS_VERSION = 2;
+
+/** A voice actor of one of a show's main characters, in Japanese. */
+export interface CastMember {
+  /** AniList's staff id, so the same person counts once across shows. */
+  id: number;
+  name: string;
+  image: string | null;
 }
 
 /** A show's page from AniList: its description (AniList's markup) and the extras. */
@@ -218,6 +235,11 @@ export interface AniListClient {
    * Ids AniList doesn't know are missing; a known show with no sequel maps to [].
    */
   sequelsOf(malIds: number[]): Promise<Map<number, SequelShow[]>>;
+  /**
+   * The Japanese voice actors of each show's main characters, by MAL id, each once (a split
+   * show's parts together). Ids AniList doesn't know are missing.
+   */
+  castOf(malIds: number[]): Promise<Map<number, CastMember[]>>;
   /**
    * AniList's description of each MAL entry, as AniList writes it (with <br> and other markup),
    * or null when it has none. For a show AniList splits into parts, the first part's. Ids AniList
@@ -486,6 +508,7 @@ const DESCRIPTIONS_QUERY = `query ($ids: [Int], $page: Int) {
 /** Characters and fans' recommendations kept per show page. */
 const PAGE_CHARACTERS = 8;
 const PAGE_RECOMMENDATIONS = 6;
+const PAGE_STAFF = 6;
 
 const SHOW_PAGE_QUERY = `query ($ids: [Int], $page: Int) {
   Page(page: $page, perPage: 50) {
@@ -513,9 +536,54 @@ const SHOW_PAGE_QUERY = `query ($ids: [Int], $page: Int) {
         nodes { mediaRecommendation { ${SEARCH_FIELDS} } }
       }
       streamingEpisodes { title url site }
+      staff(sort: [RELEVANCE], perPage: ${String(PAGE_STAFF)}) {
+        edges { role node { name { full } image { medium } } }
+      }
+      stats { scoreDistribution { score amount } }
     }
   }
 }`;
+
+/** Main characters' Japanese voices, for Stats: small pages, since each show nests a list. */
+const CAST_QUERY = `query ($ids: [Int], $page: Int) {
+  Page(page: $page, perPage: 25) {
+    pageInfo { hasNextPage }
+    media(idMal_in: $ids, type: ANIME) {
+      idMal
+      characters(role: MAIN, sort: [ROLE, RELEVANCE], perPage: 6) {
+        edges { voiceActors(language: JAPANESE, sort: [RELEVANCE]) { id name { full } image { medium } } }
+      }
+    }
+  }
+}`;
+
+const castPageSchema = z.object({
+  Page: z.object({
+    pageInfo: z.object({ hasNextPage: z.boolean().nullish() }),
+    media: z.array(
+      z.object({
+        idMal: z.number().int().positive().nullish(),
+        characters: z
+          .object({
+            edges: z.array(
+              z.object({
+                voiceActors: z
+                  .array(
+                    z.object({
+                      id: z.number().int().positive(),
+                      name: z.object({ full: z.string().nullish() }).nullish(),
+                      image: z.object({ medium: z.string().nullish() }).nullish(),
+                    }),
+                  )
+                  .nullish(),
+              }),
+            ),
+          })
+          .nullish(),
+      }),
+    ),
+  }),
+});
 
 const seasonEnum = z.enum(["WINTER", "SPRING", "SUMMER", "FALL"]);
 const personSchema = z.object({
@@ -597,6 +665,18 @@ const showPagesSchema = z.object({
             }),
           )
           .nullish(),
+        staff: z
+          .object({
+            edges: z.array(z.object({ role: z.string().nullish(), node: personSchema.nullish() })),
+          })
+          .nullish(),
+        stats: z
+          .object({
+            scoreDistribution: z
+              .array(z.object({ score: z.number().int(), amount: z.number().int() }))
+              .nullish(),
+          })
+          .nullish(),
       }),
     ),
   }),
@@ -672,6 +752,14 @@ function toShowPage(m: RawShowPage): ShowPage {
       episodes: (m.streamingEpisodes ?? []).flatMap((e) =>
         e.title && e.url && e.site ? [{ title: e.title, url: e.url, site: e.site }] : [],
       ),
+      staff: (m.staff?.edges ?? []).flatMap((edge) => {
+        const member = person(edge.node);
+        return member && edge.role ? [{ ...member, role: edge.role }] : [];
+      }),
+      scoreDistribution: (m.stats?.scoreDistribution ?? [])
+        .filter((d) => d.score >= 10 && d.score <= 100 && d.amount >= 0)
+        .sort((a, b) => a.score - b.score),
+      version: SHOW_EXTRAS_VERSION,
     },
   };
 }
@@ -1018,6 +1106,26 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
         (_, i) => pages[`t${String(i + 1)}`]?.media ?? [],
       ).flatMap((media) => media.map((m) => m.id));
       return [...new Set(ids)];
+    },
+
+    async castOf(malIds) {
+      const media = await paged(malIds, CAST_QUERY, {}, castPageSchema, (data) => ({
+        items: data.Page.media,
+        hasNextPage: data.Page.pageInfo.hasNextPage === true,
+      }));
+      const out = new Map<number, CastMember[]>();
+      for (const m of media) {
+        if (!m.idMal) continue;
+        const cast = out.get(m.idMal) ?? [];
+        for (const edge of m.characters?.edges ?? []) {
+          const actor = edge.voiceActors?.[0];
+          const name = actor?.name?.full;
+          if (!actor || !name || cast.some((c) => c.id === actor.id)) continue;
+          cast.push({ id: actor.id, name, image: actor.image?.medium ?? null });
+        }
+        out.set(m.idMal, cast);
+      }
+      return out;
     },
 
     async sequelsOf(malIds) {

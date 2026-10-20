@@ -49,8 +49,28 @@ export function animeRowFrom(node: MalAnimeNode, syncedAt: Date): AnimeRow {
       : null,
     // MAL leaves the score out (or 0) until enough people rate a show.
     malMean: node.mean != null && node.mean > 0 ? node.mean : null,
+    studios: (node.studios ?? []).map((s) => s.name.trim()).filter((s) => s.length > 0),
+    broadcastDay: broadcastDay(node.broadcast?.day_of_the_week),
+    broadcastTime: broadcastTime(node.broadcast?.start_time),
     updatedAt: syncedAt,
   };
+}
+
+const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+/** MAL's broadcast weekday, lower case, or null for "other" and anything unexpected. */
+function broadcastDay(day: string | null | undefined): string | null {
+  const lower = day?.trim().toLowerCase() ?? "";
+  return WEEKDAYS.includes(lower) ? lower : null;
+}
+
+/** MAL's broadcast time as "HH:MM" (JST), or null. */
+function broadcastTime(time: string | null | undefined): string | null {
+  const match = /^(\d{1,2}):(\d{2})/.exec(time?.trim() ?? "");
+  if (!match) return null;
+  const [hours, minutes] = [Number(match[1]), Number(match[2])];
+  if (hours > 29 || minutes > 59) return null;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 /** MAL sends "" for missing alternative titles. */

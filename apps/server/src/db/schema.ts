@@ -18,7 +18,7 @@ import {
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
-import type { SequelShow, ShowPageExtras, StreamingLink } from "../anilist/client.js";
+import type { CastMember, SequelShow, ShowPageExtras, StreamingLink } from "../anilist/client.js";
 import type { BriefAlert, BriefItem } from "../brief/build.js";
 import type { BriefRecap } from "../brief/recap.js";
 import type { ListChange, ListState } from "../writes/normalize.js";
@@ -273,6 +273,15 @@ export const anime = pgTable("anime", {
   episodeMinutes: integer("episode_minutes"),
   // MAL's community score.
   malMean: real("mal_mean"),
+  // MAL's animation studios, for Stats.
+  studios: text("studios")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  // When MAL says a new episode airs in Japan: a weekday ("saturday") and a JST time ("23:00",
+  // or null when MAL doesn't say). Null for shows not on anyone's list (MAL's own details).
+  broadcastDay: text("broadcast_day"),
+  broadcastTime: text("broadcast_time"),
   // AniList's description as plain text, fetched the first time someone opens the show's page.
   // Null until then; "" when AniList has none. Syncs never touch it.
   synopsis: text("synopsis"),
@@ -366,6 +375,22 @@ export const anilistSequels = pgTable("anilist_sequels", {
     .references(() => anime.malId, { onDelete: "cascade" }),
   sequels: jsonb("sequels")
     .$type<SequelShow[]>()
+    .notNull()
+    .default(sql`'[]'::jsonb`),
+  fetchedAt: timestamptz("fetched_at").notNull(),
+});
+
+/**
+ * The Japanese voice actors of each show's main characters (AniList), shared by all users, for
+ * Stats. Filled after a sync for the shows a user has watched, and refetched after 90 days. An
+ * empty list records that AniList had none (or doesn't know the show).
+ */
+export const showCast = pgTable("show_cast", {
+  malId: integer("mal_id")
+    .primaryKey()
+    .references(() => anime.malId, { onDelete: "cascade" }),
+  actors: jsonb("actors")
+    .$type<CastMember[]>()
     .notNull()
     .default(sql`'[]'::jsonb`),
   fetchedAt: timestamptz("fetched_at").notNull(),

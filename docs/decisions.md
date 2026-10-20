@@ -2678,3 +2678,28 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **The first visitor to an old season waits a few seconds**, and anyone after sees it at once.
 - **The daily Browse refresh is a minute longer.**
 - **Seasons and Top share their rows** (`ChartList`).
+
+## 2026-10-20 — Richer show pages and Stats: staff, score spread, broadcast, studios and voices (Milestone 8 interlude)
+**Decision:**
+- **Show pages:**
+  - The six most relevant staff and AniList's score spread, from the same show request (a version number on stored extras refetches older ones in the background).
+  - MAL's broadcast slot, shown in Japan's time and the viewer's own.
+- **Stats' "What you watch"** covers every show with an episode watched:
+  - **Studios and kinds of show** come from MAL. The sync now asks for studios and broadcast with the rest.
+  - **Decades** come from the start date.
+  - **The main characters' Japanese voices** come from AniList, cached per show in `show_cast` and filled after a sync, 25 shows a request, kept 90 days.
+
+**Alternatives:**
+- **Studios from AniList's show page,** which only exists for pages someone opened.
+- **Voices from the show page's characters:** same problem, and eight characters including supporting ones.
+- **Voices on the user's MAL list:** MAL's API has no cast.
+- **A broadcast time from AniList's schedule alone:** that's the next episode's time, not the regular slot.
+
+**Why:**
+- **MAL already sends** studios and broadcast in the list request kurisu makes anyway.
+- **Voices need AniList,** so they come from a small shared cache that only grows with what people watched, at about 15 requests for a 350-show list.
+
+**Consequences:**
+- **Voices appear after the first sync with this,** and Stats says how many shows are counted until then.
+- **Broadcast is only known for shows on someone's list.**
+- **The score spread is left out below 20 scores.**

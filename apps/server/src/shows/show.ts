@@ -140,6 +140,7 @@ export async function loadShow(
       genres: show.genres,
       malMean: show.malMean,
       synopsis: details.synopsis,
+      broadcast: show.broadcastDay ? { day: show.broadcastDay, time: show.broadcastTime } : null,
     },
     entry: entry
       ? {

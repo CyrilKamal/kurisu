@@ -7,6 +7,7 @@ import { cache } from "react";
 
 import { BackButton } from "@/components/BackButton";
 import { Diff } from "@/components/Diff";
+import { Histogram, modeOf } from "@/components/Histogram";
 import { Icon } from "@/components/Icon";
 import { Poster, progressOf } from "@/components/Poster";
 import { ProgressMeter } from "@/components/ProgressMeter";
@@ -19,6 +20,7 @@ import { sourceLabel } from "@/lib/describeChange";
 import { mediaTypeLabel, STATUS_LABELS } from "@/lib/format";
 import { rankingLabel, relationLabel, sourceLine } from "@/lib/showExtras";
 
+import { BroadcastLine } from "./BroadcastLine";
 import { ShowActions } from "./ShowActions";
 import { Tags } from "./Tags";
 
@@ -48,6 +50,25 @@ function kindLine(show: {
   const parts = [mediaTypeLabel(show.mediaType), episodes, show.startDate?.slice(0, 4) ?? null];
   const shown = parts.filter((part) => part !== null);
   return shown.length > 0 ? shown.join(" · ") : null;
+}
+
+/** AniList's score spread as percentages, 10 to 100, the most common in crimson. */
+function ScoreSpread({ spread }: { spread: { score: number; share: number }[] }) {
+  const columns = spread.map((column) => ({
+    label: String(column.score),
+    value: Math.round(column.share * 100),
+    name: `${String(column.score)} out of 100 (percent of scores)`,
+  }));
+  const mode = modeOf(columns.map((column) => column.value));
+  return (
+    <Histogram
+      columns={columns}
+      modeIndex={mode}
+      summary={`How AniList's users score it${
+        mode === null ? "" : `; most often ${columns[mode]?.label ?? ""} out of 100`
+      }`}
+    />
+  );
 }
 
 /** "Oct 9" in the server's render; the journal's lines are dated, not timed. */
@@ -109,6 +130,11 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
                 ep {airing.nextEpisode} in {untilLabel(new Date(airing.nextAiringAt), new Date())}
               </span>
             )}
+            {show.broadcast &&
+              (show.airingStatus === "currently_airing" ||
+                show.airingStatus === "not_yet_aired") && (
+                <BroadcastLine day={show.broadcast.day} time={show.broadcast.time} />
+              )}
             {show.malMean !== null && <span>MAL {show.malMean.toFixed(2)}</span>}
             {extras?.score != null && <span>AniList {extras.score.toFixed(1)}</span>}
           </p>
@@ -328,6 +354,36 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {extras && extras.staff.length > 0 && (
+        <section className="pt-6">
+          <h2 className="k-caps pb-2">Staff</h2>
+          <ul className="m-0 grid list-none gap-x-8 p-0 sm:grid-cols-2">
+            {extras.staff.map((member) => (
+              <li
+                key={`${member.name} ${member.role}`}
+                className="flex items-center gap-2 border-b border-line py-2"
+              >
+                <Poster url={member.pictureUrl} title={member.name} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-ink">{member.name}</span>
+                  <span className="k-field__hint">{member.role}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {extras?.scoreDistribution && (
+        <section className="pt-6">
+          <h2 className="k-caps pb-2">How AniList scores it</h2>
+          <ScoreSpread spread={extras.scoreDistribution} />
+          <p className="k-field__hint pt-2">
+            The percent of AniList&apos;s users who gave each score, out of 100.
+          </p>
         </section>
       )}
 

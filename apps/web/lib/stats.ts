@@ -49,3 +49,8 @@ export function goalProgress(completed: number, goal: number): GoalProgress {
 export function showCount(n: number): string {
   return `${String(n)} ${n === 1 ? "show" : "shows"}`;
 }
+
+/** "1990s" for 1990; "1960s" and so on. */
+export function decadeLabel(decade: number): string {
+  return `${String(decade)}s`;
+}
