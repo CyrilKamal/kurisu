@@ -9,7 +9,7 @@ A personal agent that runs your anime and manga life through conversation: you t
 **Goals**
 
 - Natural-language progress updates that write to MAL correctly, plus in-app editing and importing from your notes, all through the same logged, undoable write path.
-- A daily morning brief of new episodes for shows on your list, delivered by push notification.
+- A daily morning brief of new episodes for shows on your list, delivered by push notification, and with Premium an alert as each episode comes out.
 - Recommendations drawn from your own backlog first, then from shows new to you that fit your taste, not generic popularity.
 - Measurable reliability: a tool-call eval set with tracked accuracy.
 
@@ -26,7 +26,7 @@ Four flows; progress sync is the core and shipped first.
 
 **1. Progress sync.** The user types something like "finished Apothecary ep 7, dropping the isekai one." The agent resolves each title against the user's list, shows the proposed changes, and writes them to MAL. Clear matches write immediately with an undo; ambiguous ones ("the isekai one" matching three shows) ask first.
 
-**2. Morning brief.** Each day at a user-set time, a push notification lists new episodes for shows marked Watching, with the next episode number and where it streams. Tapping it opens the chat, so the user can reply "watched it" in one step.
+**2. Morning brief.** Each day at a user-set time, a push notification lists new episodes for shows marked Watching, with the next episode number and where it streams. Tapping it opens the chat, so the user can reply "watched it" in one step. With Premium or Pro, a push can also come as each episode of a Watching show comes out, once AniList confirms it aired; tapping it opens the show, where "+1 ep" is.
 
 **3. What to watch.** The user asks for something with constraints ("40 minutes, something chill"). The agent picks from Plan to Watch and in-progress shows, and from shows new to the user that fans of their favorites like or that top the genres they rate highest (found on AniList). It weighs runtime, airing status and the user's recent ratings and drops, puts their own list first when it fits about as well, and explains each pick in one line. A new show can be added to Plan to Watch from its card, with the user's confirmation.
 
@@ -120,7 +120,7 @@ The biggest risk is data sourcing, not the agent: MAL has no episode-level sched
    - **Approvals:** MAL's written approval (in hand), and AniList's license past $150 a month in revenue.
    - **Plans:**
      - Free: 30 chat updates, 12 recommendations and one import a month, never locked out of the list.
-     - Premium: $2.99 a month or $24.99 a year.
+     - Premium: $2.99 a month or $24.99 a year, adding an alert as each episode airs.
      - Pro: $5.99 a month or $49.99 a year, adding a calendar feed, a year in review and AI lab early access.
    - **Trial:** new accounts get 14 days of Premium.
    - **Also:** published limits, terms, privacy and refund policies, and a server that stays up.

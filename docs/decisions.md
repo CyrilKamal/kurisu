@@ -2639,3 +2639,24 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **A new reply shape is covered automatically** as long as it carries `animeId` and `title`.
 - **Chat cards follow the setting, but the agent's own words don't,** so English and romaji can sit side by side in a chat.
 - **One small query per reply** that names shows, for users who changed the setting.
+
+## 2026-10-20 — Episode alerts with Premium, sent only once AniList confirms the episode (Milestone 8 interlude)
+**Decision:**
+- **A push as each episode of a Watching show comes out,** for Premium and Pro (Cyril's choice, 2026-10-20), so trials get it too. It's a plan feature, `episodeAlerts`, beside the calendar.
+- **Sent as it airs,** at night too: phones' own Do Not Disturb handles nights, and the brief still sums up.
+- **Confirmed first:** air times come from Browse's shared schedule and kurisu's recorded times, numbered the same way. Before sending, AniList is asked again about each due show, and an alert goes out only when its next episode has moved past it, or the show finished.
+- **At most once:** a row per user, show and episode is written before the push.
+- **Muting** is per show, on its page.
+
+**Alternatives:**
+- Free for everyone (Premium would only differ in limits and the badge).
+- Holding night alerts until 08:00, which would overlap the brief.
+- Trusting the schedule's time without asking AniList again.
+- Sending at least once (retrying failed pushes), which risks doubles.
+
+**Why:** An alert that fires for a delayed episode is a wrong fact in the user's pocket, and AniList moves its next episode only once one is out. Recording before sending means a crash can drop an alert but never repeat one.
+
+**Consequences:**
+- **One extra AniList request per run** with episodes due, through the shared pacer.
+- **Delays are up to 5 minutes** after AniList updates.
+- **A failed push isn't retried;** the brief still lists the episode.

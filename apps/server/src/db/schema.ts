@@ -409,8 +409,45 @@ export const briefSettings = pgTable("brief_settings", {
     .default(sql`'{}'::text[]`),
   // On Sundays the brief also sums up the user's week (brief/recap.ts).
   sundayRecap: boolean("sunday_recap").notNull().default(true),
+  // When the user turned on a push as each episode of a Watching show airs (alerts/); null when
+  // off. Only episodes that air after it are sent.
+  episodeAlertsSince: timestamptz("episode_alerts_since"),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
+
+/**
+ * Each episode alert sent: one row per user, show and episode (MAL's numbering), written before
+ * the push goes out, so a retried or overlapping run never sends one twice.
+ */
+export const episodeAlerts = pgTable(
+  "episode_alerts",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    malId: integer("mal_id")
+      .notNull()
+      .references(() => anime.malId, { onDelete: "cascade" }),
+    episode: integer("episode").notNull(),
+    sentAt: timestamptz("sent_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.malId, table.episode] })],
+);
+
+/** Watching shows the user muted on their page: no episode alerts for them. */
+export const episodeAlertMutes = pgTable(
+  "episode_alert_mutes",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    malId: integer("mal_id")
+      .notNull()
+      .references(() => anime.malId, { onDelete: "cascade" }),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.malId] })],
+);
 
 export const briefKind = pgEnum("brief_kind", ["daily", "test"]);
 export const briefStatus = pgEnum("brief_status", [

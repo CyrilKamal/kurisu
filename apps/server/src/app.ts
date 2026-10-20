@@ -26,6 +26,8 @@ import {
 import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
 import { registerBriefRoutes } from "./brief/routes.js";
+import { registerAlertRoutes } from "./alerts/routes.js";
+import { runEpisodeAlerts } from "./alerts/service.js";
 import { createBriefScheduler } from "./brief/scheduler.js";
 import type { Prompt } from "./agent/runAgent.js";
 import { registerChatRoutes } from "./chat/routes.js";
@@ -403,8 +405,13 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     model: options.roles?.brief ?? configuredRoles.brief,
     log: app.log,
   };
+  const alertDeps = { db, anilist: syncAniList, push, limits, log: app.log };
   if (config.brief.scheduler && config.push) {
-    const scheduler = createBriefScheduler({ ...briefDeps, databaseUrl: config.databaseUrl });
+    const scheduler = createBriefScheduler({
+      ...briefDeps,
+      databaseUrl: config.databaseUrl,
+      runAlerts: () => runEpisodeAlerts(alertDeps),
+    });
     app.addHook("onReady", () => scheduler.start());
     app.addHook("onClose", () => scheduler.stop());
   }
@@ -439,6 +446,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   registerWaitlistRoutes(app, { config, db });
   registerFriendRoutes(app, { config, db, cipher, limits });
   registerBrowseRoutes(app, { db, refresh: refreshBrowse });
+  registerAlertRoutes(app, { config, db, limits });
   registerCalendarRoutes(app, {
     config,
     db,

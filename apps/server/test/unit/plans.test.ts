@@ -41,16 +41,24 @@ describe("the plans", () => {
 
   it("include the features the landing page lists for them", () => {
     const { plans } = loadPlansFile();
-    const none = { supporterBadge: false, calendar: false, fullYear: false, lab: false };
+    const none = {
+      supporterBadge: false,
+      episodeAlerts: false,
+      calendar: false,
+      fullYear: false,
+      lab: false,
+    };
     expect(plans.free.features).toEqual(none);
     expect(shown("premium")).toContain("A supporter badge");
-    expect(plans.premium.features).toEqual({ ...none, supporterBadge: true });
+    expect(shown("premium")).toContain("An alert as each episode airs");
+    expect(plans.premium.features).toEqual({ ...none, supporterBadge: true, episodeAlerts: true });
     expect(shown("pro")).toContain("Everything in Premium");
     expect(shown("pro")).toContain("A calendar feed of upcoming episodes");
     expect(shown("pro")).toContain("Your full year in review");
     expect(shown("pro")).toContain("Early access to AI lab features");
     expect(plans.pro.features).toEqual({
       supporterBadge: true,
+      episodeAlerts: true,
       calendar: true,
       fullYear: true,
       lab: true,

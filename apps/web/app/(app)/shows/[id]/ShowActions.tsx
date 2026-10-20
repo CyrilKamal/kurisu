@@ -10,17 +10,21 @@ import { canAddEpisode, type EditableEntry } from "@/lib/editEntry";
 import { useWriteToast } from "@/lib/useWriteToast";
 
 import { EditSheet } from "../../list/EditSheet";
+import { AlertBell } from "./AlertBell";
 
 /**
  * A show page's actions: "+1 ep" and Edit for a show on your list, or Add for one that isn't.
- * Each goes through the same write path as the List screen, with a Toast and Undo.
+ * Each goes through the same write path as the List screen, with a Toast and Undo. A Watching
+ * show also has its episode alerts' bell, when they're on.
  */
 export function ShowActions({
   show,
   entry,
+  alert = null,
 }: {
   show: { animeId: number; title: string; numEpisodes: number | null };
   entry: Omit<EditableEntry, "animeId" | "title" | "numEpisodes"> | null;
+  alert?: { muted: boolean } | null;
 }) {
   const toast = useWriteToast();
   const [sheet, setSheet] = useState<"edit" | "add" | null>(null);
@@ -90,6 +94,7 @@ export function ShowActions({
         <Icon name="rename" />
         Edit
       </button>
+      {alert && <AlertBell animeId={show.animeId} title={show.title} muted={alert.muted} />}
       {sheet === "edit" && (
         <EditSheet
           entry={editable}

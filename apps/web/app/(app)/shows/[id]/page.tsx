@@ -1,4 +1,4 @@
-import { showResponseSchema, type JournalItem } from "@kurisu/shared";
+import { alertsResponseSchema, showResponseSchema, type JournalItem } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -65,9 +65,14 @@ function shortDate(iso: string): string {
 export default async function ShowPage(props: PageProps<"/shows/[id]">) {
   const { id } = await props.params;
   if (!/^\d+$/.test(id)) redirect("/today");
-  const page = await loadShow(id);
+  const [page, alerts] = await Promise.all([loadShow(id), apiGet("/alerts", alertsResponseSchema)]);
   if (!page) redirect("/");
   const { show, entry, airing, watchOn, journal, friends, extras } = page;
+  // A Watching show's bell, when episode alerts are on: mute this one, or hear about it again.
+  const alert =
+    alerts?.included && alerts.on && entry?.status === "watching"
+      ? { muted: alerts.muted.includes(show.animeId) }
+      : null;
   const source = extras ? sourceLine(extras.source) : null;
   const kind = kindLine(show);
   const underway =
@@ -147,6 +152,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
                 isRewatching: entry.isRewatching,
               }
             }
+            alert={alert}
           />
         </div>
       </section>

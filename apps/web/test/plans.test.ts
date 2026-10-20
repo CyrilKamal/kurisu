@@ -83,8 +83,20 @@ describe("plan limits", () => {
   });
 });
 
-const PREMIUM = { supporterBadge: true, calendar: false, fullYear: false, lab: false };
-const PRO = { supporterBadge: true, calendar: true, fullYear: true, lab: true };
+const PREMIUM = {
+  supporterBadge: true,
+  episodeAlerts: true,
+  calendar: false,
+  fullYear: false,
+  lab: false,
+};
+const PRO = {
+  supporterBadge: true,
+  episodeAlerts: true,
+  calendar: true,
+  fullYear: true,
+  lab: true,
+};
 
 describe("plan lines", () => {
   const now = new Date("2026-10-19T12:00:00Z");
