@@ -36,7 +36,9 @@ export function ListFilters({
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const menus = filterMenus(entries, view, onChange);
-  const active = [view.type, view.genre, view.airing].filter((value) => value !== null).length;
+  const active = [view.type, view.genre, view.airing, view.tag].filter(
+    (value) => value !== null,
+  ).length;
 
   return (
     <div className="k-filterbar max-sm:flex-nowrap">
@@ -126,7 +128,7 @@ export function ListFilters({
           menus={menus}
           canClear={active > 0}
           onClear={() => {
-            onChange({ ...view, type: null, genre: null, airing: null });
+            onChange({ ...view, type: null, genre: null, airing: null, tag: null });
           }}
           onClose={() => {
             setSheetOpen(false);
@@ -146,12 +148,35 @@ interface MenuProps {
   options: ReactNode;
 }
 
-/** Type, genre and airing, which narrow the list, then the sort order. */
+/**
+ * Type, genre, airing and your own tags (when you have any), which narrow the list, then the
+ * sort order.
+ */
 function filterMenus(
   entries: ListEntry[],
   view: ListView,
   onChange: (view: ListView) => void,
 ): MenuProps[] {
+  const tags = facetOptions(entries, view, "tag");
+  const tagMenu: MenuProps[] =
+    tags.length === 0
+      ? []
+      : [
+          {
+            label: "Tag",
+            value: view.tag ?? "",
+            active: view.tag !== null,
+            onChange: (value) => {
+              onChange({ ...view, tag: value || null });
+            },
+            options: (
+              <>
+                <option value="">All tags</option>
+                {optionsFor(tags, (v) => v)}
+              </>
+            ),
+          },
+        ];
   return [
     {
       label: "Type",
@@ -198,6 +223,7 @@ function filterMenus(
         </>
       ),
     },
+    ...tagMenu,
     {
       label: "Sort by",
       value: view.sort,

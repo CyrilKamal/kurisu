@@ -7,7 +7,14 @@ import { changes, diaryNotes, dropReasons, listEntries, proposals } from "../db/
 import { DEFAULT_RETRY, MalApiError, type RetryOptions } from "../mal/client.js";
 import { MalOAuthError } from "../mal/oauth.js";
 import { deleteListStatus, patchListStatus, type MalListStatus } from "../mal/writeClient.js";
-import type { ListChange, ListState } from "./normalize.js";
+import {
+  EXTRA_FIELDS,
+  LIST_FIELDS,
+  sameValue,
+  type ListChange,
+  type ListField,
+  type ListState,
+} from "./normalize.js";
 import type { Proposal } from "./propose.js";
 
 /**
@@ -91,8 +98,6 @@ export type CommitResult =
 /** A commit left "committing" this long ago is assumed crashed and may be retried. */
 const STUCK_AFTER_MS = 2 * 60 * 1000;
 
-const FIELDS = ["status", "episodesWatched", "score", "isRewatching"] as const;
-
 export async function commitProposal(
   deps: WriteDeps,
   userId: string,
@@ -125,15 +130,11 @@ export async function commitProposal(
       return { kind: "needs_confirmation" as const, proposal };
     }
 
-    const [entry] = await tx
-      .select({
-        status: listEntries.status,
-        episodesWatched: listEntries.numEpisodesWatched,
-        score: listEntries.score,
-        isRewatching: listEntries.isRewatching,
-      })
+    const [row] = await tx
+      .select(MIRROR_STATE)
       .from(listEntries)
       .where(and(eq(listEntries.userId, userId), eq(listEntries.animeId, proposal.animeId)));
+    const entry = row ? mirrorState(row) : undefined;
     // An add needs the show still off the list; an update or remove needs the entry as it was.
     const refusal: CommitErrorCode | null =
       proposal.kind === "add"
@@ -204,11 +205,19 @@ export async function commitProposal(
       before = proposal.before ?? {};
       after = {};
     } else {
+      const confirmed = confirmedState(result, proposal.change);
       const state = {
-        status: result.status,
-        score: result.score,
-        numEpisodesWatched: result.episodesWatched,
-        isRewatching: result.isRewatching,
+        status: confirmed.status,
+        score: confirmed.score,
+        numEpisodesWatched: confirmed.episodesWatched,
+        isRewatching: confirmed.isRewatching,
+        // MAL's other fields only when known, so an unknown one stays unknown.
+        ...(confirmed.comments !== undefined && { comments: confirmed.comments }),
+        ...(confirmed.tags !== undefined && { tags: confirmed.tags }),
+        ...(confirmed.priority !== undefined && { priority: confirmed.priority }),
+        ...(confirmed.timesRewatched !== undefined && {
+          timesRewatched: confirmed.timesRewatched,
+        }),
         malUpdatedAt: result.updatedAt,
         syncedAt: now,
       };
@@ -220,9 +229,9 @@ export async function commitProposal(
       } else {
         await tx.update(listEntries).set(state).where(where);
       }
-      const keys = FIELDS.filter((field) => proposal.change[field] !== undefined);
+      const keys = LIST_FIELDS.filter((field) => proposal.change[field] !== undefined);
       before = proposal.before ? pick(proposal.before, keys) : {};
-      after = pick(stateOf(result), keys);
+      after = pick(confirmed, keys);
     }
 
     const [row] = await tx
@@ -271,6 +280,41 @@ export async function commitProposal(
   return { status: "committed", change, alreadyCommitted: false };
 }
 
+/** The mirror's columns for an entry's list fields. */
+export const MIRROR_STATE = {
+  status: listEntries.status,
+  episodesWatched: listEntries.numEpisodesWatched,
+  score: listEntries.score,
+  isRewatching: listEntries.isRewatching,
+  comments: listEntries.comments,
+  tags: listEntries.tags,
+  priority: listEntries.priority,
+  timesRewatched: listEntries.timesRewatched,
+};
+
+/** A mirror row as list fields, leaving out MAL's other fields where the mirror doesn't know them. */
+export function mirrorState(row: {
+  status: ListState["status"];
+  episodesWatched: number;
+  score: number;
+  isRewatching: boolean;
+  comments: string | null;
+  tags: string[] | null;
+  priority: number | null;
+  timesRewatched: number | null;
+}): ListState {
+  return {
+    status: row.status,
+    episodesWatched: row.episodesWatched,
+    score: row.score,
+    isRewatching: row.isRewatching,
+    ...(row.comments !== null && { comments: row.comments }),
+    ...(row.tags !== null && { tags: row.tags }),
+    ...(row.priority !== null && { priority: row.priority }),
+    ...(row.timesRewatched !== null && { timesRewatched: row.timesRewatched }),
+  };
+}
+
 /**
  * True if any field this proposal changes no longer holds the value it was proposed against. A
  * remove checks every field: the entry must be just as it was.
@@ -278,23 +322,32 @@ export async function commitProposal(
 function changedSince(proposal: Proposal, current: ListState): boolean {
   const before = proposal.before;
   if (!before) return false;
-  return FIELDS.some(
+  return LIST_FIELDS.some(
     (field) =>
       (proposal.kind === "remove" || proposal.change[field] !== undefined) &&
-      current[field] !== before[field],
+      !sameValue(current[field], before[field]),
   );
 }
 
-function stateOf(status: MalListStatus): ListState {
-  return {
+/**
+ * The entry as MAL confirmed it. MAL's other fields come from its reply, or, where the reply
+ * leaves one out, the value MAL just accepted.
+ */
+function confirmedState(status: MalListStatus, sent: ListChange): ListState {
+  const state: ListState = {
     status: status.status,
     episodesWatched: status.episodesWatched,
     score: status.score,
     isRewatching: status.isRewatching,
   };
+  for (const field of EXTRA_FIELDS) {
+    const value = status[field] ?? sent[field];
+    if (value !== undefined) (state as Record<string, unknown>)[field] = value;
+  }
+  return state;
 }
 
-function pick(state: ListState, keys: readonly (typeof FIELDS)[number][]): ListChange {
+function pick(state: ListState, keys: readonly ListField[]): ListChange {
   const out: ListChange = {};
   for (const key of keys) {
     (out as Record<string, unknown>)[key] = state[key];

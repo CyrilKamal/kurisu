@@ -310,6 +310,13 @@ export const listEntries = pgTable(
     // MAL allows partial dates (e.g. "2024-03"), so these stay as MAL's strings.
     startDate: text("start_date"),
     finishDate: text("finish_date"),
+    // MAL's other list fields, set only by the user (on MAL or the List screen). Null when MAL
+    // didn't send it, and then kurisu doesn't let it be changed, so it never overwrites a value
+    // it hasn't seen. Priority: 0 low, 1 medium, 2 high.
+    comments: text("comments"),
+    tags: text("tags").array(),
+    priority: integer("priority"),
+    timesRewatched: integer("times_rewatched"),
     malUpdatedAt: timestamptz("mal_updated_at").notNull(),
     syncedAt: timestamptz("synced_at").notNull(),
   },

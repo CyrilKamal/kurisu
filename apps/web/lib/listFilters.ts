@@ -3,8 +3,8 @@ import { LIST_STATUSES, type ListEntry, type ListStatus } from "@kurisu/shared";
 import { countByStatus } from "./format";
 
 /**
- * What the List screen shows: one status tab, narrowed by a title search, type, genre and
- * airing state, in some order. Filters stay set when you switch tabs, and live in the URL so a
+ * What the List screen shows: one status tab, narrowed by a title search, type, genre, airing
+ * state and the user's own MAL tags, in some order. Filters stay set when you switch tabs, and live in the URL so a
  * reload keeps them.
  */
 export interface ListView {
@@ -15,6 +15,8 @@ export interface ListView {
   type: string | null;
   genre: string | null;
   airing: AiringFilter | null;
+  /** One of the user's own tags on MAL. */
+  tag: string | null;
   sort: ListSort;
   /** Rows, or a grid of posters. */
   layout: ListLayout;
@@ -23,7 +25,7 @@ export interface ListView {
 export const LIST_LAYOUTS = ["rows", "grid"] as const;
 export type ListLayout = (typeof LIST_LAYOUTS)[number];
 
-export const LIST_SORTS = ["updated", "title", "score", "mal", "shortest"] as const;
+export const LIST_SORTS = ["updated", "title", "score", "mal", "shortest", "priority"] as const;
 export type ListSort = (typeof LIST_SORTS)[number];
 
 export const SORT_LABELS: Record<ListSort, string> = {
@@ -32,6 +34,7 @@ export const SORT_LABELS: Record<ListSort, string> = {
   score: "Your score",
   mal: "MAL score",
   shortest: "Shortest",
+  priority: "Priority",
 };
 
 export const AIRING_FILTERS = ["currently_airing", "finished_airing", "not_yet_aired"] as const;
@@ -49,6 +52,7 @@ export const DEFAULT_VIEW: ListView = {
   type: null,
   genre: null,
   airing: null,
+  tag: null,
   sort: "updated",
   layout: "rows",
 };
@@ -73,6 +77,7 @@ export function readListView(params: Params): ListView {
     type: one(params, "type"),
     genre: one(params, "genre"),
     airing: oneOf(AIRING_FILTERS, one(params, "airing")),
+    tag: one(params, "tag"),
     sort: oneOf(LIST_SORTS, one(params, "sort")) ?? DEFAULT_VIEW.sort,
     layout: oneOf(LIST_LAYOUTS, one(params, "layout")) ?? DEFAULT_VIEW.layout,
   };
@@ -86,6 +91,7 @@ export function listHref(view: ListView): string {
   if (view.type) params.set("type", view.type);
   if (view.genre) params.set("genre", view.genre);
   if (view.airing) params.set("airing", view.airing);
+  if (view.tag) params.set("tag", view.tag);
   if (view.sort !== DEFAULT_VIEW.sort) params.set("sort", view.sort);
   if (view.layout !== DEFAULT_VIEW.layout) params.set("layout", view.layout);
   const search = params.toString();
@@ -95,12 +101,16 @@ export function listHref(view: ListView): string {
 /** Whether anything narrows the list beyond its status tab. */
 export function isFiltered(view: ListView): boolean {
   return (
-    view.query.trim() !== "" || view.type !== null || view.genre !== null || view.airing !== null
+    view.query.trim() !== "" ||
+    view.type !== null ||
+    view.genre !== null ||
+    view.airing !== null ||
+    view.tag !== null
   );
 }
 
 export function clearFilters(view: ListView): ListView {
-  return { ...view, query: "", type: null, genre: null, airing: null };
+  return { ...view, query: "", type: null, genre: null, airing: null, tag: null };
 }
 
 /** Lowercase letters and digits only, accents dropped: "Re:Zero" -> "re zero". */
@@ -132,7 +142,7 @@ export function matchesQuery(
   });
 }
 
-type Facet = "type" | "genre" | "airing";
+type Facet = "type" | "genre" | "airing" | "tag";
 
 /** Whether an entry passes the view's filters (not its status), ignoring one facet if asked. */
 export function matchesFilters(entry: ListEntry, view: ListView, ignoring?: Facet): boolean {
@@ -140,7 +150,8 @@ export function matchesFilters(entry: ListEntry, view: ListView, ignoring?: Face
     matchesQuery(entry, view.query) &&
     (ignoring === "type" || view.type === null || entry.mediaType === view.type) &&
     (ignoring === "genre" || view.genre === null || entry.genres.includes(view.genre)) &&
-    (ignoring === "airing" || view.airing === null || entry.airingStatus === view.airing)
+    (ignoring === "airing" || view.airing === null || entry.airingStatus === view.airing) &&
+    (ignoring === "tag" || view.tag === null || (entry.tags ?? []).includes(view.tag))
   );
 }
 
@@ -169,6 +180,9 @@ export function sortEntries(entries: ListEntry[], sort: ListSort): ListEntry[] {
       return sorted.sort((a, b) => (b.malMean ?? -1) - (a.malMean ?? -1));
     case "shortest":
       return sorted.sort((a, b) => (minutesLeft(a) ?? Infinity) - (minutesLeft(b) ?? Infinity));
+    case "priority":
+      // High first; unknown counts as MAL's default, Low.
+      return sorted.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
   }
 }
 
@@ -196,9 +210,11 @@ export function facetOptions(entries: ListEntry[], view: ListView, facet: Facet)
     const values =
       facet === "genre"
         ? entry.genres
-        : facet === "type"
-          ? [entry.mediaType]
-          : [oneOf(AIRING_FILTERS, entry.airingStatus)];
+        : facet === "tag"
+          ? (entry.tags ?? [])
+          : facet === "type"
+            ? [entry.mediaType]
+            : [oneOf(AIRING_FILTERS, entry.airingStatus)];
     for (const value of values) {
       if (value && value !== "unknown") counts.set(value, (counts.get(value) ?? 0) + 1);
     }

@@ -22,6 +22,11 @@ export function toMirrorRows(
       isRewatching: listStatus.is_rewatching,
       startDate: listStatus.start_date ?? null,
       finishDate: listStatus.finish_date ?? null,
+      // Null when MAL didn't send it: unknown, so it can't be edited (see writes/normalize.ts).
+      comments: listStatus.comments ?? null,
+      tags: listStatus.tags ?? null,
+      priority: listStatus.priority ?? null,
+      timesRewatched: listStatus.num_times_rewatched ?? null,
       malUpdatedAt: new Date(listStatus.updated_at),
       syncedAt,
     },

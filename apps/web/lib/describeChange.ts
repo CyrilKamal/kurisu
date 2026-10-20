@@ -1,4 +1,4 @@
-import type { ChangeSource, ListChange, WriteKind } from "@kurisu/shared";
+import { priorityLabel, type ChangeSource, type ListChange, type WriteKind } from "@kurisu/shared";
 
 import { STATUS_LABELS } from "./format";
 
@@ -21,7 +21,29 @@ export function describeChange(before: ListChange, after: ListChange): string {
   if (after.isRewatching !== undefined) {
     parts.push(after.isRewatching ? "rewatching" : "rewatch finished");
   }
+  parts.push(...extrasText(before, after));
   return parts.join(" · ");
+}
+
+/** Tags added and taken off: "+isekai −comfy". */
+function tagsText(before: readonly string[], after: readonly string[]): string {
+  const added = after.filter((tag) => !before.includes(tag)).map((tag) => `+${tag}`);
+  const removed = before.filter((tag) => !after.includes(tag)).map((tag) => `−${tag}`);
+  return [...added, ...removed].join(" ") || "reordered";
+}
+
+/** MAL's other fields, in words: "comments changed", "tags +isekai", "priority High". */
+function extrasText(before: ListChange, after: ListChange): string[] {
+  const parts: string[] = [];
+  if (after.comments !== undefined) {
+    parts.push(after.comments === "" ? "comments cleared" : "comments changed");
+  }
+  if (after.tags !== undefined) parts.push(`tags ${tagsText(before.tags ?? [], after.tags)}`);
+  if (after.priority !== undefined) parts.push(`priority ${priorityLabel(after.priority)}`);
+  if (after.timesRewatched !== undefined) {
+    parts.push(`rewatched ${String(after.timesRewatched)}×`);
+  }
+  return parts;
 }
 
 /**
@@ -71,6 +93,27 @@ export function diffParts(
   }
   if (after.isRewatching !== undefined) {
     parts.push({ kind: "text", text: after.isRewatching ? "rewatching" : "rewatch finished" });
+  }
+  if (after.priority !== undefined) {
+    parts.push({
+      kind: "change",
+      label: "priority",
+      from: before.priority === undefined ? "?" : priorityLabel(before.priority),
+      to: priorityLabel(after.priority),
+      numeric: false,
+    });
+  }
+  if (after.timesRewatched !== undefined) {
+    parts.push({
+      kind: "change",
+      label: "rewatched",
+      from: before.timesRewatched === undefined ? "?" : `${String(before.timesRewatched)}×`,
+      to: `${String(after.timesRewatched)}×`,
+      numeric: true,
+    });
+  }
+  for (const text of extrasText(before, { comments: after.comments, tags: after.tags })) {
+    parts.push({ kind: "text", text });
   }
   return parts;
 }

@@ -537,6 +537,19 @@ export type AiringView = z.infer<typeof airingViewSchema>;
 export const watchOnSchema = z.object({ service: z.string(), url: z.string().nullable() });
 export type WatchOnView = z.infer<typeof watchOnSchema>;
 
+/**
+ * MAL's other list fields, which only the user sets: their comments, tags, priority (0 low, 1
+ * medium, 2 high) and times rewatched. Null when MAL hasn't sent kurisu the field, and then it
+ * can't be edited here. Missing reads as null, so a list saved for offline use before these
+ * fields existed still opens.
+ */
+const entryExtras = {
+  comments: z.string().nullable().default(null),
+  tags: z.array(z.string()).nullable().default(null),
+  priority: z.number().int().min(0).max(2).nullable().default(null),
+  timesRewatched: z.number().int().nonnegative().nullable().default(null),
+};
+
 export const listEntrySchema = z.object({
   animeId: z.number().int().positive(),
   title: z.string(),
@@ -555,6 +568,7 @@ export const listEntrySchema = z.object({
   score: z.number().int().min(0).max(10),
   episodesWatched: z.number().int().nonnegative(),
   isRewatching: z.boolean(),
+  ...entryExtras,
   updatedAt: z.iso.datetime(),
   /** Null when AniList has nothing cached for it (it isn't airing, or doesn't map). */
   airing: airingViewSchema.nullable(),
@@ -581,6 +595,11 @@ export const syncErrorResponseSchema = z.object({
 });
 export type SyncErrorResponse = z.infer<typeof syncErrorResponseSchema>;
 
+/** MAL's list priorities: 0 low, 1 medium, 2 high. */
+export const PRIORITIES = [0, 1, 2] as const;
+export const priorityLabel = (priority: number): string =>
+  priority === 2 ? "High" : priority === 1 ? "Medium" : "Low";
+
 /** The list fields a change touches (only the ones that changed are present). */
 export const listChangeSchema = z
   .object({
@@ -588,6 +607,11 @@ export const listChangeSchema = z
     episodesWatched: z.number().int().nonnegative().optional(),
     score: z.number().int().min(0).max(10).optional(),
     isRewatching: z.boolean().optional(),
+    /** MAL's other fields, which only the user sets. */
+    comments: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    priority: z.number().int().min(0).max(2).optional(),
+    timesRewatched: z.number().int().nonnegative().optional(),
   })
   .strict();
 export type ListChange = z.infer<typeof listChangeSchema>;
@@ -831,6 +855,11 @@ export const listEditRequestSchema = z
     episodesWatched: z.number().int().nonnegative().max(100_000).optional(),
     score: z.number().int().min(0).max(10).optional(),
     isRewatching: z.boolean().optional(),
+    // MAL's other fields; the server checks their limits (EDIT_ERRORS says which one).
+    comments: z.string().max(10_000).optional(),
+    tags: z.array(z.string().max(500)).max(100).optional(),
+    priority: z.number().int().optional(),
+    timesRewatched: z.number().int().optional(),
     /** One per tap, so a retried tap writes once. */
     requestId: z.uuid(),
   })
@@ -848,6 +877,12 @@ export const EDIT_ERRORS = [
   "negative_episodes",
   "score_out_of_range",
   "rewatch_not_completed",
+  "field_unknown",
+  "comments_too_long",
+  "too_many_tags",
+  "tag_too_long",
+  "priority_out_of_range",
+  "rewatch_count_out_of_range",
 ] as const;
 export type EditError = (typeof EDIT_ERRORS)[number];
 export const editErrorResponseSchema = z.object({
@@ -1464,6 +1499,7 @@ export const showResponseSchema = z.object({
       score: z.number().int().min(0).max(10),
       episodesWatched: z.number().int().nonnegative(),
       isRewatching: z.boolean(),
+      ...entryExtras,
       /** MAL's dates, possibly partial. */
       startDate: z.string().nullable(),
       finishDate: z.string().nullable(),

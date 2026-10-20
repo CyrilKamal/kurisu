@@ -43,6 +43,15 @@ describe("activityOf", () => {
       kind: "rated",
       score: 8,
     });
+    // MAL's other fields (comments, tags, priority, rewatches) are never activity.
+    expect(
+      activityOf(
+        entry({
+          before: { comments: "", tags: [], priority: 0 },
+          after: { comments: "spoilers!", tags: ["comfy"], priority: 2, timesRewatched: 1 },
+        }),
+      ),
+    ).toBeNull();
   });
 
   it("leaves out removals and anything a friend wouldn't care about", () => {

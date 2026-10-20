@@ -84,8 +84,9 @@ export function rowAction(item: ImportItemView): string | null {
 export function disagreement(item: ImportItemView): { mal: string; notes: string } | null {
   if (!item.malState || !item.change) return null;
   const keys = Object.keys(item.change) as (keyof ListChange)[];
+  const state: ListChange = item.malState;
   const mal: ListChange = {};
-  for (const key of keys) Object.assign(mal, { [key]: item.malState[key] });
+  for (const key of keys) Object.assign(mal, { [key]: state[key] });
   return { mal: stateText(mal), notes: stateText(item.change) };
 }
 

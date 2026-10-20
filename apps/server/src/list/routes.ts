@@ -121,6 +121,10 @@ export function registerListRoutes(app: FastifyInstance, deps: ListRouteDeps): v
         score: listEntries.score,
         episodesWatched: listEntries.numEpisodesWatched,
         isRewatching: listEntries.isRewatching,
+        comments: listEntries.comments,
+        tags: listEntries.tags,
+        priority: listEntries.priority,
+        timesRewatched: listEntries.timesRewatched,
         updatedAt: listEntries.malUpdatedAt,
         airing: anilistMedia,
       })

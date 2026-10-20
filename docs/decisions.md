@@ -2724,3 +2724,28 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Consequences:**
 - **Mixed scales:** a 5-star user still sees "score 7 → 8" in the Journal and in Chat.
 - **Favorites stay in kurisu:** they don't sync to MAL or AniList.
+## 2026-10-20 — MAL's comments, tags, priority and rewatch count, on the same write path (Milestone 8 interlude)
+**Decision:**
+- **The fields:** the List screen's edit sheet can set the four list fields MAL has that kurisu ignored: comments, tags, priority and times rewatched. Shows' pages show them, and the List filters by tag and sorts by priority.
+- **One path:** they go through the same proposal, commit and change log as every other write, with prior values, the stale check and undo. Undoing a removal puts them back.
+- **Never overwriting the unseen:** the sync asks MAL for every list field by name. A field MAL didn't send is stored as unknown (null), and kurisu refuses to change it until a sync brings it in.
+- **Only the user sets them:**
+  - No automatic rules: finishing a rewatch doesn't add to the count, so the update eval's expectations stay as they are.
+  - The agent's tools don't show or set them.
+  - Stats, friends' activity and MAL-site events ignore them.
+- **Named "Comments,"** MAL's word, so they aren't mixed up with the Journal's diary notes.
+
+**Alternatives:**
+- A separate write path for "metadata" (two undo stories).
+- Storing missing fields as MAL's defaults ("" and []), which would let an edit wipe comments kurisu never saw.
+- Letting Chat set tags and comments (a prompt change and new eval cases).
+- Counting a rewatch automatically when one finishes.
+
+**Why:**
+- **Safety:** these are the user's own words on MAL, so they need the same safety as progress.
+- **Unknown stays unknown:** keeping it as null is what stops a missing field from turning into a wipe.
+
+**Consequences:**
+- **More to check:** the commit and undo compare 8 fields; tags compare as sets.
+- **Checked on real MAL (2026-10-20):** naming the fields in braces returns all of `list_status` plus the four, and MAL's reply to an edit includes them. One priority edit and its undo round-tripped through the write path.
+- **Chat can't read or write them** until a prompt version adds that.

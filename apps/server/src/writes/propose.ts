@@ -12,6 +12,7 @@ import {
   type ListChange,
   type ListState,
   type ListStatus,
+  type NormalizeError,
   type NormalizeResult,
   type RequestedChange,
 } from "./normalize.js";
@@ -57,14 +58,7 @@ export interface ProposeInput {
 }
 
 export type ProposeError =
-  | "unknown_anime"
-  | "no_change_requested"
-  | "both_episode_forms"
-  | "no_change"
-  | "episodes_exceed_total"
-  | "negative_episodes"
-  | "score_out_of_range"
-  | "rewatch_not_completed";
+  "unknown_anime" | "no_change_requested" | "both_episode_forms" | "no_change" | NormalizeError;
 
 export type ProposeResult = { ok: true; proposal: Proposal } | { ok: false; error: ProposeError };
 

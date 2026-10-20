@@ -116,3 +116,65 @@ describe("normalizeChange", () => {
     });
   });
 });
+
+describe("MAL's other list fields", () => {
+  const known: EntryState = {
+    ...watching,
+    extras: { comments: "", tags: ["comfy"], priority: 0, timesRewatched: 0 },
+  };
+
+  it("pass through checked, with only real changes kept", () => {
+    expect(
+      normalizeChange(known, {
+        comments: "  Great finale ",
+        tags: ["Comfy", "isekai,  slow   burn", "comfy"],
+        priority: 2,
+        timesRewatched: 0,
+      }),
+    ).toEqual({
+      ok: true,
+      change: { comments: "Great finale", tags: ["Comfy", "isekai", "slow burn"], priority: 2 },
+    });
+    // The same tags in another order change nothing.
+    expect(
+      normalizeChange(
+        { ...known, extras: { ...known.extras, tags: ["a", "b"] } },
+        {
+          tags: ["b", "a"],
+        },
+      ),
+    ).toEqual({ ok: true, change: {} });
+  });
+
+  it("are refused when the mirror doesn't know them, or out of MAL's limits", () => {
+    expect(normalizeChange(watching, { comments: "hi" })).toEqual({
+      ok: false,
+      error: "field_unknown",
+    });
+    expect(
+      normalizeChange({ ...known, extras: { ...known.extras, tags: null } }, { tags: ["a"] }),
+    ).toEqual({ ok: false, error: "field_unknown" });
+    expect(normalizeChange(known, { comments: "x".repeat(2001) })).toMatchObject({
+      error: "comments_too_long",
+    });
+    expect(
+      normalizeChange(known, { tags: Array.from({ length: 21 }, (_, i) => `t${String(i)}`) }),
+    ).toMatchObject({ error: "too_many_tags" });
+    expect(normalizeChange(known, { tags: ["x".repeat(51)] })).toMatchObject({
+      error: "tag_too_long",
+    });
+    expect(normalizeChange(known, { priority: 3 })).toMatchObject({
+      error: "priority_out_of_range",
+    });
+    expect(normalizeChange(known, { timesRewatched: 1000 })).toMatchObject({
+      error: "rewatch_count_out_of_range",
+    });
+  });
+
+  it("leave the rules for the four core fields as they were", () => {
+    expect(normalizeChange(known, { episodesWatched: 12, comments: "done" })).toEqual({
+      ok: true,
+      change: { status: "completed", episodesWatched: 12, comments: "done" },
+    });
+  });
+});
