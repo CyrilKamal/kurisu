@@ -20,7 +20,21 @@ export function shiftSeason(from: Season, steps: number): Season {
   return { season: SEASONS[((index % 4) + 4) % 4] ?? "WINTER", year: Math.floor(index / 4) };
 }
 
-/** The seasons Browse charts: last, this and next. */
+/** The earliest season Browse goes back to. */
+export const FIRST_SEASON: Season = { season: "WINTER", year: 1960 };
+
+/** Seasons in order: negative when `a` comes first. */
+export function compareSeasons(a: Season, b: Season): number {
+  return a.year * 4 + SEASONS.indexOf(a.season) - (b.year * 4 + SEASONS.indexOf(b.season));
+}
+
+/** Whether Browse shows this season: from Winter 1960 to next season. */
+export function browsable(season: Season, now: Date): boolean {
+  const next = shiftSeason(seasonOf(now), 1);
+  return compareSeasons(season, FIRST_SEASON) >= 0 && compareSeasons(season, next) <= 0;
+}
+
+/** The seasons Browse keeps fresh: last, this and next. */
 export function chartedSeasons(now: Date): Season[] {
   const { season, year } = seasonOf(now);
   const current = { season, year };

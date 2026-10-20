@@ -35,7 +35,7 @@ Four flows; progress sync is the core and shipped first.
 The app has five screens, a bottom bar on phones and a rail on desktop:
 - **Today**, the home screen: episodes out that you haven't watched, each a tap from watched, what airs this week, shows in progress, the latest brief and what friends watched.
 - **List**, the mirrored MAL list.
-- **Browse**: what airs this week (every show, or only the user's), each season's most popular shows from last season to next, and AniList's search, each show a tap from the user's list.
+- **Browse**: what airs this week (every show, or only the user's, by genre), each season's most popular shows (any season back to 1960, and next season), AniList's top charts (trending, top airing, upcoming, most popular, best ever), and AniList's search, each show a tap from the user's list.
 - **Chat**, for talking to the agent.
 - **You**: the Journal (every update, by the agent, the user, an import or on MAL's site, with Undo and the user's notes, so every write is visible and reversible), stats, taste, friends and settings.
 

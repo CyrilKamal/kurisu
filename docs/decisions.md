@@ -2660,3 +2660,21 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **One extra AniList request per run** with episodes due, through the shared pacer.
 - **Delays are up to 5 minutes** after AniList updates.
 - **A failed push isn't retried;** the brief still lists the episode.
+
+## 2026-10-20 — Browse gets Top charts, earlier seasons on request, and Schedule filters (Milestone 8 interlude)
+**Decision:**
+- **Top, a fourth Browse tab** (Cyril's choice): AniList's trending, top airing, upcoming, most popular and best-ever charts, 100 shows each, kept in a shared `top_charts` table and rebuilt daily with the rest of Browse.
+- **Earlier seasons, back to 1960, fetched on request:** the first person to open one gets an immediate "on its way" answer while a background queue fetches it, one season at a time and at most 3 waiting. The page checks back every few seconds. A fetched season stays and is refetched after a month.
+- **Schedule filters:** a genre menu, and ordering each day by time or popularity.
+
+**Alternatives:**
+- Top charts in Search's empty state.
+- Fetching every past season up front (about 260 seasons, over 10 minutes of AniList's pace, mostly never opened).
+- Fetching a season while the page waits (about 10 seconds behind AniList's pace, and Browse's rule is never to make people wait on AniList).
+
+**Why:** On request keeps AniList traffic to what someone actually opens, and the queue cap stops a curious tap through the decades from flooding the shared pacer. Top charts rebuilt daily cost about 15 requests a day for everyone.
+
+**Consequences:**
+- **The first visitor to an old season waits a few seconds**, and anyone after sees it at once.
+- **The daily Browse refresh is a minute longer.**
+- **Seasons and Top share their rows** (`ChartList`).

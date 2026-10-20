@@ -132,6 +132,8 @@ export class FakeAniList {
   schedule: FakeScheduled[] = [];
   /** Season charts, most popular first, as AniList ids, keyed "WINTER 2027". */
   charts = new Map<string, number[]>();
+  /** Browse's Top charts, as AniList ids in order, keyed "trending", "airing" and so on. */
+  tops = new Map<string, number[]>();
   readonly requests: GraphQlBody[] = [];
   private readonly failures: { status: number; headers?: Record<string, string> }[] = [];
 
@@ -181,6 +183,7 @@ export class FakeAniList {
     this.airings = [];
     this.schedule = [];
     this.charts = new Map();
+    this.tops = new Map();
     this.pages = new Map();
     this.requests.length = 0;
     this.failures.length = 0;
@@ -226,6 +229,27 @@ export class FakeAniList {
           })),
         },
       };
+    }
+    if (body.query.includes("t1: Page")) {
+      // A Top chart: aliased pages t1, t2 of 50; its filters say which.
+      const q = body.query;
+      const chart = q.includes("TRENDING_DESC")
+        ? "trending"
+        : q.includes("NOT_YET_RELEASED")
+          ? "upcoming"
+          : q.includes("status: RELEASING")
+            ? "airing"
+            : q.includes("SCORE_DESC")
+              ? "top"
+              : "popular";
+      const ids = this.tops.get(chart) ?? [];
+      const pages: Record<string, { media: { id: number }[] }> = {};
+      for (const match of q.matchAll(/(t(\d+)): Page\(page: (\d+)/g)) {
+        const [, alias = "", , pageNumber = "1"] = match;
+        const start = (Number(pageNumber) - 1) * PER_PAGE;
+        pages[alias] = { media: ids.slice(start, start + PER_PAGE).map((id) => ({ id })) };
+      }
+      return pages;
     }
     if (body.query.includes("c1: Page")) {
       // A season chart: aliased pages c1, c2 of 50, "season: WINTER, seasonYear: 2027".

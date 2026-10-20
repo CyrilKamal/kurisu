@@ -1470,6 +1470,8 @@ export const scheduleEpisodeSchema = z.object({
   episode: z.number().int().positive(),
   airingAt: z.iso.datetime(),
   popularity: z.number().int().nullable(),
+  /** MAL's genres, themes and demographics, for the Schedule's genre filter. */
+  genres: z.array(z.string()),
   entry: browseEntrySchema,
   /** Where it streams on the user's services, for shows on their list ([] otherwise). */
   watchOn: z.array(watchOnSchema),
@@ -1512,18 +1514,44 @@ export const chartSeasonSchema = z.object({ season: z.string(), label: z.string(
 
 /**
  * GET /browse/seasons?season=2027-WINTER: a season's 100 most popular shows (TV, TV short, ONA,
- * movies, OVAs), most popular first. Last, this and next season are charted; `seasons` lists
- * them, and another season is a 404.
+ * movies, OVAs), most popular first. Last, this and next season are kept fresh, and `seasons`
+ * lists them; an earlier one (back to Winter 1960) is fetched when someone asks for it, in the
+ * background. A season after next is a 404.
  */
 export const seasonChartResponseSchema = z.object({
   season: z.string(),
   label: z.string(),
   seasons: z.array(chartSeasonSchema),
+  /** The seasons before and after it, null past either end. */
+  previous: z.string().nullable(),
+  next: z.string().nullable(),
+  /** When the chart was last fetched; null while it's on its way. */
+  updatedAt: z.iso.datetime().nullable(),
+  /** Being fetched from AniList now: ask again in a few seconds. */
+  pending: z.boolean(),
+  shows: z.array(chartShowSchema),
+});
+export type SeasonChartResponse = z.infer<typeof seasonChartResponseSchema>;
+
+/** Browse's Top charts: AniList's trending, top airing, upcoming, most popular and best ever. */
+export const TOP_CHARTS = ["trending", "airing", "upcoming", "popular", "top"] as const;
+export type TopChart = (typeof TOP_CHARTS)[number];
+export const TOP_CHART_LABELS: Record<TopChart, string> = {
+  trending: "Trending",
+  airing: "Top airing",
+  upcoming: "Upcoming",
+  popular: "Most popular",
+  top: "Best ever",
+};
+
+/** GET /browse/top?chart=trending: one of the Top charts, 100 shows, in its order. */
+export const topChartResponseSchema = z.object({
+  chart: z.enum(TOP_CHARTS),
   /** When the chart was last fetched; null while it's on its way. */
   updatedAt: z.iso.datetime().nullable(),
   shows: z.array(chartShowSchema),
 });
-export type SeasonChartResponse = z.infer<typeof seasonChartResponseSchema>;
+export type TopChartResponse = z.infer<typeof topChartResponseSchema>;
 
 export const SEARCH_ERRORS = ["rate_limited", "search_unavailable"] as const;
 export type SearchError = (typeof SEARCH_ERRORS)[number];

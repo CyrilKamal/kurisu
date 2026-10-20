@@ -172,14 +172,23 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
   - `GET /list` entries carry `airing` (latest aired, next episode and when) from the same cache. `GET /me` has `welcomed`, which `POST /me/welcomed` sets (`users.welcomed_at`; accounts that existed before it are marked welcomed).
 - Browse's data (`src/browse/`), shared by everyone and filled in the background, never while someone waits:
   - **The schedule:** `refreshSchedule` keeps AniList's airing schedule from a day back to 8 days ahead in `schedule_slots`, in AniList's episode numbers, rebuilt every 6 hours. It uses `scheduleBetween`, only shows MAL knows, never adult ones.
-  - **The season charts:** `refreshSeasonCharts` keeps last, this and next season's 100 most popular shows (TV, TV short, ONA, movies, OVAs) in `season_charts`, with details in `anilist_catalog`, rebuilt daily. It uses `seasonChart` and then `showDetails`; next season's shows are `not_yet_aired`. These tables are apart from the calendar's `airing_episodes` and the recommender's `season_shows`.
+  - **The season charts:** `refreshSeasonCharts` keeps last, this and next season's 100 most popular shows (TV, TV short, ONA, movies, OVAs) in `season_charts`, with details in `anilist_catalog`, rebuilt daily (`refreshSeasonChart` per season). It uses `seasonChart` and then `showDetails`; next season's shows are `not_yet_aired`. These tables are apart from the calendar's `airing_episodes` and the recommender's `season_shows`.
+  - **Earlier seasons** (back to Winter 1960, `browsable` in `src/browse/seasons.ts`) are fetched only when someone asks for one, by `createSeasonArchive` (`src/browse/archive.ts`).
+    - It fetches one season at a time server-wide, with at most 3 waiting (more are turned away until asked again).
+    - It doesn't retry a season for 10 minutes after AniList fails on it.
+    - A fetched season stays in `season_charts` and is refetched when asked for after 30 days.
+  - **The Top charts:** `refreshTopCharts` keeps AniList's trending, top airing, upcoming, most popular and best-ever charts (`TOP_CHARTS` in `@kurisu/shared`, 100 each, `topChart` in the AniList client) in `top_charts`, details in `anilist_catalog`, rebuilt daily.
   - **Every listed show gets an `anime` row** (`rememberShows`, `rememberDiscovered`), so its page opens and Add works.
   - **When they run:** the app's `refreshBrowse` runs one at a time, tried at most every 10 minutes. It starts 30 s after the server does, then every 15 minutes while `BRIEF_SCHEDULER` is on, and whenever someone opens Browse.
   - **`GET /browse/schedule`:** the week (a day back to 7 ahead), soonest first.
     - A show on the user's list has MAL's episode number (AniList's plus `anilist_media.episode_offset`) and where it streams on their services.
     - Another AniList part of a listed show is left out rather than numbered by a guess.
     - The user's recorded `airing_episodes` fill in.
-  - **`GET /browse/seasons?season=2027-WINTER`:** a charted season (the current one by default). It's 404 `not_charted` for another season and 400 for a malformed one.
+  - **`GET /browse/schedule`'s episodes** carry their genres too (`anime.genres`), for the Schedule's genre filter.
+  - **`GET /browse/seasons?season=2027-WINTER`:** a season's chart (the current one by default), with `previous` and `next` (null past Winter 1960 or after next season).
+    - An earlier season with no chart yet answers at once with `pending: true` and asks the archive for it; the page checks back every 5 s (up to 2 minutes).
+    - It's 404 `not_charted` after next season or before 1960, and 400 for a malformed one.
+  - **`GET /browse/top?chart=trending`:** one Top chart in AniList's order (400 `invalid_chart` for another name).
 - Titles in the user's language (`src/titles/localize.ts`, Settings' Titles):
   - **The setting:** `users.title_language` is `romaji` (MAL's, the default), `english` or `japanese`. `PUT /me/title-language {language}` sets it, and `/me` returns it.
   - **One `preSerialization` hook** gives every reply to a signed-in user shows' titles in that language: any object with a numeric `animeId` and a string `title`. It uses `anime.title_en` or `title_ja`, keeps the romaji title when the show has none, and moves the romaji title to the front of `altTitles`.
@@ -251,9 +260,10 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
   - **Safe areas:** `viewportFit: "cover"`. The `pb-nav`, `pb-bar` and `bottom-bar` utilities (`app/globals.css`) keep content clear of the bar and the home indicator.
   - **Touch:** Chat's list gives each chat a ⋯ (rename, delete) on touch screens (`pointer-coarse:`), where hover never happens.
   - **Show pages** (`/shows/[id]`): the ShowHero (with studio, season, source, both scores and rankings), synopsis, trailer, where to watch (and each episode on your services), watch order, your updates, friends who have the show, characters with their Japanese voices, tags (spoilers behind a tap, `Tags.tsx`) and what fans also like. Every show title and poster in the app links here (`showHref`, `components/ShowLink.tsx`), and only the show page links out to MyAnimeList. Its "+1 ep", Edit and Add use the List screen's write paths.
-  - **Browse** (`/browse`, tabs in `?tab=`): Schedule (the default), Seasons (`&season=2027-WINTER`) and Search. Every row is a tap from the show's page, and a show not on the list has Add (`components/AddSheet.tsx`, `POST /list/add`).
-    - **Schedule** (`ScheduleView.tsx`): the week by day in the user's time zone (`lib/browse.ts`). It shows "My shows" (anything on the list but dropped, the default when there are any) or everything airing; Watching episodes stand out.
-    - **Seasons** (`SeasonsView.tsx`): last, this or next season. Filters for kind, genre and "Not on my list"; sorts by popularity, AniList score or start.
+  - **Browse** (`/browse`, tabs in `?tab=`): Schedule (the default), Seasons (`&season=2027-WINTER`), Top (`&chart=trending`) and Search. Seasons and Top draw their rows with `ChartList.tsx`. Every row is a tap from the show's page, and a show not on the list has Add (`components/AddSheet.tsx`, `POST /list/add`).
+    - **Schedule** (`ScheduleView.tsx`): the week by day in the user's time zone (`lib/browse.ts`). It shows "My shows" (anything on the list but dropped, the default when there are any) or everything airing, narrowed by genre and ordered by time or popularity within each day; Watching episodes stand out.
+    - **Seasons** (`SeasonsView.tsx`): last, this or next season as chips, or any season back to 1960 with the arrows and the year picker (never past next season). Filters for kind, genre and "Not on my list"; sorts by popularity, AniList score or start.
+    - **Top** (`TopView.tsx`): the five Top charts as chips, numbered rows, and "Not on my list".
     - **Search** (`SearchView.tsx`, from the List's "+"; `/search` redirects there): this season's shows before you type, recent searches kept on this device, then AniList's matches after a pause in typing.
     - **Today** links its Coming up to the Schedule.
   - **Welcome** (`/welcome`, outside the NavBar): a new account's MAL callback lands there, and Today sends anyone with `welcomed` false there too. It has three skippable steps (install, the brief and its time, your services), and the end calls `POST /me/welcomed` and opens Import for an empty list, or Today otherwise. Install (`lib/install.ts`, `components/InstallPrompt.tsx`, also in Settings) uses the browser's `beforeinstallprompt`, captured early by `app/ServiceWorker.tsx`, or the Add to Home Screen steps on iPhone.

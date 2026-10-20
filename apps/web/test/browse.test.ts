@@ -10,6 +10,9 @@ import {
   isMine,
   NO_CHART_FILTERS,
   scheduleDays,
+  scheduleGenres,
+  seasonYears,
+  sortDay,
 } from "../lib/browse";
 
 const episode = (overrides: Partial<ScheduleEpisode>): ScheduleEpisode => ({
@@ -20,6 +23,7 @@ const episode = (overrides: Partial<ScheduleEpisode>): ScheduleEpisode => ({
   episode: 1,
   airingAt: "2026-10-19T12:00:00.000Z",
   popularity: null,
+  genres: [],
   entry: null,
   watchOn: [],
   ...overrides,
@@ -119,5 +123,45 @@ describe("a season chart", () => {
     expect(chartMeta(show({ mediaType: "movie", numEpisodes: 1, startDate: null }))).toBe(
       "Movie · 1 ep",
     );
+  });
+});
+
+describe("the schedule's filters", () => {
+  it("lists the week's genres by how many shows have them, each show once", () => {
+    expect(
+      scheduleGenres([
+        episode({ animeId: 1, episode: 1, genres: ["Action", "Comedy"] }),
+        episode({ animeId: 1, episode: 2, genres: ["Action", "Comedy"] }),
+        episode({ animeId: 2, genres: ["Comedy"] }),
+      ]),
+    ).toEqual(["Comedy", "Action"]);
+  });
+
+  it("orders a day by time, or the most popular first", () => {
+    const rows = [
+      {
+        ...episode({ animeId: 1, popularity: 10, airingAt: "2026-10-19T09:00:00.000Z" }),
+        lastEpisode: 1,
+      },
+      {
+        ...episode({ animeId: 2, popularity: null, airingAt: "2026-10-19T08:00:00.000Z" }),
+        lastEpisode: 1,
+      },
+      {
+        ...episode({ animeId: 3, popularity: 90, airingAt: "2026-10-19T10:00:00.000Z" }),
+        lastEpisode: 1,
+      },
+    ];
+    expect(sortDay(rows, "time").map((r) => r.animeId)).toEqual([1, 2, 3]);
+    expect(sortDay(rows, "popularity").map((r) => r.animeId)).toEqual([3, 1, 2]);
+  });
+
+  it("offers each season's years back to 1960, never past next season", () => {
+    const winters = seasonYears("WINTER", "2027-WINTER");
+    expect(winters[0]).toBe(2027);
+    expect(winters.at(-1)).toBe(1960);
+    expect(winters).toHaveLength(68);
+    expect(seasonYears("FALL", "2027-WINTER")[0]).toBe(2026);
+    expect(seasonYears("SPRING", "2026-SUMMER")[0]).toBe(2026);
   });
 });

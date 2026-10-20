@@ -1,3 +1,4 @@
+import type { TopChart } from "@kurisu/shared";
 import { z } from "zod";
 
 import { backoffDelay, DEFAULT_RETRY, type RetryOptions } from "../mal/client.js";
@@ -210,6 +211,8 @@ export interface AniListClient {
    * OVAs), as AniList ids, most popular first. Adult titles are left out.
    */
   seasonChart(season: AniListSeason, year: number): Promise<number[]>;
+  /** One of Browse's Top charts: its 100 shows, as AniList ids, in order. No adult titles. */
+  topChart(chart: TopChart): Promise<number[]>;
   /**
    * The anime that follow each of these MAL entries (AniList's SEQUEL relations), by MAL id.
    * Ids AniList doesn't know are missing; a known show with no sequel maps to [].
@@ -417,6 +420,25 @@ function seasonChartQuery(season: AniListSeason, year: number): string {
   const pages = Array.from({ length: SEASON_CHART_PAGES }, (_, i) => {
     const page = String(i + 1);
     return `c${page}: Page(page: ${page}, perPage: 50) { media(${filters}) { id } }`;
+  });
+  return `query { ${pages.join(" ")} }`;
+}
+
+/** What each Top chart asks AniList for. */
+const TOP_FILTERS: Record<TopChart, string> = {
+  trending: "sort: [TRENDING_DESC]",
+  airing: "status: RELEASING, sort: [SCORE_DESC]",
+  upcoming: "status: NOT_YET_RELEASED, sort: [POPULARITY_DESC]",
+  popular: "sort: [POPULARITY_DESC]",
+  top: "sort: [SCORE_DESC]",
+};
+
+/** A Top chart as aliased pages (t1, t2), so it's a single request. */
+export function topChartQuery(chart: TopChart): string {
+  const filters = `type: ANIME, isAdult: false, format_in: [TV, TV_SHORT, ONA, MOVIE, OVA], ${TOP_FILTERS[chart]}`;
+  const pages = Array.from({ length: SEASON_CHART_PAGES }, (_, i) => {
+    const page = String(i + 1);
+    return `t${page}: Page(page: ${page}, perPage: 50) { media(${filters}) { id } }`;
   });
   return `query { ${pages.join(" ")} }`;
 }
@@ -985,6 +1007,15 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
       const ids = Array.from(
         { length: SEASON_CHART_PAGES },
         (_, i) => pages[`c${String(i + 1)}`]?.media ?? [],
+      ).flatMap((media) => media.map((m) => m.id));
+      return [...new Set(ids)];
+    },
+
+    async topChart(chart) {
+      const pages = await query(topChartQuery(chart), {}, topSchema);
+      const ids = Array.from(
+        { length: SEASON_CHART_PAGES },
+        (_, i) => pages[`t${String(i + 1)}`]?.media ?? [],
       ).flatMap((media) => media.map((m) => m.id));
       return [...new Set(ids)];
     },

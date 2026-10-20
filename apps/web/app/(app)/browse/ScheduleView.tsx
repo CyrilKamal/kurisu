@@ -9,24 +9,38 @@ import { Icon } from "@/components/Icon";
 import { Poster } from "@/components/Poster";
 import { StatusBadge } from "@/components/StatusBadge";
 import { showHref } from "@/lib/airing";
-import { airTime, episodeLabel, isMine, scheduleDays } from "@/lib/browse";
+import {
+  airTime,
+  episodeLabel,
+  isMine,
+  SCHEDULE_SORT_LABELS,
+  SCHEDULE_SORTS,
+  scheduleDays,
+  scheduleGenres,
+  sortDay,
+  type ScheduleSort,
+} from "@/lib/browse";
 import { mediaTypeLabel } from "@/lib/format";
 
 type Scope = "mine" | "all";
 
 /**
  * The week's airing schedule (Browse's Schedule), day by day in the user's time zone: their own
- * shows, or everything airing. Their Watching shows stand out; anything not on the list can be
- * added from here.
+ * shows, or everything airing, narrowed by genre and ordered by time or popularity. Their
+ * Watching shows stand out; anything not on the list can be added from here.
  */
 export function ScheduleView({ data }: { data: ScheduleResponse }) {
   const hasMine = data.episodes.some(isMine);
   const [scope, setScope] = useState<Scope>(hasMine ? "mine" : "all");
+  const [genre, setGenre] = useState<string | null>(null);
+  const [sort, setSort] = useState<ScheduleSort>("time");
   const [adding, setAdding] = useState<ScheduleEpisode | null>(null);
   // Shows added from this screen, until the page reloads.
   const [added, setAdded] = useState<Set<number>>(new Set());
   const now = new Date();
-  const shown = scope === "mine" ? data.episodes.filter(isMine) : data.episodes;
+  const scoped = scope === "mine" ? data.episodes.filter(isMine) : data.episodes;
+  const genres = scheduleGenres(scoped);
+  const shown = genre === null ? scoped : scoped.filter((e) => e.genres.includes(genre));
   const days = scheduleDays(shown, data.timeZone, now);
 
   return (
@@ -52,8 +66,43 @@ export function ScheduleView({ data }: { data: ScheduleResponse }) {
             </button>
           ))}
         </div>
-        <p className="k-field__hint">Times in {data.timeZone.replace(/_/g, " ")}</p>
+        <div className="k-filterbar__menus">
+          <label className={genre === null ? "k-menu" : "k-menu is-set"}>
+            <span className="k-visually-hidden">Genre</span>
+            <select
+              value={genre ?? ""}
+              onChange={(event) => {
+                setGenre(event.target.value || null);
+              }}
+            >
+              <option value="">All genres</option>
+              {genres.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+            <Icon name="chevron-down" />
+          </label>
+          <label className="k-menu">
+            <span className="k-visually-hidden">Order</span>
+            <select
+              value={sort}
+              onChange={(event) => {
+                setSort(SCHEDULE_SORTS.find((s) => s === event.target.value) ?? "time");
+              }}
+            >
+              {SCHEDULE_SORTS.map((s) => (
+                <option key={s} value={s}>
+                  {SCHEDULE_SORT_LABELS[s]}
+                </option>
+              ))}
+            </select>
+            <Icon name="chevron-down" />
+          </label>
+        </div>
       </div>
+      <p className="k-field__hint pt-2">Times in {data.timeZone.replace(/_/g, " ")}</p>
 
       {data.updatedAt === null ? (
         <div className="k-empty mt-6">
@@ -62,6 +111,19 @@ export function ScheduleView({ data }: { data: ScheduleResponse }) {
             kurisu fetches the week&apos;s airing times from AniList in the background. Check back
             in a few minutes.
           </p>
+        </div>
+      ) : days.length === 0 && genre !== null ? (
+        <div className="k-empty mt-6">
+          <p className="k-empty__title">Nothing in {genre} this week</p>
+          <button
+            type="button"
+            className="k-btn"
+            onClick={() => {
+              setGenre(null);
+            }}
+          >
+            All genres
+          </button>
         </div>
       ) : days.length === 0 ? (
         <div className="k-empty mt-6">
@@ -92,7 +154,7 @@ export function ScheduleView({ data }: { data: ScheduleResponse }) {
               {day.label}
             </h2>
             <ul className="k-rows">
-              {day.episodes.map((episode) => {
+              {sortDay(day.episodes, sort).map((episode) => {
                 const aired = new Date(episode.airingAt).getTime() <= now.getTime();
                 const watching = episode.entry?.status === "watching";
                 const onList = episode.entry !== null || added.has(episode.animeId);

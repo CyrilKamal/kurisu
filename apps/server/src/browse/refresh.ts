@@ -1,12 +1,13 @@
+import { TOP_CHARTS, type TopChart } from "@kurisu/shared";
 import { eq, inArray, max, sql } from "drizzle-orm";
 
 import { rememberShows } from "../anilist/catalog.js";
 import type { AniListClient, DiscoveredShow } from "../anilist/client.js";
 import type { Db } from "../db/client.js";
-import { anilistCatalog, scheduleSlots, seasonCharts } from "../db/schema.js";
+import { anilistCatalog, scheduleSlots, seasonCharts, topCharts } from "../db/schema.js";
 import { CATALOG_UPDATE, catalogRowFrom, rememberDiscovered } from "../recommend/discovery.js";
 import { seasonKey } from "../recommend/season.js";
-import { chartedSeasons } from "./seasons.js";
+import { chartedSeasons, type Season } from "./seasons.js";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -17,6 +18,8 @@ const SCHEDULE_BACK_MS = DAY_MS;
 const SCHEDULE_AHEAD_MS = 8 * DAY_MS;
 /** A season's chart moves slowly: rebuilt daily. */
 export const CHART_MAX_AGE_MS = DAY_MS;
+/** An earlier season's chart barely moves: refetched when someone asks after 30 days. */
+export const ARCHIVE_MAX_AGE_MS = 30 * DAY_MS;
 
 export interface BrowseRefreshDeps {
   db: Db;
@@ -79,56 +82,123 @@ function chartable(show: DiscoveredShow): show is DiscoveredShow & { malId: numb
 }
 
 /**
+ * A chart's shows from AniList's ids, in order: their details fetched, only chartable ones, each
+ * once, as rows for the shared catalog.
+ */
+async function chartRows(anilist: AniListClient, order: number[]) {
+  const details = new Map((await anilist.showDetails(order)).map((s) => [s.anilistId, s]));
+  const shows = order.flatMap((id) => {
+    const show = details.get(id);
+    return show && chartable(show) ? [show] : [];
+  });
+  return [...new Map(shows.map((s) => [s.malId, catalogRowFrom(s)])).values()];
+}
+
+/**
+ * Rebuilds one season's chart unless it's younger than `maxAgeMs` (or `force`): its 100 most
+ * popular shows, with their details in the shared catalog and an `anime` row each. Returns
+ * whether it was rebuilt. Throws if AniList fails; the old chart stays.
+ */
+export async function refreshSeasonChart(
+  deps: BrowseRefreshDeps,
+  season: Season,
+  options: { now?: Date; force?: boolean; maxAgeMs?: number } = {},
+): Promise<boolean> {
+  const { db, anilist } = deps;
+  const now = options.now ?? new Date();
+  const key = seasonKey(season);
+  if (!options.force) {
+    const [latest] = await db
+      .select({ at: max(seasonCharts.fetchedAt) })
+      .from(seasonCharts)
+      .where(eq(seasonCharts.season, key));
+    const maxAge = options.maxAgeMs ?? CHART_MAX_AGE_MS;
+    if (latest?.at && now.getTime() - latest.at.getTime() < maxAge) return false;
+  }
+  const rows = await chartRows(anilist, await anilist.seasonChart(season.season, season.year));
+
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('season_charts'))`);
+    if (rows.length > 0) {
+      await tx
+        .insert(anilistCatalog)
+        .values(rows)
+        .onConflictDoUpdate({ target: anilistCatalog.malId, set: CATALOG_UPDATE });
+    }
+    await tx.delete(seasonCharts).where(eq(seasonCharts.season, key));
+    if (rows.length > 0) {
+      await tx
+        .insert(seasonCharts)
+        .values(
+          rows.map((row, i) => ({ season: key, malId: row.malId, rank: i + 1, fetchedAt: now })),
+        );
+    }
+  });
+  await rememberDiscovered(
+    db,
+    rows.map((row) => row.malId),
+  );
+  return true;
+}
+
+/**
  * Rebuilds the charts of last, this and next season unless each is under a day old (or
- * `force`): each season's 100 most popular shows, with their details in the shared catalog and
- * an `anime` row each. Returns the number of seasons rebuilt. A season AniList fails on keeps its
- * old chart, and the error is thrown after the others are done.
+ * `force`). Returns the number of seasons rebuilt. A season AniList fails on keeps its old
+ * chart, and the error is thrown after the others are done.
  */
 export async function refreshSeasonCharts(
   deps: BrowseRefreshDeps,
   options: { now?: Date; force?: boolean } = {},
 ): Promise<number> {
+  let rebuilt = 0;
+  let failure: Error | null = null;
+  for (const season of chartedSeasons(options.now ?? new Date())) {
+    try {
+      if (await refreshSeasonChart(deps, season, options)) rebuilt++;
+    } catch (err) {
+      failure ??= err instanceof Error ? err : new Error(String(err));
+    }
+  }
+  if (failure !== null) throw failure;
+  return rebuilt;
+}
+
+/**
+ * Rebuilds the Top charts unless each is under a day old (or `force`): 100 shows each, in
+ * AniList's order, with their details in the shared catalog and an `anime` row each. Returns the
+ * number rebuilt; a chart AniList fails on keeps its old shows, and the error is thrown after the
+ * others are done.
+ */
+export async function refreshTopCharts(
+  deps: BrowseRefreshDeps,
+  options: { now?: Date; force?: boolean } = {},
+): Promise<number> {
   const { db, anilist } = deps;
   const now = options.now ?? new Date();
+  const updated = await topChartsUpdatedAt(db);
   let rebuilt = 0;
   let failure: Error | null = null;
 
-  for (const season of chartedSeasons(now)) {
-    const key = seasonKey(season);
-    if (!options.force) {
-      const [latest] = await db
-        .select({ at: max(seasonCharts.fetchedAt) })
-        .from(seasonCharts)
-        .where(eq(seasonCharts.season, key));
-      if (latest?.at && now.getTime() - latest.at.getTime() < CHART_MAX_AGE_MS) continue;
-    }
+  for (const chart of TOP_CHARTS) {
+    const at = updated.get(chart);
+    if (!options.force && at && now.getTime() - at.getTime() < CHART_MAX_AGE_MS) continue;
     try {
-      const order = await anilist.seasonChart(season.season, season.year);
-      const details = new Map((await anilist.showDetails(order)).map((s) => [s.anilistId, s]));
-      const shows = order.flatMap((id) => {
-        const show = details.get(id);
-        return show && chartable(show) ? [show] : [];
-      });
-      const rows = [...new Map(shows.map((s) => [s.malId, catalogRowFrom(s)])).values()];
-
+      const rows = await chartRows(anilist, await anilist.topChart(chart));
       await db.transaction(async (tx) => {
-        await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('season_charts'))`);
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('top_charts'))`);
         if (rows.length > 0) {
           await tx
             .insert(anilistCatalog)
             .values(rows)
             .onConflictDoUpdate({ target: anilistCatalog.malId, set: CATALOG_UPDATE });
         }
-        await tx.delete(seasonCharts).where(eq(seasonCharts.season, key));
+        await tx.delete(topCharts).where(eq(topCharts.chart, chart));
         if (rows.length > 0) {
-          await tx.insert(seasonCharts).values(
-            rows.map((row, i) => ({
-              season: key,
-              malId: row.malId,
-              rank: i + 1,
-              fetchedAt: now,
-            })),
-          );
+          await tx
+            .insert(topCharts)
+            .values(
+              rows.map((row, i) => ({ chart, malId: row.malId, rank: i + 1, fetchedAt: now })),
+            );
         }
       });
       await rememberDiscovered(
@@ -142,6 +212,20 @@ export async function refreshSeasonCharts(
   }
   if (failure !== null) throw failure;
   return rebuilt;
+}
+
+/** Each Top chart's last rebuild. */
+export async function topChartsUpdatedAt(db: Db): Promise<Map<TopChart, Date>> {
+  const rows = await db
+    .select({ chart: topCharts.chart, at: max(topCharts.fetchedAt) })
+    .from(topCharts)
+    .groupBy(topCharts.chart);
+  return new Map(
+    rows.flatMap((row) => {
+      const chart = TOP_CHARTS.find((c) => c === row.chart);
+      return chart && row.at ? [[chart, row.at] as const] : [];
+    }),
+  );
 }
 
 /** When the schedule was last rebuilt, or null. */

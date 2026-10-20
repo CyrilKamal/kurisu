@@ -1,4 +1,11 @@
-import type { ScheduleEpisode, ScheduleResponse, SeasonChartResponse } from "@kurisu/shared";
+import type {
+  ChartShow,
+  ScheduleEpisode,
+  ScheduleResponse,
+  SeasonChartResponse,
+  TopChart,
+  TopChartResponse,
+} from "@kurisu/shared";
 import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 
 import { watchOn } from "../brief/services.js";
@@ -12,11 +19,19 @@ import {
   listEntries,
   scheduleSlots,
   seasonCharts,
+  topCharts,
 } from "../db/schema.js";
 import { seasonKey } from "../recommend/season.js";
 import { userTimeZone } from "../stats/compute.js";
-import { chartsUpdatedAt, scheduleUpdatedAt } from "./refresh.js";
-import { chartedSeasons, seasonLabel, seasonParam, type Season } from "./seasons.js";
+import { chartsUpdatedAt, scheduleUpdatedAt, topChartsUpdatedAt } from "./refresh.js";
+import {
+  browsable,
+  chartedSeasons,
+  seasonLabel,
+  seasonParam,
+  shiftSeason,
+  type Season,
+} from "./seasons.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** The Schedule: today's episodes so far, and the week ahead. */
@@ -107,6 +122,7 @@ export async function loadSchedule(
     title: anime.title,
     pictureUrl: anime.mainPictureUrl,
     mediaType: anime.mediaType,
+    genres: anime.genres,
   };
 
   const slots = await db
@@ -173,6 +189,7 @@ export async function loadSchedule(
       episode,
       airingAt: airingAt.toISOString(),
       popularity: "popularity" in row ? row.popularity : null,
+      genres: row.genres,
       entry,
       watchOn: entry ? watchOn(media.get(row.malId)?.streamingLinks ?? [], services) : [],
     };
@@ -187,9 +204,39 @@ export async function loadSchedule(
   };
 }
 
+/** A chart's columns: what the shared catalog knows of each show. */
+const CHART_SHOW = {
+  animeId: anilistCatalog.malId,
+  title: anilistCatalog.title,
+  pictureUrl: anilistCatalog.coverUrl,
+  mediaType: anilistCatalog.mediaType,
+  numEpisodes: anilistCatalog.numEpisodes,
+  episodeMinutes: anilistCatalog.episodeMinutes,
+  genres: anilistCatalog.genres,
+  score: anilistCatalog.score,
+  popularity: anilistCatalog.popularity,
+  startDate: anilistCatalog.startDate,
+  airingStatus: anilistCatalog.airingStatus,
+};
+
+/** A chart's shows with where each stands on the user's list. */
+async function withEntries(
+  db: Db,
+  userId: string,
+  rows: Omit<ChartShow, "entry">[],
+): Promise<ChartShow[]> {
+  const entries = await entriesOf(
+    db,
+    userId,
+    rows.map((row) => row.animeId),
+  );
+  return rows.map((row) => ({ ...row, entry: entries.get(row.animeId) ?? null }));
+}
+
 /**
- * A charted season (last, this or next), most popular first, with where each show stands on
- * the user's list. Null for a season Browse doesn't chart.
+ * A season's chart, most popular first, with where each show stands on the user's list, and the
+ * seasons around it. Any season from Winter 1960 to next one; null for another. A season with no
+ * chart yet says so (`updatedAt` null); the route asks for it.
  */
 export async function loadSeasonChart(
   db: Db,
@@ -197,40 +244,46 @@ export async function loadSeasonChart(
   season: Season,
   now: Date = new Date(),
 ): Promise<SeasonChartResponse | null> {
-  const charted = chartedSeasons(now);
-  if (!charted.some((s) => s.season === season.season && s.year === season.year)) return null;
+  if (!browsable(season, now)) return null;
   const key = seasonKey(season);
 
   const rows = await db
-    .select({
-      animeId: anilistCatalog.malId,
-      title: anilistCatalog.title,
-      pictureUrl: anilistCatalog.coverUrl,
-      mediaType: anilistCatalog.mediaType,
-      numEpisodes: anilistCatalog.numEpisodes,
-      episodeMinutes: anilistCatalog.episodeMinutes,
-      genres: anilistCatalog.genres,
-      score: anilistCatalog.score,
-      popularity: anilistCatalog.popularity,
-      startDate: anilistCatalog.startDate,
-      airingStatus: anilistCatalog.airingStatus,
-    })
+    .select(CHART_SHOW)
     .from(seasonCharts)
     .innerJoin(anilistCatalog, eq(anilistCatalog.malId, seasonCharts.malId))
     .where(eq(seasonCharts.season, key))
     .orderBy(asc(seasonCharts.rank));
-  const entries = await entriesOf(
-    db,
-    userId,
-    rows.map((row) => row.animeId),
-  );
-  const updated = await chartsUpdatedAt(db, [key]);
+  const updated = (await chartsUpdatedAt(db, [key])).get(key) ?? null;
+  const previous = shiftSeason(season, -1);
+  const next = shiftSeason(season, 1);
 
   return {
     season: seasonParam(season),
     label: seasonLabel(season),
-    seasons: charted.map((s) => ({ season: seasonParam(s), label: seasonLabel(s) })),
-    updatedAt: updated.get(key)?.toISOString() ?? null,
-    shows: rows.map((row) => ({ ...row, entry: entries.get(row.animeId) ?? null })),
+    seasons: chartedSeasons(now).map((s) => ({ season: seasonParam(s), label: seasonLabel(s) })),
+    previous: browsable(previous, now) ? seasonParam(previous) : null,
+    next: browsable(next, now) ? seasonParam(next) : null,
+    updatedAt: updated?.toISOString() ?? null,
+    pending: updated === null,
+    shows: await withEntries(db, userId, rows),
+  };
+}
+
+/** One of the Top charts, in AniList's order, with where each show stands on the user's list. */
+export async function loadTopChart(
+  db: Db,
+  userId: string,
+  chart: TopChart,
+): Promise<TopChartResponse> {
+  const rows = await db
+    .select(CHART_SHOW)
+    .from(topCharts)
+    .innerJoin(anilistCatalog, eq(anilistCatalog.malId, topCharts.malId))
+    .where(eq(topCharts.chart, chart))
+    .orderBy(asc(topCharts.rank));
+  return {
+    chart,
+    updatedAt: (await topChartsUpdatedAt(db)).get(chart)?.toISOString() ?? null,
+    shows: await withEntries(db, userId, rows),
   };
 }

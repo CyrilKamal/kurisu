@@ -170,3 +170,43 @@ export function chartMeta(show: ChartShow): string {
     .filter((part) => part !== null)
     .join(" · ");
 }
+
+const SEASON_ORDER = ["WINTER", "SPRING", "SUMMER", "FALL"];
+
+/**
+ * The years Browse's Seasons offers for one season of the year, newest first: back to 1960, and
+ * forward only as far as next season ("2027-WINTER"), so Fall 2027 isn't offered in Winter 2027.
+ */
+export function seasonYears(season: string, latest: string): number[] {
+  const [yearText = "", latestSeason = "WINTER"] = latest.split("-");
+  const lastYear =
+    SEASON_ORDER.indexOf(season) <= SEASON_ORDER.indexOf(latestSeason)
+      ? Number(yearText)
+      : Number(yearText) - 1;
+  return Array.from({ length: Math.max(0, lastYear - 1960 + 1) }, (_, i) => lastYear - i);
+}
+
+/** How the Schedule orders each day: by air time, or the most popular first. */
+export const SCHEDULE_SORTS = ["time", "popularity"] as const;
+export type ScheduleSort = (typeof SCHEDULE_SORTS)[number];
+export const SCHEDULE_SORT_LABELS: Record<ScheduleSort, string> = {
+  time: "By time",
+  popularity: "Most popular",
+};
+
+/** The genres the week's episodes have, the most common first. */
+export function scheduleGenres(episodes: ScheduleEpisode[]): string[] {
+  const counts = new Map<string, number>();
+  for (const show of new Map(episodes.map((e) => [e.animeId, e])).values()) {
+    for (const genre of show.genres) counts.set(genre, (counts.get(genre) ?? 0) + 1);
+  }
+  return [...counts].sort(([a, x], [b, y]) => y - x || a.localeCompare(b)).map(([genre]) => genre);
+}
+
+/** A day's rows in the chosen order; popularity unknown goes last, ties by time. */
+export function sortDay(rows: ScheduleRow[], sort: ScheduleSort): ScheduleRow[] {
+  if (sort === "time") return rows;
+  return [...rows].sort(
+    (a, b) => (b.popularity ?? -1) - (a.popularity ?? -1) || a.airingAt.localeCompare(b.airingAt),
+  );
+}

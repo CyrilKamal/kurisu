@@ -57,7 +57,8 @@ import { createLimits } from "./billing/limits.js";
 import { loadPlansFile } from "./billing/plans.js";
 import { registerPlanRoutes } from "./billing/routes.js";
 import { registerCalendarRoutes } from "./calendar/routes.js";
-import { refreshSchedule, refreshSeasonCharts } from "./browse/refresh.js";
+import { createSeasonArchive } from "./browse/archive.js";
+import { refreshSchedule, refreshSeasonCharts, refreshTopCharts } from "./browse/refresh.js";
 import { registerBrowseRoutes } from "./browse/routes.js";
 import { registerTitleLanguage } from "./titles/localize.js";
 import { registerFriendRoutes } from "./friends/routes.js";
@@ -344,6 +345,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     browseRefresh = (async () => {
       await refreshSchedule({ db, anilist: syncAniList });
       await refreshSeasonCharts({ db, anilist: syncAniList });
+      await refreshTopCharts({ db, anilist: syncAniList });
     })()
       .catch((err: unknown) => {
         app.log.warn({ err: { name: (err as Error).name } }, "could not refresh Browse's data");
@@ -445,7 +447,10 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   registerInviteRoutes(app, { config, db });
   registerWaitlistRoutes(app, { config, db });
   registerFriendRoutes(app, { config, db, cipher, limits });
-  registerBrowseRoutes(app, { db, refresh: refreshBrowse });
+  // Earlier seasons' charts, fetched when someone asks for one.
+  const seasonArchive = createSeasonArchive({ db, anilist: syncAniList, log: app.log });
+  app.addHook("onClose", () => seasonArchive.settled());
+  registerBrowseRoutes(app, { db, refresh: refreshBrowse, archive: seasonArchive });
   registerAlertRoutes(app, { config, db, limits });
   registerCalendarRoutes(app, {
     config,
