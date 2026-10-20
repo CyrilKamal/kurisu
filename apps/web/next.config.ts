@@ -49,6 +49,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       new URL("https://cdn.myanimelist.net/**"),
       new URL("https://s4.anilist.co/file/anilistcdn/**"),
+      // Trailer thumbnails, for AniList's YouTube trailers.
+      new URL("https://i.ytimg.com/**"),
     ],
   },
 };

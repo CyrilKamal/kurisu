@@ -3,7 +3,7 @@ import { and, eq, inArray } from "drizzle-orm";
 
 import { airingView } from "../anilist/cache.js";
 import { rememberShows } from "../anilist/catalog.js";
-import type { SynopsisLoader } from "../anilist/synopsis.js";
+import type { ShowPageLoader } from "../anilist/showPage.js";
 import { watchOn } from "../brief/services.js";
 import type { Db } from "../db/client.js";
 import {
@@ -17,13 +17,15 @@ import {
 import { listFriends } from "../friends/friendships.js";
 import { loadJournal } from "../journal/load.js";
 import { altTitles } from "../list/altTitles.js";
+import { extrasView } from "./extras.js";
 
 /** A show page's journal: this show's updates, newest first. */
 const SHOW_JOURNAL_LIMIT = 50;
 
 export interface ShowDeps {
   db: Db;
-  synopsis: SynopsisLoader;
+  /** The show's synopsis and AniList extras, fetched the first time anyone opens it. */
+  pages: ShowPageLoader;
   /**
    * Fetches the show's AniList row in the background when it's missing or old, so its airing
    * and where to watch are there on the next view. Never awaited by the page.
@@ -119,8 +121,8 @@ export async function loadShow(
           );
   const names = new Map(sharing.map((friend) => [friend.id, friend.malUsername]));
 
-  const [synopsis, journal] = await Promise.all([
-    deps.synopsis.get(malId),
+  const [details, journal] = await Promise.all([
+    deps.pages.get(malId),
     loadJournal(db, userId, { animeId: malId, limit: SHOW_JOURNAL_LIMIT }),
   ]);
 
@@ -137,7 +139,7 @@ export async function loadShow(
       startDate: show.startDate,
       genres: show.genres,
       malMean: show.malMean,
-      synopsis,
+      synopsis: details.synopsis,
     },
     entry: entry
       ? {
@@ -172,5 +174,8 @@ export async function loadShow(
         episodesWatched: row.episodesWatched,
       }))
       .sort((a, b) => a.malUsername.localeCompare(b.malUsername)),
+    extras: details.extras
+      ? await extrasView(db, userId, details.extras, settings?.services ?? [])
+      : null,
   };
 }

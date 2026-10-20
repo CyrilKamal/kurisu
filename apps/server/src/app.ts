@@ -60,7 +60,7 @@ import { registerBrowseRoutes } from "./browse/routes.js";
 import { registerFriendRoutes } from "./friends/routes.js";
 import { captureReview } from "./review/capture.js";
 import { registerStatsRoutes } from "./stats/routes.js";
-import { createSynopsisLoader } from "./anilist/synopsis.js";
+import { createShowPageLoader } from "./anilist/showPage.js";
 import { registerShowRoutes } from "./shows/routes.js";
 import { registerTasteRoutes } from "./taste/routes.js";
 import { createAnimeRefresher } from "./sync/animeDetails.js";
@@ -287,18 +287,18 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
     urgent: true,
   });
 
-  // A show's page fetches its synopsis the first time anyone opens it, while they wait, and its
-  // airing and where to watch in the background when they're missing or old.
-  const synopsis = createSynopsisLoader({
+  // A show's page fetches its synopsis and extras the first time anyone opens it, while they
+  // wait, and its airing and where to watch in the background when they're missing or old.
+  const showPages = createShowPageLoader({
     db,
     anilist: chatAniList,
     onError: (err) => {
-      app.log.warn({ err: { name: (err as Error).name } }, "could not fetch a synopsis");
+      app.log.warn({ err: { name: (err as Error).name } }, "could not fetch a show's page");
     },
   });
   const showRefreshes = new Map<string, Promise<void>>();
   app.addHook("onClose", async () => {
-    await Promise.allSettled([synopsis.settle(), ...showRefreshes.values()]);
+    await Promise.allSettled([showPages.settle(), ...showRefreshes.values()]);
   });
   /** One background lookup per show and kind at a time, however many pages ask. */
   const refreshInBackground = (key: string, work: () => Promise<unknown>, what: string) => {
@@ -456,7 +456,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   registerDiaryRoutes(app, { config, db });
   registerShowRoutes(app, {
     db,
-    synopsis,
+    pages: showPages,
     refreshAiring: refreshShowAiring,
     refreshSequels: refreshShowSequels,
     catalog: (queries) => chatAniList.searchAnime(queries),

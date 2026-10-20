@@ -246,6 +246,13 @@
       "when": 1792459965872,
       "tag": "0034_browse",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792461206660,
+      "tag": "0035_show_extras",
+      "breakpoints": true
     }
   ]
 }

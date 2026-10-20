@@ -15,6 +15,7 @@ import {
   conversations,
   listEvents,
   seasonShows,
+  showExtras,
   users,
 } from "../../src/db/schema.js";
 import { SEARCHES_PER_MINUTE } from "../../src/shows/routes.js";
@@ -211,6 +212,140 @@ describe("GET /shows/:animeId", () => {
     );
     expect(again.show.synopsis).toBe(page.show.synopsis);
     expect(anilist.requests.filter((r) => r.query.includes("description"))).toHaveLength(1);
+  });
+
+  it("adds AniList's extras: watch order, characters, trailer, tags and episodes on your services", async () => {
+    await h.db.insert(briefSettings).values({ userId, services: ["crunchyroll"] });
+    anilist.media = [airingMedia(5100, WATCHING, { description: "A journey." })];
+    const anime = (id: number, idMal: number | null, title: string, extra = {}) => ({
+      ...catalogMedia(id, idMal, title, extra),
+      type: "ANIME",
+    });
+    anilist.pages.set(WATCHING, {
+      source: "MANGA",
+      season: "FALL",
+      seasonYear: 2026,
+      averageScore: 85,
+      studios: { nodes: [{ name: "Madhouse" }] },
+      rankings: [
+        { rank: 120, type: "RATED", allTime: true },
+        { rank: 4, type: "POPULAR", allTime: false, season: "FALL", year: 2026 },
+      ],
+      trailer: {
+        id: "abc_123",
+        site: "youtube",
+        thumbnail: "https://i.ytimg.com/vi/abc_123/hq.jpg",
+      },
+      tags: [
+        { name: "Travel", rank: 90, isMediaSpoiler: false },
+        { name: "Twist Ending", rank: 60, isMediaSpoiler: true },
+      ],
+      relations: {
+        edges: [
+          { relationType: "SIDE_STORY", node: anime(601, 9601, "Side Tale") },
+          { relationType: "PREQUEL", node: anime(600, COMPLETED, "Fixture Completed Film") },
+          { relationType: "ADAPTATION", node: { ...anime(602, null, "The Manga"), type: "MANGA" } },
+          { relationType: "SEQUEL", node: anime(603, 9603, "Adult Sequel", { isAdult: true }) },
+        ],
+      },
+      characters: {
+        edges: [
+          {
+            role: "MAIN",
+            node: { name: { full: "Fern" }, image: { medium: "https://s4.anilist.co/c/1.png" } },
+            voiceActors: [
+              {
+                name: { full: "Kana Ichinose" },
+                image: { medium: "https://s4.anilist.co/s/1.png" },
+              },
+            ],
+          },
+        ],
+      },
+      recommendations: { nodes: [{ mediaRecommendation: catalogMedia(700, 9700, "Fans Pick") }] },
+      streamingEpisodes: [
+        {
+          title: "Episode 1 - Start",
+          url: "https://www.crunchyroll.com/watch/1",
+          site: "Crunchyroll",
+        },
+        { title: "Episode 1 - Start", url: "https://www.netflix.com/watch/1", site: "Netflix" },
+      ],
+    });
+
+    const page = contract.showResponseSchema.parse(
+      (await request("GET", `/shows/${String(WATCHING)}`)).json(),
+    );
+    expect(page.show.synopsis).toBe("A journey.");
+    expect(page.extras).toMatchObject({
+      studios: ["Madhouse"],
+      source: "MANGA",
+      season: "Fall 2026",
+      score: 8.5,
+      rankings: [
+        { rank: 4, kind: "popular", scope: "Fall 2026" },
+        { rank: 120, kind: "rated", scope: "all time" },
+      ],
+      trailer: {
+        url: "https://www.youtube.com/watch?v=abc_123",
+        thumbnail: "https://i.ytimg.com/vi/abc_123/hq.jpg",
+      },
+      tags: [
+        { name: "Travel", rank: 90, spoiler: false },
+        { name: "Twist Ending", rank: 60, spoiler: true },
+      ],
+      characters: [
+        {
+          name: "Fern",
+          role: "main",
+          pictureUrl: "https://s4.anilist.co/c/1.png",
+          voiceActor: { name: "Kana Ichinose", pictureUrl: "https://s4.anilist.co/s/1.png" },
+        },
+      ],
+      // Only the services the user has.
+      episodes: [
+        {
+          title: "Episode 1 - Start",
+          url: "https://www.crunchyroll.com/watch/1",
+          service: "Crunchyroll",
+        },
+      ],
+    });
+    // Watch order: the prequel first; no manga, nothing adult.
+    expect(page.extras?.relations.map((r) => [r.relation, r.animeId, r.status])).toEqual([
+      ["PREQUEL", COMPLETED, "completed"],
+      ["SIDE_STORY", 9601, null],
+    ]);
+    expect(page.extras?.recommendations.map((r) => [r.animeId, r.title])).toEqual([
+      [9700, "Fans Pick"],
+    ]);
+    // Related and recommended shows open too.
+    expect((await request("GET", "/shows/9601")).statusCode).toBe(200);
+
+    // Fresh, so a second view asks AniList nothing.
+    const asked = anilist.requests.filter((r) => r.query.includes("streamingEpisodes")).length;
+    await request("GET", `/shows/${String(WATCHING)}`);
+    expect(anilist.requests.filter((r) => r.query.includes("streamingEpisodes"))).toHaveLength(
+      asked,
+    );
+
+    // A week on, the page opens on what's stored while it's fetched again in the background.
+    const old = new Date(Date.now() - 8 * DAY_MS);
+    await h.db.update(showExtras).set({ fetchedAt: old }).where(eq(showExtras.malId, WATCHING));
+    const stale = contract.showResponseSchema.parse(
+      (await request("GET", `/shows/${String(WATCHING)}`)).json(),
+    );
+    expect(stale.extras?.studios).toEqual(["Madhouse"]);
+    const until = Date.now() + 5_000;
+    for (;;) {
+      const [row] = await h.db
+        .select({ at: showExtras.fetchedAt })
+        .from(showExtras)
+        .where(eq(showExtras.malId, WATCHING));
+      if (row && row.at.getTime() > old.getTime()) break;
+      if (Date.now() > until) throw new Error("the extras weren't refreshed");
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
   });
 
   it("remembers that AniList has no synopsis, and opens without one when AniList is down", async () => {
