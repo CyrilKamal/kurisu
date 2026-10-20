@@ -18,11 +18,11 @@ import { finishes } from "@/lib/finish";
 import { editErrorMessage } from "@/lib/editEntry";
 import { durationLabel } from "@/lib/format";
 import { notifyListChanged } from "@/lib/listChanged";
+import { scoreOptions } from "@/lib/score";
 import { goalProgress } from "@/lib/stats";
 
+import { useScoreStyle } from "./ScoreStyle";
 import { Sheet } from "./Sheet";
-
-const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const FinishContext = createContext<(change: ChangeView) => void>(() => undefined);
 
@@ -97,6 +97,8 @@ export function FinishDetails({ animeId }: { animeId: number }) {
   const router = useRouter();
   const [page, setPage] = useState<ShowResponse | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
+  // Lowest first, in the user's style; each saves MAL's 1–10.
+  const choices = scoreOptions(useScoreStyle()).reverse();
   const [score, setScore] = useState(0);
   const [saving, setSaving] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +172,7 @@ export function FinishDetails({ animeId }: { animeId: number }) {
           Your score
         </span>
         <div className="k-chips" role="group" aria-labelledby={`rate-${String(animeId)}`}>
-          {SCORES.map((value) => (
+          {choices.map(({ value, label }) => (
             <button
               key={value}
               type="button"
@@ -180,7 +182,7 @@ export function FinishDetails({ animeId }: { animeId: number }) {
               disabled={saving !== null}
               onClick={() => void rate(value)}
             >
-              {value}
+              {label}
             </button>
           ))}
         </div>

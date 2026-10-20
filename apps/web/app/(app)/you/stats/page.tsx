@@ -7,7 +7,8 @@ import { Histogram, modeOf } from "@/components/Histogram";
 import { Metric, Metrics } from "@/components/Metrics";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { StatusBadge } from "@/components/StatusBadge";
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
+import { meanText, scoreAxisLabel, scoreText } from "@/lib/score";
 import { daysWatched, hoursWatched, monthLabel, shortDate, showCount } from "@/lib/stats";
 
 import { WatchedStats } from "./WatchedStats";
@@ -39,8 +40,9 @@ const MIN_SCORED_FOR_HISTOGRAM = 10;
  * list, including changes made on MAL's site that a sync found.
  */
 export default async function StatsPage() {
-  const stats = await apiGet("/stats", statsResponseSchema);
-  if (!stats) redirect("/");
+  const [stats, me] = await Promise.all([apiGet("/stats", statsResponseSchema), getMe()]);
+  if (!stats || !me) redirect("/");
+  const style = me.scoreStyle;
   const { allTime, year, week } = stats;
   const scoreMode = modeOf(allTime.scores);
 
@@ -123,7 +125,7 @@ export default async function StatsPage() {
           <Metric label="Completed" value={String(allTime.byStatus.completed)} />
           <Metric
             label="Mean score"
-            value={allTime.meanScore === null ? "–" : allTime.meanScore.toFixed(2)}
+            value={allTime.meanScore === null ? "–" : meanText(allTime.meanScore, style)}
             basis={allTime.scored > 0 ? `across ${showCount(allTime.scored)}` : "nothing scored"}
           />
         </Metrics>
@@ -147,14 +149,15 @@ export default async function StatsPage() {
             <h3 className="k-caps">Your scores</h3>
             <Histogram
               summary={`How you spread your scores across ${showCount(allTime.scored)}${
-                scoreMode === null ? "" : `; most often ${String(scoreMode + 1)}`
-              }${allTime.meanScore === null ? "" : `, average ${allTime.meanScore.toFixed(1)}`}`}
+                scoreMode === null ? "" : `; most often ${scoreText(scoreMode + 1, style)}`
+              }${allTime.meanScore === null ? "" : `, average ${meanText(allTime.meanScore, style)}`}`}
               modeIndex={scoreMode}
               mean={allTime.meanScore}
+              meanLabel={allTime.meanScore === null ? null : meanText(allTime.meanScore, style)}
               columns={allTime.scores.map((value, i) => ({
-                label: String(i + 1),
+                label: scoreAxisLabel(i + 1, style),
                 value,
-                name: `Score ${String(i + 1)}`,
+                name: `Score ${scoreText(i + 1, style)}`,
               }))}
             />
           </div>

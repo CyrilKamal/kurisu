@@ -143,6 +143,32 @@ describe("responses match the contract", () => {
     expect(() => contract.topChartResponseSchema.parse(top.json())).not.toThrow();
   });
 
+  it("the /favorites endpoints and the score style", async () => {
+    const send = (method: "PUT" | "DELETE", url: string, payload?: Record<string, unknown>) =>
+      h.app.inject({
+        method,
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        ...(payload ? { payload } : {}),
+      });
+    const listed = await get("/favorites");
+    expect(contract.favoritesResponseSchema.parse(listed.json()).favorites).toEqual([]);
+    const added = await send("PUT", "/favorites/900001");
+    expect(() => contract.favoritesResponseSchema.parse(added.json())).not.toThrow();
+    const ordered = await send("PUT", "/favorites", { animeIds: [900001] });
+    expect(() => contract.favoritesResponseSchema.parse(ordered.json())).not.toThrow();
+    const removed = await send("DELETE", "/favorites/900001");
+    expect(contract.favoritesResponseSchema.parse(removed.json()).favorites).toEqual([]);
+
+    const style = await send("PUT", "/me/score-style", { style: "stars_5" });
+    expect(contract.scoreStyleResponseSchema.parse(style.json())).toEqual({
+      scoreStyle: "stars_5",
+    });
+    expect(contract.meResponseSchema.parse((await get("/me")).json()).scoreStyle).toBe("stars_5");
+    expect((await send("PUT", "/me/score-style", { style: "smileys" })).statusCode).toBe(400);
+  });
+
   it("the /alerts endpoints", async () => {
     const put = (url: string, payload: Record<string, unknown>) =>
       h.app.inject({

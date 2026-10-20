@@ -17,6 +17,7 @@ import { DeleteAccount } from "./DeleteAccount";
 import { EpisodeAlerts } from "./EpisodeAlerts";
 import { LogoutButton } from "./LogoutButton";
 import { Notifications } from "./Notifications";
+import { ScoreStylePicker } from "./ScoreStylePicker";
 import { SharingSwitch } from "./SharingSwitch";
 import { TitleLanguagePicker } from "./TitleLanguagePicker";
 
@@ -51,6 +52,7 @@ export default async function SettingsPage() {
       <CalendarFeed initial={calendar} />
       <SharingSwitch initial={me.user.shareActivity} />
       <TitleLanguagePicker initial={me.titleLanguage} />
+      <ScoreStylePicker initial={me.scoreStyle} />
 
       <section className="pt-6">
         <h2 className="k-caps pb-2">Install</h2>

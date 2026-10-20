@@ -9,8 +9,9 @@ import { Poster } from "@/components/Poster";
 import { Score } from "@/components/Score";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ShowLink } from "@/components/ShowLink";
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
 import { mediaTypeLabel } from "@/lib/format";
+import { meanText } from "@/lib/score";
 import { goalProgress, hoursWatched, monthLabel, shortDate, showCount } from "@/lib/stats";
 import { MONTH_NAMES, yearShareText } from "@/lib/year";
 
@@ -60,11 +61,11 @@ function askedYear(param: string | string[] | undefined): number | null {
  */
 export default async function YearPage(props: PageProps<"/you/year">) {
   const asked = askedYear((await props.searchParams).year);
-  const review = await apiGet(
-    asked === null ? "/year" : `/year?year=${String(asked)}`,
-    yearReviewSchema,
-  );
-  if (!review) redirect("/");
+  const [review, me] = await Promise.all([
+    apiGet(asked === null ? "/year" : `/year?year=${String(asked)}`, yearReviewSchema),
+    getMe(),
+  ]);
+  if (!review || !me) redirect("/");
   const { year, currentYear, basic, full } = review;
   const goal = basic.goal === null ? null : goalProgress(basic.completed, basic.goal);
   const yearLink = (y: number) => (y === currentYear ? "/you/year" : `/you/year?year=${String(y)}`);
@@ -176,7 +177,8 @@ export default async function YearPage(props: PageProps<"/you/year">) {
               </ul>
               {full.meanScore !== null && (
                 <p className="k-field__hint pt-2">
-                  Average {full.meanScore.toFixed(2)} across {showCount(full.scored)} you scored.
+                  Average {meanText(full.meanScore, me.scoreStyle)} across {showCount(full.scored)}{" "}
+                  you scored.
                 </p>
               )}
             </section>

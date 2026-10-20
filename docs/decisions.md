@@ -2703,3 +2703,24 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Voices appear after the first sync with this,** and Stats says how many shows are counted until then.
 - **Broadcast is only known for shows on someone's list.**
 - **The score spread is left out below 20 scores.**
+
+## 2026-10-20 — Score styles that map exactly, and favorites kept in kurisu (Milestone 8 interlude)
+**Decision:**
+- **A score style setting:** 10 points (MAL's, the default), 100 points, or 5 stars with halves (Cyril's choice). Each maps exactly onto MAL's 1–10, which is still what's saved.
+- **Where it shows:** every Score, the edit, add and finish pickers, Stats' bars and means, and the year's average follow the style.
+- **What keeps MAL's 10 points:** the Journal's diffs and imports, which describe what was written to MAL, and Chat.
+- **Favorites:** up to 10 shows, in the user's order, kept in kurisu. Friends see them while sharing is on.
+
+**Alternatives:**
+- **AniList's 3 smileys,** which can't map exactly: a face covers several MAL scores, so picking one would change a score.
+- **Converting every text** that mentions a score, including diffs and Chat.
+- **Favorites from MAL:** its API has none.
+- **No cap on favorites.**
+
+**Why:**
+- **Exact mappings** mean a style is only a view, so switching it can never change a score on MAL.
+- **Ten favorites** keep a profile a short, chosen list.
+
+**Consequences:**
+- **Mixed scales:** a 5-star user still sees "score 7 → 8" in the Journal and in Chat.
+- **Favorites stay in kurisu:** they don't sync to MAL or AniList.

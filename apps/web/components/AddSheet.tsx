@@ -11,11 +11,11 @@ import { useState } from "react";
 import { sendApi } from "@/lib/clientApi";
 import { addErrorMessage } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
+import { scoreOptions } from "@/lib/score";
 import { useWriteToast } from "@/lib/useWriteToast";
 
+import { useScoreStyle } from "./ScoreStyle";
 import { Sheet } from "./Sheet";
-
-const SCORES = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
 /**
  * Puts a show on the list: Plan to Watch unless the user picks another status, and a score if
@@ -32,6 +32,7 @@ export function AddSheet({
   onAdded?: (change: ChangeView) => void;
 }) {
   const toast = useWriteToast();
+  const style = useScoreStyle();
   const [status, setStatus] = useState<ListStatus>("plan_to_watch");
   const [score, setScore] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -96,9 +97,9 @@ export function AddSheet({
             }}
           >
             <option value={0}>No score</option>
-            {SCORES.map((s) => (
-              <option key={s} value={s}>
-                {s}
+            {scoreOptions(style).map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

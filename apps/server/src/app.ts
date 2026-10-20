@@ -27,6 +27,7 @@ import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
 import { registerBriefRoutes } from "./brief/routes.js";
 import { registerAlertRoutes } from "./alerts/routes.js";
+import { registerFavoriteRoutes } from "./favorites/routes.js";
 import { refreshCast, watchedIds } from "./anilist/cast.js";
 import { runEpisodeAlerts } from "./alerts/service.js";
 import { createBriefScheduler } from "./brief/scheduler.js";
@@ -460,6 +461,7 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
   app.addHook("onClose", () => seasonArchive.settled());
   registerBrowseRoutes(app, { db, refresh: refreshBrowse, archive: seasonArchive });
   registerAlertRoutes(app, { config, db, limits });
+  registerFavoriteRoutes(app, { config, db });
   registerCalendarRoutes(app, {
     config,
     db,
