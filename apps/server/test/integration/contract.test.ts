@@ -107,6 +107,16 @@ describe("responses match the contract", () => {
     expect(() => contract.planResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("GET /browse/schedule", async () => {
+    const res = await get("/browse/schedule");
+    expect(() => contract.scheduleResponseSchema.parse(res.json())).not.toThrow();
+  });
+
+  it("GET /browse/seasons", async () => {
+    const res = await get("/browse/seasons");
+    expect(() => contract.seasonChartResponseSchema.parse(res.json())).not.toThrow();
+  });
+
   it("GET /me/export", async () => {
     const res = await get("/me/export");
     expect(() => contract.dataExportSchema.parse(res.json())).not.toThrow();

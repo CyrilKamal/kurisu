@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
       { source: "/you/diary", destination: "/you/journal", permanent: false },
       { source: "/list/brief", destination: "/you/settings", permanent: false },
       { source: "/list/account", destination: "/you/settings", permanent: false },
+      { source: "/search", destination: "/browse?tab=search", permanent: false },
     ]);
   },
   // Proxy /api/* to the Fastify server so the browser only ever talks to one origin.

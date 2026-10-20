@@ -2562,3 +2562,29 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Changing the terms is a one-line release:** set `TERMS_VERSION` to the new date, and everyone is asked again.
 - **Accounts from before this are asked once;** the owner never is.
 - **A direct API client could skip `/accept`,** but it still can't create an account without consent.
+
+## 2026-10-19 — Browse: a fifth tab with the airing schedule and season charts (Milestone 8 interlude)
+**Decision:**
+- **A fifth tab, Browse** (Cyril's choice): Today · List · Browse · Chat · You. It holds Schedule, Seasons and Search, which moves there from the List's "+".
+- **Two shared tables, kept apart from the ones like them:**
+  - `schedule_slots`: AniList's whole airing schedule, a day back to 8 ahead, rebuilt every 6 hours.
+  - `season_charts`: last, this and next season's 100 most popular shows, rebuilt daily.
+  - They don't touch the calendar's `airing_episodes` (MAL numbering, the user's shows) or the recommender's `season_shows` (series still airing, used for "this season" picks).
+- **Background only:** a timer while background jobs are on, plus a rebuild started when someone opens Browse on stale data. Never fetched while someone waits.
+- **Episode numbers:** on the Schedule, a show on the user's list shows MAL's number (AniList's plus the part's offset). An episode of another AniList part of that show is left out.
+
+**Alternatives:**
+- **For the Schedule's home:**
+  - Keep four tabs, with Browse behind the List's "+" (easy to miss).
+  - Replace Today (the home screen people land on).
+- **For the data:**
+  - Fetch per visitor (AniList's 3-second pacing makes a page wait, and every visitor adds requests).
+  - Reuse `airing_episodes` (its numbers are MAL's, and mixing AniList's into it would show wrong episodes on calendars).
+  - Use MAL's seasonal API (it has no airing times, and MAL asks for requests half a second apart).
+
+**Why:** The airing schedule and next season are what tracker users browse most on MyAnimeList and AniList, and kurisu showed only the user's own shows. Shared, prebuilt tables keep it to about 15 AniList requests every few hours for everyone, whatever the traffic.
+
+**Consequences:**
+- **A new server's Browse is empty for its first minutes,** and says so.
+- **Episode numbers of shows not on the list are AniList's,** which can differ from MAL's for a show split into parts.
+- **More `anime` rows:** every scheduled or charted show gets one, as Search's results already did.

@@ -889,6 +889,47 @@ export const seasonShows = pgTable("season_shows", {
   fetchedAt: timestamptz("fetched_at").notNull(),
 });
 
+/**
+ * AniList's airing schedule for everyone, from a day back to 8 days ahead (Browse's Schedule), in
+ * AniList's own episode numbers. Rebuilt every 6 hours by browse/refresh.ts.
+ */
+export const scheduleSlots = pgTable(
+  "schedule_slots",
+  {
+    anilistId: integer("anilist_id").notNull(),
+    episode: integer("episode").notNull(),
+    airingAt: timestamptz("airing_at").notNull(),
+    malId: integer("mal_id")
+      .notNull()
+      .references(() => anime.malId, { onDelete: "cascade" }),
+    popularity: integer("popularity"),
+    fetchedAt: timestamptz("fetched_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.anilistId, table.episode] }),
+    index("schedule_slots_airing_at_idx").on(table.airingAt),
+  ],
+);
+
+/**
+ * Each charted season's most popular shows (Browse's Seasons): last, this and next season,
+ * rebuilt daily by browse/refresh.ts. Their details are in `anilist_catalog`.
+ */
+export const seasonCharts = pgTable(
+  "season_charts",
+  {
+    // "2027 WINTER".
+    season: text("season").notNull(),
+    malId: integer("mal_id")
+      .notNull()
+      .references(() => anilistCatalog.malId, { onDelete: "cascade" }),
+    // 1 for the most popular.
+    rank: integer("rank").notNull(),
+    fetchedAt: timestamptz("fetched_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.season, table.malId] })],
+);
+
 /** When each user's discovery pool was last built, so it's rebuilt at most daily. */
 export const discoveryRuns = pgTable("discovery_runs", {
   userId: uuid("user_id")

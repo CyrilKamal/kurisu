@@ -123,6 +123,9 @@ export default async function TodayPage() {
               </li>
             ))}
           </ul>
+          <Link href="/browse" className="k-link mt-2 inline-block">
+            Full schedule
+          </Link>
         </section>
       )}
 

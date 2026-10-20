@@ -91,6 +91,7 @@ export function catalogRowFrom(show: DiscoveredShow & { malId: number }): Catalo
     FINISHED: "finished_airing",
     RELEASING: "currently_airing",
     HIATUS: "currently_airing",
+    NOT_YET_RELEASED: "not_yet_aired",
   };
   return {
     malId: show.malId,

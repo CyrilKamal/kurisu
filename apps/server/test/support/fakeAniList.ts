@@ -52,6 +52,14 @@ export interface FakeRelation {
   node: FakeCatalogMedia & { type: string; externalLinks: FakeAniListMedia["externalLinks"] };
 }
 
+/** One episode on AniList's whole schedule (not filtered by show), with its show. */
+export interface FakeScheduled {
+  episode: number;
+  /** Unix seconds, as AniList sends it. */
+  airingAt: number;
+  media: FakeCatalogMedia & { popularity: number | null };
+}
+
 export interface FakeAiring {
   mediaId: number;
   episode: number;
@@ -90,6 +98,10 @@ export class FakeAniList {
    */
   lineups = new Map<string, number[]>();
   airings: FakeAiring[] = [];
+  /** AniList's whole airing schedule, for Browse. */
+  schedule: FakeScheduled[] = [];
+  /** Season charts, most popular first, as AniList ids, keyed "WINTER 2027". */
+  charts = new Map<string, number[]>();
   readonly requests: GraphQlBody[] = [];
   private readonly failures: { status: number; headers?: Record<string, string> }[] = [];
 
@@ -137,6 +149,8 @@ export class FakeAniList {
     this.relations = new Map();
     this.lineups = new Map();
     this.airings = [];
+    this.schedule = [];
+    this.charts = new Map();
     this.requests.length = 0;
     this.failures.length = 0;
   }
@@ -166,6 +180,19 @@ export class FakeAniList {
           })),
         },
       };
+    }
+    if (body.query.includes("c1: Page")) {
+      // A season chart: aliased pages c1, c2 of 50, "season: WINTER, seasonYear: 2027".
+      const season = /season: (\w+)/.exec(body.query)?.[1] ?? "";
+      const year = /seasonYear: (\d+)/.exec(body.query)?.[1] ?? "";
+      const ids = this.charts.get(`${season} ${year}`) ?? [];
+      const pages: Record<string, { media: { id: number }[] }> = {};
+      for (const match of body.query.matchAll(/(c(\d+)): Page\(page: (\d+)/g)) {
+        const [, alias = "", , pageNumber = "1"] = match;
+        const start = (Number(pageNumber) - 1) * PER_PAGE;
+        pages[alias] = { media: ids.slice(start, start + PER_PAGE).map((id) => ({ id })) };
+      }
+      return pages;
     }
     if (body.query.includes("seasonYear")) {
       // One aliased page per season: "s0: Page(...) { media(type: ANIME, season: FALL, ...".
@@ -226,6 +253,15 @@ export class FakeAniList {
         };
       }
       return pages;
+    }
+    if (body.query.includes("airingSchedules") && !body.query.includes("mediaId_in")) {
+      const after = body.variables.after ?? -Infinity;
+      const before = body.variables.before ?? Infinity;
+      const matches = this.schedule
+        .filter((a) => a.airingAt > after && a.airingAt < before)
+        .sort((a, b) => a.airingAt - b.airingAt);
+      const { items, hasNextPage } = paginate(matches, page);
+      return { Page: { pageInfo: { hasNextPage }, airingSchedules: items } };
     }
     if (body.query.includes("airingSchedules")) {
       const after = body.variables.after ?? -Infinity;
