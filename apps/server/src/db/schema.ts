@@ -51,6 +51,9 @@ export const proposalSource = pgEnum("proposal_source", ["agent", "undo", "user"
  */
 export const writeKind = pgEnum("write_kind", ["update", "add", "remove"]);
 
+/** Which of a show's titles the app shows: MAL's romaji, the English one, or the Japanese. */
+export const titleLanguage = pgEnum("title_language", ["romaji", "english", "japanese"]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   malUserId: integer("mal_user_id").notNull().unique(),
@@ -67,6 +70,8 @@ export const users = pgTable("users", {
   ageConfirmedAt: timestamptz("age_confirmed_at"),
   termsAcceptedAt: timestamptz("terms_accepted_at"),
   termsVersion: text("terms_version"),
+  // Shows' titles in the app; the brief's text and Chat keep MAL's (the agent reads them back).
+  titleLanguage: titleLanguage("title_language").notNull().default("romaji"),
   // A new account has Premium until then (Milestone 8's trial); null for accounts from before.
   trialEndsAt: timestamptz("trial_ends_at"),
   createdAt: timestamptz("created_at").notNull().defaultNow(),

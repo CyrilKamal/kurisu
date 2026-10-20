@@ -16,6 +16,7 @@ import { DeleteAccount } from "./DeleteAccount";
 import { LogoutButton } from "./LogoutButton";
 import { Notifications } from "./Notifications";
 import { SharingSwitch } from "./SharingSwitch";
+import { TitleLanguagePicker } from "./TitleLanguagePicker";
 
 export const metadata: Metadata = { title: "Settings · kurisu" };
 
@@ -45,6 +46,7 @@ export default async function SettingsPage() {
       <BriefSettingsForm initial={settings} />
       <CalendarFeed initial={calendar} />
       <SharingSwitch initial={me.user.shareActivity} />
+      <TitleLanguagePicker initial={me.titleLanguage} />
 
       <section className="pt-6">
         <h2 className="k-caps pb-2">Install</h2>

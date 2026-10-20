@@ -1,6 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 
-import { TERMS_VERSION, termsAcceptRequestSchema } from "@kurisu/shared";
+import {
+  TERMS_VERSION,
+  termsAcceptRequestSchema,
+  titleLanguageRequestSchema,
+} from "@kurisu/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -258,18 +262,44 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     },
   );
 
-  /** Everything kurisu holds about the user, as a JSON file to keep. */
-  app.get("/me/export", { preHandler: requireUser(db) }, async (request, reply) => {
-    const user = request.user;
-    if (!user) throw new Error("requireUser did not set request.user");
-    const now = new Date();
-    const data = await exportUserData(db, user.id, planJson(await deps.limits.plan(user.id)), now);
-    const file = `kurisu-${user.malUsername}-${now.toISOString().slice(0, 10)}.json`;
-    return reply
-      .header("content-disposition", `attachment; filename="${file}"`)
-      .header("cache-control", "no-store")
-      .send(data);
-  });
+  /** Which of a show's titles the app shows them. */
+  app.put(
+    "/me/title-language",
+    { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] },
+    async (request, reply) => {
+      const user = request.user;
+      if (!user) throw new Error("requireUser did not set request.user");
+      const body = titleLanguageRequestSchema.safeParse(request.body);
+      if (!body.success) return reply.code(400).send({ error: "invalid_language" });
+      await db
+        .update(users)
+        .set({ titleLanguage: body.data.language })
+        .where(eq(users.id, user.id));
+      return { titleLanguage: body.data.language };
+    },
+  );
+
+  /** Everything kurisu holds about the user, as a JSON file to keep (titles as stored). */
+  app.get(
+    "/me/export",
+    { preHandler: requireUser(db), config: { titlesAsStored: true } },
+    async (request, reply) => {
+      const user = request.user;
+      if (!user) throw new Error("requireUser did not set request.user");
+      const now = new Date();
+      const data = await exportUserData(
+        db,
+        user.id,
+        planJson(await deps.limits.plan(user.id)),
+        now,
+      );
+      const file = `kurisu-${user.malUsername}-${now.toISOString().slice(0, 10)}.json`;
+      return reply
+        .header("content-disposition", `attachment; filename="${file}"`)
+        .header("cache-control", "no-store")
+        .send(data);
+    },
+  );
 
   /** The user finished or skipped the welcome steps; they don't come back. */
   app.post(
@@ -318,6 +348,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
         config.owner === null ||
         user.isOwner ||
         (account?.termsVersion === TERMS_VERSION && account.ageConfirmedAt !== null),
+      titleLanguage: user.titleLanguage,
     };
   });
 }

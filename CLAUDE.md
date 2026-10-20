@@ -175,6 +175,13 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
     - Another AniList part of a listed show is left out rather than numbered by a guess.
     - The user's recorded `airing_episodes` fill in.
   - **`GET /browse/seasons?season=2027-WINTER`:** a charted season (the current one by default). It's 404 `not_charted` for another season and 400 for a malformed one.
+- Titles in the user's language (`src/titles/localize.ts`, Settings' Titles):
+  - **The setting:** `users.title_language` is `romaji` (MAL's, the default), `english` or `japanese`. `PUT /me/title-language {language}` sets it, and `/me` returns it.
+  - **One `preSerialization` hook** gives every reply to a signed-in user shows' titles in that language: any object with a numeric `animeId` and a string `title`. It uses `anime.title_en` or `title_ja`, keeps the romaji title when the show has none, and moves the romaji title to the front of `altTitles`.
+  - **Left out:**
+    - routes with `config: { titlesAsStored: true }` (the data export);
+    - text the model or the brief wrote (Chat replies, the brief's text and its push), since the agent reads brief text back (`parseBriefText`).
+  - **The calendar feed,** which has no session, picks its titles in `feedEpisodes`.
 - Stats (`src/stats/`, `/you/stats`): `GET /stats` adds up the whole list, this year's completions (MAL's finish date, or else the day kurisu or a sync saw the show completed; imports and MAL-site adds don't count), and the last 7 days (`changes` without undos, undone changes or imports, plus `list_events`). `PUT /stats/goal {target}` sets this year's goal (`yearly_goals`). `list_events` holds changes made on MAL's site: after the first sync, each sync compares MAL's list with the mirror before replacing it (`stats/events.ts`), recording a change only when MAL's time for it is newer than the mirror's.
 - Year in review (`src/stats/year.ts`, `/you/year`, linked from You and Stats):
   - **`GET /year?year=YYYY`:** this year by default, on the user's clock, never a later one, back to 1960 (400 otherwise).

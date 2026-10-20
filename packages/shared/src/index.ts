@@ -153,8 +153,17 @@ export const meResponseSchema = z.object({
    * Always true for the owner, and on a server without one.
    */
   termsAccepted: z.boolean(),
+  /** Which of a show's titles the app shows them. */
+  titleLanguage: z.enum(["romaji", "english", "japanese"]),
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;
+
+/** Which of a show's titles the app shows: MAL's romaji, the English one, or the Japanese. */
+export const TITLE_LANGUAGES = ["romaji", "english", "japanese"] as const;
+export type TitleLanguage = (typeof TITLE_LANGUAGES)[number];
+/** PUT /me/title-language. */
+export const titleLanguageRequestSchema = z.object({ language: z.enum(TITLE_LANGUAGES) }).strict();
+export const titleLanguageResponseSchema = z.object({ titleLanguage: z.enum(TITLE_LANGUAGES) });
 
 /** POST /me/terms: "I'm 18 or older and I accept these terms", for the version they read. */
 export const termsAcceptRequestSchema = z.object({ version: z.string().max(32) }).strict();
