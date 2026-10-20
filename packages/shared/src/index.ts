@@ -1282,6 +1282,58 @@ export const todayResponseSchema = z.object({
 export type TodayResponse = z.infer<typeof todayResponseSchema>;
 
 /** GET /shows/:animeId: one show, the user's entry for it, and everything kurisu knows. */
+/** A show another's page links to, with where it stands on the user's list. */
+const linkedShowSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  startDate: z.string().nullable(),
+  status: listStatusSchema.nullable(),
+});
+export type LinkedShowView = z.infer<typeof linkedShowSchema>;
+
+/** A show page's extras, from AniList. */
+export const showExtrasSchema = z.object({
+  studios: z.array(z.string()),
+  /** AniList's words: MANGA, LIGHT_NOVEL, ORIGINAL, ... */
+  source: z.string().nullable(),
+  /** "Fall 2026". */
+  season: z.string().nullable(),
+  /** AniList's average score, out of 10. */
+  score: z.number().nullable(),
+  /** Its best rankings: "#4 most popular, Fall 2026". */
+  rankings: z.array(
+    z.object({
+      rank: z.number().int().positive(),
+      kind: z.enum(["rated", "popular"]),
+      /** "all time", "Fall 2026" or "2026". */
+      scope: z.string(),
+    }),
+  ),
+  /** The official trailer, a link out (YouTube or Dailymotion). */
+  trailer: z.object({ url: z.url(), thumbnail: z.string().nullable() }).nullable(),
+  tags: z.array(
+    z.object({ name: z.string(), rank: z.number().int().nullable(), spoiler: z.boolean() }),
+  ),
+  /** Related anime, prequels and sequels first; `relation` is AniList's (SEQUEL, SIDE_STORY, ...). */
+  relations: z.array(linkedShowSchema.extend({ relation: z.string() })),
+  characters: z.array(
+    z.object({
+      name: z.string(),
+      role: z.enum(["main", "supporting", "background"]),
+      pictureUrl: z.string().nullable(),
+      /** The Japanese voice. */
+      voiceActor: z.object({ name: z.string(), pictureUrl: z.string().nullable() }).nullable(),
+    }),
+  ),
+  /** What AniList's fans of it recommend. */
+  recommendations: z.array(linkedShowSchema),
+  /** Official per-episode links on the user's own services, in order. */
+  episodes: z.array(z.object({ title: z.string(), url: z.url(), service: z.string() })),
+});
+export type ShowExtrasView = z.infer<typeof showExtrasSchema>;
+
 export const showResponseSchema = z.object({
   show: z.object({
     animeId: z.number().int().positive(),
@@ -1339,6 +1391,8 @@ export const showResponseSchema = z.object({
       episodesWatched: z.number().int().nonnegative(),
     }),
   ),
+  /** What AniList adds to the page; null until it's been fetched. */
+  extras: showExtrasSchema.nullable(),
 });
 export type ShowResponse = z.infer<typeof showResponseSchema>;
 

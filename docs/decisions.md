@@ -2588,3 +2588,32 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **A new server's Browse is empty for its first minutes,** and says so.
 - **Episode numbers of shows not on the list are AniList's,** which can differ from MAL's for a show split into parts.
 - **More `anime` rows:** every scheduled or charted show gets one, as Search's results already did.
+
+## 2026-10-19 — Richer show pages from one AniList request (Milestone 8 interlude)
+**Decision:**
+- **One request per show:** the first time anyone opens a show's page, one AniList request brings its description and its extras:
+  - studios, source, season, AniList's score and rankings;
+  - the trailer;
+  - tags, with spoilers flagged;
+  - related anime, characters with their Japanese voices, and fans' recommendations;
+  - the official per-episode streaming links.
+- **It replaces the description-only request.** The synopsis keeps its rules (stored once, never touched by syncs), and the extras are kept in `show_extras` and refreshed weekly in the background.
+- **The page shows, from them:**
+  - the franchise in watch order;
+  - the trailer as a link out;
+  - tags with spoilers behind a tap;
+  - episode links only on the user's own services.
+- **Never shown:** adult titles and shows MAL doesn't know.
+
+**Alternatives:**
+- A second request for the extras next to the synopsis (two waits on the 3-second pacer for the first visitor).
+- MAL's anime details (related anime and recommendations, but no characters, trailers or episode links, and MAL asks for requests spaced out).
+- Embedding the trailer (a third-party player and its cookies on our page).
+- Showing every episode link (sites the user doesn't have).
+
+**Why:** Show pages were the thinnest screen next to AniList's and MAL's. One request keeps the first open as fast as before, and per-show caching keeps AniList traffic tied to what people actually open.
+
+**Consequences:**
+- **Fetched on first open:** a show's first visitor waits up to 4 seconds, as for the synopsis.
+- **Old pages:** pages opened before this fetch their extras on the next visit.
+- **Split shows show their first part's** characters and rankings.

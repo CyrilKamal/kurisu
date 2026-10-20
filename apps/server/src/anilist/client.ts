@@ -107,6 +107,54 @@ export interface FanRecommendation {
 /** An anime season, as AniList names them. */
 export type AniListSeason = "WINTER" | "SPRING" | "SUMMER" | "FALL";
 
+/** A show AniList links to from another's page (a relation or a recommendation). */
+export interface LinkedShow {
+  show: CatalogShow;
+  isAdult: boolean;
+}
+
+/**
+ * What a show's page adds from AniList, beyond the synopsis: who made it and from what, its
+ * rankings and trailer, tags, related anime, main characters with their Japanese voices, fans'
+ * recommendations, and its official per-episode streaming links.
+ */
+export interface ShowPageExtras {
+  studios: string[];
+  /** AniList's words: MANGA, LIGHT_NOVEL, ORIGINAL, ... */
+  source: string | null;
+  season: { season: AniListSeason; year: number } | null;
+  /** AniList's average score, 0–100. */
+  averageScore: number | null;
+  rankings: {
+    rank: number;
+    type: "RATED" | "POPULAR";
+    allTime: boolean;
+    season: AniListSeason | null;
+    year: number | null;
+  }[];
+  /** AniList's trailer: a video id on its site ("youtube", "dailymotion"). */
+  trailer: { site: string; id: string; thumbnail: string | null } | null;
+  tags: { name: string; rank: number | null; spoiler: boolean }[];
+  /** Related anime, with AniList's relation (PREQUEL, SEQUEL, SIDE_STORY, ...). */
+  relations: (LinkedShow & { relation: string })[];
+  characters: {
+    name: string;
+    /** MAIN, SUPPORTING or BACKGROUND. */
+    role: string;
+    image: string | null;
+    voiceActor: { name: string; image: string | null } | null;
+  }[];
+  recommendations: LinkedShow[];
+  /** Official per-episode links, in order: "Episode 3 - The Promise" on Crunchyroll. */
+  episodes: { title: string; url: string; site: string }[];
+}
+
+/** A show's page from AniList: its description (AniList's markup) and the extras. */
+export interface ShowPage {
+  description: string | null;
+  extras: ShowPageExtras;
+}
+
 /** One episode on AniList's airing schedule, of a show MAL knows (never an adult one). */
 export interface ScheduledEpisode {
   show: CatalogShow & { malId: number };
@@ -173,6 +221,12 @@ export interface AniListClient {
    * doesn't know are missing.
    */
   descriptions(malIds: number[]): Promise<Map<number, string | null>>;
+  /**
+   * Each MAL entry's page from AniList: the first part's description and extras (for a show
+   * AniList splits into parts), with every part's episode links in order. Ids AniList doesn't
+   * know are missing.
+   */
+  showPages(malIds: number[]): Promise<Map<number, ShowPage>>;
 }
 
 /** A non-2xx response from AniList. */
@@ -406,6 +460,199 @@ const DESCRIPTIONS_QUERY = `query ($ids: [Int], $page: Int) {
     media(idMal_in: $ids, type: ANIME, sort: [START_DATE]) { idMal description(asHtml: false) }
   }
 }`;
+
+/** Characters and fans' recommendations kept per show page. */
+const PAGE_CHARACTERS = 8;
+const PAGE_RECOMMENDATIONS = 6;
+
+const SHOW_PAGE_QUERY = `query ($ids: [Int], $page: Int) {
+  Page(page: $page, perPage: 50) {
+    pageInfo { hasNextPage }
+    media(idMal_in: $ids, type: ANIME, sort: [START_DATE]) {
+      idMal
+      description(asHtml: false)
+      source
+      season
+      seasonYear
+      averageScore
+      studios(isMain: true) { nodes { name } }
+      rankings { rank type allTime season year }
+      trailer { id site thumbnail }
+      tags { name rank isMediaSpoiler }
+      relations { edges { relationType node { type ${SEARCH_FIELDS} } } }
+      characters(sort: [ROLE, RELEVANCE], perPage: ${String(PAGE_CHARACTERS)}) {
+        edges {
+          role
+          node { name { full } image { medium } }
+          voiceActors(language: JAPANESE, sort: [RELEVANCE]) { name { full } image { medium } }
+        }
+      }
+      recommendations(sort: [RATING_DESC], perPage: ${String(PAGE_RECOMMENDATIONS)}) {
+        nodes { mediaRecommendation { ${SEARCH_FIELDS} } }
+      }
+      streamingEpisodes { title url site }
+    }
+  }
+}`;
+
+const seasonEnum = z.enum(["WINTER", "SPRING", "SUMMER", "FALL"]);
+const personSchema = z.object({
+  name: z.object({ full: z.string().nullish() }).nullish(),
+  image: z.object({ medium: z.string().nullish() }).nullish(),
+});
+
+const showPagesSchema = z.object({
+  Page: z.object({
+    pageInfo: z.object({ hasNextPage: z.boolean().nullish() }),
+    media: z.array(
+      z.object({
+        idMal: z.number().int().positive().nullish(),
+        description: z.string().nullish(),
+        source: z.string().nullish(),
+        season: seasonEnum.nullish(),
+        seasonYear: z.number().int().nullish(),
+        averageScore: z.number().int().nullish(),
+        studios: z.object({ nodes: z.array(z.object({ name: z.string() })) }).nullish(),
+        rankings: z
+          .array(
+            z.object({
+              rank: z.number().int().positive(),
+              type: z.string(),
+              allTime: z.boolean().nullish(),
+              season: seasonEnum.nullish(),
+              year: z.number().int().nullish(),
+            }),
+          )
+          .nullish(),
+        trailer: z
+          .object({
+            id: z.string().nullish(),
+            site: z.string().nullish(),
+            thumbnail: z.string().nullish(),
+          })
+          .nullish(),
+        tags: z
+          .array(
+            z.object({
+              name: z.string(),
+              rank: z.number().int().nullish(),
+              isMediaSpoiler: z.boolean().nullish(),
+            }),
+          )
+          .nullish(),
+        relations: z
+          .object({
+            edges: z.array(
+              z.object({
+                relationType: z.string().nullish(),
+                node: searchMediaSchema.extend({ type: z.string().nullish() }).nullish(),
+              }),
+            ),
+          })
+          .nullish(),
+        characters: z
+          .object({
+            edges: z.array(
+              z.object({
+                role: z.string().nullish(),
+                node: personSchema.nullish(),
+                voiceActors: z.array(personSchema).nullish(),
+              }),
+            ),
+          })
+          .nullish(),
+        recommendations: z
+          .object({
+            nodes: z.array(z.object({ mediaRecommendation: searchMediaSchema.nullish() })),
+          })
+          .nullish(),
+        streamingEpisodes: z
+          .array(
+            z.object({
+              title: z.string().nullish(),
+              url: z.string().nullish(),
+              site: z.string().nullish(),
+            }),
+          )
+          .nullish(),
+      }),
+    ),
+  }),
+});
+
+type RawShowPage = z.infer<typeof showPagesSchema>["Page"]["media"][number];
+
+/** One AniList part's page, in the shape the app keeps. */
+function toShowPage(m: RawShowPage): ShowPage {
+  const person = (p: z.infer<typeof personSchema> | null | undefined) =>
+    p?.name?.full ? { name: p.name.full, image: p.image?.medium ?? null } : null;
+  return {
+    description: m.description?.trim() ? m.description : null,
+    extras: {
+      studios: (m.studios?.nodes ?? []).map((s) => s.name),
+      source: m.source ?? null,
+      season: m.season && m.seasonYear ? { season: m.season, year: m.seasonYear } : null,
+      averageScore: m.averageScore ?? null,
+      rankings: (m.rankings ?? []).flatMap((r) =>
+        r.type === "RATED" || r.type === "POPULAR"
+          ? [
+              {
+                rank: r.rank,
+                type: r.type,
+                allTime: r.allTime === true,
+                season: r.season ?? null,
+                year: r.year ?? null,
+              },
+            ]
+          : [],
+      ),
+      trailer:
+        m.trailer?.id && m.trailer.site
+          ? { site: m.trailer.site, id: m.trailer.id, thumbnail: m.trailer.thumbnail ?? null }
+          : null,
+      tags: (m.tags ?? []).map((t) => ({
+        name: t.name,
+        rank: t.rank ?? null,
+        spoiler: t.isMediaSpoiler === true,
+      })),
+      relations: (m.relations?.edges ?? []).flatMap((edge) =>
+        edge.node?.type === "ANIME" && edge.relationType
+          ? [
+              {
+                relation: edge.relationType,
+                show: toCatalogShow(edge.node),
+                isAdult: edge.node.isAdult === true,
+              },
+            ]
+          : [],
+      ),
+      characters: (m.characters?.edges ?? []).flatMap((edge) => {
+        const character = person(edge.node);
+        if (!character) return [];
+        return [
+          {
+            ...character,
+            role: edge.role ?? "SUPPORTING",
+            voiceActor: person(edge.voiceActors?.[0]),
+          },
+        ];
+      }),
+      recommendations: (m.recommendations?.nodes ?? []).flatMap((node) =>
+        node.mediaRecommendation
+          ? [
+              {
+                show: toCatalogShow(node.mediaRecommendation),
+                isAdult: node.mediaRecommendation.isAdult === true,
+              },
+            ]
+          : [],
+      ),
+      episodes: (m.streamingEpisodes ?? []).flatMap((e) =>
+        e.title && e.url && e.site ? [{ title: e.title, url: e.url, site: e.site }] : [],
+      ),
+    },
+  };
+}
 
 const descriptionsPageSchema = z.object({
   Page: z.object({
@@ -766,6 +1013,23 @@ export function createAniListClient(options: AniListClientOptions): AniListClien
           });
         }
         out.set(prequel, found);
+      }
+      return out;
+    },
+
+    async showPages(malIds) {
+      const media = await paged(malIds, SHOW_PAGE_QUERY, {}, showPagesSchema, (data) => ({
+        items: data.Page.media,
+        hasNextPage: data.Page.pageInfo.hasNextPage === true,
+      }));
+      // Earliest part first: its page is the show's, and every part adds its episodes.
+      const out = new Map<number, ShowPage>();
+      for (const m of media) {
+        if (!m.idMal) continue;
+        const page = toShowPage(m);
+        const first = out.get(m.idMal);
+        if (first) first.extras.episodes.push(...page.extras.episodes);
+        else out.set(m.idMal, page);
       }
       return out;
     },

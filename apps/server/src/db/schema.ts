@@ -18,7 +18,7 @@ import {
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
-import type { SequelShow, StreamingLink } from "../anilist/client.js";
+import type { SequelShow, ShowPageExtras, StreamingLink } from "../anilist/client.js";
 import type { BriefAlert, BriefItem } from "../brief/build.js";
 import type { BriefRecap } from "../brief/recap.js";
 import type { ListChange, ListState } from "../writes/normalize.js";
@@ -886,6 +886,19 @@ export const seasonShows = pgTable("season_shows", {
   season: text("season").notNull(),
   // 1 for the most popular.
   rank: integer("rank").notNull(),
+  fetchedAt: timestamptz("fetched_at").notNull(),
+});
+
+/**
+ * What a show's page adds from AniList (studios, rankings, trailer, tags, related anime,
+ * characters, recommendations, episode links), fetched the first time anyone opens the page and
+ * again in the background once a week old. Shared by everyone.
+ */
+export const showExtras = pgTable("show_extras", {
+  malId: integer("mal_id")
+    .primaryKey()
+    .references(() => anime.malId, { onDelete: "cascade" }),
+  data: jsonb("data").$type<ShowPageExtras>().notNull(),
   fetchedAt: timestamptz("fetched_at").notNull(),
 });
 

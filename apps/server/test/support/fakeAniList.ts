@@ -52,6 +52,34 @@ export interface FakeRelation {
   node: FakeCatalogMedia & { type: string; externalLinks: FakeAniListMedia["externalLinks"] };
 }
 
+/** What a show's page adds, in AniList's shape (every field optional; defaults are empty). */
+export interface FakeShowPage {
+  source?: string | null;
+  season?: string | null;
+  seasonYear?: number | null;
+  averageScore?: number | null;
+  studios?: { nodes: { name: string }[] };
+  rankings?: {
+    rank: number;
+    type: string;
+    allTime?: boolean;
+    season?: string | null;
+    year?: number | null;
+  }[];
+  trailer?: { id: string; site: string; thumbnail: string | null } | null;
+  tags?: { name: string; rank: number | null; isMediaSpoiler: boolean }[];
+  relations?: { edges: { relationType: string; node: FakeCatalogMedia & { type: string } }[] };
+  characters?: {
+    edges: {
+      role: string;
+      node: { name: { full: string }; image: { medium: string | null } };
+      voiceActors: { name: { full: string }; image: { medium: string | null } }[];
+    }[];
+  };
+  recommendations?: { nodes: { mediaRecommendation: FakeCatalogMedia }[] };
+  streamingEpisodes?: { title: string; url: string; site: string }[];
+}
+
 /** One episode on AniList's whole schedule (not filtered by show), with its show. */
 export interface FakeScheduled {
   episode: number;
@@ -98,6 +126,8 @@ export class FakeAniList {
    */
   lineups = new Map<string, number[]>();
   airings: FakeAiring[] = [];
+  /** Each show's page extras, by MAL id (its description comes from `media`). */
+  pages = new Map<number, FakeShowPage>();
   /** AniList's whole airing schedule, for Browse. */
   schedule: FakeScheduled[] = [];
   /** Season charts, most popular first, as AniList ids, keyed "WINTER 2027". */
@@ -151,6 +181,7 @@ export class FakeAniList {
     this.airings = [];
     this.schedule = [];
     this.charts = new Map();
+    this.pages = new Map();
     this.requests.length = 0;
     this.failures.length = 0;
   }
@@ -165,6 +196,21 @@ export class FakeAniList {
 
   private answer(body: GraphQlBody): unknown {
     const { ids = [], page = 1 } = body.variables;
+    if (body.query.includes("streamingEpisodes")) {
+      // A show's page: the description from `media`, and the extras from `pages`.
+      const matches = this.media.filter((m) => m.idMal !== null && ids.includes(m.idMal));
+      const { items, hasNextPage } = paginate(matches, page);
+      return {
+        Page: {
+          pageInfo: { hasNextPage },
+          media: items.map((m) => ({
+            idMal: m.idMal,
+            description: m.description ?? null,
+            ...(m.idMal === null ? {} : this.pages.get(m.idMal)),
+          })),
+        },
+      };
+    }
     if (body.query.includes("recommendations(")) {
       const seeds = ids.filter((id) => this.fans.has(id));
       return {
