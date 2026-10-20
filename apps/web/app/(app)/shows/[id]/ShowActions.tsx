@@ -11,21 +11,28 @@ import { useWriteToast } from "@/lib/useWriteToast";
 
 import { EditSheet } from "../../list/EditSheet";
 import { AlertBell } from "./AlertBell";
+import { FavoriteButton } from "./FavoriteButton";
 
 /**
  * A show page's actions: "+1 ep" and Edit for a show on your list, or Add for one that isn't.
  * Each goes through the same write path as the List screen, with a Toast and Undo. A Watching
- * show also has its episode alerts' bell, when they're on.
+ * show also has its episode alerts' bell, when they're on, and any show the favorites' heart.
  */
 export function ShowActions({
   show,
   entry,
   alert = null,
+  favorite = null,
 }: {
   show: { animeId: number; title: string; numEpisodes: number | null };
   entry: Omit<EditableEntry, "animeId" | "title" | "numEpisodes"> | null;
   alert?: { muted: boolean } | null;
+  /** Whether it's one of the user's favorites; null leaves the heart out. */
+  favorite?: boolean | null;
 }) {
+  const heart = favorite !== null && (
+    <FavoriteButton animeId={show.animeId} title={show.title} favorite={favorite} />
+  );
   const toast = useWriteToast();
   const [sheet, setSheet] = useState<"edit" | "add" | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,6 +50,7 @@ export function ShowActions({
           <Icon name="plus" />
           Add to my list
         </button>
+        {heart}
         {sheet === "add" && (
           <AddSheet
             show={show}
@@ -95,6 +103,7 @@ export function ShowActions({
         Edit
       </button>
       {alert && <AlertBell animeId={show.animeId} title={show.title} muted={alert.muted} />}
+      {heart}
       {sheet === "edit" && (
         <EditSheet
           entry={editable}

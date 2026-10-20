@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
-import { diaryNotes, friendships, listEntries, users } from "../../src/db/schema.js";
+import { anime, diaryNotes, friendships, listEntries, users } from "../../src/db/schema.js";
 import { fixtureList } from "../fixtures/animeList.js";
 import type { FakeListItem } from "../support/fakeMal.js";
 import {
@@ -214,6 +214,43 @@ describe("friends", () => {
     expect(detail.bothLoved).toEqual([]);
     expect(detail.theyLoved).toEqual([]);
     expect(detail.activity).toEqual([]);
+  });
+
+  it("keeps up to 10 favorites in their owner's order, and shows them to sharing friends", async () => {
+    const favorites = (res: Awaited<ReturnType<typeof send>>) =>
+      contract.favoritesResponseSchema.parse(res.json()).favorites.map((f) => f.animeId);
+    expect(favorites(await send(ALEX, "PUT", "/favorites/3"))).toEqual([3]);
+    expect(favorites(await send(ALEX, "PUT", "/favorites/1"))).toEqual([3, 1]);
+    // Again changes nothing; a show kurisu never saw can't be one.
+    expect(favorites(await send(ALEX, "PUT", "/favorites/1"))).toEqual([3, 1]);
+    expect((await send(ALEX, "PUT", "/favorites/999999")).statusCode).toBe(404);
+
+    expect(favorites(await send(ALEX, "PUT", "/favorites", { animeIds: [1, 3] }))).toEqual([1, 3]);
+    // Another set than the favorites they have is refused, so nothing is lost.
+    expect((await send(ALEX, "PUT", "/favorites", { animeIds: [1] })).statusCode).toBe(409);
+    expect((await send(ALEX, "PUT", "/favorites", { animeIds: [1, 1] })).statusCode).toBe(409);
+
+    const ownerSees = async () =>
+      contract.friendDetailResponseSchema
+        .parse((await send(TEST_MAL_USER, "GET", `/friends/${await idOf(ALEX)}`)).json())
+        .favorites.map((f) => f.animeId);
+    expect(await ownerSees()).toEqual([1, 3]);
+    await send(ALEX, "PUT", "/friends/sharing", { shareActivity: false });
+    expect(await ownerSees()).toEqual([]);
+
+    // Shows kurisu has seen elsewhere (a search, another list) can be favorites too.
+    const extra = [990001, 990002, 990003, 990004, 990005, 990006, 990007, 990008, 990009];
+    await h.db
+      .insert(anime)
+      .values(extra.map((malId) => ({ malId, title: `Extra ${String(malId)}` })));
+    for (const id of extra.slice(0, 8)) {
+      expect((await send(ALEX, "PUT", `/favorites/${String(id)}`)).statusCode).toBe(200);
+    }
+    const full = await send(ALEX, "PUT", `/favorites/${String(extra[8] ?? 0)}`);
+    expect(full.statusCode).toBe(409);
+    expect(full.json()).toEqual({ error: "favorites_full" });
+
+    expect(favorites(await send(ALEX, "DELETE", "/favorites/1"))).toHaveLength(9);
   });
 
   it("keeps everything about a user from anyone who isn't their friend", async () => {

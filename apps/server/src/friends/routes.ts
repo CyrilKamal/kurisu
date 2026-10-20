@@ -15,6 +15,7 @@ import type { Config } from "../config.js";
 import type { TokenCipher } from "../crypto/tokenCipher.js";
 import type { Db } from "../db/client.js";
 import { users } from "../db/schema.js";
+import { listFavorites } from "../favorites/favorites.js";
 import { userTimeZone } from "../stats/compute.js";
 import { friendActivity, type ActivityItem } from "./activity.js";
 import {
@@ -103,6 +104,7 @@ export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps
       disagreements: sharing ? match.disagreements : [],
       theyLoved: sharing ? match.theyLoved : [],
       activity: (await friendActivity(db, [friend], FRIEND_FEED_LENGTH)).map(activityJson),
+      favorites: sharing ? await listFavorites(db, friend.id) : [],
     };
   });
 

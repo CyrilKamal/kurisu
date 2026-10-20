@@ -2,6 +2,7 @@ import type { DataExport } from "@kurisu/shared";
 import { asc, eq, inArray, or } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
+import { listFavorites } from "../favorites/favorites.js";
 import {
   agentRuns,
   anime,
@@ -90,8 +91,11 @@ export async function exportUserData(
       ageConfirmedAt: account.ageConfirmedAt,
       termsAcceptedAt: account.termsAcceptedAt,
       termsVersion: account.termsVersion,
+      titleLanguage: account.titleLanguage,
+      scoreStyle: account.scoreStyle,
     },
     plan,
+    favorites: await listFavorites(db, userId),
     list: await db
       .select({
         animeId: listEntries.animeId,

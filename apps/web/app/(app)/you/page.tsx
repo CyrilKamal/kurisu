@@ -1,4 +1,4 @@
-import { statsResponseSchema } from "@kurisu/shared";
+import { favoritesResponseSchema, statsResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -9,6 +9,8 @@ import { SupporterBadge } from "@/components/SupporterBadge";
 import { apiGet, getMe } from "@/lib/api";
 import { planShortLine, supporterOf } from "@/lib/plans";
 import { goalProgress } from "@/lib/stats";
+
+import { Favorites } from "./Favorites";
 
 export const metadata: Metadata = { title: "You · kurisu" };
 
@@ -43,10 +45,14 @@ const SCREENS: { href: string; label: string; about: string; icon: IconName }[] 
   },
 ];
 
-/** You: this year's goal up top, then everything about you and your list. */
+/** You: this year's goal up top, your favorite shows, then everything about you and your list. */
 export default async function YouPage() {
-  const [me, stats] = await Promise.all([getMe(), apiGet("/stats", statsResponseSchema)]);
-  if (!me || !stats) redirect("/");
+  const [me, stats, favorites] = await Promise.all([
+    getMe(),
+    apiGet("/stats", statsResponseSchema),
+    apiGet("/favorites", favoritesResponseSchema),
+  ]);
+  if (!me || !stats || !favorites) redirect("/");
   const { year } = stats;
   const progress = year.goal === null ? null : goalProgress(year.completed, year.goal);
 
@@ -87,6 +93,8 @@ export default async function YouPage() {
           </div>
         </div>
       </Link>
+
+      <Favorites initial={favorites} />
 
       <nav aria-label="You" className="pt-6">
         <ul className="k-rows">

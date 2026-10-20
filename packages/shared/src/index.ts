@@ -157,6 +157,8 @@ export const meResponseSchema = z.object({
   termsAccepted: z.boolean(),
   /** Which of a show's titles the app shows them. */
   titleLanguage: z.enum(["romaji", "english", "japanese"]),
+  /** How scores look to them; MAL's 1–10 is what's saved. */
+  scoreStyle: z.enum(["point_10", "point_100", "stars_5"]),
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;
 
@@ -166,6 +168,40 @@ export type TitleLanguage = (typeof TITLE_LANGUAGES)[number];
 /** PUT /me/title-language. */
 export const titleLanguageRequestSchema = z.object({ language: z.enum(TITLE_LANGUAGES) }).strict();
 export const titleLanguageResponseSchema = z.object({ titleLanguage: z.enum(TITLE_LANGUAGES) });
+
+/**
+ * How the app shows a score: MAL's 10 points ("8/10"), 100 points ("80"), or 5 stars with
+ * halves (an 8 is ★★★★, a 7 ★★★½). Each maps exactly onto MAL's 1–10, which is what's saved.
+ */
+export const SCORE_STYLES = ["point_10", "point_100", "stars_5"] as const;
+export type ScoreStyle = (typeof SCORE_STYLES)[number];
+/** PUT /me/score-style. */
+export const scoreStyleRequestSchema = z.object({ style: z.enum(SCORE_STYLES) }).strict();
+export const scoreStyleResponseSchema = z.object({ scoreStyle: z.enum(SCORE_STYLES) });
+
+/** The most favorites a user keeps. */
+export const FAVORITES_MAX = 10;
+
+/** A favorite show, as the profile and friends see it. */
+export const favoriteShowSchema = z.object({
+  animeId: z.number().int().positive(),
+  title: z.string(),
+  pictureUrl: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  startDate: z.string().nullable(),
+});
+export type FavoriteShow = z.infer<typeof favoriteShowSchema>;
+
+/** GET, PUT and DELETE /favorites: the user's favorites, in their order. */
+export const favoritesResponseSchema = z.object({
+  favorites: z.array(favoriteShowSchema).max(FAVORITES_MAX),
+});
+export type FavoritesResponse = z.infer<typeof favoritesResponseSchema>;
+
+/** PUT /favorites: the same shows in a new order. */
+export const favoritesOrderRequestSchema = z
+  .object({ animeIds: z.array(z.number().int().positive()).max(FAVORITES_MAX) })
+  .strict();
 
 /** POST /me/terms: "I'm 18 or older and I accept these terms", for the version they read. */
 export const termsAcceptRequestSchema = z.object({ version: z.string().max(32) }).strict();
@@ -181,6 +217,7 @@ export const dataExportSchema = z.object({
   exportedAt: z.iso.datetime(),
   account: z.record(z.string(), z.unknown()),
   plan: z.record(z.string(), z.unknown()),
+  favorites: exportRows,
   list: exportRows,
   changes: exportRows,
   listEvents: exportRows,
@@ -410,6 +447,8 @@ export const friendDetailResponseSchema = z.object({
   /** Shows they scored highly that aren't on your list. */
   theyLoved: z.array(matchShowSchema.extend({ theirs: z.number().int() })),
   activity: z.array(activityItemSchema),
+  /** Their favorite shows, in their order (empty when they don't share). */
+  favorites: z.array(favoriteShowSchema),
 });
 export type FriendDetailResponse = z.infer<typeof friendDetailResponseSchema>;
 

@@ -53,6 +53,8 @@ export const writeKind = pgEnum("write_kind", ["update", "add", "remove"]);
 
 /** Which of a show's titles the app shows: MAL's romaji, the English one, or the Japanese. */
 export const titleLanguage = pgEnum("title_language", ["romaji", "english", "japanese"]);
+/** How the app shows a score: MAL's 10 points, 100 points, or 5 stars with halves. */
+export const scoreStyle = pgEnum("score_style", ["point_10", "point_100", "stars_5"]);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -72,6 +74,8 @@ export const users = pgTable("users", {
   termsVersion: text("terms_version"),
   // Shows' titles in the app; the brief's text and Chat keep MAL's (the agent reads them back).
   titleLanguage: titleLanguage("title_language").notNull().default("romaji"),
+  // How scores look in the app; MAL's 1–10 is still what's saved.
+  scoreStyle: scoreStyle("score_style").notNull().default("point_10"),
   // A new account has Premium until then (Milestone 8's trial); null for accounts from before.
   trialEndsAt: timestamptz("trial_ends_at"),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
@@ -439,6 +443,26 @@ export const briefSettings = pgTable("brief_settings", {
   episodeAlertsSince: timestamptz("episode_alerts_since"),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
+
+/**
+ * A user's favorite shows (up to 10), in their order, for their profile and friends. kurisu
+ * keeps them itself: MAL's API has no favorites.
+ */
+export const favorites = pgTable(
+  "favorites",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    animeId: integer("anime_id")
+      .notNull()
+      .references(() => anime.malId, { onDelete: "cascade" }),
+    // 0 first.
+    position: integer("position").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.animeId] })],
+);
 
 /**
  * Each episode alert sent: one row per user, show and episode (MAL's numbering), written before

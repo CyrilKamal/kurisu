@@ -4,12 +4,12 @@ import { changeResponseSchema, LIST_STATUSES, type ChangeView } from "@kurisu/sh
 import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
+import { useScoreStyle } from "@/components/ScoreStyle";
 import { Sheet } from "@/components/Sheet";
 import { sendApi } from "@/lib/clientApi";
 import { editErrorMessage, editPayload, formFrom, type EditableEntry } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
-
-const SCORES = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+import { scoreOptions } from "@/lib/score";
 
 /**
  * Edits one entry: status, episodes, score and rewatching, or takes it off the list. Saving goes
@@ -25,6 +25,7 @@ export function EditSheet({
   onClose: () => void;
   onSaved: (change: ChangeView) => void;
 }) {
+  const scoreStyle = useScoreStyle();
   const [form, setForm] = useState(() => formFrom(entry));
   const [busy, setBusy] = useState<"save" | "remove" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -182,9 +183,9 @@ export function EditSheet({
             }}
           >
             <option value={0}>No score</option>
-            {SCORES.map((score) => (
-              <option key={score} value={score}>
-                {score}
+            {scoreOptions(scoreStyle).map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

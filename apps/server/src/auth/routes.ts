@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import {
   TERMS_VERSION,
   termsAcceptRequestSchema,
+  scoreStyleRequestSchema,
   titleLanguageRequestSchema,
 } from "@kurisu/shared";
 import { and, eq, isNull } from "drizzle-orm";
@@ -279,6 +280,20 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     },
   );
 
+  /** How scores look to them: 10 points, 100 points or 5 stars (MAL's 1–10 is what's saved). */
+  app.put(
+    "/me/score-style",
+    { preHandler: [requireSameOrigin(config.webOrigin), requireUser(db)] },
+    async (request, reply) => {
+      const user = request.user;
+      if (!user) throw new Error("requireUser did not set request.user");
+      const body = scoreStyleRequestSchema.safeParse(request.body);
+      if (!body.success) return reply.code(400).send({ error: "invalid_style" });
+      await db.update(users).set({ scoreStyle: body.data.style }).where(eq(users.id, user.id));
+      return { scoreStyle: body.data.style };
+    },
+  );
+
   /** Everything kurisu holds about the user, as a JSON file to keep (titles as stored). */
   app.get(
     "/me/export",
@@ -330,6 +345,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
         shareActivity: users.shareActivity,
         ageConfirmedAt: users.ageConfirmedAt,
         termsVersion: users.termsVersion,
+        scoreStyle: users.scoreStyle,
       })
       .from(users)
       .where(eq(users.id, user.id));
@@ -349,6 +365,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
         user.isOwner ||
         (account?.termsVersion === TERMS_VERSION && account.ageConfirmedAt !== null),
       titleLanguage: user.titleLanguage,
+      scoreStyle: account?.scoreStyle ?? "point_10",
     };
   });
 }

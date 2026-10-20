@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FavoriteShows } from "@/components/FavoriteShows";
 import { Metric, Metrics } from "@/components/Metrics";
 import { Poster } from "@/components/Poster";
 import { Score } from "@/components/Score";
@@ -17,7 +18,10 @@ import { RemoveFriend } from "./RemoveFriend";
 
 export const metadata: Metadata = { title: "Friend · kurisu" };
 
-/** One friend: how your tastes compare, what they loved that you haven't seen, and their week. */
+/**
+ * One friend: how your tastes compare, what they loved that you haven't seen, their favorite
+ * shows, and their week.
+ */
 export default async function FriendPage(props: PageProps<"/you/friends/[id]">) {
   const { id } = await props.params;
   const data = await apiGet(`/friends/${encodeURIComponent(id)}`, friendDetailResponseSchema);
@@ -81,6 +85,13 @@ export default async function FriendPage(props: PageProps<"/you/friends/[id]">) 
             </ShowRow>
           ))}
         </ShowList>
+      )}
+
+      {data.favorites.length > 0 && (
+        <section className="pt-6">
+          <h2 className="k-caps pb-2">Their favorites</h2>
+          <FavoriteShows favorites={data.favorites} />
+        </section>
       )}
 
       <section className="pt-6">

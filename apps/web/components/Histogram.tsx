@@ -16,6 +16,7 @@ export function Histogram({
   summary,
   modeIndex = null,
   mean = null,
+  meanLabel = null,
 }: {
   columns: HistogramColumn[];
   /** The chart in one sentence, for assistive tech: "Score distribution; most often 8". */
@@ -23,6 +24,8 @@ export function Histogram({
   modeIndex?: number | null;
   /** The mean on a 1–10 scale; only for ten score columns. */
   mean?: number | null;
+  /** The mean as the user reads scores ("78.4" on 100 points); the 1–10 mean by default. */
+  meanLabel?: string | null;
 }) {
   const max = Math.max(1, ...columns.map((c) => c.value));
   return (
@@ -52,7 +55,7 @@ export function Histogram({
         ))}
         {mean !== null && columns.length === 10 && (
           <span className="k-hist__mean" style={{ "--m": mean } as React.CSSProperties}>
-            <span>avg {mean.toFixed(1)}</span>
+            <span>avg {meanLabel ?? mean.toFixed(1)}</span>
           </span>
         )}
       </div>
