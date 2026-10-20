@@ -12,6 +12,7 @@
       "importLines": 500,
       "features": {
         "supporterBadge": false,
+        "episodeAlerts": false,
         "calendar": false,
         "fullYear": false,
         "lab": false
@@ -24,6 +25,7 @@
       "importLines": null,
       "features": {
         "supporterBadge": true,
+        "episodeAlerts": true,
         "calendar": false,
         "fullYear": false,
         "lab": false
@@ -36,6 +38,7 @@
       "importLines": null,
       "features": {
         "supporterBadge": true,
+        "episodeAlerts": true,
         "calendar": true,
         "fullYear": true,
         "lab": true

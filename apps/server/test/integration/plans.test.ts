@@ -52,7 +52,12 @@ beforeEach(async () => {
   await join(ALEX, await invite());
 });
 
-function send(who: { name: string }, method: "GET" | "POST", url: string, payload?: object) {
+function send(
+  who: { name: string },
+  method: "GET" | "POST" | "PUT",
+  url: string,
+  payload?: object,
+) {
   return h.app.inject({
     method,
     url,
@@ -120,9 +125,11 @@ describe("plans", () => {
     expect(days).toBeGreaterThan(13.9);
     expect(days).toBeLessThanOrEqual(14);
 
-    // A trial has Premium's features: everything but Pro's calendar, full year and lab.
+    // A trial has Premium's features (episode alerts too), but not Pro's calendar, full year and
+    // lab.
     expect(me.plan.features).toEqual({
       supporterBadge: true,
+      episodeAlerts: true,
       calendar: false,
       fullYear: false,
       lab: false,
@@ -173,6 +180,27 @@ describe("plans", () => {
       imports: { used: 0, allowance: 1 },
     });
     expect(plan.importLines).toBe(500);
+  });
+
+  it("lets a trial turn on episode alerts, and Free only turn them off", async () => {
+    const on = await send(ALEX, "PUT", "/alerts", { on: true });
+    expect(contract.alertsResponseSchema.parse(on.json())).toMatchObject({
+      included: true,
+      on: true,
+    });
+
+    await endTrial();
+    const view = contract.alertsResponseSchema.parse((await send(ALEX, "GET", "/alerts")).json());
+    expect(view).toMatchObject({ included: false, on: true });
+    const off = await send(ALEX, "PUT", "/alerts", { on: false });
+    expect(contract.alertsResponseSchema.parse(off.json())).toMatchObject({ on: false });
+    const again = await send(ALEX, "PUT", "/alerts", { on: true });
+    expect(again.statusCode).toBe(403);
+    expect(contract.needsPlanErrorSchema.parse(again.json())).toEqual({
+      error: "needs_plan",
+      feature: "episodeAlerts",
+      plan: "premium",
+    });
   });
 
   it("turns Chat away at the month's chat updates, before any model is called", async () => {

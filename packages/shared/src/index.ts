@@ -77,10 +77,12 @@ export const PLAN_SOURCES = ["owner", "subscription", "trial", "free", "open"] a
 
 /**
  * What a plan includes beyond its allowances: a supporter badge friends see (only while it's paid
- * for), the calendar feed, the full year in review, and early access to the AI lab.
+ * for), a push as each episode airs, the calendar feed, the full year in review, and early access
+ * to the AI lab.
  */
 export const planFeaturesSchema = z.object({
   supporterBadge: z.boolean(),
+  episodeAlerts: z.boolean(),
   calendar: z.boolean(),
   fullYear: z.boolean(),
   lab: z.boolean(),
@@ -189,6 +191,8 @@ export const dataExportSchema = z.object({
   yearlyGoals: exportRows,
   briefSettings: exportRows,
   briefs: exportRows,
+  episodeAlerts: exportRows,
+  episodeAlertMutes: exportRows,
   recommendations: exportRows,
   imports: exportRows,
   friends: exportRows,
@@ -313,6 +317,7 @@ export const PLAN_CATALOG = [
       "1,000 chat updates a month",
       "300 recommendations a month",
       "Imports whenever you like",
+      "An alert as each episode airs",
       "A supporter badge",
       "Everything in Free",
     ],
@@ -427,10 +432,31 @@ export const calendarResponseSchema = z.object({
 });
 export type CalendarResponse = z.infer<typeof calendarResponseSchema>;
 
+/**
+ * GET/PUT /alerts: a push as each episode of a Watching show airs (Premium and Pro). `included`:
+ * the plan has them now; `on`: the user turned them on; `muted`: shows they turned off on the
+ * show's page.
+ */
+export const alertsResponseSchema = z.object({
+  included: z.boolean(),
+  on: z.boolean(),
+  muted: z.array(z.number().int().positive()),
+});
+export type AlertsResponse = z.infer<typeof alertsResponseSchema>;
+
+export const alertsRequestSchema = z.object({ on: z.boolean() }).strict();
+
+/** PUT /alerts/shows/:animeId: no alerts for this show, or alerts again. */
+export const alertMuteRequestSchema = z.object({ muted: z.boolean() }).strict();
+export const alertMuteResponseSchema = z.object({
+  animeId: z.number().int().positive(),
+  muted: z.boolean(),
+});
+
 /** 403 when a feature isn't in the user's plan: which feature, and the plan that has it. */
 export const needsPlanErrorSchema = z.object({
   error: z.literal("needs_plan"),
-  feature: z.enum(["calendar", "fullYear", "lab"]),
+  feature: z.enum(["episodeAlerts", "calendar", "fullYear", "lab"]),
   plan: planIdSchema,
 });
 

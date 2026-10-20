@@ -15,6 +15,7 @@ import {
   listEntries,
   users,
 } from "../db/schema.js";
+import { titleIn } from "../titles/localize.js";
 import { icsCalendar, type CalendarEvent } from "./ics.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -107,12 +108,7 @@ export async function feedEpisodes(db: Db, userId: string, now: Date): Promise<F
     .select({ language: users.titleLanguage })
     .from(users)
     .where(eq(users.id, userId));
-  const title =
-    owner?.language === "english"
-      ? sql<string>`coalesce(nullif(trim(${anime.titleEn}), ''), ${anime.title})`
-      : owner?.language === "japanese"
-        ? sql<string>`coalesce(nullif(trim(${anime.titleJa}), ''), ${anime.title})`
-        : anime.title;
+  const title = titleIn(owner?.language);
   return db
     .select({
       malId: airingEpisodes.malId,

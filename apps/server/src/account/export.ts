@@ -13,6 +13,8 @@ import {
   conversations,
   diaryNotes,
   dropReasons,
+  episodeAlertMutes,
+  episodeAlerts,
   friendships,
   imports,
   invites,
@@ -185,6 +187,26 @@ export async function exportUserData(
       .from(briefs)
       .where(eq(briefs.userId, userId))
       .orderBy(asc(briefs.createdAt)),
+    episodeAlerts: await db
+      .select({
+        animeId: episodeAlerts.malId,
+        title: anime.title,
+        episode: episodeAlerts.episode,
+        sentAt: episodeAlerts.sentAt,
+      })
+      .from(episodeAlerts)
+      .innerJoin(anime, eq(anime.malId, episodeAlerts.malId))
+      .where(eq(episodeAlerts.userId, userId))
+      .orderBy(asc(episodeAlerts.sentAt)),
+    episodeAlertMutes: await db
+      .select({
+        animeId: episodeAlertMutes.malId,
+        title: anime.title,
+        createdAt: episodeAlertMutes.createdAt,
+      })
+      .from(episodeAlertMutes)
+      .innerJoin(anime, eq(anime.malId, episodeAlertMutes.malId))
+      .where(eq(episodeAlertMutes.userId, userId)),
     recommendations: await db
       .select({
         picks: recommendations.picks,

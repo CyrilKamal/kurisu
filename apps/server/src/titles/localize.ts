@@ -1,5 +1,5 @@
 import type { TitleLanguage } from "@kurisu/shared";
-import { inArray } from "drizzle-orm";
+import { inArray, sql, type SQL } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 
 import type { Db } from "../db/client.js";
@@ -53,6 +53,20 @@ export function swapTitles(
       show.altTitles = [romaji, ...others];
     }
   }
+}
+
+/**
+ * A show's title in this language, as a column for a query, for text the server writes itself
+ * (the calendar feed, episode alerts): MAL's romaji where the show has none.
+ */
+export function titleIn(language: TitleLanguage | undefined): SQL<string> | typeof anime.title {
+  if (language === "english") {
+    return sql<string>`coalesce(nullif(trim(${anime.titleEn}), ''), ${anime.title})`;
+  }
+  if (language === "japanese") {
+    return sql<string>`coalesce(nullif(trim(${anime.titleJa}), ''), ${anime.title})`;
+  }
+  return anime.title;
 }
 
 /**

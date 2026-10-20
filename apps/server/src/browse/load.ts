@@ -23,6 +23,53 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const SCHEDULE_BACK_MS = DAY_MS;
 const SCHEDULE_AHEAD_MS = 7 * DAY_MS;
 
+/** A slot of AniList's shared schedule, in AniList's episode numbers. */
+export interface ScheduleSlotRow {
+  anilistId: number;
+  malId: number;
+  episode: number;
+  airingAt: Date;
+}
+
+/** An airing time kurisu recorded for a show (`airing_episodes`), in MAL's episode numbers. */
+export interface RecordedEpisodeRow {
+  malId: number;
+  episode: number;
+  airingAt: Date;
+}
+
+/** Which AniList part a listed show is, and how far its episode numbers are from MAL's. */
+export interface ShowPart {
+  anilistId: number | null;
+  episodeOffset: number;
+}
+
+/**
+ * Numbers each episode as MAL does for shows on the user's list: AniList's episode plus the
+ * part's offset (from `anilist_media`). A slot of another AniList part of a listed show is left
+ * out rather than numbered by a guess; shows not on the list keep AniList's numbers. Recorded
+ * times (already in MAL's numbers) fill in what the slots lack. One per show and episode, the
+ * slot's first.
+ */
+export function numberEpisodes<S extends ScheduleSlotRow, R extends RecordedEpisodeRow>(
+  slots: S[],
+  recorded: R[],
+  partOf: (malId: number) => ShowPart | undefined,
+): { row: S | R; episode: number; airingAt: Date; fromSlot: boolean }[] {
+  const out = new Map<string, { row: S | R; episode: number; airingAt: Date; fromSlot: boolean }>();
+  const add = (row: S | R, episode: number, fromSlot: boolean) => {
+    const key = `${String(row.malId)}:${String(episode)}`;
+    if (!out.has(key)) out.set(key, { row, episode, airingAt: row.airingAt, fromSlot });
+  };
+  for (const slot of slots) {
+    const part = partOf(slot.malId);
+    if (part && part.anilistId !== slot.anilistId) continue;
+    add(slot, slot.episode + (part?.episodeOffset ?? 0), true);
+  }
+  for (const row of recorded) add(row, row.episode, false);
+  return [...out.values()];
+}
+
 /** Where these shows stand on the user's list, by MAL id. */
 async function entriesOf(
   db: Db,
@@ -113,39 +160,28 @@ export async function loadSchedule(
     .where(eq(briefSettings.userId, userId));
   const services = settings?.services ?? [];
 
-  const episodes = new Map<string, ScheduleEpisode>();
-  const add = (
-    row: { malId: number; title: string; pictureUrl: string | null; mediaType: string | null },
-    episode: number,
-    airingAt: Date,
-    popularity: number | null,
-  ) => {
-    const key = `${String(row.malId)}:${String(episode)}`;
-    if (episodes.has(key)) return;
+  const numbered = numberEpisodes(slots, recorded, (malId) =>
+    entries.has(malId) ? media.get(malId) : undefined,
+  );
+  const episodes = numbered.map(({ row, episode, airingAt }): ScheduleEpisode => {
     const entry = entries.get(row.malId) ?? null;
-    episodes.set(key, {
+    return {
       animeId: row.malId,
       title: row.title,
       pictureUrl: row.pictureUrl,
       mediaType: row.mediaType,
       episode,
       airingAt: airingAt.toISOString(),
-      popularity,
+      popularity: "popularity" in row ? row.popularity : null,
       entry,
       watchOn: entry ? watchOn(media.get(row.malId)?.streamingLinks ?? [], services) : [],
-    });
-  };
-  for (const slot of slots) {
-    const part = entries.has(slot.malId) ? media.get(slot.malId) : undefined;
-    if (part && part.anilistId !== slot.anilistId) continue;
-    add(slot, slot.episode + (part?.episodeOffset ?? 0), slot.airingAt, slot.popularity);
-  }
-  for (const row of recorded) add(row, row.episode, row.airingAt, null);
+    };
+  });
 
   return {
     timeZone: await userTimeZone(db, userId),
     updatedAt: (await scheduleUpdatedAt(db))?.toISOString() ?? null,
-    episodes: [...episodes.values()].sort(
+    episodes: episodes.sort(
       (a, b) => a.airingAt.localeCompare(b.airingAt) || a.title.localeCompare(b.title),
     ),
   };

@@ -6,6 +6,8 @@ import { dueBriefs, runBrief, type BriefDeps } from "./service.js";
 const TICK_CRON = "*/5 * * * *";
 const TICK_QUEUE = "brief-tick";
 const BRIEF_QUEUE = "brief";
+/** Episode alerts look for episodes out every 5 minutes too, one run at a time. */
+const ALERTS_QUEUE = "episode-alerts";
 
 export interface BriefScheduler {
   start(): Promise<void>;
@@ -16,9 +18,12 @@ export interface BriefScheduler {
  * Daily briefs on a Postgres-backed queue (pg-boss, in its own `pgboss` schema). A cron job
  * finds users whose brief is due and queues one `brief` job each, keyed by user and local date;
  * failed briefs retry with backoff. The `briefs` table, not the queue, guarantees one brief per
- * day.
+ * day. Episode alerts (`runAlerts`) run on their own cron queue beside it; their own table
+ * guarantees one push per episode.
  */
-export function createBriefScheduler(deps: BriefDeps & { databaseUrl: string }): BriefScheduler {
+export function createBriefScheduler(
+  deps: BriefDeps & { databaseUrl: string; runAlerts?: () => Promise<unknown> },
+): BriefScheduler {
   const { db, log } = deps;
   const boss = new PgBoss({ connectionString: deps.databaseUrl, schema: "pgboss" });
   boss.on("error", (err) => {
@@ -37,6 +42,14 @@ export function createBriefScheduler(deps: BriefDeps & { databaseUrl: string }):
         expireInSeconds: 300,
       });
       await boss.schedule(TICK_QUEUE, TICK_CRON);
+      const { runAlerts } = deps;
+      if (runAlerts) {
+        await boss.createQueue(ALERTS_QUEUE, { policy: "exclusive", expireInSeconds: 240 });
+        await boss.schedule(ALERTS_QUEUE, TICK_CRON);
+        await boss.work(ALERTS_QUEUE, async () => {
+          await runAlerts();
+        });
+      }
 
       await boss.work(TICK_QUEUE, async () => {
         for (const due of await dueBriefs(db)) {

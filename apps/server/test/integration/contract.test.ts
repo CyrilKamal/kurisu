@@ -132,6 +132,23 @@ describe("responses match the contract", () => {
     expect(() => contract.calendarResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("the /alerts endpoints", async () => {
+    const put = (url: string, payload: Record<string, unknown>) =>
+      h.app.inject({
+        method: "PUT",
+        url,
+        headers: { origin: TEST_WEB_ORIGIN },
+        cookies: { [SESSION_COOKIE]: cookie },
+        payload,
+      });
+    const read = await get("/alerts");
+    expect(() => contract.alertsResponseSchema.parse(read.json())).not.toThrow();
+    const on = await put("/alerts", { on: true });
+    expect(() => contract.alertsResponseSchema.parse(on.json())).not.toThrow();
+    const muted = await put("/alerts/shows/900001", { muted: true });
+    expect(() => contract.alertMuteResponseSchema.parse(muted.json())).not.toThrow();
+  });
+
   it("the /invites endpoints", async () => {
     // Only the owner invites; this harness has none, so make the test user one.
     await h.db.update(users).set({ isOwner: true });

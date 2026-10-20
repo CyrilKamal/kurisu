@@ -24,6 +24,7 @@ export type PlanLimits = z.infer<typeof limitsSchema>;
 const featuresSchema = z
   .object({
     supporterBadge: z.boolean(),
+    episodeAlerts: z.boolean(),
     calendar: z.boolean(),
     fullYear: z.boolean(),
     lab: z.boolean(),
