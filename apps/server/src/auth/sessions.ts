@@ -13,6 +13,8 @@ export interface SessionUser {
   malUserId: number;
   malUsername: string;
   isOwner: boolean;
+  /** Which of a show's titles the app shows them (src/titles/localize.ts). */
+  titleLanguage: "romaji" | "english" | "japanese";
 }
 
 function hashToken(token: string): string {
@@ -37,6 +39,7 @@ export async function findSessionUser(db: Db, token: string): Promise<SessionUse
       malUserId: users.malUserId,
       malUsername: users.malUsername,
       isOwner: users.isOwner,
+      titleLanguage: users.titleLanguage,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))

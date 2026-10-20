@@ -57,6 +57,7 @@ import { registerPlanRoutes } from "./billing/routes.js";
 import { registerCalendarRoutes } from "./calendar/routes.js";
 import { refreshSchedule, refreshSeasonCharts } from "./browse/refresh.js";
 import { registerBrowseRoutes } from "./browse/routes.js";
+import { registerTitleLanguage } from "./titles/localize.js";
 import { registerFriendRoutes } from "./friends/routes.js";
 import { captureReview } from "./review/capture.js";
 import { registerStatsRoutes } from "./stats/routes.js";
@@ -422,6 +423,8 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       return reply.code(503).send({ status: "unavailable" });
     }
   });
+  // Shows' titles in each user's language, on every reply to them.
+  registerTitleLanguage(app, db);
   registerAuthRoutes(app, {
     config,
     db,

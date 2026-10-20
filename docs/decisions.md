@@ -2617,3 +2617,25 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Fetched on first open:** a show's first visitor waits up to 4 seconds, as for the synopsis.
 - **Old pages:** pages opened before this fetch their extras on the next visit.
 - **Split shows show their first part's** characters and rankings.
+
+## 2026-10-19 — Titles in English, romaji or Japanese, swapped at the reply (Milestone 8 interlude)
+**Decision:**
+- **A setting:** romaji (MAL's, the default), English or Japanese, from MAL's alternative titles kurisu already stores. A show without one keeps its romaji title.
+- **Swapped in one place,** a reply hook for signed-in users. It finds every object with an `animeId` and a `title` and swaps the title, so every screen follows without changing each query.
+- **What stays MAL's:**
+  - The data export keeps titles as stored.
+  - The calendar feed has no session, so it picks its titles itself.
+  - Text the model or the brief wrote stays MAL's: Chat replies, the brief and its push.
+
+**Alternatives:**
+- Choosing the title in every query (about 15 modules, and any new screen would have to remember).
+- Swapping in the web app (it would need both titles in every response).
+- Rewriting the brief's text too.
+- AniList's titles (kurisu stores MAL's for every listed show, and AniList's only for some).
+
+**Why:** A hook keeps the rule in one tested place. The brief's text stays MAL's because the agent reads it back to understand "watched it", and a changed title there could lead to a wrong write.
+
+**Consequences:**
+- **A new reply shape is covered automatically** as long as it carries `animeId` and `title`.
+- **Chat cards follow the setting, but the agent's own words don't,** so English and romaji can sit side by side in a chat.
+- **One small query per reply** that names shows, for users who changed the setting.

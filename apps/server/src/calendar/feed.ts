@@ -13,6 +13,7 @@ import {
   briefSettings,
   calendarFeeds,
   listEntries,
+  users,
 } from "../db/schema.js";
 import { icsCalendar, type CalendarEvent } from "./ics.js";
 
@@ -99,12 +100,23 @@ export interface FeedEpisode {
 /**
  * The episodes the feed shows: every episode of a Watching show, and the premiere of a Plan to
  * Watch show, from two weeks back to two months ahead, from what AniList said (never projected).
+ * Titles are in the user's language (Settings), MAL's romaji where a show has none.
  */
 export async function feedEpisodes(db: Db, userId: string, now: Date): Promise<FeedEpisode[]> {
+  const [owner] = await db
+    .select({ language: users.titleLanguage })
+    .from(users)
+    .where(eq(users.id, userId));
+  const title =
+    owner?.language === "english"
+      ? sql<string>`coalesce(nullif(trim(${anime.titleEn}), ''), ${anime.title})`
+      : owner?.language === "japanese"
+        ? sql<string>`coalesce(nullif(trim(${anime.titleJa}), ''), ${anime.title})`
+        : anime.title;
   return db
     .select({
       malId: airingEpisodes.malId,
-      title: anime.title,
+      title,
       episode: airingEpisodes.episode,
       airingAt: airingEpisodes.airingAt,
       episodeMinutes: anime.episodeMinutes,
@@ -128,7 +140,7 @@ export async function feedEpisodes(db: Db, userId: string, now: Date): Promise<F
         ),
       ),
     )
-    .orderBy(asc(airingEpisodes.airingAt), asc(anime.title))
+    .orderBy(asc(airingEpisodes.airingAt), asc(title))
     .limit(FEED_MAX_EVENTS);
 }
 
