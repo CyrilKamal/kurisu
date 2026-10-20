@@ -62,6 +62,11 @@ const animeListItemSchema = z.object({
     updated_at: z.iso.datetime({ offset: true }),
     start_date: z.string().nullish(),
     finish_date: z.string().nullish(),
+    // MAL's other fields, only when asked for by name; missing means unknown, never empty.
+    priority: z.number().int().min(0).max(2).nullish(),
+    num_times_rewatched: z.number().int().nonnegative().nullish(),
+    tags: z.array(z.string()).nullish(),
+    comments: z.string().nullish(),
   }),
 });
 
@@ -131,7 +136,14 @@ export async function malRequestTurn(): Promise<void> {
 
 const ANIME_FIELDS =
   "num_episodes,media_type,status,start_date,main_picture,alternative_titles,genres,average_episode_duration,mean,studios,broadcast";
-const LIST_FIELDS = `list_status,${ANIME_FIELDS}`;
+/**
+ * Every list-status field by name: MAL leaves comments and tags out unless they're asked for,
+ * and naming the rest too keeps them whichever way MAL reads the braces.
+ */
+const LIST_STATUS_FIELDS =
+  "status,score,num_episodes_watched,is_rewatching,updated_at,start_date,finish_date," +
+  "priority,num_times_rewatched,tags,comments";
+const LIST_FIELDS = `list_status{${LIST_STATUS_FIELDS}},${ANIME_FIELDS}`;
 const LIST_PAGE_SIZE = 1000; // MAL's maximum for this endpoint
 
 export async function fetchMe(apiBaseUrl: string, accessToken: string): Promise<MalUser> {

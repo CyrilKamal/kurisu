@@ -125,6 +125,11 @@ describe("sync on login", () => {
       score: 0,
       episodesWatched: 7,
       isRewatching: false,
+      // MAL's defaults, since the user never set them on this entry.
+      comments: "",
+      tags: [],
+      priority: 0,
+      timesRewatched: 0,
       updatedAt: "2026-09-28T10:00:00.000Z",
       // AniList knows nothing of the fixture shows.
       airing: null,

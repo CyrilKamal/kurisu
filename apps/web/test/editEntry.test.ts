@@ -21,6 +21,10 @@ function entry(fields: Partial<ListEntry> = {}): ListEntry {
     score: 0,
     episodesWatched: 7,
     isRewatching: false,
+    comments: "",
+    tags: [],
+    priority: 0,
+    timesRewatched: 0,
     updatedAt: "2026-10-01T00:00:00.000Z",
     ...fields,
   };

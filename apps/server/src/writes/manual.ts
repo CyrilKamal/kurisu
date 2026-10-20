@@ -2,8 +2,14 @@ import { and, eq } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
 import { anime, listEntries } from "../db/schema.js";
-import { commitProposal, type CommitResult, type WriteDeps } from "./commit.js";
-import { normalizeChange, type ListState, type RequestedChange } from "./normalize.js";
+import {
+  commitProposal,
+  MIRROR_STATE,
+  mirrorState,
+  type CommitResult,
+  type WriteDeps,
+} from "./commit.js";
+import { normalizeChange, type EntryState, type RequestedChange } from "./normalize.js";
 import { addChange, type ProposeError } from "./propose.js";
 import { findProposal, stageProposal } from "./stage.js";
 
@@ -11,7 +17,8 @@ import { findProposal, stageProposal } from "./stage.js";
  * Edits the user makes themselves on the List screen. They take the same path as the agent's
  * writes: a proposal, normalized by the same rules (completing fills in the episodes, and so
  * on), committed only by commitProposal, logged with the prior values and undoable. The user's
- * own tap is the confirmation, so nothing is held.
+ * own tap is the confirmation, so nothing is held. Only here can MAL's other fields (comments,
+ * tags, priority, times rewatched) be set; the agent never sets them.
  */
 export type ManualEdit = RequestedChange;
 
@@ -23,29 +30,27 @@ function keyFor(requestId: string): string {
   return `user:${requestId}`;
 }
 
+/** The entry as it stands: its list fields (MAL's other ones where known) and the rules' view. */
 async function entryOf(db: Db, userId: string, animeId: number) {
-  const [entry] = await db
-    .select({
-      status: listEntries.status,
-      episodesWatched: listEntries.numEpisodesWatched,
-      score: listEntries.score,
-      isRewatching: listEntries.isRewatching,
-      numEpisodes: anime.numEpisodes,
-    })
+  const [row] = await db
+    .select({ ...MIRROR_STATE, numEpisodes: anime.numEpisodes })
     .from(listEntries)
     .innerJoin(anime, eq(listEntries.animeId, anime.malId))
     .where(and(eq(listEntries.userId, userId), eq(listEntries.animeId, animeId)))
     .limit(1);
-  return entry ?? null;
-}
-
-function stateOf(entry: ListState): ListState {
-  return {
-    status: entry.status,
-    episodesWatched: entry.episodesWatched,
-    score: entry.score,
-    isRewatching: entry.isRewatching,
+  if (!row) return null;
+  const state = mirrorState(row);
+  const rules: EntryState = {
+    ...state,
+    numEpisodes: row.numEpisodes,
+    extras: {
+      comments: row.comments,
+      tags: row.tags,
+      priority: row.priority,
+      timesRewatched: row.timesRewatched,
+    },
   };
+  return { state, rules };
 }
 
 /** Changes an entry's status, episodes, score or rewatching, as the user set them. */
@@ -61,7 +66,7 @@ export async function editEntry(
   if (earlier) return commitProposal(deps, userId, earlier.id, { confirmed: true });
   const entry = await entryOf(deps.db, userId, animeId);
   if (!entry) return { status: "failed", error: "not_on_list" };
-  const normalized = normalizeChange(entry, edit);
+  const normalized = normalizeChange(entry.rules, edit);
   if (!normalized.ok) return { status: "invalid", error: normalized.error };
   if (Object.keys(normalized.change).length === 0) return { status: "invalid", error: "no_change" };
 
@@ -71,7 +76,7 @@ export async function editEntry(
     source: "user",
     kind: "update",
     idempotencyKey: keyFor(requestId),
-    before: stateOf(entry),
+    before: entry.state,
     change: normalized.change,
   });
   return commitProposal(deps, userId, proposal.id, { confirmed: true });
@@ -94,7 +99,8 @@ export async function removeEntry(
     source: "user",
     kind: "remove",
     idempotencyKey: keyFor(requestId),
-    before: stateOf(entry),
+    // Every known field, so undoing the removal puts the comments and tags back too.
+    before: entry.state,
     change: {},
   });
   return commitProposal(deps, userId, proposal.id, { confirmed: true });
@@ -110,7 +116,7 @@ export async function addEntry(
   deps: WriteDeps,
   userId: string,
   animeId: number,
-  requested: Omit<RequestedChange, "isRewatching">,
+  requested: Pick<RequestedChange, "status" | "episodesWatched" | "score">,
   requestId: string,
 ): Promise<ManualResult> {
   const earlier = await findProposal(deps.db, userId, keyFor(requestId));

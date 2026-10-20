@@ -31,6 +31,10 @@ function entry(animeId: number, fields: Partial<ListEntry> = {}): ListEntry {
     score: 0,
     episodesWatched: 0,
     isRewatching: false,
+    comments: "",
+    tags: [],
+    priority: 0,
+    timesRewatched: 0,
     updatedAt: "2026-10-01T00:00:00.000Z",
     ...fields,
   };
@@ -46,7 +50,8 @@ describe("readListView and listHref", () => {
       type: "movie",
       genre: "Slice of Life",
       airing: "currently_airing",
-      sort: "mal",
+      tag: "comfy",
+      sort: "priority",
       layout: "grid",
     });
     expect(read).toEqual({
@@ -55,7 +60,8 @@ describe("readListView and listHref", () => {
       type: "movie",
       genre: "Slice of Life",
       airing: "currently_airing",
-      sort: "mal",
+      tag: "comfy",
+      sort: "priority",
       layout: "grid",
     });
     expect(
@@ -234,5 +240,31 @@ describe("facetOptions and countMatches", () => {
       dropped: 0,
       plan_to_watch: 1,
     });
+  });
+});
+
+describe("your own tags and priority", () => {
+  const entries = [
+    entry(1, { tags: ["comfy", "isekai"], priority: 0 }),
+    entry(2, { tags: ["comfy"], priority: 2 }),
+    entry(3, { tags: null, priority: null }),
+    entry(4, { tags: [], priority: 1 }),
+  ];
+
+  const planned = (fields: Partial<ListView> = {}) => view({ status: "plan_to_watch", ...fields });
+
+  it("filter by a tag, with each tag's count", () => {
+    expect(facetOptions(entries, planned(), "tag")).toEqual([
+      { value: "comfy", count: 2 },
+      { value: "isekai", count: 1 },
+    ]);
+    expect(visibleEntries(entries, planned({ tag: "isekai" })).map((e) => e.animeId)).toEqual([1]);
+    expect(isFiltered(planned({ tag: "comfy" }))).toBe(true);
+  });
+
+  it("sort High priority first, unknown as Low", () => {
+    expect(visibleEntries(entries, planned({ sort: "priority" })).map((e) => e.animeId)).toEqual([
+      2, 4, 1, 3,
+    ]);
   });
 });

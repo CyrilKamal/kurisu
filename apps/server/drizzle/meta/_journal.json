@@ -288,6 +288,13 @@
       "when": 1792498825698,
       "tag": "0040_score_style_favorites",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792530165389,
+      "tag": "0041_list_entry_extras",
+      "breakpoints": true
     }
   ]
 }

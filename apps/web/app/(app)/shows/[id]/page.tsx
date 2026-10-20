@@ -1,6 +1,7 @@
 import {
   alertsResponseSchema,
   favoritesResponseSchema,
+  priorityLabel,
   showResponseSchema,
   type JournalItem,
 } from "@kurisu/shared";
@@ -73,6 +74,40 @@ function ScoreSpread({ spread }: { spread: { score: number; share: number }[] })
         mode === null ? "" : `; most often ${columns[mode]?.label ?? ""} out of 100`
       }`}
     />
+  );
+}
+
+/** Your own MAL fields for the show, when you've set any: priority, rewatches, tags, comments. */
+function EntryExtras({
+  entry,
+}: {
+  entry: {
+    priority: number | null;
+    timesRewatched: number | null;
+    tags: string[] | null;
+    comments: string | null;
+  };
+}) {
+  const priority = entry.priority ?? 0;
+  const rewatched = entry.timesRewatched ?? 0;
+  const tags = entry.tags ?? [];
+  const comments = entry.comments?.trim() ?? "";
+  if (priority === 0 && rewatched === 0 && tags.length === 0 && comments === "") return null;
+  return (
+    <>
+      {(priority > 0 || rewatched > 0 || tags.length > 0) && (
+        <p className="k-show__meta">
+          {priority > 0 && <span>{priorityLabel(priority)} priority</span>}
+          {rewatched > 0 && <span>Rewatched {rewatched}×</span>}
+          {tags.map((tag) => (
+            <span key={tag} className="k-tag">
+              {tag}
+            </span>
+          ))}
+        </p>
+      )}
+      {comments !== "" && <p className="k-show__synopsis">{comments}</p>}
+    </>
   );
 }
 
@@ -175,6 +210,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
                 />
                 <Score score={entry.score} />
               </div>
+              <EntryExtras entry={entry} />
             </div>
           )}
           <ShowActions
@@ -185,6 +221,10 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
                 score: entry.score,
                 episodesWatched: entry.episodesWatched,
                 isRewatching: entry.isRewatching,
+                comments: entry.comments,
+                tags: entry.tags,
+                priority: entry.priority,
+                timesRewatched: entry.timesRewatched,
               }
             }
             alert={alert}

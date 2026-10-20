@@ -2,15 +2,19 @@ import { and, eq, inArray } from "drizzle-orm";
 
 import type { Db } from "../db/client.js";
 import { changes, listEntries, proposals } from "../db/schema.js";
-import { commitProposal, type CommitResult, type WriteDeps } from "./commit.js";
-import type { ListChange, ListState } from "./normalize.js";
+import {
+  commitProposal,
+  MIRROR_STATE,
+  mirrorState,
+  type CommitResult,
+  type WriteDeps,
+} from "./commit.js";
+import { LIST_FIELDS, sameValue, type ListChange, type ListState } from "./normalize.js";
 
 export type UndoResult =
   | CommitResult
   | { status: "already_undone"; undoneByChangeId: string }
   | { status: "changed_since" };
-
-const FIELDS = ["status", "episodesWatched", "score", "isRewatching"] as const;
 
 /**
  * Reverts one committed change by proposing its prior values and committing that proposal
@@ -33,15 +37,11 @@ export async function undoChange(
     return { status: "already_undone", undoneByChangeId: change.undoneByChangeId };
   }
 
-  const [entry] = await db
-    .select({
-      status: listEntries.status,
-      episodesWatched: listEntries.numEpisodesWatched,
-      score: listEntries.score,
-      isRewatching: listEntries.isRewatching,
-    })
+  const [row] = await db
+    .select(MIRROR_STATE)
     .from(listEntries)
     .where(and(eq(listEntries.userId, userId), eq(listEntries.animeId, change.animeId)));
+  const entry = row ? mirrorState(row) : undefined;
 
   let undo: { kind: "update" | "add" | "remove"; before: ListState | null; change: ListChange };
   if (change.kind === "remove") {
@@ -55,8 +55,8 @@ export async function undoChange(
       change.kind === "add"
         ? { episodesWatched: 0, score: 0, isRewatching: false, ...change.after }
         : change.after;
-    const keys = FIELDS.filter((field) => expected[field] !== undefined);
-    if (keys.some((field) => entry[field] !== expected[field])) {
+    const keys = LIST_FIELDS.filter((field) => expected[field] !== undefined);
+    if (keys.some((field) => !sameValue(entry[field], expected[field]))) {
       return { status: "changed_since" };
     }
     undo =

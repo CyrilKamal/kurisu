@@ -47,6 +47,11 @@ export interface FakeListItem {
     updated_at: string;
     start_date?: string;
     finish_date?: string;
+    // MAL's other fields; the list sends them only when asked for by name, as MAL does.
+    priority?: number;
+    num_times_rewatched?: number;
+    tags?: string[];
+    comments?: string;
   };
 }
 
@@ -57,6 +62,12 @@ export class FakeMal {
   readonly tokenGrants: string[] = [];
   /** Every secret handed out (codes, verifiers, tokens), so tests can check none reach the logs. */
   readonly issuedSecrets: string[] = [];
+
+  /**
+   * Whether a list-status PATCH replies with MAL's other fields too. MAL documents that it does;
+   * tests turn it off to check kurisu keeps what it sent.
+   */
+  patchRepliesWithExtras = true;
 
   /** Who logs in next, and who /users/@me says the token holder is. Tests switch it. */
   user: { id: number; name: string };
@@ -150,6 +161,7 @@ export class FakeMal {
     this.animeListRequests.length = 0;
     this.patchRequests.length = 0;
     this.patchFailures = [];
+    this.patchRepliesWithExtras = true;
     this.catalog = [];
     this.deleteRequests.length = 0;
   }
@@ -268,6 +280,14 @@ export class FakeMal {
     if (score !== null) ls.score = Number(score);
     const rewatching = form.get("is_rewatching");
     if (rewatching !== null) ls.is_rewatching = rewatching === "true";
+    const priority = form.get("priority");
+    if (priority !== null) ls.priority = Number(priority);
+    const rewatched = form.get("num_times_rewatched");
+    if (rewatched !== null) ls.num_times_rewatched = Number(rewatched);
+    const tags = form.get("tags");
+    if (tags !== null) ls.tags = tags === "" ? [] : tags.split(",");
+    const comments = form.get("comments");
+    if (comments !== null) ls.comments = comments;
     ls.updated_at = new Date().toISOString().replace("Z", "+00:00");
     json(res, 200, {
       status: ls.status,
@@ -275,6 +295,12 @@ export class FakeMal {
       num_episodes_watched: ls.num_episodes_watched,
       is_rewatching: ls.is_rewatching,
       updated_at: ls.updated_at,
+      ...(this.patchRepliesWithExtras && {
+        priority: ls.priority ?? 0,
+        num_times_rewatched: ls.num_times_rewatched ?? 0,
+        tags: ls.tags ?? [],
+        comments: ls.comments ?? "",
+      }),
     });
   }
 
@@ -315,7 +341,19 @@ export class FakeMal {
       return;
     }
     const list = this.listOf(req);
-    const data = list.slice(offset, offset + this.pageSize);
+    const asked = url.searchParams.get("fields") ?? "";
+    const data = list.slice(offset, offset + this.pageSize).map((item) => {
+      const { priority, num_times_rewatched, tags, comments, ...core } = item.list_status;
+      // MAL's defaults for an entry the user never set them on.
+      const extras = {
+        priority: priority ?? 0,
+        num_times_rewatched: num_times_rewatched ?? 0,
+        tags: tags ?? [],
+        comments: comments ?? "",
+      };
+      const sent = Object.entries(extras).filter(([field]) => asked.includes(field));
+      return { ...item, list_status: { ...core, ...Object.fromEntries(sent) } };
+    });
     const paging: { next?: string } = {};
     if (offset + this.pageSize < list.length) {
       const next = new URL(url);

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { ListChange } from "../writes/normalize.js";
+import type { EntryExtras, ListChange } from "../writes/normalize.js";
 import {
   DEFAULT_RETRY,
   MalApiError,
@@ -22,10 +22,17 @@ const listStatusResponseSchema = z.object({
   num_episodes_watched: z.number().int().nonnegative(),
   is_rewatching: z.boolean(),
   updated_at: z.iso.datetime({ offset: true }),
+  priority: z.number().int().min(0).max(2).nullish(),
+  num_times_rewatched: z.number().int().nonnegative().nullish(),
+  tags: z.array(z.string()).nullish(),
+  comments: z.string().nullish(),
 });
 
-/** The list entry as MAL reports it after a write. */
-export interface MalListStatus {
+/**
+ * The list entry as MAL reports it after a write. MAL's other fields are there when its reply
+ * has them.
+ */
+export interface MalListStatus extends Partial<EntryExtras> {
   status: (typeof MAL_LIST_STATUSES)[number];
   score: number;
   episodesWatched: number;
@@ -51,6 +58,13 @@ export async function patchListStatus(
   }
   if (change.score !== undefined) form.set("score", String(change.score));
   if (change.isRewatching !== undefined) form.set("is_rewatching", String(change.isRewatching));
+  if (change.priority !== undefined) form.set("priority", String(change.priority));
+  if (change.timesRewatched !== undefined) {
+    form.set("num_times_rewatched", String(change.timesRewatched));
+  }
+  // MAL takes tags as one comma-separated string; cleanTags keeps commas out of each.
+  if (change.tags !== undefined) form.set("tags", change.tags.join(","));
+  if (change.comments !== undefined) form.set("comments", change.comments);
 
   const body = await malRequestJson(
     new URL(`${apiBaseUrl}/anime/${String(animeId)}/my_list_status`),
@@ -65,6 +79,10 @@ export async function patchListStatus(
     episodesWatched: parsed.num_episodes_watched,
     isRewatching: parsed.is_rewatching,
     updatedAt: new Date(parsed.updated_at),
+    ...(parsed.priority != null && { priority: parsed.priority }),
+    ...(parsed.num_times_rewatched != null && { timesRewatched: parsed.num_times_rewatched }),
+    ...(parsed.tags != null && { tags: parsed.tags }),
+    ...(parsed.comments != null && { comments: parsed.comments }),
   };
 }
 

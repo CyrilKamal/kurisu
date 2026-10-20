@@ -11,8 +11,11 @@ import { editErrorMessage, editPayload, formFrom, type EditableEntry } from "@/l
 import { STATUS_LABELS } from "@/lib/format";
 import { scoreOptions } from "@/lib/score";
 
+import { MoreFields } from "./MoreFields";
+
 /**
- * Edits one entry: status, episodes, score and rewatching, or takes it off the list. Saving goes
+ * Edits one entry: status, episodes, score and rewatching, and behind "More" MAL's comments,
+ * tags, priority and times rewatched, or takes it off the list. Saving goes
  * through the same write path as Chat, so it shows in History and can be undone. A Sheet of the
  * design system's Field controls; Remove asks in the same sheet, never a second one.
  */
@@ -203,6 +206,8 @@ export function EditSheet({
             Rewatching
           </label>
         )}
+
+        <MoreFields form={form} setForm={setForm} />
 
         {errorLine}
       </div>
