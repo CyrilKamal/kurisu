@@ -967,8 +967,28 @@ export const scheduleSlots = pgTable(
 );
 
 /**
+ * Browse's Top charts (trending, top airing, upcoming, most popular, best ever): 100 shows each,
+ * in AniList's order, rebuilt daily by browse/refresh.ts. Their details are in `anilist_catalog`.
+ */
+export const topCharts = pgTable(
+  "top_charts",
+  {
+    // "trending", "airing", "upcoming", "popular" or "top".
+    chart: text("chart").notNull(),
+    malId: integer("mal_id")
+      .notNull()
+      .references(() => anilistCatalog.malId, { onDelete: "cascade" }),
+    // 1 for the first.
+    rank: integer("rank").notNull(),
+    fetchedAt: timestamptz("fetched_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.chart, table.malId] })],
+);
+
+/**
  * Each charted season's most popular shows (Browse's Seasons): last, this and next season,
- * rebuilt daily by browse/refresh.ts. Their details are in `anilist_catalog`.
+ * rebuilt daily by browse/refresh.ts, and any earlier season someone asked for
+ * (browse/archive.ts). Their details are in `anilist_catalog`.
  */
 export const seasonCharts = pgTable(
   "season_charts",

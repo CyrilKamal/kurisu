@@ -132,6 +132,17 @@ describe("responses match the contract", () => {
     expect(() => contract.calendarResponseSchema.parse(res.json())).not.toThrow();
   });
 
+  it("the /browse endpoints", async () => {
+    const schedule = await get("/browse/schedule");
+    expect(() => contract.scheduleResponseSchema.parse(schedule.json())).not.toThrow();
+    const season = await get("/browse/seasons");
+    expect(() => contract.seasonChartResponseSchema.parse(season.json())).not.toThrow();
+    const past = await get("/browse/seasons?season=2001-SPRING");
+    expect(() => contract.seasonChartResponseSchema.parse(past.json())).not.toThrow();
+    const top = await get("/browse/top?chart=airing");
+    expect(() => contract.topChartResponseSchema.parse(top.json())).not.toThrow();
+  });
+
   it("the /alerts endpoints", async () => {
     const put = (url: string, payload: Record<string, unknown>) =>
       h.app.inject({

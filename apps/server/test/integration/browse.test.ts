@@ -4,8 +4,12 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createAniListClient } from "../../src/anilist/client.js";
 import { SESSION_COOKIE } from "../../src/auth/sessions.js";
-import { refreshSchedule, refreshSeasonCharts } from "../../src/browse/refresh.js";
-import { chartedSeasons, seasonParam } from "../../src/browse/seasons.js";
+import {
+  refreshSchedule,
+  refreshSeasonCharts,
+  refreshTopCharts,
+} from "../../src/browse/refresh.js";
+import { chartedSeasons, seasonParam, shiftSeason } from "../../src/browse/seasons.js";
 import { airingEpisodes, anilistMedia, anime, briefSettings, users } from "../../src/db/schema.js";
 import { fixtureList } from "../fixtures/animeList.js";
 import {
@@ -195,7 +199,81 @@ describe("the season charts", () => {
     const [row] = await h.db.select().from(anime).where(eq(anime.malId, 8003));
     expect(row?.title).toBe("Next Big Thing");
 
-    expect((await get("/browse/seasons?season=2020-FALL")).statusCode).toBe(404);
+    expect(now.previous).toBe(seasonParam(previous));
+    expect(coming.next).toBeNull();
+    expect(
+      (await get(`/browse/seasons?season=${seasonParam(shiftSeason(next, 1))}`)).statusCode,
+    ).toBe(404);
+    expect((await get("/browse/seasons?season=1959-FALL")).statusCode).toBe(404);
     expect((await get("/browse/seasons?season=soon")).statusCode).toBe(400);
+  });
+
+  it("fetches an earlier season in the background when someone asks for it", async () => {
+    anilist.charts.set("FALL 2019", [311]);
+    anilist.detailed = [detailedMedia(311, 8011, "Old Favourite", { averageScore: 90 })];
+    const first = contract.seasonChartResponseSchema.parse(
+      (await get("/browse/seasons?season=2019-FALL")).json(),
+    );
+    expect(first).toMatchObject({
+      season: "2019-FALL",
+      label: "Fall 2019",
+      previous: "2019-SUMMER",
+      next: "2020-WINTER",
+      updatedAt: null,
+      pending: true,
+      shows: [],
+    });
+
+    let chart = first;
+    for (let i = 0; i < 50 && chart.pending; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      chart = contract.seasonChartResponseSchema.parse(
+        (await get("/browse/seasons?season=2019-FALL")).json(),
+      );
+    }
+    expect(chart.pending).toBe(false);
+    expect(chart.shows.map((s) => [s.title, s.score])).toEqual([["Old Favourite", 9]]);
+    // Fetched once: asking again doesn't go back to AniList.
+    const asked = anilist.requests.filter((r) => r.query.includes("seasonYear: 2019")).length;
+    await get("/browse/seasons?season=2019-FALL");
+    expect(anilist.requests.filter((r) => r.query.includes("seasonYear: 2019")).length).toBe(asked);
+  });
+});
+
+describe("the Top charts", () => {
+  it("keeps each chart in AniList's order, without adult titles", async () => {
+    anilist.tops.set("trending", [402, 401, 403]);
+    anilist.tops.set("airing", [401]);
+    anilist.tops.set("upcoming", [404]);
+    anilist.tops.set("popular", [401, 402]);
+    anilist.tops.set("top", [402]);
+    anilist.detailed = [
+      detailedMedia(401, 8101, "Second Trending", { averageScore: 80 }),
+      detailedMedia(402, 8102, "First Trending", { averageScore: 75 }),
+      detailedMedia(403, 8103, "Adult Trending", { isAdult: true }),
+      detailedMedia(404, 8104, "Coming Soon", { status: "NOT_YET_RELEASED", averageScore: null }),
+    ];
+    expect(await refreshTopCharts(deps())).toBe(5);
+    expect(await refreshTopCharts(deps())).toBe(0);
+
+    const top = async (chart?: string) =>
+      contract.topChartResponseSchema.parse(
+        (await get(`/browse/top${chart ? `?chart=${chart}` : ""}`)).json(),
+      );
+    const trending = await top();
+    expect(trending.chart).toBe("trending");
+    expect(trending.updatedAt).not.toBeNull();
+    expect(trending.shows.map((s) => [s.title, s.score, s.entry])).toEqual([
+      ["First Trending", 7.5, null],
+      ["Second Trending", 8, null],
+    ]);
+    expect((await top("upcoming")).shows.map((s) => [s.title, s.airingStatus])).toEqual([
+      ["Coming Soon", "not_yet_aired"],
+    ]);
+    expect((await top("popular")).shows.map((s) => s.title)).toEqual([
+      "Second Trending",
+      "First Trending",
+    ]);
+    expect((await get("/browse/top?chart=nope")).statusCode).toBe(400);
   });
 });
