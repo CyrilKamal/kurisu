@@ -161,13 +161,15 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
   - `GET /shows/:animeId`: the `anime` row, the user's entry, airing (`airingView`), where to watch on their services, this show's journal, and sharing friends' entries. 404 for a show kurisu never stored. Opening a page also refreshes the show's `anilist_media` row in the background when it's missing or older than 6 hours.
     - **The synopsis and extras** come from one AniList request (`showPages` in `anilist/client.ts`, `createShowPageLoader` in `src/anilist/showPage.ts`). It runs the first time anyone opens the page, through the urgent client, waiting up to 4 s before the page opens without them.
     - **The synopsis** is AniList's description, cleaned to plain text without AniList's `~!spoilers!~` (`plainSynopsis`, `src/anilist/synopsis.ts`) and kept in `anime.synopsis` ("" when AniList has none; syncs never touch it).
-    - **The extras** are kept in `show_extras` and refetched in the background once a week old. Each split show uses its first AniList part, plus every part's episode links. They hold:
+    - **The extras** are kept in `show_extras` and refetched in the background once a week old, or when stored by an older fetch (`SHOW_EXTRAS_VERSION`, 2 since staff and the score spread). Each split show uses its first AniList part, plus every part's episode links. They hold:
       - studios, source, season, AniList's score and rankings;
       - the trailer, YouTube or Dailymotion, as a link out;
       - tags, with spoilers flagged;
-      - related anime, recommendations and characters.
+      - related anime, recommendations and characters;
+      - the six most relevant staff, and AniList's score spread (`scoreSpread` in `src/shows/extras.ts`: ten shares, null below 20 scores).
     - **Before they're stored,** adult titles and shows MAL doesn't know are dropped (`keepShowable`), and related and recommended shows get `anime` rows.
     - **`extras` in the reply** (`src/shows/extras.ts`) adds where each linked show stands on the user's list, puts relations in watch order (prequel and sequel first), and keeps episode links on the user's services only, matched by AniList's site name.
+  - **MAL's broadcast slot:** `show.broadcast` (`{day, time}`, from MAL's `broadcast` field the sync now asks for, `anime.broadcast_day` and `broadcast_time` in JST), shown for airing and upcoming shows as "Saturdays 23:30 JST · Sat 10:30 AM yours" (`broadcastLabel` in `lib/showExtras.ts`, drawn in the browser for the coming week).
   - `GET /search?q=`: AniList's title search (the urgent client; `SEARCHES_PER_MINUTE` per user, then 429 `rate_limited`; 502 `search_unavailable` when AniList fails), stored as `anime` rows like Chat's searches, each with the user's entry. With no words it lists this season's most popular shows from `season_shows`.
   - `GET /list` entries carry `airing` (latest aired, next episode and when) from the same cache. `GET /me` has `welcomed`, which `POST /me/welcomed` sets (`users.welcomed_at`; accounts that existed before it are marked welcomed).
 - Browse's data (`src/browse/`), shared by everyone and filled in the background, never while someone waits:
@@ -196,6 +198,10 @@ Run from the repo root. Requires Node 24, pnpm 12 and Docker Desktop. Update thi
     - routes with `config: { titlesAsStored: true }` (the data export);
     - text the model or the brief wrote (Chat replies, the brief's text and its push), since the agent reads brief text back (`parseBriefText`).
   - **The calendar feed,** which has no session, picks its titles in `feedEpisodes`.
+- Stats' "What you watch" (`allTime.watched`, `WatchedStats.tsx`): over every show with an episode watched (or completed), MAL's studios (`anime.studios`, from the sync) and kinds, the decades they started airing, and the voices of their main characters.
+  - **The voices** come from `show_cast` (`src/anilist/cast.ts`): AniList's Japanese voices of each show's main characters (`castOf`, 25 shows a request).
+  - **When they're fetched:** after a sync for the user's watched shows (`refreshCast`, kept 90 days; a show AniList doesn't know is stored with none). A person counts once per show, by AniList's id.
+  - **Not looked up yet:** `castKnown` says how many shows have been looked up so far.
 - Stats (`src/stats/`, `/you/stats`): `GET /stats` adds up the whole list, this year's completions (MAL's finish date, or else the day kurisu or a sync saw the show completed; imports and MAL-site adds don't count), and the last 7 days (`changes` without undos, undone changes or imports, plus `list_events`). `PUT /stats/goal {target}` sets this year's goal (`yearly_goals`). `list_events` holds changes made on MAL's site: after the first sync, each sync compares MAL's list with the mirror before replacing it (`stats/events.ts`), recording a change only when MAL's time for it is newer than the mirror's.
 - Year in review (`src/stats/year.ts`, `/you/year`, linked from You and Stats):
   - **`GET /year?year=YYYY`:** this year by default, on the user's clock, never a later one, back to 1960 (400 otherwise).

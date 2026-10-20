@@ -27,6 +27,7 @@ import { registerAuthRoutes } from "./auth/routes.js";
 import { createTokenStore } from "./auth/tokenStore.js";
 import { registerBriefRoutes } from "./brief/routes.js";
 import { registerAlertRoutes } from "./alerts/routes.js";
+import { refreshCast, watchedIds } from "./anilist/cast.js";
 import { runEpisodeAlerts } from "./alerts/service.js";
 import { createBriefScheduler } from "./brief/scheduler.js";
 import type { Prompt } from "./agent/runAgent.js";
@@ -190,6 +191,13 @@ export function buildApp(config: Config, options: BuildAppOptions = {}): Fastify
       })
       .catch((err: unknown) => {
         app.log.warn({ err: { name: (err as Error).name } }, "could not refresh sequels");
+      })
+      // The main voice actors of the shows they watched, for Stats (kept 90 days).
+      .then(async () => {
+        await refreshCast({ db, anilist: syncAniList }, await watchedIds(db, userId));
+      })
+      .catch((err: unknown) => {
+        app.log.warn({ err: { name: (err as Error).name } }, "could not refresh voice actors");
       })
       // What's airing now, shared by every user: at most daily. Before discovery,
       // which stays the last step (its run marks the background work done).

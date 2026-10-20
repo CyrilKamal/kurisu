@@ -78,6 +78,17 @@ export interface FakeShowPage {
   };
   recommendations?: { nodes: { mediaRecommendation: FakeCatalogMedia }[] };
   streamingEpisodes?: { title: string; url: string; site: string }[];
+  staff?: {
+    edges: { role: string; node: { name: { full: string }; image: { medium: string | null } } }[];
+  };
+  stats?: { scoreDistribution: { score: number; amount: number }[] };
+}
+
+/** One of a show's main characters' Japanese voices, as AniList's cast query sends it. */
+export interface FakeVoice {
+  id: number;
+  name: { full: string };
+  image: { medium: string | null };
 }
 
 /** One episode on AniList's whole schedule (not filtered by show), with its show. */
@@ -128,6 +139,8 @@ export class FakeAniList {
   airings: FakeAiring[] = [];
   /** Each show's page extras, by MAL id (its description comes from `media`). */
   pages = new Map<number, FakeShowPage>();
+  /** Main characters' Japanese voices, by MAL id, for Stats. */
+  casts = new Map<number, FakeVoice[]>();
   /** AniList's whole airing schedule, for Browse. */
   schedule: FakeScheduled[] = [];
   /** Season charts, most popular first, as AniList ids, keyed "WINTER 2027". */
@@ -185,6 +198,7 @@ export class FakeAniList {
     this.charts = new Map();
     this.tops = new Map();
     this.pages = new Map();
+    this.casts = new Map();
     this.requests.length = 0;
     this.failures.length = 0;
   }
@@ -210,6 +224,22 @@ export class FakeAniList {
             idMal: m.idMal,
             description: m.description ?? null,
             ...(m.idMal === null ? {} : this.pages.get(m.idMal)),
+          })),
+        },
+      };
+    }
+    if (body.query.includes("voiceActors") && !body.query.includes("recommendations(")) {
+      // Main characters' voices, 25 shows a page.
+      const known = ids.filter((id) => this.casts.has(id));
+      const start = (page - 1) * 25;
+      return {
+        Page: {
+          pageInfo: { hasNextPage: start + 25 < known.length },
+          media: known.slice(start, start + 25).map((idMal) => ({
+            idMal,
+            characters: {
+              edges: (this.casts.get(idMal) ?? []).map((voice) => ({ voiceActors: [voice] })),
+            },
           })),
         },
       };

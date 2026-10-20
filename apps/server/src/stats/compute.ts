@@ -10,6 +10,7 @@ import {
   listEntries,
   listEvents,
   proposals,
+  showCast,
   yearlyGoals,
 } from "../db/schema.js";
 import type { ListChange } from "../writes/normalize.js";
@@ -194,6 +195,23 @@ export interface AllTimeStats {
   scores: number[];
   /** The genres of the most completed shows. */
   topGenres: { genre: string; shows: number }[];
+  /** What the user watched (any episode, or completed): its studios, kinds and decades. */
+  watched: WatchedStats;
+}
+
+/** The shows a user watched something of, by studio, kind, decade and voice. */
+export interface WatchedStats {
+  shows: number;
+  /** MAL's studios, the most shows first. */
+  topStudios: { studio: string; shows: number }[];
+  /** MAL's media types ("tv", "movie"), the most first. */
+  formats: { mediaType: string; shows: number }[];
+  /** When they started airing, by decade (1990 for the 1990s), oldest first. */
+  decades: { decade: number; shows: number }[];
+  /** Main characters' Japanese voices (AniList), the most shows first. */
+  voiceActors: { name: string; pictureUrl: string | null; shows: number }[];
+  /** How many of the shows kurisu knows the cast of so far. */
+  castKnown: number;
 }
 
 export interface Stats {
@@ -294,6 +312,69 @@ async function allTime(db: Db, userId: string): Promise<AllTimeStats> {
     scored,
     scores: counts,
     topGenres: genres.rows,
+    watched: await watchedStats(db, userId),
+  };
+}
+
+/** Shows on a list with any episode watched, or completed. */
+const WATCHED = sql`(e.num_episodes_watched > 0 OR e.status = 'completed')`;
+const TOP_STUDIOS = 8;
+const TOP_VOICES = 8;
+
+async function watchedStats(db: Db, userId: string): Promise<WatchedStats> {
+  const [counts] = (
+    await db.execute<{ shows: number; cast_known: number }>(sql`
+      SELECT count(*)::int AS shows, count(c.mal_id)::int AS cast_known
+      FROM ${listEntries} e LEFT JOIN ${showCast} c ON c.mal_id = e.anime_id
+      WHERE e.user_id = ${userId} AND ${WATCHED}
+    `)
+  ).rows;
+  const studios = await db.execute<{ studio: string; shows: number }>(sql`
+    SELECT s AS studio, count(*)::int AS shows
+    FROM ${listEntries} e JOIN ${anime} a ON a.mal_id = e.anime_id
+    CROSS JOIN LATERAL unnest(a.studios) AS s
+    WHERE e.user_id = ${userId} AND ${WATCHED}
+    GROUP BY s
+    ORDER BY shows DESC, s
+    LIMIT ${TOP_STUDIOS}
+  `);
+  const formats = await db.execute<{ media_type: string; shows: number }>(sql`
+    SELECT a.media_type, count(*)::int AS shows
+    FROM ${listEntries} e JOIN ${anime} a ON a.mal_id = e.anime_id
+    WHERE e.user_id = ${userId} AND ${WATCHED} AND a.media_type IS NOT NULL
+      AND a.media_type <> 'unknown'
+    GROUP BY a.media_type
+    ORDER BY shows DESC, a.media_type
+  `);
+  const decades = await db.execute<{ decade: number; shows: number }>(sql`
+    SELECT (substring(a.start_date from 1 for 4)::int / 10 * 10) AS decade, count(*)::int AS shows
+    FROM ${listEntries} e JOIN ${anime} a ON a.mal_id = e.anime_id
+    WHERE e.user_id = ${userId} AND ${WATCHED} AND a.start_date ~ '^[0-9]{4}'
+    GROUP BY decade
+    ORDER BY decade
+  `);
+  // Each voice once per show; people are told apart by AniList's id, named by their latest name.
+  const voices = await db.execute<{ name: string; picture_url: string | null; shows: number }>(sql`
+    SELECT max(va ->> 'name') AS name, max(va ->> 'image') AS picture_url,
+      count(DISTINCT e.anime_id)::int AS shows
+    FROM ${listEntries} e JOIN ${showCast} c ON c.mal_id = e.anime_id
+    CROSS JOIN LATERAL jsonb_array_elements(c.actors) AS va
+    WHERE e.user_id = ${userId} AND ${WATCHED}
+    GROUP BY va ->> 'id'
+    ORDER BY shows DESC, name
+    LIMIT ${TOP_VOICES}
+  `);
+  return {
+    shows: counts?.shows ?? 0,
+    topStudios: studios.rows,
+    formats: formats.rows.map((row) => ({ mediaType: row.media_type, shows: row.shows })),
+    decades: decades.rows,
+    voiceActors: voices.rows.map((row) => ({
+      name: row.name,
+      pictureUrl: row.picture_url?.startsWith("https://") ? row.picture_url : null,
+      shows: row.shows,
+    })),
+    castKnown: counts?.cast_known ?? 0,
   };
 }
 

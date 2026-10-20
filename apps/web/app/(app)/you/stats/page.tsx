@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { apiGet } from "@/lib/api";
 import { daysWatched, hoursWatched, monthLabel, shortDate, showCount } from "@/lib/stats";
 
+import { WatchedStats } from "./WatchedStats";
 import { YearGoal } from "./YearGoal";
 
 export const metadata: Metadata = { title: "Stats · kurisu" };
@@ -181,6 +182,8 @@ export default async function StatsPage() {
           </div>
         )}
       </section>
+
+      <WatchedStats watched={allTime.watched} />
     </main>
   );
 }

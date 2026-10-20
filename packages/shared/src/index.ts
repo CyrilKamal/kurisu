@@ -999,6 +999,21 @@ export const statsResponseSchema = z.object({
     /** How many shows got each score, 1 to 10. */
     scores: z.array(count).length(10),
     topGenres: z.array(z.object({ genre: z.string(), shows: count })),
+    /**
+     * The shows watched (any episode, or completed): MAL's studios and kinds, decades they
+     * started airing, and the main characters' Japanese voices (AniList, for the `castKnown` of
+     * them kurisu has looked up so far).
+     */
+    watched: z.object({
+      shows: count,
+      topStudios: z.array(z.object({ studio: z.string(), shows: count })),
+      formats: z.array(z.object({ mediaType: z.string(), shows: count })),
+      decades: z.array(z.object({ decade: z.number().int(), shows: count })),
+      voiceActors: z.array(
+        z.object({ name: z.string(), pictureUrl: z.string().nullable(), shows: count }),
+      ),
+      castKnown: count,
+    }),
   }),
   year: z.object({
     year: z.number().int(),
@@ -1366,6 +1381,18 @@ export const showExtrasSchema = z.object({
   recommendations: z.array(linkedShowSchema),
   /** Official per-episode links on the user's own services, in order. */
   episodes: z.array(z.object({ title: z.string(), url: z.url(), service: z.string() })),
+  /** The most relevant staff: "Director", "Music", "Character Design". */
+  staff: z.array(
+    z.object({ name: z.string(), role: z.string(), pictureUrl: z.string().nullable() }),
+  ),
+  /**
+   * How AniList's users score it: ten columns, 10 to 100, each the share of them (0–1); null
+   * when too few have scored it.
+   */
+  scoreDistribution: z
+    .array(z.object({ score: z.number().int(), share: z.number().min(0).max(1) }))
+    .length(10)
+    .nullable(),
 });
 export type ShowExtrasView = z.infer<typeof showExtrasSchema>;
 
@@ -1385,6 +1412,11 @@ export const showResponseSchema = z.object({
     malMean: z.number().positive().nullable(),
     /** AniList's description as plain text, without spoilers; null when there's none (yet). */
     synopsis: z.string().nullable(),
+    /**
+     * When MAL says a new episode airs in Japan: a weekday ("saturday") and "23:00" JST (null
+     * when MAL doesn't say). Null when MAL gives none, or for a show not on anyone's list.
+     */
+    broadcast: z.object({ day: z.string(), time: z.string().nullable() }).nullable(),
   }),
   /** Null when it isn't on the user's list. */
   entry: z

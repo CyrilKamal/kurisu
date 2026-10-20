@@ -3,7 +3,12 @@ import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "../db/client.js";
 import { anime, showExtras } from "../db/schema.js";
 import { rememberShows } from "./catalog.js";
-import type { AniListClient, LinkedShow, ShowPageExtras } from "./client.js";
+import {
+  SHOW_EXTRAS_VERSION,
+  type AniListClient,
+  type LinkedShow,
+  type ShowPageExtras,
+} from "./client.js";
 import { plainSynopsis, SYNOPSIS_WAIT_MS } from "./synopsis.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -108,7 +113,11 @@ export function createShowPageLoader(deps: {
       if (!row) return { synopsis: null, extras: null };
       const [stored] = await db.select().from(showExtras).where(eq(showExtras.malId, malId));
       if (stored && row.synopsis !== null) {
-        if (Date.now() - stored.fetchedAt.getTime() > EXTRAS_MAX_AGE_MS) void fetchAndStore(malId);
+        // A week old, or stored before the fetch asked for staff and the score spread.
+        const outdated = (stored.data.version ?? 1) < SHOW_EXTRAS_VERSION;
+        if (outdated || Date.now() - stored.fetchedAt.getTime() > EXTRAS_MAX_AGE_MS) {
+          void fetchAndStore(malId);
+        }
         return { synopsis: shown(row.synopsis), extras: stored.data };
       }
 

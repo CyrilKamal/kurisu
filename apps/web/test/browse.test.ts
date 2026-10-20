@@ -14,6 +14,7 @@ import {
   seasonYears,
   sortDay,
 } from "../lib/browse";
+import { broadcastLabel } from "../lib/showExtras";
 
 const episode = (overrides: Partial<ScheduleEpisode>): ScheduleEpisode => ({
   animeId: 1,
@@ -163,5 +164,26 @@ describe("the schedule's filters", () => {
     expect(winters).toHaveLength(68);
     expect(seasonYears("FALL", "2027-WINTER")[0]).toBe(2026);
     expect(seasonYears("SPRING", "2026-SUMMER")[0]).toBe(2026);
+  });
+});
+
+describe("a show's broadcast slot", () => {
+  it("says when it airs in Japan, and on another clock", () => {
+    const winter = new Date("2026-01-05T12:00:00Z");
+    const summer = new Date("2026-07-06T12:00:00Z");
+    expect(broadcastLabel("saturday", "23:30", "Asia/Tokyo", winter)).toBe("Saturdays 23:30 JST");
+    expect(broadcastLabel("saturday", "23:30", "America/New_York", winter)).toBe(
+      "Saturdays 23:30 JST · Sat 9:30 AM yours",
+    );
+    // New York's summer time moves it an hour.
+    expect(broadcastLabel("saturday", "23:30", "America/New_York", summer)).toBe(
+      "Saturdays 23:30 JST · Sat 10:30 AM yours",
+    );
+    // A late-night 25:00 is 1:00 Saturday in Japan, Friday morning in New York.
+    expect(broadcastLabel("friday", "25:00", "America/New_York", winter)).toBe(
+      "Fridays 25:00 JST · Fri 11:00 AM yours",
+    );
+    expect(broadcastLabel("sunday", null)).toBe("Sundays in Japan");
+    expect(broadcastLabel("other", "10:00")).toBeNull();
   });
 });

@@ -156,5 +156,31 @@ export async function extrasView(
       r.show.malId === null ? [] : [linked({ ...r.show, malId: r.show.malId })],
     ),
     episodes: episodesOnServices(extras.episodes, serviceIds),
+    // Extras stored before staff and the score spread were fetched have neither until the next.
+    staff: (extras.staff ?? []).map((s) => ({
+      name: s.name,
+      role: s.role,
+      pictureUrl: s.image?.startsWith("https://") ? s.image : null,
+    })),
+    scoreDistribution: scoreSpread(extras.scoreDistribution ?? []),
   };
 }
+
+/**
+ * AniList's score spread as ten columns, 10 to 100, each the share of its users (0–1); null when
+ * too few have scored it to say.
+ */
+export function scoreSpread(
+  distribution: readonly { score: number; amount: number }[],
+): { score: number; share: number }[] | null {
+  const total = distribution.reduce((sum, d) => sum + d.amount, 0);
+  if (total < MIN_SCORES_FOR_SPREAD) return null;
+  return Array.from({ length: 10 }, (_, i) => {
+    const score = (i + 1) * 10;
+    const amount = distribution.find((d) => d.score === score)?.amount ?? 0;
+    return { score, share: amount / total };
+  });
+}
+
+/** Fewer AniList scores than this say little about how a show is liked. */
+const MIN_SCORES_FOR_SPREAD = 20;

@@ -39,6 +39,10 @@ const animeNodeSchema = z.object({
   average_episode_duration: z.number().nonnegative().nullish(),
   // MAL's community score.
   mean: z.number().nullish(),
+  // The animation studios, e.g. "Madhouse".
+  studios: z.array(z.object({ id: z.number().int().optional(), name: z.string() })).nullish(),
+  // When a new episode airs in Japan: "saturday", "23:00" (JST); MAL leaves the time out at times.
+  broadcast: z.object({ day_of_the_week: z.string(), start_time: z.string().nullish() }).nullish(),
   alternative_titles: z
     .object({
       synonyms: z.array(z.string()).nullish(),
@@ -126,7 +130,7 @@ export async function malRequestTurn(): Promise<void> {
 }
 
 const ANIME_FIELDS =
-  "num_episodes,media_type,status,start_date,main_picture,alternative_titles,genres,average_episode_duration,mean";
+  "num_episodes,media_type,status,start_date,main_picture,alternative_titles,genres,average_episode_duration,mean,studios,broadcast";
 const LIST_FIELDS = `list_status,${ANIME_FIELDS}`;
 const LIST_PAGE_SIZE = 1000; // MAL's maximum for this endpoint
 
