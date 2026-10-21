@@ -3,14 +3,17 @@ import Image from "next/image";
 /**
  * How wide each poster is drawn, as an `<img sizes>`: the browser then fetches as many pixels as
  * the screen needs (96 for a small poster on a phone's 3x screen), not a fixed 1x/2x pair. A
- * `fill` poster takes its PosterGrid cell, a third of a phone's width or at most 160px.
+ * `fill` poster takes its PosterGrid cell, a third of a phone's width or at most 160px. Small
+ * posters are 48px from 1024px (app/globals.css).
+ *
+ * From 1024px each size is doubled: a desktop screen's 1x pixels would get a cover resized to
+ * exactly its box, which blurs, and the browser draws twice the pixels shrunk much sharper.
  */
 const SIZES = {
-  // 48px from 1024px, where a desktop screen's 1x pixels made 32 too coarse (app/globals.css).
-  sm: "(min-width: 1024px) 48px, 32px",
-  md: "64px",
-  lg: "96px",
-  fill: "(max-width: 640px) 33vw, 160px",
+  sm: "(min-width: 1024px) 96px, 32px",
+  md: "(min-width: 1024px) 128px, 64px",
+  lg: "(min-width: 1024px) 192px, 96px",
+  fill: "(max-width: 640px) 33vw, (min-width: 1024px) 320px, 160px",
 } as const;
 
 /**
