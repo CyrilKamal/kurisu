@@ -64,7 +64,11 @@ export function DropReasons({ initialReasons }: { initialReasons: DropReasonView
             <Poster url={reason.pictureUrl} title={reason.title} />
             <div className="min-w-0">
               <div className="k-drop__head">
-                <Link href={showHref(reason.animeId)} className="k-drop__title hover:underline">
+                <Link
+                  prefetch={false}
+                  href={showHref(reason.animeId)}
+                  className="k-drop__title hover:underline"
+                >
                   {reason.title}
                 </Link>
                 <span className="k-tag k-tag--word">{DROP_CATEGORY_LABELS[reason.category]}</span>

@@ -12,7 +12,11 @@ export function FavoriteShows({ favorites }: { favorites: FavoriteShow[] }) {
     <ul className="k-grid">
       {favorites.map((show) => (
         <li key={show.animeId} className="k-grid__item">
-          <Link href={showHref(show.animeId)} className="block text-ink no-underline">
+          <Link
+            prefetch={false}
+            href={showHref(show.animeId)}
+            className="block text-ink no-underline"
+          >
             <Poster url={show.pictureUrl} title={show.title} size="fill" />
             <p className="k-grid__cap">{show.title}</p>
             <p className="k-grid__sub">

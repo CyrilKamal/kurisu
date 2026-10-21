@@ -35,6 +35,7 @@ export function ChartList({
           return (
             <li key={show.animeId} className="k-row">
               <Link
+                prefetch={false}
                 href={showHref(show.animeId)}
                 className="block"
                 tabIndex={-1}
@@ -43,7 +44,7 @@ export function ChartList({
                 <Poster url={show.pictureUrl} title={show.title} />
               </Link>
               <div className="k-row__main">
-                <Link className="k-row__title" href={showHref(show.animeId)}>
+                <Link className="k-row__title" prefetch={false} href={showHref(show.animeId)}>
                   {rank !== undefined && <span className="k-mono text-ink-muted">{rank} </span>}
                   {show.title}
                 </Link>

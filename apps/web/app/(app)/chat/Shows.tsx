@@ -68,7 +68,7 @@ export function ShowList({
             progress={progressOf(show.episodesWatched, show.numEpisodes)}
           />
           <div className="k-row__main">
-            <Link href={showHref(show.animeId)} className="k-row__title">
+            <Link prefetch={false} href={showHref(show.animeId)} className="k-row__title">
               {show.title}
             </Link>
             <p className="k-row__meta">{showDetails(show)}</p>

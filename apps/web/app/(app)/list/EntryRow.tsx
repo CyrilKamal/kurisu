@@ -41,7 +41,13 @@ export function EntryRow({
   return (
     <li className="k-row">
       {/* The title is the link for keyboards and screen readers; the poster is a bigger target. */}
-      <Link href={showHref(entry.animeId)} className="block" tabIndex={-1} aria-hidden="true">
+      <Link
+        prefetch={false}
+        href={showHref(entry.animeId)}
+        className="block"
+        tabIndex={-1}
+        aria-hidden="true"
+      >
         <Poster
           url={entry.pictureUrl}
           title={entry.title}
@@ -49,7 +55,7 @@ export function EntryRow({
         />
       </Link>
       <div className="k-row__main">
-        <Link className="k-row__title" href={showHref(entry.animeId)}>
+        <Link className="k-row__title" prefetch={false} href={showHref(entry.animeId)}>
           {entry.title}
         </Link>
         <p className="k-row__meta">

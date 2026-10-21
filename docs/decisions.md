@@ -2749,3 +2749,21 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **More to check:** the commit and undo compare 8 fields; tags compare as sets.
 - **Checked on real MAL (2026-10-20):** naming the fields in braces returns all of `list_status` plus the four, and MAL's reply to an edit includes them. One priority edit and its undo round-tripped through the write path.
 - **Chat can't read or write them** until a prompt version adds that.
+
+## 2026-10-21 — Show links aren't prefetched, and small posters are 48px on desktop (Milestone 8 interlude)
+**Decision:**
+- **No prefetch:** every link to a show page has `prefetch={false}`, with a test that fails on one that doesn't.
+- **Bigger row covers on desktop:** small posters are 48px from 1024px.
+
+**Alternatives:**
+- Prefetching on hover only (a wrapper around every show link).
+- Making the show page's prefetch cheap (its title without loading the show).
+- Bigger images at the same 32px, which a 1x screen can't show.
+
+**Why:**
+- **The prefetch storm:** browsing a 100-row chart sent 141 show loads a minute to the server, each asking AniList through the shared 3-second pacer. Covers queued behind them, and some never loaded.
+- **Desktop pixels:** a 32px cover is 32 real pixels on a desktop screen, against 96 on a phone.
+
+**Consequences:**
+- **A show page loads on tap, not before.** Its `loading.tsx` shows at once.
+- **Rows are taller on desktop.**

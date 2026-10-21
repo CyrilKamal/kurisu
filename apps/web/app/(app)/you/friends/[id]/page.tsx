@@ -133,6 +133,7 @@ function ShowRow({
     <li className="flex items-center gap-4 border-b border-line py-2">
       <Poster url={show.pictureUrl} title={show.title} />
       <Link
+        prefetch={false}
         href={showHref(show.animeId)}
         className="k-row__title min-w-0 flex-1 truncate hover:underline"
       >
