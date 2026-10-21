@@ -2784,3 +2784,12 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Consequences:**
 - **Bigger downloads:** about 1 KB more per desktop cover (a 96-pixel cover is 2 KB, against 0.7 KB at 48).
 - **A 2x desktop screen** fetches four times the drawn width.
+
+## 2026-10-21 — Row covers 64px on desktop (Milestone 8 interlude)
+**Decision:** small posters are 64px from 1024px, still fetched at twice their pixels. This replaces the previous entry's 48px.
+
+**Alternatives:** staying at 48px with twice the pixels.
+
+**Why:** twice the pixels made 48px covers sharper, but Cyril found them still too small to read on his screen.
+
+**Consequences:** rows, the log and the brief are taller on desktop, so fewer fit on screen.
