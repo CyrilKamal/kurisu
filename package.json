@@ -40,6 +40,6 @@
     "review": "pnpm --filter @kurisu/server review"
   },
   "devDependencies": {
-    "prettier": "^3.9.9"
+    "prettier": "^3.9.10"
   }
 }
