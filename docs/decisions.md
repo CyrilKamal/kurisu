@@ -2767,3 +2767,20 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Consequences:**
 - **A show page loads on tap, not before.** Its `loading.tsx` shows at once.
 - **Rows are taller on desktop.**
+
+## 2026-10-21 — Covers at twice their pixels on desktop (Milestone 8 interlude)
+**Decision:**
+- **Twice the pixels:** from 1024px, every poster's `sizes` asks for twice the width it's drawn at, so a 1x desktop screen gets twice the pixels and the browser shrinks them.
+- **Row covers stay 48px** (Cyril's choice, over 64px).
+
+**Alternatives:**
+- **Bigger row covers** (64px), with taller rows.
+- **A higher image quality** at the same width.
+
+**Why:**
+- **The resizer's 48-pixel cover blurred:** shrinking and compressing a cover to exactly its box loses detail. The same box drawn from 96 pixels was visibly sharper, compared on one hosted cover at 1x.
+- **An earlier view revised:** the previous entry said a 1x screen can't show more than its box. It can't show more pixels, but it does show them sharper.
+
+**Consequences:**
+- **Bigger downloads:** about 1 KB more per desktop cover (a 96-pixel cover is 2 KB, against 0.7 KB at 48).
+- **A 2x desktop screen** fetches four times the drawn width.
