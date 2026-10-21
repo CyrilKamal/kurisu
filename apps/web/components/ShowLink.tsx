@@ -6,6 +6,7 @@ import { showHref } from "@/lib/airing";
 export function ShowLink({ animeId, children }: { animeId: number; children: React.ReactNode }) {
   return (
     <Link
+      prefetch={false}
       href={showHref(animeId)}
       className="text-inherit no-underline underline-offset-3 hover:underline"
     >

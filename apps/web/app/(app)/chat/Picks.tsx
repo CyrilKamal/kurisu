@@ -50,7 +50,9 @@ export function Picks({
             />
             <div className="k-pick__body">
               <p className="k-pick__title">
-                <Link href={showHref(pick.animeId)}>{pick.title}</Link>
+                <Link prefetch={false} href={showHref(pick.animeId)}>
+                  {pick.title}
+                </Link>
               </p>
               <p className="k-pick__meta">
                 {pick.status === null ? (

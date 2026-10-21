@@ -16,7 +16,11 @@ export function PosterGrid({ entries }: { entries: ListEntry[] }) {
           entry.isRewatching || (entry.episodesWatched > 0 && entry.status !== "completed");
         return (
           <li key={entry.animeId} className="k-grid__item">
-            <Link href={showHref(entry.animeId)} className="block text-ink no-underline">
+            <Link
+              prefetch={false}
+              href={showHref(entry.animeId)}
+              className="block text-ink no-underline"
+            >
               <Poster
                 url={entry.pictureUrl}
                 title={entry.title}

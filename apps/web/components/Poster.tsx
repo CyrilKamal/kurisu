@@ -6,7 +6,8 @@ import Image from "next/image";
  * `fill` poster takes its PosterGrid cell, a third of a phone's width or at most 160px.
  */
 const SIZES = {
-  sm: "32px",
+  // 48px from 1024px, where a desktop screen's 1x pixels made 32 too coarse (app/globals.css).
+  sm: "(min-width: 1024px) 48px, 32px",
   md: "64px",
   lg: "96px",
   fill: "(max-width: 640px) 33vw, 160px",

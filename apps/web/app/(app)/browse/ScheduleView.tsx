@@ -164,6 +164,7 @@ export function ScheduleView({ data }: { data: ScheduleResponse }) {
                     className={aired ? "k-row opacity-60" : "k-row"}
                   >
                     <Link
+                      prefetch={false}
                       href={showHref(episode.animeId)}
                       className="block"
                       tabIndex={-1}
@@ -172,7 +173,11 @@ export function ScheduleView({ data }: { data: ScheduleResponse }) {
                       <Poster url={episode.pictureUrl} title={episode.title} />
                     </Link>
                     <div className="k-row__main">
-                      <Link className="k-row__title" href={showHref(episode.animeId)}>
+                      <Link
+                        className="k-row__title"
+                        prefetch={false}
+                        href={showHref(episode.animeId)}
+                      >
                         {episode.title}
                       </Link>
                       <p className="k-row__meta">

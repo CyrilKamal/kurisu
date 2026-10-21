@@ -322,11 +322,16 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
           <ul className="k-rows">
             {extras.relations.map((related) => (
               <li key={related.animeId} className="k-row">
-                <Link href={showHref(related.animeId)} tabIndex={-1} aria-hidden="true">
+                <Link
+                  prefetch={false}
+                  href={showHref(related.animeId)}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                >
                   <Poster url={related.pictureUrl} title={related.title} />
                 </Link>
                 <div className="k-row__main">
-                  <Link className="k-row__title" href={showHref(related.animeId)}>
+                  <Link className="k-row__title" prefetch={false} href={showHref(related.animeId)}>
                     {related.title}
                   </Link>
                   <p className="k-row__meta">
@@ -452,7 +457,11 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
           <ul className="k-grid">
             {extras.recommendations.map((pick) => (
               <li key={pick.animeId} className="k-grid__item">
-                <Link href={showHref(pick.animeId)} className="block text-ink no-underline">
+                <Link
+                  prefetch={false}
+                  href={showHref(pick.animeId)}
+                  className="block text-ink no-underline"
+                >
                   <Poster url={pick.pictureUrl} title={pick.title} size="fill" />
                   <p className="k-grid__cap">{pick.title}</p>
                   <p className="k-grid__sub">

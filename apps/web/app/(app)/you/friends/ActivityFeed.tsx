@@ -63,7 +63,11 @@ export function ActivityFeed({
                 <p className="text-ink">
                   {showFriend && <span className="font-semibold">{item.friend} </span>}
                   <span className="text-ink-muted">{activityText(item).lead} </span>
-                  <Link href={showHref(item.animeId)} className="k-write__title hover:underline">
+                  <Link
+                    prefetch={false}
+                    href={showHref(item.animeId)}
+                    className="k-write__title hover:underline"
+                  >
                     {item.title}
                   </Link>
                   <span className="text-ink-muted">{activityText(item).tail}</span>

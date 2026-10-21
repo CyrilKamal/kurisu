@@ -166,6 +166,7 @@ export function SearchView({ season }: { season: SearchResult[] }) {
               return (
                 <li key={show.animeId} className="k-row">
                   <Link
+                    prefetch={false}
                     href={showHref(show.animeId)}
                     className="block"
                     tabIndex={-1}
@@ -174,7 +175,7 @@ export function SearchView({ season }: { season: SearchResult[] }) {
                     <Poster url={show.pictureUrl} title={show.title} />
                   </Link>
                   <div className="k-row__main">
-                    <Link className="k-row__title" href={showHref(show.animeId)}>
+                    <Link className="k-row__title" prefetch={false} href={showHref(show.animeId)}>
                       {show.title}
                     </Link>
                     <p className="k-row__meta">

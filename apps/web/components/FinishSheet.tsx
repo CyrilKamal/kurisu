@@ -233,7 +233,7 @@ export function FinishDetails({ animeId }: { animeId: number }) {
       {next && (
         <p className="text-ink-muted">
           Next:{" "}
-          <Link href={showHref(next.animeId)} className="k-link">
+          <Link prefetch={false} href={showHref(next.animeId)} className="k-link">
             {next.title}
           </Link>
           {next.startDate && ` (${next.startDate.slice(0, 4)})`}
