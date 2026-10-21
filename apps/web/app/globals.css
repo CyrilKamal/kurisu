@@ -4,11 +4,11 @@
 @import "../design/tokens.css";
 @import "../design/bundle.css" layer(components);
 
-/* Small posters (rows, the log) at 48px on desktop: a phone draws 32px with three times the
+/* Small posters (rows, the log) at 64px on desktop: a phone draws 32px with three times the
    pixels, a desktop screen with one, which leaves cover art too coarse to read. */
 @media (width >= 64rem) {
   :root {
-    --poster-sm: 48px;
+    --poster-sm: 64px;
   }
 }
 
