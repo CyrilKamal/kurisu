@@ -33,7 +33,7 @@ const SCREENS: { href: string; label: string; about: string; icon: IconName }[] 
     href: "/you/friends",
     label: "Friends",
     about: "Taste matches and what they watch",
-    icon: "chat",
+    icon: "users",
   },
   // Its line is the account's plan, filled in below.
   { href: "/you/plan", label: "Plan", about: "", icon: "ticket" },

@@ -24,7 +24,7 @@ export function SharingSwitch({ initial }: { initial: boolean }) {
 
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">Friends</h2>
+      <h2 className="k-title pb-2">Friends</h2>
       <div className="k-panel flex flex-col gap-2 p-4">
         <label className="k-switch">
           <input

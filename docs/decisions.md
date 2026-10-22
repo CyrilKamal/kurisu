@@ -2845,3 +2845,24 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Why:** native `<dialog>` and `<select>` already give focus, inertness, Escape and the phone's own pickers. A library would mean restyling every primitive against `bundle.css`, and it still wouldn't fix a toast under a modal's scrim.
 
 **Consequences:** consider base-ui only for something with no native element (a popover menu, a combobox, a tooltip).
+
+## 2026-10-22 — The design review's open questions (design review)
+**Decision:** Cyril took the recommendations, published as design system v10.1 and copied into the app.
+- **Today's cutoff:** stays at 3 episodes behind.
+- **The sheet's grip:** removed, rather than adding drag-to-dismiss.
+- **Desktop row covers:** stay 64px.
+- **Colour changes:** fade over 80ms on every control, not only buttons.
+- **Whole-app overscroll:** stays, since it's pull-to-refresh in the installed app.
+- **Failed writes:** stay ERR toasts, and the Toast's rule now says so.
+- **Header actions:** the List's add and Re-sync stay in its header, and the thumb-zone rule now allows rare or duplicated actions there.
+- **Rail mark:** none until the final logo.
+- **System challenges:** only one adopted, section headings in the serif `title` (`k-title`) instead of small caps.
+
+**Alternatives:** the reviewers' other options for each (in the design review's report).
+
+**Why:** each was the smaller change, or kept a choice Cyril had already made, except the serif headings. Those were the most visible improvement, since 11px caps on every section made them all equally loud.
+
+**Consequences:**
+- **Section headings** read as names. Caps are left for badges, log levels and labels inside panels.
+- **Sheets** have no drag gesture.
+- **Not adopted:** a press scale, rem type, round portraits, 4px gaps inside text groups, and a lighter `ink-faint`.

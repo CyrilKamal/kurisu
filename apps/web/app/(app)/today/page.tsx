@@ -89,14 +89,14 @@ export default async function TodayPage() {
 
       {keepingUp.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Out for you</h2>
+          <h2 className="k-title pb-2">Out for you</h2>
           <EpisodeRows items={keepingUp.map((show) => outRow(show, true))} />
         </section>
       )}
 
       {today.comingUp.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Coming up</h2>
+          <h2 className="k-title pb-2">Coming up</h2>
           <ul className="k-rows">
             {today.comingUp.map((show) => (
               <li key={show.animeId} className="k-row">
@@ -125,7 +125,7 @@ export default async function TodayPage() {
 
       {catchingUp.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Catching up</h2>
+          <h2 className="k-title pb-2">Catching up</h2>
           {/* Backlogs aren't news: no crimson flag, and they don't count in the badge. */}
           <EpisodeRows items={catchingUp.map((show) => outRow(show, false))} />
         </section>
@@ -133,7 +133,7 @@ export default async function TodayPage() {
 
       {today.continueWatching.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Continue</h2>
+          <h2 className="k-title pb-2">Continue</h2>
           <EpisodeRows
             items={today.continueWatching.map((show) => ({
               ...show,
@@ -152,7 +152,7 @@ export default async function TodayPage() {
 
       {today.brief && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Latest brief</h2>
+          <h2 className="k-title pb-2">Latest brief</h2>
           <Link
             href={`/chat/${today.brief.conversationId}`}
             className="k-panel block p-4 text-ink no-underline hover:bg-surface-raised"
@@ -171,7 +171,7 @@ export default async function TodayPage() {
 
       {today.friends.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Friends lately</h2>
+          <h2 className="k-title pb-2">Friends lately</h2>
           <ActivityFeed items={today.friends} timeZone={today.timeZone} />
           <Link href="/you/friends" className="k-link mt-2 inline-block">
             See your friends

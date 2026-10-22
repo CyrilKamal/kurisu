@@ -59,7 +59,7 @@ export function AddSheet({
   }
 
   return (
-    <Sheet title={`Add ${show.title}`} onClose={onClose} onSubmit={() => void add()}>
+    <Sheet title={`Add ${show.title}`} onClose={onClose} busy={busy} onSubmit={() => void add()}>
       <div className="k-sheet__body">
         <div className="k-field">
           <label className="k-field__label" htmlFor="add-status">
