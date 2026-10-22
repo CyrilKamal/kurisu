@@ -254,7 +254,7 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
           </details>
         ) : (
           <section key={group} className="pt-6">
-            <h2 className="k-caps">
+            <h2 className="k-title">
               {title} ({rows.length})
             </h2>
             {hint && <p className="k-field__hint">{hint}</p>}

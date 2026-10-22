@@ -55,7 +55,7 @@ export function InviteFriends({ initial }: { initial: InviteView[] }) {
   return (
     <>
       <section className="pt-6">
-        <h2 className="k-caps pb-2">New invite</h2>
+        <h2 className="k-title pb-2">New invite</h2>
         <form
           className="k-panel flex flex-col gap-4 p-4"
           onSubmit={(e) => {
@@ -116,7 +116,7 @@ export function InviteFriends({ initial }: { initial: InviteView[] }) {
 
       {invites.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Your invites</h2>
+          <h2 className="k-title pb-2">Your invites</h2>
           <ul className="k-rows">
             {invites.map((invite) => (
               <li

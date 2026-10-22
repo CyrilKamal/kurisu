@@ -12,7 +12,7 @@ function Counted({ title, rows }: { title: string; rows: { name: string; shows: 
   if (rows.length === 0) return null;
   return (
     <div className="pt-6">
-      <h3 className="k-caps">{title}</h3>
+      <h3 className="k-title">{title}</h3>
       <ul className="k-rows">
         {rows.map((row) => (
           <li
@@ -43,7 +43,7 @@ export function WatchedStats({ watched }: { watched: Watched }) {
 
       {watched.decades.length > 1 && (
         <div className="pt-6">
-          <h3 className="k-caps">When they aired</h3>
+          <h3 className="k-title">When they aired</h3>
           <Histogram
             columns={watched.decades.map((d) => ({
               label: decadeLabel(d.decade),
@@ -74,7 +74,7 @@ export function WatchedStats({ watched }: { watched: Watched }) {
 
       {watched.voiceActors.length > 0 && (
         <div className="pt-6">
-          <h3 className="k-caps">Voices you hear most</h3>
+          <h3 className="k-title">Voices you hear most</h3>
           <ul className="m-0 grid list-none gap-x-8 p-0 sm:grid-cols-2">
             {watched.voiceActors.map((voice) => (
               <li key={voice.name} className="flex items-center gap-2 border-b border-line py-2">

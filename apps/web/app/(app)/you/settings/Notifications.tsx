@@ -98,7 +98,7 @@ export function Notifications({ publicKey }: { publicKey: string | null }) {
 
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">Notifications on this device</h2>
+      <h2 className="k-title pb-2">Notifications on this device</h2>
       <div className="k-panel p-4">
         {publicKey === null ? (
           <p className="text-ink-muted">

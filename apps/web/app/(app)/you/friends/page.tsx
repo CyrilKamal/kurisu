@@ -38,7 +38,7 @@ export default async function FriendsPage() {
       />
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">Your friends</h2>
+        <h2 className="k-title pb-2">Your friends</h2>
         {data.friends.length === 0 ? (
           <p className="k-field__hint">
             No friends yet. Send someone on kurisu your friend link below.
@@ -78,7 +78,7 @@ export default async function FriendsPage() {
       </section>
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">Lately</h2>
+        <h2 className="k-title pb-2">Lately</h2>
         <ActivityFeed items={data.activity} timeZone={data.timeZone} />
       </section>
 

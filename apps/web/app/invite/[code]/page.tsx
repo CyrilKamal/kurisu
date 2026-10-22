@@ -37,7 +37,7 @@ export default async function InvitePage(props: PageProps<"/invite/[code]">) {
           </p>
 
           <section className="k-panel p-4">
-            <h2 className="k-caps pb-2">Before you join</h2>
+            <h2 className="k-title pb-2">Before you join</h2>
             <ul className="flex list-disc flex-col gap-2 pl-4 text-ink-muted">
               <li>
                 kurisu is a small beta that {invite.inviter} runs on their own computer. You need to

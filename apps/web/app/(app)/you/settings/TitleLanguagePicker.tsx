@@ -42,7 +42,7 @@ export function TitleLanguagePicker({ initial }: { initial: TitleLanguage }) {
 
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">Titles</h2>
+      <h2 className="k-title pb-2">Titles</h2>
       <div className="k-panel flex flex-col gap-4 p-4">
         <RadioChips
           label="Show titles in"

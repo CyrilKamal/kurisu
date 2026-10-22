@@ -5,7 +5,10 @@ import { createContext, useCallback, useContext, useEffect, useId, useRef, useSt
 import { Icon } from "./Icon";
 
 /** Closes the sheet it's inside the way it came (`SheetClose`). */
-const SheetCloseContext = createContext<() => void>(() => undefined);
+const SheetCloseContext = createContext<{ close: () => void; busy: boolean }>({
+  close: () => undefined,
+  busy: false,
+});
 
 /** How long the exit can take before the sheet goes anyway (k-sheet-out is 160ms). */
 const EXIT_MS = 240;
@@ -14,20 +17,23 @@ const EXIT_MS = 240;
  * A short task over the screen (the design system's Sheet): from the bottom on phones, centred
  * from 640px. It opens as a modal dialog, so focus stays inside; Escape, a press on the scrim,
  * the close button and `SheetClose` play its exit and then call `onClose`, and focus goes back
- * where it was. An element marked `data-autofocus` gets focus when it opens. Pass `onSubmit` to
- * make the body and actions one form. Children are the `k-sheet__body` and `k-sheet__actions`
- * parts.
+ * where it was. While `busy` (a save on its way) it stays open, so its result has somewhere to
+ * land. An element marked `data-autofocus` gets focus when it opens. Pass `onSubmit` to make the
+ * body and actions one form. Children are the `k-sheet__body` and `k-sheet__actions` parts.
  */
 export function Sheet({
   title,
   onClose,
   onSubmit,
+  busy = false,
   children,
 }: {
   title: string;
   onClose: () => void;
   /** Makes the body and actions a form; the sheet stops the page from reloading. */
   onSubmit?: () => void;
+  /** A request is running: Escape, the scrim, × and Cancel wait for it. */
+  busy?: boolean;
   children: React.ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -68,8 +74,12 @@ export function Sheet({
       clearTimeout(timer);
     };
   }, [closing, finish]);
+  const busyNow = useRef(busy);
+  useEffect(() => {
+    busyNow.current = busy;
+  });
   const requestClose = useCallback(() => {
-    setClosing(true);
+    if (!busyNow.current) setClosing(true);
   }, []);
 
   return (
@@ -95,7 +105,6 @@ export function Sheet({
         pressedOutside.current = false;
       }}
     >
-      <span className="k-sheet__grip" aria-hidden="true" />
       <div className="k-sheet__head">
         <h2 id={titleId} className="k-sheet__title">
           {title}
@@ -104,12 +113,13 @@ export function Sheet({
           type="button"
           className="k-btn k-btn--ghost k-btn--icon"
           aria-label="Close"
+          disabled={busy}
           onClick={requestClose}
         >
           <Icon name="clear" />
         </button>
       </div>
-      <SheetCloseContext value={requestClose}>
+      <SheetCloseContext value={{ close: requestClose, busy }}>
         {onSubmit ? (
           <form
             onSubmit={(event) => {
@@ -144,9 +154,15 @@ export function SheetClose({
   children,
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const close = useContext(SheetCloseContext);
+  const { close, busy } = useContext(SheetCloseContext);
   return (
-    <button type="button" className={className} disabled={disabled} onClick={close} {...rest}>
+    <button
+      type="button"
+      className={className}
+      disabled={disabled ?? busy}
+      onClick={close}
+      {...rest}
+    >
       {children}
     </button>
   );

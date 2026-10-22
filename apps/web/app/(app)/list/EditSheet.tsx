@@ -67,7 +67,7 @@ export function EditSheet({
 
   if (removing) {
     return (
-      <Sheet title={entry.title} onClose={onClose}>
+      <Sheet title={entry.title} onClose={onClose} busy={busy !== null}>
         <div className="k-sheet__body">
           <p className="text-ink-muted">
             Take it off your list, on MyAnimeList too? You can put it back from your Journal.
@@ -107,6 +107,7 @@ export function EditSheet({
     <Sheet
       title={entry.title}
       onClose={onClose}
+      busy={busy !== null}
       onSubmit={() => {
         if (payload) void send("save", `/list/${String(entry.animeId)}/edit`, payload);
       }}
@@ -172,7 +173,7 @@ export function EditSheet({
             >
               <Icon name="plus" />
             </button>
-            <span className="k-meter__label">of {total === null ? "?" : String(total)}</span>
+            <span className="k-meter__label">of {total === null ? "–" : String(total)}</span>
           </div>
         </div>
 

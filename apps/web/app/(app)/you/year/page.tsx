@@ -134,7 +134,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
       {full ? (
         <>
           <section className="pt-8">
-            <h2 className="k-caps pb-2">Month by month</h2>
+            <h2 className="k-title pb-2">Month by month</h2>
             <Histogram
               summary={`Shows finished each month of ${String(year)}`}
               columns={full.completedByMonth.map((value, i) => ({
@@ -145,7 +145,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
             />
             {full.episodesByMonth.some((n) => n > 0) && (
               <div className="pt-4">
-                <h3 className="k-caps pb-2">Episodes</h3>
+                <h3 className="k-title pb-2">Episodes</h3>
                 <Histogram
                   summary={`Episodes watched each month of ${String(year)}`}
                   columns={full.episodesByMonth.map((value, i) => ({
@@ -160,7 +160,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
 
           {full.topRated.length > 0 && (
             <section className="pt-8">
-              <h2 className="k-caps pb-2">Top rated</h2>
+              <h2 className="k-title pb-2">Top rated</h2>
               <ul className="k-rows">
                 {full.topRated.map((show) => (
                   <li key={show.animeId} className="k-row">
@@ -185,7 +185,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
           )}
 
           <section className="pt-8">
-            <h2 className="k-caps pb-2">What you watched</h2>
+            <h2 className="k-title pb-2">What you watched</h2>
             <Metrics>
               <Metric
                 label="Seasonal"
@@ -207,7 +207,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
 
           {full.topGenres.length > 0 && (
             <section className="pt-8">
-              <h2 className="k-caps pb-2">Genres</h2>
+              <h2 className="k-title pb-2">Genres</h2>
               <ul className="k-rows">
                 {full.topGenres.map((genre) => (
                   <li
@@ -224,7 +224,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
 
           {(full.longest ?? full.first) && (
             <section className="pt-8">
-              <h2 className="k-caps pb-2">Milestones</h2>
+              <h2 className="k-title pb-2">Milestones</h2>
               <ul className="k-rows">
                 {full.longest && (
                   <MilestoneRow
@@ -255,7 +255,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
 
           {full.notes.length > 0 && (
             <section className="pt-8">
-              <h2 className="k-caps pb-2">In your words</h2>
+              <h2 className="k-title pb-2">In your words</h2>
               <ul className="flex flex-col gap-4">
                 {full.notes.map((note) => (
                   <li key={`${String(note.animeId)}-${note.on}-${note.text}`}>

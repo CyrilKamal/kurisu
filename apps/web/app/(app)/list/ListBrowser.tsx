@@ -133,7 +133,7 @@ export function ListBrowser({
       {visible.length > 0 && view.layout === "grid" ? (
         <PosterGrid entries={visible} />
       ) : visible.length > 0 ? (
-        <ul className="k-rows -mx-2">
+        <ul className="k-rows">
           {visible.map((entry) => (
             <EntryRow
               key={entry.animeId}

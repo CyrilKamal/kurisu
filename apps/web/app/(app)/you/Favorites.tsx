@@ -56,7 +56,7 @@ export function Favorites({ initial }: { initial: FavoritesResponse }) {
   return (
     <section className="pt-6">
       <div className="flex items-baseline justify-between pb-2">
-        <h2 className="k-caps">Favorites</h2>
+        <h2 className="k-title">Favorites</h2>
         {favorites.length > 0 && (
           <button
             type="button"
@@ -86,6 +86,7 @@ export function Favorites({ initial }: { initial: FavoritesResponse }) {
           onClose={() => {
             setEditing(null);
           }}
+          busy={busy}
           onSubmit={() => void save(editing)}
         >
           <div className="k-sheet__body">

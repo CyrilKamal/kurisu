@@ -237,14 +237,14 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {show.synopsis && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Synopsis</h2>
+          <h2 className="k-title pb-2">Synopsis</h2>
           <p className="k-show__synopsis">{show.synopsis}</p>
         </section>
       )}
 
       {extras?.trailer && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Trailer</h2>
+          <h2 className="k-title pb-2">Trailer</h2>
           <a
             href={extras.trailer.url}
             target="_blank"
@@ -265,7 +265,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
       )}
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">Where to watch</h2>
+        <h2 className="k-title pb-2">Where to watch</h2>
         {watchOn.length > 0 ? (
           <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
             {watchOn.map((place) => (
@@ -318,7 +318,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {extras && extras.relations.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Watch order</h2>
+          <h2 className="k-title pb-2">Watch order</h2>
           <ul className="k-rows">
             {extras.relations.map((related) => (
               <li key={related.animeId} className="k-row">
@@ -351,7 +351,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {journal.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Your updates</h2>
+          <h2 className="k-title pb-2">Your updates</h2>
           <ol className="k-changes">
             {journal.map((item) => (
               <JournalLine key={item.id} item={item} numEpisodes={show.numEpisodes} />
@@ -362,7 +362,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {friends.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Friends</h2>
+          <h2 className="k-title pb-2">Friends</h2>
           <ul className="k-rows">
             {friends.map((friend) => (
               <li
@@ -382,7 +382,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {extras && extras.characters.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Characters and their Japanese voices</h2>
+          <h2 className="k-title pb-2">Characters and their Japanese voices</h2>
           <ul className="m-0 grid list-none gap-x-8 p-0 sm:grid-cols-2">
             {extras.characters.map((character) => (
               // The character and the voice share the row evenly, so neither name loses out.
@@ -419,7 +419,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {extras && extras.staff.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Staff</h2>
+          <h2 className="k-title pb-2">Staff</h2>
           <ul className="m-0 grid list-none gap-x-8 p-0 sm:grid-cols-2">
             {extras.staff.map((member) => (
               <li
@@ -439,7 +439,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {extras?.scoreDistribution && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">How AniList scores it</h2>
+          <h2 className="k-title pb-2">How AniList scores it</h2>
           <ScoreSpread spread={extras.scoreDistribution} />
           <p className="k-field__hint pt-2">
             The percent of AniList&apos;s users who gave each score, out of 100.
@@ -449,14 +449,14 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {extras && extras.tags.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Tags</h2>
+          <h2 className="k-title pb-2">Tags</h2>
           <Tags tags={extras.tags} />
         </section>
       )}
 
       {extras && extras.recommendations.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Fans also like</h2>
+          <h2 className="k-title pb-2">Fans also like</h2>
           <ul className="k-grid">
             {extras.recommendations.map((pick) => (
               <li key={pick.animeId} className="k-grid__item">

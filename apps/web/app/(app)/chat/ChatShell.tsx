@@ -101,6 +101,15 @@ export function ChatShell({
     }
     setChats((current) => current.filter((c) => c.id !== chat.id));
     if (chat.id === activeId) router.replace("/chat");
+    // Its row, where focus was, is gone: give focus to New chat in the list that's showing.
+    requestAnimationFrame(() => {
+      const lost = document.activeElement === document.body || !document.activeElement?.isConnected;
+      if (!lost) return;
+      const newChat = [...document.querySelectorAll<HTMLElement>(".k-chatlist__top a")].find(
+        (link) => link.offsetParent !== null,
+      );
+      newChat?.focus();
+    });
   }
 
   const sidebar = (onNavigate?: () => void) => (

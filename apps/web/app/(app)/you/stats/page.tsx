@@ -146,7 +146,7 @@ export default async function StatsPage() {
 
         {allTime.scored >= MIN_SCORED_FOR_HISTOGRAM && (
           <div className="pt-6">
-            <h3 className="k-caps">Your scores</h3>
+            <h3 className="k-title">Your scores</h3>
             <Histogram
               summary={`How you spread your scores across ${showCount(allTime.scored)}${
                 scoreMode === null ? "" : `; most often ${scoreText(scoreMode + 1, style)}`
@@ -166,7 +166,7 @@ export default async function StatsPage() {
         {allTime.topGenres.length > 0 && (
           <div className="pt-6">
             <div className="flex items-baseline justify-between">
-              <h3 className="k-caps">Most completed genres</h3>
+              <h3 className="k-title">Most completed genres</h3>
               <Link href="/you/taste" className="k-link">
                 Taste
               </Link>

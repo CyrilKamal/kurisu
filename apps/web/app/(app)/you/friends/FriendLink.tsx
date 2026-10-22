@@ -42,7 +42,7 @@ export function FriendLink({ initialLink }: { initialLink: string }) {
 
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">Your friend link</h2>
+      <h2 className="k-title pb-2">Your friend link</h2>
       <div className="k-panel flex flex-col gap-4 p-4">
         <div className="k-field">
           <label className="k-field__label" htmlFor="friend-link">
