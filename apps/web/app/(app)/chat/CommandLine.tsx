@@ -59,6 +59,7 @@ export function CommandLine({
           maxLength={1000}
           autoComplete="off"
           placeholder="watched ep 5 of …"
+          enterKeyHint="send"
           aria-label="Message"
           onChange={(event) => {
             onDraft(event.target.value);

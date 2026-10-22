@@ -107,7 +107,7 @@ export default async function StatsPage() {
                 className="flex justify-between gap-4 border-b border-line py-2 text-ink"
               >
                 <span className="min-w-0 truncate">{show.title}</span>
-                <span className="k-mono">{shortDate(show.on)}</span>
+                <span className="k-data-sm">{shortDate(show.on)}</span>
               </li>
             ))}
           </ul>
@@ -178,7 +178,7 @@ export default async function StatsPage() {
                   className="flex justify-between gap-4 border-b border-line py-2 text-ink"
                 >
                   <span>{genre.genre}</span>
-                  <span className="k-mono">{showCount(genre.shows)}</span>
+                  <span className="k-data-sm">{showCount(genre.shows)}</span>
                 </li>
               ))}
             </ul>

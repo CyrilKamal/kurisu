@@ -179,7 +179,7 @@ export function ChatView({
         </Link>
       </header>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overscroll-contain">
         {empty ? (
           <div className="px-4 py-6">
             <div className="k-empty">

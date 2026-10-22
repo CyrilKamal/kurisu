@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
-import { Sheet } from "@/components/Sheet";
+import { Sheet, SheetClose } from "@/components/Sheet";
 import { groupChats } from "@/lib/chatGroups";
 import { useIsBrowser } from "@/lib/useIsBrowser";
 
@@ -236,9 +236,7 @@ function ChatActions({
           Delete
         </button>
         <span className="flex-1" />
-        <button type="button" className="k-btn k-btn--ghost" onClick={onClose}>
-          Cancel
-        </button>
+        <SheetClose>Cancel</SheetClose>
         <button type="submit" className="k-btn k-btn--primary" disabled={!draft.trim()}>
           Save
         </button>

@@ -111,9 +111,9 @@ function EntryExtras({
   );
 }
 
-/** "Oct 9" in the server's render; the journal's lines are dated, not timed. */
+/** "2026-10-09", as the system dates data columns; the journal's lines are dated, not timed. */
 function shortDate(iso: string): string {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(iso));
+  return iso.slice(0, 10);
 }
 
 /**
@@ -382,25 +382,28 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
 
       {extras && extras.characters.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Characters</h2>
+          <h2 className="k-caps pb-2">Characters and their Japanese voices</h2>
           <ul className="m-0 grid list-none gap-x-8 p-0 sm:grid-cols-2">
             {extras.characters.map((character) => (
+              // The character and the voice share the row evenly, so neither name loses out.
               <li
                 key={character.name}
-                className="flex items-center gap-2 border-b border-line py-2"
+                className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2 border-b border-line py-2"
               >
                 <Poster url={character.pictureUrl} title={character.name} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-ink">{character.name}</span>
+                <span className="min-w-0">
+                  <span className="block truncate text-ink" title={character.name}>
+                    {character.name}
+                  </span>
                   <span className="k-field__hint capitalize">{character.role}</span>
                 </span>
                 {character.voiceActor && (
                   <>
-                    <span className="min-w-0 text-right">
-                      <span className="block truncate text-ink-muted">
-                        {character.voiceActor.name}
-                      </span>
-                      <span className="k-field__hint">Japanese voice</span>
+                    <span
+                      className="block min-w-0 truncate text-right text-ink-muted"
+                      title={character.voiceActor.name}
+                    >
+                      {character.voiceActor.name}
                     </span>
                     <Poster
                       url={character.voiceActor.pictureUrl}

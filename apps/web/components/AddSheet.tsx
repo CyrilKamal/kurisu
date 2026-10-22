@@ -15,7 +15,7 @@ import { scoreOptions } from "@/lib/score";
 import { useWriteToast } from "@/lib/useWriteToast";
 
 import { useScoreStyle } from "./ScoreStyle";
-import { Sheet } from "./Sheet";
+import { Sheet, SheetClose } from "./Sheet";
 
 /**
  * Puts a show on the list: Plan to Watch unless the user picks another status, and a score if
@@ -112,9 +112,7 @@ export function AddSheet({
         )}
       </div>
       <div className="k-sheet__actions">
-        <button type="button" className="k-btn k-btn--ghost" onClick={onClose}>
-          Cancel
-        </button>
+        <SheetClose>Cancel</SheetClose>
         <button type="submit" className="k-btn k-btn--primary" disabled={busy} aria-busy={busy}>
           {busy ? "Adding…" : "Add"}
         </button>

@@ -181,7 +181,9 @@ export function ScheduleView({ data }: { data: ScheduleResponse }) {
                         {episode.title}
                       </Link>
                       <p className="k-row__meta">
-                        <span className="k-mono">{airTime(episode.airingAt, data.timeZone)}</span>
+                        <span className="k-data-sm">
+                          {airTime(episode.airingAt, data.timeZone)}
+                        </span>
                         <span className={watching ? "k-airing k-airing--today" : "k-airing"}>
                           {episodeLabel(episode)}
                           {aired ? (episode.lastEpisode > episode.episode ? " out" : " aired") : ""}

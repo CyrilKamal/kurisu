@@ -6,7 +6,7 @@ import {
   type ConversationView,
 } from "@kurisu/shared";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useConfirm } from "@/components/Sheet";
 import { getApi, sendApi } from "@/lib/clientApi";
@@ -67,17 +67,6 @@ export function ChatShell({
     [chats, refreshChats, openChats],
   );
 
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDrawerOpen(false);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [drawerOpen]);
-
   async function renameChat(chat: ConversationView, title: string) {
     const name = title.replace(/\s+/g, " ").trim();
     if (!name || name === chat.title) return;
@@ -132,31 +121,71 @@ export function ChatShell({
           {sidebar()}
         </aside>
         {drawerOpen && (
-          <div className="fixed inset-0 z-30 md:hidden">
-            {/* A solid scrim, never blurred. */}
-            <button
-              type="button"
-              aria-label="Close chats"
-              className="absolute inset-0 bg-scrim"
-              onClick={() => {
-                setDrawerOpen(false);
-              }}
-            />
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label="Chats"
-              className="absolute inset-y-0 left-0 w-(--sidebar-width) max-w-[85%] border-r border-line bg-bg"
-            >
-              {sidebar(() => {
-                setDrawerOpen(false);
-              })}
-            </div>
-          </div>
+          <ChatDrawer
+            onClose={() => {
+              setDrawerOpen(false);
+            }}
+          >
+            {sidebar(() => {
+              setDrawerOpen(false);
+            })}
+          </ChatDrawer>
         )}
         <div className="min-w-0 flex-1">{children}</div>
       </div>
       {sheet}
     </ShellContext>
   );
+}
+
+/**
+ * The chat list on a phone: a modal dialog from the left edge over a solid scrim (k-drawer), so
+ * focus stays inside and the chat behind is inert. Escape and a press on the scrim close it, and
+ * focus goes back where it was. A sheet opened from it (a chat's ⋯) sits on top and takes Escape
+ * first.
+ */
+function ChatDrawer({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  });
+  const pressedOutside = useRef(false);
+
+  useEffect(() => {
+    const element = dialog.current;
+    const before = document.activeElement;
+    if (element && !element.open) element.showModal();
+    return () => {
+      if (before instanceof HTMLElement && before.isConnected) before.focus();
+    };
+  }, []);
+
+  return (
+    <dialog
+      ref={dialog}
+      className="k-drawer md:hidden"
+      aria-label="Chats"
+      onCancel={(event) => {
+        event.preventDefault();
+        close.current();
+      }}
+      onPointerDown={(event) => {
+        pressedOutside.current = event.target === event.currentTarget && outsideBox(event);
+      }}
+      onClick={(event) => {
+        if (pressedOutside.current && event.target === event.currentTarget && outsideBox(event)) {
+          close.current();
+        }
+        pressedOutside.current = false;
+      }}
+    >
+      {children}
+    </dialog>
+  );
+}
+
+function outsideBox(event: React.MouseEvent<HTMLElement>): boolean {
+  const box = event.currentTarget.getBoundingClientRect();
+  return event.clientX < box.left || event.clientX > box.right;
 }

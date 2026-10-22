@@ -73,7 +73,7 @@ export function ListFilters({
       {/* Phones: one button, the menus in a sheet. */}
       <button
         type="button"
-        className={`k-btn flex-none sm:hidden ${active > 0 ? "border-accent bg-accent-soft" : ""}`}
+        className={`k-btn flex-none sm:hidden ${active > 0 ? "is-set" : ""}`}
         aria-haspopup="dialog"
         onClick={() => {
           setSheetOpen(true);
@@ -293,7 +293,7 @@ function FilterSheet({
               </label>
               <select
                 id={id}
-                className={`k-input ${menu.active ? "border-accent bg-accent-soft" : ""}`}
+                className={`k-input ${menu.active ? "is-set" : ""}`}
                 value={menu.value}
                 onChange={(event) => {
                   menu.onChange(event.target.value);

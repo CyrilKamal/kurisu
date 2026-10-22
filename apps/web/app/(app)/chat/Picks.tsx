@@ -41,7 +41,7 @@ export function Picks({
         const episodes = episodesText(pick);
         return (
           <li key={pick.animeId} className="k-pick">
-            <span className="k-pick__rank">{String(i + 1).padStart(2, "0")}</span>
+            <span className="k-pick__rank">{i + 1}</span>
             <Poster
               url={pick.pictureUrl}
               title={pick.title}

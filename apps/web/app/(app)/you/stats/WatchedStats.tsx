@@ -20,7 +20,7 @@ function Counted({ title, rows }: { title: string; rows: { name: string; shows: 
             className="flex justify-between gap-4 border-b border-line py-2 text-ink"
           >
             <span className="min-w-0 truncate">{row.name}</span>
-            <span className="k-mono">{showCount(row.shows)}</span>
+            <span className="k-data-sm">{showCount(row.shows)}</span>
           </li>
         ))}
       </ul>
@@ -80,7 +80,7 @@ export function WatchedStats({ watched }: { watched: Watched }) {
               <li key={voice.name} className="flex items-center gap-2 border-b border-line py-2">
                 <Poster url={voice.pictureUrl} title={voice.name} />
                 <span className="min-w-0 flex-1 truncate text-ink">{voice.name}</span>
-                <span className="k-mono">{showCount(voice.shows)}</span>
+                <span className="k-data-sm">{showCount(voice.shows)}</span>
               </li>
             ))}
           </ul>
