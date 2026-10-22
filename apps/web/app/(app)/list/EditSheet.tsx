@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { useScoreStyle } from "@/components/ScoreStyle";
-import { Sheet } from "@/components/Sheet";
+import { Sheet, SheetClose } from "@/components/Sheet";
 import { sendApi } from "@/lib/clientApi";
 import { editErrorMessage, editPayload, formFrom, type EditableEntry } from "@/lib/editEntry";
 import { STATUS_LABELS } from "@/lib/format";
@@ -75,10 +75,12 @@ export function EditSheet({
           {errorLine}
         </div>
         <div className="k-sheet__actions">
+          {/* The confirmation replaces the form in the same sheet: focus moves to its safe answer. */}
           <button
             type="button"
             className="k-btn k-btn--ghost"
             disabled={busy !== null}
+            autoFocus
             onClick={() => {
               setRemoving(false);
               setError(null);
@@ -88,7 +90,7 @@ export function EditSheet({
           </button>
           <button
             type="button"
-            className="k-btn k-btn--danger"
+            className="k-btn k-btn--destructive"
             disabled={busy !== null}
             aria-busy={busy === "remove"}
             onClick={() => void send("remove", `/list/${String(entry.animeId)}/remove`, {})}
@@ -117,6 +119,7 @@ export function EditSheet({
           <select
             id="edit-status"
             className="k-input"
+            data-autofocus
             value={form.status}
             onChange={(event) => {
               const status = LIST_STATUSES.find((s) => s === event.target.value);
@@ -225,9 +228,7 @@ export function EditSheet({
           Remove
         </button>
         <span className="flex-1" />
-        <button type="button" className="k-btn k-btn--ghost" onClick={onClose}>
-          Cancel
-        </button>
+        <SheetClose>Cancel</SheetClose>
         <button
           type="submit"
           className="k-btn k-btn--primary"

@@ -215,7 +215,7 @@ export default async function YearPage(props: PageProps<"/you/year">) {
                     className="flex justify-between gap-4 border-b border-line py-2 text-ink"
                   >
                     <span>{genre.genre}</span>
-                    <span className="k-mono">{showCount(genre.shows)}</span>
+                    <span className="k-data-sm">{showCount(genre.shows)}</span>
                   </li>
                 ))}
               </ul>

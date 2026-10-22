@@ -58,8 +58,25 @@ export function ListBrowser({
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
+  // "+1 ep" counts move at the tap, ahead of the server; a new server render replaces them.
+  const [watched, setWatched] = useState<Map<number, number>>(new Map());
+  const [renderedEntries, setRenderedEntries] = useState(entries);
+  if (entries !== renderedEntries) {
+    setRenderedEntries(entries);
+    setWatched(new Map());
+  }
+  const shown = useMemo(
+    () =>
+      watched.size === 0
+        ? entries
+        : entries.map((e) => {
+            const count = watched.get(e.animeId);
+            return count === undefined ? e : { ...e, episodesWatched: count };
+          }),
+    [entries, watched],
+  );
   const toast = useWriteToast();
-  const editing = entries.find((e) => e.animeId === editingId) ?? null;
+  const editing = shown.find((e) => e.animeId === editingId) ?? null;
 
   // This device's copy of the list, for the offline page.
   useEffect(() => {
@@ -73,21 +90,27 @@ export function ListBrowser({
   }
 
   async function addEpisode(entry: ListEntry) {
+    const from = entry.episodesWatched;
+    setWatched((current) => new Map(current).set(entry.animeId, from + 1));
     setSavingId(entry.animeId);
     const result = await sendApi(
       "POST",
       `/list/${String(entry.animeId)}/edit`,
       changeResponseSchema,
-      { episodesWatched: entry.episodesWatched + 1, requestId: crypto.randomUUID() },
+      { episodesWatched: from + 1, requestId: crypto.randomUUID() },
     );
     setSavingId(null);
-    if (result.ok && result.data) written(result.data.change);
-    else if (!result.ok) toast.failed(result.error);
+    if (result.ok && result.data) {
+      written(result.data.change);
+    } else {
+      setWatched((current) => new Map(current).set(entry.animeId, from));
+      if (!result.ok) toast.failed(result.error);
+    }
   }
 
   const filtered = isFiltered(view);
-  const counts = useMemo(() => countMatches(entries, view), [entries, view]);
-  const visible = useMemo(() => visibleEntries(entries, view), [entries, view]);
+  const counts = useMemo(() => countMatches(shown, view), [shown, view]);
+  const visible = useMemo(() => visibleEntries(shown, view), [shown, view]);
 
   return (
     <>

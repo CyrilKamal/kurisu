@@ -72,7 +72,7 @@ export function DropReasons({ initialReasons }: { initialReasons: DropReasonView
                   {reason.title}
                 </Link>
                 <span className="k-tag k-tag--word">{DROP_CATEGORY_LABELS[reason.category]}</span>
-                <span className="k-mono">{relativeTime(reason.createdAt)}</span>
+                <span className="k-data-sm">{relativeTime(reason.createdAt)}</span>
               </div>
               <p className="k-drop__said">{reason.said}</p>
             </div>

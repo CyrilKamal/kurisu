@@ -61,10 +61,10 @@ export default async function TastePage() {
           </p>
 
           {all.length > 0 && (
-            <details className="k-trace pt-6 font-sans tabular-nums">
-              <summary>All genres ({all.length})</summary>
+            <details className="pt-6 tabular-nums">
+              <summary className="k-link">All genres ({all.length})</summary>
               <div className="overflow-x-auto">
-                <table className="mt-2 w-full">
+                <table className="mt-2 w-full text-xs">
                   <thead>
                     <tr className="text-left">
                       <th className="py-2 pr-4 font-medium">Genre</th>

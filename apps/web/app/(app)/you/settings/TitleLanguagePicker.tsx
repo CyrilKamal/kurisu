@@ -4,6 +4,7 @@ import { titleLanguageResponseSchema, type TitleLanguage } from "@kurisu/shared"
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { RadioChips } from "@/components/RadioChips";
 import { sendApi } from "@/lib/clientApi";
 
 const OPTIONS: [TitleLanguage, string, string][] = [
@@ -43,20 +44,13 @@ export function TitleLanguagePicker({ initial }: { initial: TitleLanguage }) {
     <section className="pt-6">
       <h2 className="k-caps pb-2">Titles</h2>
       <div className="k-panel flex flex-col gap-4 p-4">
-        <div className="k-chips" role="group" aria-label="Show titles in">
-          {OPTIONS.map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              className="k-chip"
-              aria-pressed={language === value}
-              disabled={busy}
-              onClick={() => void choose(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <RadioChips
+          label="Show titles in"
+          options={OPTIONS.map(([value, label]) => [value, label] as const)}
+          value={language}
+          disabled={busy}
+          onChange={(next) => void choose(next)}
+        />
         <p className="k-field__hint">
           Like &ldquo;{example}&rdquo;.{" "}
           {language === "romaji"

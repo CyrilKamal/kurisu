@@ -60,7 +60,7 @@ export function Working({ since }: { since: string }) {
     <p className="k-log__working" role="status">
       <span className="k-cursor" aria-hidden="true" />
       {elapsed >= STILL_WORKING_AFTER_MS ? "Still working…" : "Working…"}{" "}
-      <span className="k-mono" aria-hidden="true">
+      <span className="k-data-sm" aria-hidden="true">
         {secondsLabel(elapsed)}
       </span>
     </p>
