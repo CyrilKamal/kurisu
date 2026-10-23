@@ -73,8 +73,8 @@ export function BriefCard({
     <div className="k-panel">
       <div className="k-brief__head">
         <span className="k-caps">Brief</span>
-        <span className="k-mono">{inBrowser ? dateTime(sentAt) : (brief.localDate ?? "")}</span>
-        {counts.length > 0 && <span className="k-mono">{counts.join(" · ")}</span>}
+        <span className="k-data-sm">{inBrowser ? dateTime(sentAt) : (brief.localDate ?? "")}</span>
+        {counts.length > 0 && <span className="k-data-sm">{counts.join(" · ")}</span>}
       </div>
       {brief.summary && <p className="k-brief__summary">{brief.summary}</p>}
 

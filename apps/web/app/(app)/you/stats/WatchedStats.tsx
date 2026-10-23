@@ -12,7 +12,7 @@ function Counted({ title, rows }: { title: string; rows: { name: string; shows: 
   if (rows.length === 0) return null;
   return (
     <div className="pt-6">
-      <h3 className="k-caps">{title}</h3>
+      <h3 className="k-title">{title}</h3>
       <ul className="k-rows">
         {rows.map((row) => (
           <li
@@ -20,7 +20,7 @@ function Counted({ title, rows }: { title: string; rows: { name: string; shows: 
             className="flex justify-between gap-4 border-b border-line py-2 text-ink"
           >
             <span className="min-w-0 truncate">{row.name}</span>
-            <span className="k-mono">{showCount(row.shows)}</span>
+            <span className="k-data-sm">{showCount(row.shows)}</span>
           </li>
         ))}
       </ul>
@@ -43,7 +43,7 @@ export function WatchedStats({ watched }: { watched: Watched }) {
 
       {watched.decades.length > 1 && (
         <div className="pt-6">
-          <h3 className="k-caps">When they aired</h3>
+          <h3 className="k-title">When they aired</h3>
           <Histogram
             columns={watched.decades.map((d) => ({
               label: decadeLabel(d.decade),
@@ -74,13 +74,13 @@ export function WatchedStats({ watched }: { watched: Watched }) {
 
       {watched.voiceActors.length > 0 && (
         <div className="pt-6">
-          <h3 className="k-caps">Voices you hear most</h3>
+          <h3 className="k-title">Voices you hear most</h3>
           <ul className="m-0 grid list-none gap-x-8 p-0 sm:grid-cols-2">
             {watched.voiceActors.map((voice) => (
               <li key={voice.name} className="flex items-center gap-2 border-b border-line py-2">
                 <Poster url={voice.pictureUrl} title={voice.name} />
                 <span className="min-w-0 flex-1 truncate text-ink">{voice.name}</span>
-                <span className="k-mono">{showCount(voice.shows)}</span>
+                <span className="k-data-sm">{showCount(voice.shows)}</span>
               </li>
             ))}
           </ul>

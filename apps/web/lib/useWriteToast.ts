@@ -55,6 +55,10 @@ export function useWriteToast(): {
               });
             } else if (!result.ok) {
               failed(result.error);
+            } else {
+              // Taken back, with nothing to describe: still replace the "Undoing…" toast.
+              refresh();
+              toast({ text: `${change.title}: undone` });
             }
           },
         }),

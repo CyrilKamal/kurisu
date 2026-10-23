@@ -42,7 +42,7 @@ export function DeleteAccount() {
 
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">Your data</h2>
+      <h2 className="k-title pb-2">Your data</h2>
       <div className="k-panel flex flex-col gap-4 p-4">
         <p className="text-ink-muted">
           Download a copy of everything kurisu holds about you, as a file to keep or take elsewhere.

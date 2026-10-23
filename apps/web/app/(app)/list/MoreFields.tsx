@@ -36,26 +36,27 @@ export function MoreFields({
     setTyped("");
   }
 
-  if (!open) {
-    return (
-      <div>
-        <button
-          type="button"
-          className="k-btn k-btn--ghost k-btn--sm"
-          aria-expanded={false}
-          onClick={() => {
-            setOpen(true);
-          }}
-        >
-          <Icon name="chevron-down" />
-          Comments, tags, priority
-        </button>
-      </div>
-    );
-  }
+  // The toggle stays put when it opens, so focus stays on it.
+  const toggle = (
+    <div>
+      <button
+        type="button"
+        className="k-btn k-btn--ghost k-btn--sm"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen(!open);
+        }}
+      >
+        <Icon name="chevron-down" className={open ? "rotate-180" : undefined} />
+        Comments, tags, priority
+      </button>
+    </div>
+  );
+  if (!open) return toggle;
 
   return (
     <>
+      {toggle}
       {form.comments !== null && (
         <div className="k-field">
           <label className="k-field__label" htmlFor="edit-comments">

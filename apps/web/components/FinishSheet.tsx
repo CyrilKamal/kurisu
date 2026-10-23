@@ -117,14 +117,27 @@ export function FinishDetails({ animeId }: { animeId: number }) {
         setScore(shown.data.entry?.score ?? 0);
       }
       if (counted.ok) setStats(counted.data);
-      requestAnimationFrame(() => {
-        if (current) setFilled(true);
-      });
     });
     return () => {
       current = false;
     };
   }, [animeId]);
+
+  // Fill once the meter has been painted one short: two frames after the stats render, since
+  // one frame can land before that paint and the meter would mount already full.
+  useEffect(() => {
+    if (!stats) return;
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        setFilled(true);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [stats]);
 
   async function rate(next: number) {
     setSaving(next);

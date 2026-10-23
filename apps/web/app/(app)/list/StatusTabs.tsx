@@ -23,7 +23,7 @@ export function StatusTabs({
 }) {
   return (
     <nav aria-label="List status">
-      <ul className="k-tabs flex-wrap">
+      <ul className="k-tabs">
         {LIST_STATUSES.map((status) => (
           <li key={status}>
             <Link

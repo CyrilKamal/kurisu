@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { getApi } from "@/lib/clientApi";
 import { LIST_CHANGED_EVENT } from "@/lib/listChanged";
+import { badgeCount, splitOut } from "@/lib/today";
 
 const TABS = [
   { href: "/today", label: "Today", icon: "today" },
@@ -18,9 +19,9 @@ const TABS = [
 ] as const;
 
 /**
- * The NavBar: kurisu's four screens, as a bottom bar on phones and a rail on the left from
- * 1024px (bundle.css), with a 2px crimson bar on the active one. Today counts the episodes out
- * that you haven't watched.
+ * The NavBar: kurisu's five screens, as a bottom bar on phones and a rail on the left from
+ * 1024px (bundle.css), with a 2px crimson bar on the active one. Today counts the shows you keep
+ * up with that have new episodes (backlogs aren't news, `splitOut`).
  */
 export function NavBar() {
   const pathname = usePathname();
@@ -39,8 +40,11 @@ export function NavBar() {
                 <Icon name={tab.icon} />
                 {tab.label}
                 {tab.href === "/today" && outNow > 0 && (
-                  <span className="k-nav__count" aria-label={`${String(outNow)} episodes out`}>
-                    {outNow}
+                  <span
+                    className="k-nav__count"
+                    aria-label={`${String(outNow)} ${outNow === 1 ? "show" : "shows"} with new episodes`}
+                  >
+                    {badgeCount(outNow)}
                   </span>
                 )}
               </Link>
@@ -52,7 +56,7 @@ export function NavBar() {
   );
 }
 
-/** Episodes out that the user hasn't watched: fetched on load, on Today, and after each change. */
+/** Shows with new episodes to watch: fetched on load, on Today, and after each change. */
 function useOutNow(onToday: boolean): number {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -60,7 +64,7 @@ function useOutNow(onToday: boolean): number {
     const load = async () => {
       const result = await getApi("/today", todayResponseSchema);
       if (current && result.ok) {
-        setCount(result.data.outNow.reduce((n, s) => n + s.latestAired - s.episodesWatched, 0));
+        setCount(splitOut(result.data.outNow).keepingUp.length);
       }
     };
     void load();

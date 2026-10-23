@@ -119,7 +119,7 @@ export function SearchView({ season }: { season: SearchResult[] }) {
 
       {!typing && recentShown.length > 0 && (
         <section className="pt-4">
-          <h2 className="k-caps pb-2">Recent</h2>
+          <h2 className="k-title pb-2">Recent</h2>
           <div className="k-chips">
             {recentShown.map((q) => (
               <button
@@ -145,7 +145,7 @@ export function SearchView({ season }: { season: SearchResult[] }) {
       )}
 
       <section className="pt-6" aria-busy={searching}>
-        <h2 className="k-caps pb-2">
+        <h2 className="k-title pb-2">
           {searching ? "Searching…" : found === null ? "Airing this season" : "Results"}
         </h2>
         {shown.length === 0 ? (

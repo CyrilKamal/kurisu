@@ -59,9 +59,10 @@ export function Histogram({
           </span>
         )}
       </div>
-      <details className="k-trace mt-2 font-sans tabular-nums">
-        <summary>Show as a table</summary>
-        <table className="k-mono mt-2">
+      {/* Not k-trace: mono and [+] mean "the agent printed this", and AniList's counts aren't. */}
+      <details className="mt-2">
+        <summary className="k-link">Show as a table</summary>
+        <table className="k-data-sm mt-2">
           <tbody>
             {columns.map((column) => (
               <tr key={column.name}>

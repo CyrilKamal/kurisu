@@ -59,7 +59,7 @@ export default async function PlanPage() {
       </section>
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">This month</h2>
+        <h2 className="k-title pb-2">This month</h2>
         <ul className="k-rows">
           <UsageRow label="Chat updates" item={usage.chat} />
           <UsageRow label="Recommendations" item={usage.recommendations} />
@@ -76,7 +76,7 @@ export default async function PlanPage() {
       </section>
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">Plans</h2>
+        <h2 className="k-title pb-2">Plans</h2>
         {/* With limits off, nobody is on a plan. */}
         <Pricing current={plan.source === "open" ? undefined : plan.id} />
       </section>

@@ -13,17 +13,20 @@ export function Banner({
   children,
   action,
   className,
+  live = true,
 }: {
   level: keyof typeof LEVELS;
   children: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
+  /** False when a live region elsewhere already announces it (the Toast's). */
+  live?: boolean;
 }) {
   const { word, className: base } = LEVELS[level];
   return (
     <div
       className={className ? `${base} ${className}` : base}
-      role={level === "info" ? "status" : "alert"}
+      role={live ? (level === "info" ? "status" : "alert") : undefined}
     >
       <span className="k-banner__level">{word}</span>
       <p>{children}</p>

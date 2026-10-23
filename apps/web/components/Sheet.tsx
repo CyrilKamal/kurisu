@@ -1,25 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from "react";
 
 import { Icon } from "./Icon";
 
+/** Closes the sheet it's inside the way it came (`SheetClose`). */
+const SheetCloseContext = createContext<{ close: () => void; busy: boolean }>({
+  close: () => undefined,
+  busy: false,
+});
+
+/** How long the exit can take before the sheet goes anyway (k-sheet-out is 160ms). */
+const EXIT_MS = 240;
+
 /**
  * A short task over the screen (the design system's Sheet): from the bottom on phones, centred
- * from 640px. It opens as a modal dialog, so focus stays inside; Escape, a tap on the scrim and
- * the close button all call `onClose`, and focus goes back where it was. Pass `onSubmit` to make
- * the body and actions one form. Children are the `k-sheet__body` and `k-sheet__actions` parts.
+ * from 640px. It opens as a modal dialog, so focus stays inside; Escape, a press on the scrim,
+ * the close button and `SheetClose` play its exit and then call `onClose`, and focus goes back
+ * where it was. While `busy` (a save on its way) it stays open, so its result has somewhere to
+ * land. An element marked `data-autofocus` gets focus when it opens. Pass `onSubmit` to make the
+ * body and actions one form. Children are the `k-sheet__body` and `k-sheet__actions` parts.
  */
 export function Sheet({
   title,
   onClose,
   onSubmit,
+  busy = false,
   children,
 }: {
   title: string;
   onClose: () => void;
   /** Makes the body and actions a form; the sheet stops the page from reloading. */
   onSubmit?: () => void;
+  /** A request is running: Escape, the scrim, × and Cancel wait for it. */
+  busy?: boolean;
   children: React.ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -29,38 +43,68 @@ export function Sheet({
   useEffect(() => {
     close.current = onClose;
   });
+  const [closing, setClosing] = useState(false);
+  // The exit's end and its timeout can both arrive; the parent hears once.
+  const closed = useRef(false);
+  const finish = useCallback(() => {
+    if (closed.current) return;
+    closed.current = true;
+    close.current();
+  }, []);
+  // A press that started on the scrim; a drag out of a field that ends there isn't one.
+  const pressedOutside = useRef(false);
 
   useEffect(() => {
     const element = dialog.current;
     const before = document.activeElement;
-    if (element && !element.open) element.showModal();
+    if (element && !element.open) {
+      element.showModal();
+      element.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    }
     return () => {
       if (before instanceof HTMLElement && before.isConnected) before.focus();
     };
   }, []);
 
+  // The parent decides, by unmounting the sheet, once its exit has played.
+  useEffect(() => {
+    if (!closing) return;
+    const timer = setTimeout(finish, EXIT_MS);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [closing, finish]);
+  const busyNow = useRef(busy);
+  useEffect(() => {
+    busyNow.current = busy;
+  });
+  const requestClose = useCallback(() => {
+    if (!busyNow.current) setClosing(true);
+  }, []);
+
   return (
     <dialog
       ref={dialog}
-      className="k-sheet"
+      className={closing ? "k-sheet is-closing" : "k-sheet"}
       aria-labelledby={titleId}
       onCancel={(event) => {
-        // Escape: the parent decides, by unmounting the sheet.
         event.preventDefault();
-        close.current();
+        requestClose();
+      }}
+      onAnimationEnd={(event) => {
+        if (closing && event.target === event.currentTarget) finish();
+      }}
+      onPointerDown={(event) => {
+        pressedOutside.current = event.target === event.currentTarget && outsideBox(event);
       }}
       onClick={(event) => {
-        // The scrim is the dialog's backdrop: a click outside the sheet's box.
-        const box = event.currentTarget.getBoundingClientRect();
-        const outside =
-          event.clientX < box.left ||
-          event.clientX > box.right ||
-          event.clientY < box.top ||
-          event.clientY > box.bottom;
-        if (event.target === event.currentTarget && outside) close.current();
+        // The scrim is the dialog's backdrop: a press and release outside the sheet's box.
+        if (pressedOutside.current && event.target === event.currentTarget && outsideBox(event)) {
+          requestClose();
+        }
+        pressedOutside.current = false;
       }}
     >
-      <span className="k-sheet__grip" aria-hidden="true" />
       <div className="k-sheet__head">
         <h2 id={titleId} className="k-sheet__title">
           {title}
@@ -69,26 +113,58 @@ export function Sheet({
           type="button"
           className="k-btn k-btn--ghost k-btn--icon"
           aria-label="Close"
-          onClick={() => {
-            close.current();
-          }}
+          disabled={busy}
+          onClick={requestClose}
         >
           <Icon name="clear" />
         </button>
       </div>
-      {onSubmit ? (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            onSubmit();
-          }}
-        >
-          {children}
-        </form>
-      ) : (
-        children
-      )}
+      <SheetCloseContext value={{ close: requestClose, busy }}>
+        {onSubmit ? (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSubmit();
+            }}
+          >
+            {children}
+          </form>
+        ) : (
+          children
+        )}
+      </SheetCloseContext>
     </dialog>
+  );
+}
+
+function outsideBox(event: React.MouseEvent<HTMLElement>): boolean {
+  const box = event.currentTarget.getBoundingClientRect();
+  return (
+    event.clientX < box.left ||
+    event.clientX > box.right ||
+    event.clientY < box.top ||
+    event.clientY > box.bottom
+  );
+}
+
+/** A button that closes the sheet it's in (Cancel), playing the sheet's exit first. */
+export function SheetClose({
+  className = "k-btn k-btn--ghost",
+  disabled,
+  children,
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { close, busy } = useContext(SheetCloseContext);
+  return (
+    <button
+      type="button"
+      className={className}
+      disabled={disabled ?? busy}
+      onClick={close}
+      {...rest}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -98,7 +174,7 @@ export interface ConfirmOptions {
   body: string;
   /** Names the action, e.g. "Delete chat". */
   action: string;
-  /** A destructive action gets the danger button. */
+  /** A destructive action gets the destructive button. */
   danger?: boolean;
 }
 
@@ -138,18 +214,10 @@ export function useConfirm(): {
         <p className="text-ink-muted">{asking.body}</p>
       </div>
       <div className="k-sheet__actions">
+        <SheetClose data-autofocus>Cancel</SheetClose>
         <button
           type="button"
-          className="k-btn k-btn--ghost"
-          onClick={() => {
-            answer(false);
-          }}
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          className={asking.danger ? "k-btn k-btn--danger" : "k-btn k-btn--primary"}
+          className={asking.danger ? "k-btn k-btn--destructive" : "k-btn k-btn--primary"}
           onClick={() => {
             answer(true);
           }}

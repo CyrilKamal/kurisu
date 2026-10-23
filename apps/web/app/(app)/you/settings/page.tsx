@@ -55,14 +55,14 @@ export default async function SettingsPage() {
       <ScoreStylePicker initial={me.scoreStyle} />
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">Install</h2>
+        <h2 className="k-title pb-2">Install</h2>
         <div className="k-panel flex flex-col gap-2 p-4">
           <InstallPrompt />
         </div>
       </section>
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">This device</h2>
+        <h2 className="k-title pb-2">This device</h2>
         <div className="k-panel flex items-center justify-between gap-4 p-4">
           <p className="text-ink-muted">
             Logging out also stops this browser&apos;s notifications.

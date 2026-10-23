@@ -4,6 +4,7 @@ import { scoreStyleResponseSchema, type ScoreStyle } from "@kurisu/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { RadioChips } from "@/components/RadioChips";
 import { sendApi } from "@/lib/clientApi";
 import { scoreScale, scoreText } from "@/lib/score";
 
@@ -42,22 +43,15 @@ export function ScoreStylePicker({ initial }: { initial: ScoreStyle }) {
 
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">Scores</h2>
+      <h2 className="k-title pb-2">Scores</h2>
       <div className="k-panel flex flex-col gap-4 p-4">
-        <div className="k-chips" role="group" aria-label="Show scores as">
-          {OPTIONS.map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              className="k-chip"
-              aria-pressed={style === value}
-              disabled={busy}
-              onClick={() => void choose(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <RadioChips
+          label="Show scores as"
+          options={OPTIONS}
+          value={style}
+          disabled={busy}
+          onChange={(next) => void choose(next)}
+        />
         <p className="k-field__hint">
           An 8 shows as {example(8)} and a 7 as {example(7)}. MyAnimeList still saves its 1–10, so
           no score changes, and Chat keeps talking in 10s.

@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { priceLabel, yearlySaving, type BillingInterval } from "@/lib/plans";
 
+import { RadioChips } from "./RadioChips";
+
 /**
  * Free, Premium and Pro side by side (stacked on phones), billed yearly unless the reader picks
  * monthly. The prices are what kurisu will charge at launch; nothing is on sale yet. In the app,
@@ -17,26 +19,17 @@ export function Pricing({ current }: { current?: PlanId }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-4">
-        <div className="k-segmented" role="group" aria-label="Billing">
-          {(
-            [
-              ["year", "Yearly"],
-              ["month", "Monthly"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              className="w-auto px-4"
-              aria-pressed={interval === value}
-              onClick={() => {
-                setBilling(value);
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <RadioChips
+          label="Billing"
+          options={[
+            ["year", "Yearly"],
+            ["month", "Monthly"],
+          ]}
+          value={interval}
+          onChange={setBilling}
+          className="k-segmented"
+          chipClassName="w-auto px-4"
+        />
         <p className="k-field__hint">Yearly saves {saving}%.</p>
       </div>
 

@@ -10,7 +10,7 @@ import { useState } from "react";
 
 import { FavoriteShows } from "@/components/FavoriteShows";
 import { Icon } from "@/components/Icon";
-import { Sheet } from "@/components/Sheet";
+import { Sheet, SheetClose } from "@/components/Sheet";
 import { sendApi } from "@/lib/clientApi";
 import { moved } from "@/lib/favorites";
 
@@ -56,7 +56,7 @@ export function Favorites({ initial }: { initial: FavoritesResponse }) {
   return (
     <section className="pt-6">
       <div className="flex items-baseline justify-between pb-2">
-        <h2 className="k-caps">Favorites</h2>
+        <h2 className="k-title">Favorites</h2>
         {favorites.length > 0 && (
           <button
             type="button"
@@ -86,6 +86,7 @@ export function Favorites({ initial }: { initial: FavoritesResponse }) {
           onClose={() => {
             setEditing(null);
           }}
+          busy={busy}
           onSubmit={() => void save(editing)}
         >
           <div className="k-sheet__body">
@@ -98,7 +99,7 @@ export function Favorites({ initial }: { initial: FavoritesResponse }) {
                     key={show.animeId}
                     className="flex items-center gap-2 border-b border-line py-2"
                   >
-                    <span className="k-mono w-6 text-ink-muted">{i + 1}</span>
+                    <span className="k-data-sm w-6 text-ink-muted">{i + 1}</span>
                     <span className="min-w-0 flex-1 truncate text-ink">{show.title}</span>
                     <button
                       type="button"
@@ -144,15 +145,7 @@ export function Favorites({ initial }: { initial: FavoritesResponse }) {
           </div>
           <div className="k-sheet__actions">
             <span className="flex-1" />
-            <button
-              type="button"
-              className="k-btn k-btn--ghost"
-              onClick={() => {
-                setEditing(null);
-              }}
-            >
-              Cancel
-            </button>
+            <SheetClose>Cancel</SheetClose>
             <button type="submit" className="k-btn k-btn--primary" disabled={busy} aria-busy={busy}>
               {busy ? "Saving…" : "Save"}
             </button>
