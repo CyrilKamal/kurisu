@@ -92,7 +92,7 @@ export function EntryRow({
               aria-busy={busy}
               aria-label={`Watched episode ${String(entry.episodesWatched + 1)} of ${entry.title}`}
             >
-              {busy ? "Saving…" : "+1 ep"}
+              +1 ep
             </button>
           )}
           {onEdit && (

@@ -48,6 +48,9 @@ const ICONS = {
   "chevron-down": <path d="m6 9 6 6 6-6" />,
   today: <path d="M4 6h16v14H4ZM4 10h16M8 3v4M16 3v4M8 14h3v3H8Z" />,
   user: <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20v-1a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v1" />,
+  users: (
+    <path d="M9 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM3 20v-1a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v1M15.5 4.6a3.5 3.5 0 0 1 0 6.8M18 15.2a4 4 0 0 1 3 3.8v1" />
+  ),
   "chevron-left": <path d="m15 6-6 6 6 6" />,
   "chevron-right": <path d="m9 6 6 6-6 6" />,
   external: <path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6" />,

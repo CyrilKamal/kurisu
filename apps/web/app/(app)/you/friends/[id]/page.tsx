@@ -89,13 +89,13 @@ export default async function FriendPage(props: PageProps<"/you/friends/[id]">) 
 
       {data.favorites.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Their favorites</h2>
+          <h2 className="k-title pb-2">Their favorites</h2>
           <FavoriteShows favorites={data.favorites} />
         </section>
       )}
 
       <section className="pt-6">
-        <h2 className="k-caps pb-2">Lately</h2>
+        <h2 className="k-title pb-2">Lately</h2>
         {friend.sharing ? (
           <ActivityFeed items={data.activity} timeZone={data.timeZone} showFriend={false} />
         ) : (
@@ -113,7 +113,7 @@ export default async function FriendPage(props: PageProps<"/you/friends/[id]">) 
 function ShowList({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">{title}</h2>
+      <h2 className="k-title pb-2">{title}</h2>
       <ul className="k-rows">{children}</ul>
     </section>
   );

@@ -44,7 +44,7 @@ export function OfflineList() {
         if (entries.length === 0) return null;
         return (
           <section key={status} className="pt-6">
-            <h2 className="k-caps pb-2">
+            <h2 className="k-title pb-2">
               {STATUS_LABELS[status]} · {entries.length}
             </h2>
             <ul className="k-rows">

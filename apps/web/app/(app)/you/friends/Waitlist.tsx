@@ -60,7 +60,7 @@ export function Waitlist({ initial }: { initial: WaitlistEntry[] }) {
   const waiting = entries.filter((e) => !e.invitedAt).length;
   return (
     <section className="pt-6">
-      <h2 className="k-caps pb-2">
+      <h2 className="k-title pb-2">
         Waitlist <span className="k-num text-ink-faint">{waiting}</span>
       </h2>
       {link && (

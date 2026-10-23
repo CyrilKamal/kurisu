@@ -10,13 +10,14 @@ import { ShowLink } from "@/components/ShowLink";
 import { outLabel, untilLabel } from "@/lib/airing";
 import { apiGet, getMe } from "@/lib/api";
 import { planName, trialDaysLeft } from "@/lib/plans";
+import { splitOut } from "@/lib/today";
 
 import { ActivityFeed } from "../you/friends/ActivityFeed";
 import { EpisodeRows } from "./EpisodeRows";
 
 export const metadata: Metadata = { title: "Today · kurisu" };
 
-/** "Friday, October 10 · 3 episodes out". */
+/** "Friday, October 10 · 3 shows with new episodes". */
 function headerLine(timeZone: string, now: Date, outCount: number): string {
   const date = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -25,13 +26,13 @@ function headerLine(timeZone: string, now: Date, outCount: number): string {
     timeZone,
   }).format(now);
   if (outCount === 0) return `${date} · nothing new`;
-  return `${date} · ${String(outCount)} ${outCount === 1 ? "episode" : "episodes"} out`;
+  return `${date} · ${String(outCount)} ${outCount === 1 ? "show" : "shows"} with new episodes`;
 }
 
 /**
- * The home screen: episodes out that you haven't watched, each a tap from watched; what airs this
- * week; shows you're in the middle of; the latest brief; and what friends watched. Then a way
- * into Chat, at the bottom where a thumb is.
+ * The home screen: new episodes of the shows you keep up with, each a tap from watched; what airs
+ * this week; backlogs you're catching up on; shows you're in the middle of; the latest brief;
+ * and what friends watched. Then a way into Chat, at the bottom where a thumb is.
  */
 export default async function TodayPage() {
   const [me, today] = await Promise.all([getMe(), apiGet("/today", todayResponseSchema)]);
@@ -40,15 +41,21 @@ export default async function TodayPage() {
   if (!me.welcomed) redirect("/welcome");
 
   const now = new Date();
-  const outCount = today.outNow.reduce((n, s) => n + s.latestAired - s.episodesWatched, 0);
+  const { keepingUp, catchingUp } = splitOut(today.outNow);
   const nothing =
     today.outNow.length === 0 && today.comingUp.length === 0 && today.continueWatching.length === 0;
-  const streaming = today.outNow.filter((show) => show.watchOn.length > 0);
+  const outRow = (show: (typeof today.outNow)[number], out: boolean) => ({
+    ...show,
+    lastEpisode: show.latestAired,
+    meta: outLabel(show.episodesWatched, show.latestAired),
+    out,
+    watchOn: show.watchOn.map((w) => w.service).join(", ") || null,
+  });
   const trialDays = trialDaysLeft(me.plan, now);
 
   return (
     <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
-      <ScreenHeader title="Today" sub={headerLine(today.timeZone, now, outCount)} />
+      <ScreenHeader title="Today" sub={headerLine(today.timeZone, now, keepingUp.length)} />
 
       {/* A quiet line through the trial, so its end isn't a surprise. */}
       {trialDays !== null && (
@@ -68,7 +75,7 @@ export default async function TodayPage() {
 
       {nothing && (
         <div className="k-empty mt-6">
-          <p className="k-empty__count">0 episodes out · 0 shows in progress</p>
+          <p className="k-empty__count">0 new episodes · 0 shows in progress</p>
           <p className="k-empty__title">Nothing on today</p>
           <p className="k-empty__text">
             When a show you&apos;re watching has a new episode, it shows up here, one tap from
@@ -80,29 +87,16 @@ export default async function TodayPage() {
         </div>
       )}
 
-      {today.outNow.length > 0 && (
+      {keepingUp.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Out for you</h2>
-          <EpisodeRows
-            items={today.outNow.map((show) => ({
-              ...show,
-              meta: outLabel(show.episodesWatched, show.latestAired),
-              out: true,
-            }))}
-          />
-          {streaming.length > 0 && (
-            <p className="k-field__hint pt-2">
-              {streaming
-                .map((show) => `${show.title} on ${show.watchOn.map((w) => w.service).join(", ")}`)
-                .join(" · ")}
-            </p>
-          )}
+          <h2 className="k-title pb-2">Out for you</h2>
+          <EpisodeRows items={keepingUp.map((show) => outRow(show, true))} />
         </section>
       )}
 
       {today.comingUp.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Coming up</h2>
+          <h2 className="k-title pb-2">Coming up</h2>
           <ul className="k-rows">
             {today.comingUp.map((show) => (
               <li key={show.animeId} className="k-row">
@@ -129,12 +123,21 @@ export default async function TodayPage() {
         </section>
       )}
 
+      {catchingUp.length > 0 && (
+        <section className="pt-6">
+          <h2 className="k-title pb-2">Catching up</h2>
+          {/* Backlogs aren't news: no crimson flag, and they don't count in the badge. */}
+          <EpisodeRows items={catchingUp.map((show) => outRow(show, false))} />
+        </section>
+      )}
+
       {today.continueWatching.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Continue</h2>
+          <h2 className="k-title pb-2">Continue</h2>
           <EpisodeRows
             items={today.continueWatching.map((show) => ({
               ...show,
+              lastEpisode: show.numEpisodes,
               meta: [
                 `ep ${String(show.episodesWatched)}${show.numEpisodes === null ? "" : ` of ${String(show.numEpisodes)}`}`,
                 show.episodeMinutes === null ? null : `${String(show.episodeMinutes)} min`,
@@ -149,7 +152,7 @@ export default async function TodayPage() {
 
       {today.brief && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Latest brief</h2>
+          <h2 className="k-title pb-2">Latest brief</h2>
           <Link
             href={`/chat/${today.brief.conversationId}`}
             className="k-panel block p-4 text-ink no-underline hover:bg-surface-raised"
@@ -168,7 +171,7 @@ export default async function TodayPage() {
 
       {today.friends.length > 0 && (
         <section className="pt-6">
-          <h2 className="k-caps pb-2">Friends lately</h2>
+          <h2 className="k-title pb-2">Friends lately</h2>
           <ActivityFeed items={today.friends} timeZone={today.timeZone} />
           <Link href="/you/friends" className="k-link mt-2 inline-block">
             See your friends
@@ -180,7 +183,7 @@ export default async function TodayPage() {
         {/* Opens Chat with its command line ready; nothing is sent from here. */}
         <Link href="/chat/new" className="k-cmd no-underline">
           <span className="k-cmd__prompt" aria-hidden="true">
-            &gt;
+            ›
           </span>
           <span className="flex-1 self-center text-ink-faint">Tell kurisu what you watched</span>
         </Link>

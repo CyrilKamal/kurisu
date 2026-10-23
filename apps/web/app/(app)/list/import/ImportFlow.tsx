@@ -141,7 +141,7 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
         />
         {notice && <Banner level="error">{notice}</Banner>}
         <div className="flex items-center justify-between gap-4">
-          <span className="k-mono">
+          <span className="k-data-sm">
             {text.length} / {MAX_IMPORT_CHARS}
           </span>
           <button
@@ -254,7 +254,7 @@ export function ImportFlow({ initial }: { initial: ImportView | null }) {
           </details>
         ) : (
           <section key={group} className="pt-6">
-            <h2 className="k-caps">
+            <h2 className="k-title">
               {title} ({rows.length})
             </h2>
             {hint && <p className="k-field__hint">{hint}</p>}

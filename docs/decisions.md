@@ -2793,3 +2793,76 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Why:** twice the pixels made 48px covers sharper, but Cyril found them still too small to read on his screen.
 
 **Consequences:** rows, the log and the brief are taller on desktop, so fewer fit on screen.
+
+## 2026-10-22 — Today counts shows you keep up with (design review)
+**Decision:** Today's count and the nav badge count Watching shows with new episodes that are at most 3 aired episodes behind (`KEEPING_UP_MAX`, `lib/today.ts`). Shows further behind move to a "Catching up" section, with no crimson flag. The badge caps at "99+".
+
+**Alternatives:**
+- Episodes out, as before.
+- Only episodes that aired in the last 7 days. `/today` has no air date per episode, so this needed a server change.
+
+**Why:** the old count added up whole backlogs. One Piece and Boruto at episode 0 made 1,473 of the owner's "1654 episodes out", on a crimson badge on every screen. A count of shows within a few episodes says what's new. The split is in the browser, so `/today` didn't change.
+
+**Consequences:** the threshold is a guess, and easy to change. A show you fall 4 episodes behind on leaves "Out for you".
+
+## 2026-10-22 — Episode taps update at once (design review)
+**Decision:** "+1 ep" on the List and "Watched ep N" on Today change the count when tapped and go back if the write fails. Only the tapped row waits for MAL. Today's button then offers the next episode, until the show is caught up.
+
+**Alternatives:** waiting for MAL's reply and the page refresh, as before.
+
+**Why:** a tap showed nothing for at least half a second (MAL's request gap, then a second round trip), and on Today it dimmed every button. Writes already carry a request id, so a retry can't double-count.
+
+**Consequences:** for that moment the screen is ahead of MAL. A failed write snaps the count back, and the error says why.
+
+## 2026-10-22 — Design system v10 from the design review (design review)
+**Decision:** the review's fixes that belong to the system went into `bundle.css`. They were then published to the kurisu design system artifact as v10, and the app's copy is that version. The changes:
+- motion tokens, sheet and drawer exits, a fading scrim, a rising toast;
+- hover only on devices that hover, a pressed state, and 48px hit areas on every button, chip and tab;
+- 16px fields on touch screens, phone tabs that scroll, a NavBar for five screens;
+- a destructive text button, and `is-set` on inputs and buttons;
+- no crimson on a pick's rank or a chart's mode;
+- `.k-mono` renamed `.k-data-sm`;
+- under reduced motion, overlays still fade.
+
+**Alternatives:**
+- Overrides in the app, leaving `bundle.css` as it was.
+- Only the app-side fixes.
+
+**Why:** most of the review's findings were the system's, not the app's, and the system is the source of truth.
+
+**Consequences:**
+- **Accepted challenge:** the reduced-motion rule changes from "nothing moves" to "nothing travels".
+- **Not adopted yet:** the reviewers' other challenges to the system (serif section titles, a scale on press, rem type, round portraits).
+- **Still open:** the sheet's grip, desktop poster size, and colour fades on every control wait for Cyril.
+
+## 2026-10-22 — Components stay hand-built (design review)
+**Decision:** no UI library. The phone chat drawer moves onto `<dialog>` like Sheet, and pick-one chips become a radio group (`components/RadioChips.tsx`). The Toast gets Sonner's two useful behaviours by hand: a live region that's always there, and Alt+T to focus it.
+
+**Alternatives:**
+- base-ui for dialogs, menus and selects.
+- Sonner for toasts.
+
+**Why:** native `<dialog>` and `<select>` already give focus, inertness, Escape and the phone's own pickers. A library would mean restyling every primitive against `bundle.css`, and it still wouldn't fix a toast under a modal's scrim.
+
+**Consequences:** consider base-ui only for something with no native element (a popover menu, a combobox, a tooltip).
+
+## 2026-10-22 — The design review's open questions (design review)
+**Decision:** Cyril took the recommendations, published as design system v10.1 and copied into the app.
+- **Today's cutoff:** stays at 3 episodes behind.
+- **The sheet's grip:** removed, rather than adding drag-to-dismiss.
+- **Desktop row covers:** stay 64px.
+- **Colour changes:** fade over 80ms on every control, not only buttons.
+- **Whole-app overscroll:** stays, since it's pull-to-refresh in the installed app.
+- **Failed writes:** stay ERR toasts, and the Toast's rule now says so.
+- **Header actions:** the List's add and Re-sync stay in its header, and the thumb-zone rule now allows rare or duplicated actions there.
+- **Rail mark:** none until the final logo.
+- **System challenges:** only one adopted, section headings in the serif `title` (`k-title`) instead of small caps.
+
+**Alternatives:** the reviewers' other options for each (in the design review's report).
+
+**Why:** each was the smaller change, or kept a choice Cyril had already made, except the serif headings. Those were the most visible improvement, since 11px caps on every section made them all equally loud.
+
+**Consequences:**
+- **Section headings** read as names. Caps are left for badges, log levels and labels inside panels.
+- **Sheets** have no drag gesture.
+- **Not adopted:** a press scale, rem type, round portraits, 4px gaps inside text groups, and a lighter `ink-faint`.

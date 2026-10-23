@@ -107,7 +107,7 @@ export default async function StatsPage() {
                 className="flex justify-between gap-4 border-b border-line py-2 text-ink"
               >
                 <span className="min-w-0 truncate">{show.title}</span>
-                <span className="k-mono">{shortDate(show.on)}</span>
+                <span className="k-data-sm">{shortDate(show.on)}</span>
               </li>
             ))}
           </ul>
@@ -146,7 +146,7 @@ export default async function StatsPage() {
 
         {allTime.scored >= MIN_SCORED_FOR_HISTOGRAM && (
           <div className="pt-6">
-            <h3 className="k-caps">Your scores</h3>
+            <h3 className="k-title">Your scores</h3>
             <Histogram
               summary={`How you spread your scores across ${showCount(allTime.scored)}${
                 scoreMode === null ? "" : `; most often ${scoreText(scoreMode + 1, style)}`
@@ -166,7 +166,7 @@ export default async function StatsPage() {
         {allTime.topGenres.length > 0 && (
           <div className="pt-6">
             <div className="flex items-baseline justify-between">
-              <h3 className="k-caps">Most completed genres</h3>
+              <h3 className="k-title">Most completed genres</h3>
               <Link href="/you/taste" className="k-link">
                 Taste
               </Link>
@@ -178,7 +178,7 @@ export default async function StatsPage() {
                   className="flex justify-between gap-4 border-b border-line py-2 text-ink"
                 >
                   <span>{genre.genre}</span>
-                  <span className="k-mono">{showCount(genre.shows)}</span>
+                  <span className="k-data-sm">{showCount(genre.shows)}</span>
                 </li>
               ))}
             </ul>
