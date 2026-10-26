@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AddButton } from "@/components/AddButton";
 import { FavoriteShows } from "@/components/FavoriteShows";
 import { Metric, Metrics } from "@/components/Metrics";
 import { Poster } from "@/components/Poster";
@@ -11,7 +12,7 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { SupporterBadge } from "@/components/SupporterBadge";
 import { showHref } from "@/lib/airing";
 import { apiGet } from "@/lib/api";
-import { addInChat, matchLabel } from "@/lib/friends";
+import { matchLabel } from "@/lib/friends";
 
 import { ActivityFeed } from "../ActivityFeed";
 import { RemoveFriend } from "./RemoveFriend";
@@ -57,7 +58,7 @@ export default async function FriendPage(props: PageProps<"/you/friends/[id]">) 
       {data.bothLoved.length > 0 && (
         <ShowList title="You both loved">
           {data.bothLoved.map((show) => (
-            <ShowRow key={show.animeId} show={show} detail={`you ${String(show.mine)} · them`}>
+            <ShowRow key={show.animeId} show={show} detail={<Versus mine={show.mine} />}>
               <Score score={show.theirs} />
             </ShowRow>
           ))}
@@ -67,7 +68,7 @@ export default async function FriendPage(props: PageProps<"/you/friends/[id]">) 
       {data.disagreements.length > 0 && (
         <ShowList title="Where you disagree">
           {data.disagreements.map((show) => (
-            <ShowRow key={show.animeId} show={show} detail={`you ${String(show.mine)} · them`}>
+            <ShowRow key={show.animeId} show={show} detail={<Versus mine={show.mine} />}>
               <Score score={show.theirs} />
             </ShowRow>
           ))}
@@ -79,9 +80,7 @@ export default async function FriendPage(props: PageProps<"/you/friends/[id]">) 
           {data.theyLoved.map((show) => (
             <ShowRow key={show.animeId} show={show} detail="them">
               <Score score={show.theirs} />
-              <Link href={addInChat(show.title)} className="k-btn k-btn--sm">
-                Add
-              </Link>
+              <AddButton show={show} />
             </ShowRow>
           ))}
         </ShowList>
@@ -119,6 +118,15 @@ function ShowList({ title, children }: { title: string; children: React.ReactNod
   );
 }
 
+/** "you 9 · them", your score in your score style like theirs after it. */
+function Versus({ mine }: { mine: number }) {
+  return (
+    <>
+      you <Score score={mine} /> · them
+    </>
+  );
+}
+
 function ShowRow({
   show,
   detail,
@@ -126,7 +134,7 @@ function ShowRow({
 }: {
   show: { animeId: number; title: string; pictureUrl: string | null };
   /** What comes before their score: "you 9 · them". */
-  detail: string;
+  detail: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (

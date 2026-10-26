@@ -1508,6 +1508,8 @@ export const showResponseSchema = z.object({
     .nullable(),
   airing: airingViewSchema.nullable(),
   watchOn: z.array(watchOnSchema),
+  /** Whether the user has picked streaming services, so an empty `watchOn` means none match. */
+  servicesChosen: z.boolean(),
   /** The user's updates of this show, newest first (never import groups). */
   journal: z.array(journalItemSchema),
   /**

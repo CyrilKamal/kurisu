@@ -1,7 +1,8 @@
 import { listResponseSchema } from "@kurisu/shared";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { apiGet } from "@/lib/api";
+import { apiGet, getMe } from "@/lib/api";
 
 import { ChatView } from "../ChatView";
 
@@ -17,7 +18,8 @@ const DRAFT_MAX = 300;
 export default async function NewChatPage(props: PageProps<"/chat/new">) {
   const { draft } = await props.searchParams;
   const initialDraft = typeof draft === "string" ? draft.slice(0, DRAFT_MAX) : "";
-  const list = await apiGet("/list", listResponseSchema);
+  const [list, me] = await Promise.all([apiGet("/list", listResponseSchema), getMe()]);
+  if (!me) redirect("/");
   // The shows they're watching, by how they'd say it: "watched ep 8 of <their show>".
   const watching = (list?.entries ?? [])
     .filter((entry) => entry.status === "watching")
@@ -30,6 +32,7 @@ export default async function NewChatPage(props: PageProps<"/chat/new">) {
       : undefined;
   return (
     <ChatView
+      details={me.user.isOwner}
       conversation={null}
       initialMessages={[]}
       initialDraft={initialDraft}

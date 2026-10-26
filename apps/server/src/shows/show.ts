@@ -162,6 +162,7 @@ export async function loadShow(
       airing?.streamingLinks ?? catalog?.streamingLinks ?? [],
       settings?.services ?? [],
     ),
+    servicesChosen: (settings?.services ?? []).length > 0,
     journal: journal.items,
     sequels: followers.map((s) => ({
       animeId: s.malId,

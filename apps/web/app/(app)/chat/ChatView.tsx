@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { AddSheet } from "@/components/AddSheet";
 import { FinishInline } from "@/components/FinishSheet";
 import { Icon } from "@/components/Icon";
 import { UpgradeSheet } from "@/components/UpgradeSheet";
@@ -78,7 +79,10 @@ export function ChatView({
   initialMessages,
   initialDraft = "",
   examples = EXAMPLES,
+  details,
 }: {
+  /** The run's model, tokens, prompt and tool trace, and proposal ids: the owner's, not friends'. */
+  details: boolean;
   conversation: ConversationView | null;
   initialMessages: ChatMessageView[];
   /** Suggestions for an empty chat, made from the user's own shows when there are some. */
@@ -98,6 +102,8 @@ export function ChatView({
   const [notice, setNotice] = useState<string | null>(null);
   /** The plan allowance that turned the last message away, for the upgrade sheet. */
   const [limit, setLimit] = useState<PlanLimit | null>(null);
+  /** The show an Add on a card is adding: the tap is the confirmation, as on Browse. */
+  const [adding, setAdding] = useState<{ animeId: number; title: string } | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   /** Numbers the messages shown while they're sent. */
   const sentCount = useRef(0);
@@ -215,19 +221,14 @@ export function ChatView({
                             }
                           : undefined
                       }
-                      onAdd={
-                        sending
-                          ? undefined
-                          : (show) => {
-                              void send(`Add ${show.title} to my Plan to Watch`);
-                            }
-                      }
+                      onAdd={sending ? undefined : setAdding}
                     />
                   ) : (
                     <>
                       <p className="k-log__text">{message.content}</p>
                       {message.changes.length > 0 && (
                         <WriteBlock
+                          ids={details}
                           changes={message.changes}
                           onUndo={(id) => act(`/changes/${id}/undo`, changeResponseSchema)}
                         />
@@ -245,6 +246,7 @@ export function ChatView({
                           ))}
                       {message.pending.map((proposal) => (
                         <HeldWrite
+                          ids={details}
                           key={proposal.id}
                           proposal={proposal}
                           onConfirm={(id) => act(`/proposals/${id}/confirm`, changeResponseSchema)}
@@ -252,17 +254,7 @@ export function ChatView({
                         />
                       ))}
                       {message.picks.length > 0 && (
-                        <Picks
-                          picks={message.picks}
-                          // A new show is added through Chat, which holds it for the user's OK.
-                          onAdd={
-                            sending
-                              ? undefined
-                              : (pick) => {
-                                  void send(`Add ${pick.title} to my Plan to Watch`);
-                                }
-                          }
-                        />
+                        <Picks picks={message.picks} onAdd={sending ? undefined : setAdding} />
                       )}
                       {message.shows.length > 0 &&
                         (message.asksToChoose ? (
@@ -278,21 +270,16 @@ export function ChatView({
                             }
                           />
                         ) : (
-                          <ShowList
-                            shows={message.shows}
-                            onAdd={
-                              sending
-                                ? undefined
-                                : (show) => {
-                                    void send(`Add ${show.title} to my Plan to Watch`);
-                                  }
-                            }
-                          />
+                          <ShowList shows={message.shows} onAdd={sending ? undefined : setAdding} />
                         ))}
                     </>
                   )}
                   {message.run && (
-                    <RunMeta run={message.run} report={<ReportReply messageId={message.id} />} />
+                    <RunMeta
+                      run={message.run}
+                      details={details}
+                      report={<ReportReply messageId={message.id} />}
+                    />
                   )}
                 </LogEntry>
               ),
@@ -303,6 +290,17 @@ export function ChatView({
               </LogEntry>
             )}
           </ol>
+        )}
+        {adding && (
+          <AddSheet
+            show={adding}
+            onClose={() => {
+              setAdding(null);
+            }}
+            onAdded={() => {
+              void reload();
+            }}
+          />
         )}
         <div ref={bottom} />
       </div>

@@ -288,7 +288,17 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
           </ul>
         ) : (
           <p className="k-field__hint">
-            Not on any of your services, as far as AniList knows. Your services are in Settings.
+            {page.servicesChosen ? (
+              "Not on any of your services, as far as AniList knows. Your services are in Settings."
+            ) : (
+              <>
+                Pick your streaming services in{" "}
+                <Link href="/you/settings" className="k-link">
+                  Settings
+                </Link>{" "}
+                to see where this streams.
+              </>
+            )}
           </p>
         )}
         {extras && extras.episodes.length > 0 && (
