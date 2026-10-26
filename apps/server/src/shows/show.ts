@@ -1,5 +1,5 @@
 import type { ShowResponse } from "@kurisu/shared";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, not } from "drizzle-orm";
 
 import { airingView } from "../anilist/cache.js";
 import { rememberShows } from "../anilist/catalog.js";
@@ -15,6 +15,7 @@ import {
   listEntries,
 } from "../db/schema.js";
 import { listFriends } from "../friends/friendships.js";
+import { hiddenAmong, hiddenFromFriends } from "../friends/hidden.js";
 import { loadJournal } from "../journal/load.js";
 import { altTitles } from "../list/altTitles.js";
 import { extrasView } from "./extras.js";
@@ -98,7 +99,8 @@ export async function loadShow(
     .from(briefSettings)
     .where(eq(briefSettings.userId, userId));
 
-  const sharing = (await listFriends(db, userId)).filter((friend) => friend.shareActivity);
+  const friendsOf = await listFriends(db, userId);
+  const sharing = friendsOf.filter((friend) => friend.shareActivity);
   const theirs =
     sharing.length === 0
       ? []
@@ -117,6 +119,7 @@ export async function loadShow(
                 listEntries.userId,
                 sharing.map((friend) => friend.id),
               ),
+              not(hiddenFromFriends(listEntries.userId, malId)),
             ),
           );
   const names = new Map(sharing.map((friend) => [friend.id, friend.malUsername]));
@@ -163,6 +166,8 @@ export async function loadShow(
       settings?.services ?? [],
     ),
     servicesChosen: (settings?.services ?? []).length > 0,
+    hiddenFromFriends:
+      friendsOf.length === 0 ? null : (await hiddenAmong(db, userId, [malId])).has(malId),
     journal: journal.items,
     sequels: followers.map((s) => ({
       animeId: s.malId,

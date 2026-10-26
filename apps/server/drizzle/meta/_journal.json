@@ -295,6 +295,13 @@
       "when": 1792530165389,
       "tag": "0041_list_entry_extras",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793044776425,
+      "tag": "0042_friend_hidden",
+      "breakpoints": true
     }
   ]
 }

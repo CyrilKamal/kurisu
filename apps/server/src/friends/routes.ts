@@ -1,4 +1,5 @@
 import {
+  friendHiddenRequestSchema,
   friendLinkAcceptSchema,
   sharingRequestSchema,
   type ActivityItemView,
@@ -14,7 +15,7 @@ import type { Limits } from "../billing/limits.js";
 import type { Config } from "../config.js";
 import type { TokenCipher } from "../crypto/tokenCipher.js";
 import type { Db } from "../db/client.js";
-import { users } from "../db/schema.js";
+import { anime, users } from "../db/schema.js";
 import { listFavorites } from "../favorites/favorites.js";
 import { userTimeZone } from "../stats/compute.js";
 import { friendActivity, type ActivityItem } from "./activity.js";
@@ -27,6 +28,7 @@ import {
   removeFriendship,
   type Friend,
 } from "./friendships.js";
+import { hiddenAmong, setHiddenFromFriends } from "./hidden.js";
 import { tasteMatch } from "./match.js";
 
 export interface FriendRouteDeps {
@@ -41,6 +43,7 @@ const FEED_LENGTH = 50;
 const FRIEND_FEED_LENGTH = 30;
 
 const idParams = z.object({ id: z.uuid() });
+const showParams = z.object({ animeId: z.coerce.number().int().positive() });
 const codeParams = z.object({ code: z.string().min(1).max(128) });
 
 function userOf(request: FastifyRequest): string {
@@ -96,6 +99,12 @@ export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps
     if (!friend) return reply.code(404).send({ error: "not_found" });
     const match = await tasteMatch(db, userId, friend.id);
     const sharing = friend.shareActivity;
+    const favorites = sharing ? await listFavorites(db, friend.id) : [];
+    const hidden = await hiddenAmong(
+      db,
+      friend.id,
+      favorites.map((show) => show.animeId),
+    );
     return {
       timeZone: await userTimeZone(db, userId),
       friend: await view(userId, friend, await limits.supporters([friend.id])),
@@ -104,7 +113,7 @@ export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps
       disagreements: sharing ? match.disagreements : [],
       theyLoved: sharing ? match.theyLoved : [],
       activity: (await friendActivity(db, [friend], FRIEND_FEED_LENGTH)).map(activityJson),
-      favorites: sharing ? await listFavorites(db, friend.id) : [],
+      favorites: favorites.filter((show) => !hidden.has(show.animeId)),
     };
   });
 
@@ -153,6 +162,24 @@ export function registerFriendRoutes(app: FastifyInstance, deps: FriendRouteDeps
       .set({ shareActivity: body.data.shareActivity, updatedAt: new Date() })
       .where(eq(users.id, userOf(request)));
     return { shareActivity: body.data.shareActivity };
+  });
+
+  /** Keeps one show from friends, or shows it to them. */
+  app.put("/friends/hidden/:animeId", write, async (request, reply) => {
+    const params = showParams.safeParse(request.params);
+    const body = friendHiddenRequestSchema.safeParse(request.body);
+    if (!params.success || !body.success) {
+      return reply.code(400).send({ error: "invalid_request" });
+    }
+    const { animeId } = params.data;
+    const [show] = await db
+      .select({ malId: anime.malId })
+      .from(anime)
+      .where(eq(anime.malId, animeId))
+      .limit(1);
+    if (!show) return reply.code(404).send({ error: "not_found" });
+    await setHiddenFromFriends(db, userOf(request), animeId, body.data.hidden);
+    return { animeId, hidden: body.data.hidden };
   });
 }
 

@@ -37,7 +37,9 @@ export function SharingSwitch({ initial }: { initial: boolean }) {
         </label>
         <p className="k-field__hint">
           Episodes, finishes, scores and drops (never why you dropped something). Off, friends see
-          only your taste match. Diary notes stay private unless you share one in your Diary.
+          only your taste match. Diary notes stay private unless you share one in your Diary. Shows
+          MyAnimeList lists as Hentai or Erotica stay hidden from friends, and any show can be
+          hidden or shown from its page.
         </p>
         <p role="status" aria-live="polite" className="k-field__hint empty:hidden">
           {message}

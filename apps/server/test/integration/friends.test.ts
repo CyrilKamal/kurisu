@@ -253,6 +253,68 @@ describe("friends", () => {
     expect(favorites(await send(ALEX, "DELETE", "/favorites/1"))).toHaveLength(9);
   });
 
+  it("keeps a show its owner hides from friends wherever friends would see it", async () => {
+    const alexId = await idOf(ALEX);
+    const rated = await send(ALEX, "POST", `/list/${String(ALEX_ONLY)}/edit`, {
+      score: 9,
+      requestId: randomUUID(),
+    });
+    expect(rated.statusCode).toBe(200);
+    expect((await send(ALEX, "PUT", `/favorites/${String(ALEX_ONLY)}`)).statusCode).toBe(200);
+
+    const ownerSees = async () => {
+      const detail = contract.friendDetailResponseSchema.parse(
+        (await send(TEST_MAL_USER, "GET", `/friends/${alexId}`)).json(),
+      );
+      const page = contract.showResponseSchema.parse(
+        (await send(TEST_MAL_USER, "GET", "/shows/6")).json(),
+      );
+      return {
+        feed: (await friendsOf(TEST_MAL_USER)).activity.map((item) => item.animeId),
+        bothLoved: detail.bothLoved.map((show) => show.animeId),
+        theyLoved: detail.theyLoved.map((show) => show.animeId),
+        favorites: detail.favorites.map((show) => show.animeId),
+        onShowPage: page.friends.map((friend) => friend.malUsername).sort(),
+      };
+    };
+    expect(await ownerSees()).toEqual({
+      feed: [ALEX_ONLY],
+      bothLoved: [6, 1, 2],
+      theyLoved: [ALEX_ONLY],
+      favorites: [ALEX_ONLY],
+      onShowPage: ["alex", "sam"],
+    });
+
+    const hide = async (animeId: number, hidden: boolean) => {
+      const res = await send(ALEX, "PUT", `/friends/hidden/${String(animeId)}`, { hidden });
+      expect(contract.friendHiddenResponseSchema.parse(res.json())).toEqual({ animeId, hidden });
+    };
+    await hide(ALEX_ONLY, true);
+    await hide(6, true);
+    expect(await ownerSees()).toEqual({
+      feed: [],
+      bothLoved: [1, 2],
+      theyLoved: [],
+      favorites: [],
+      onShowPage: ["sam"],
+    });
+    const alexPage = contract.showResponseSchema.parse(
+      (await send(ALEX, "GET", "/shows/6")).json(),
+    );
+    expect(alexPage.hiddenFromFriends).toBe(true);
+    expect((await send(ALEX, "PUT", "/friends/hidden/999999", { hidden: true })).statusCode).toBe(
+      404,
+    );
+
+    // MAL's adult genres are hidden by default (sam's), until their owner shows them (alex's).
+    await h.db
+      .update(anime)
+      .set({ genres: ["Hentai"] })
+      .where(eq(anime.malId, 6));
+    await hide(6, false);
+    expect((await ownerSees()).onShowPage).toEqual(["alex"]);
+  });
+
   it("keeps everything about a user from anyone who isn't their friend", async () => {
     const alexId = await idOf(ALEX);
     expect((await send(SAM, "GET", `/friends/${alexId}`)).statusCode).toBe(404);

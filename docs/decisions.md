@@ -2945,3 +2945,23 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Why:** they're a showcase for the developer and noise for friends: raw tool names and JSON arguments under every reply. This was flagged before the friends beta (Milestone 6's entry on the trace).
 
 **Consequences:** Chat stays a command log in shape. Friends' failed runs still say why, and the review queue still has every run.
+
+## 2026-10-26 — A show can be hidden from friends; adult titles are by default (friends-ready batch)
+**Decision:**
+- **The choice:** each user can hide any show from friends, or show it, from its page (`friend_hidden`, one row per user and show).
+- **The default:** with no row, a show MAL lists as Hentai or Erotica is hidden. Ecchi isn't.
+- **One SQL rule** (`hiddenFromFriends` in `src/friends/hidden.ts`) keeps a hidden show out of everything a friend sees: the feed (and Today's), the show page's friends, the taste match's shared scores and its three lists, and favorites.
+
+**Alternatives:**
+- **A column on `list_entries`,** which a sync, a removal or a re-add would lose.
+- **No default,** or Ecchi hidden too.
+- **Hiding only from the feed.**
+
+**Why:**
+- **Trust comes first:** the research on friend-group apps put a per-entry hide before any new social feature, since anime lists hold guilty pleasures.
+- **A friend can't leak it:** a show hidden from the feed but still in "You both loved" would give it away, so every path uses the same rule.
+
+**Consequences:**
+- **The genre half of the match** (`taste_genres`, which recommendations also use) still counts hidden shows, so they shape the percent slightly.
+- **A friend's feed** reads 40 updates and then drops hidden ones, so it can show fewer.
+- **MAL itself:** a public MAL list stays public on MAL's site.

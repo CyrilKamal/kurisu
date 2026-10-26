@@ -208,6 +208,8 @@ describe("GET /shows/:animeId", () => {
     expect(page.entry).toMatchObject({ status: "watching", episodesWatched: 7 });
     // No services picked yet, so the page asks for them rather than saying none match.
     expect(page.servicesChosen).toBe(false);
+    // No friends, so nothing to hide a show from.
+    expect(page.hiddenFromFriends).toBeNull();
 
     const again = contract.showResponseSchema.parse(
       (await request("GET", `/shows/${String(WATCHING)}`)).json(),

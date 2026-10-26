@@ -1,8 +1,9 @@
-import { and, desc, eq, gt, gte, inArray, ne, notExists, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, ne, not, notExists, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import type { Db } from "../db/client.js";
 import { anime, listEntries, tasteGenres } from "../db/schema.js";
+import { hiddenFromFriends } from "./hidden.js";
 
 /** Shows both scored, before the scores count as much as genre taste. */
 const SCORE_WEIGHT_HALF = 10;
@@ -54,7 +55,16 @@ export async function tasteMatch(db: Db, me: string, them: string): Promise<Tast
     .from(mine)
     .innerJoin(theirs, and(eq(theirs.animeId, mine.animeId), eq(theirs.userId, them)))
     .innerJoin(anime, eq(anime.malId, mine.animeId))
-    .where(and(eq(mine.userId, me), gt(mine.score, 0), gt(theirs.score, 0)));
+    .where(
+      and(
+        eq(mine.userId, me),
+        gt(mine.score, 0),
+        gt(theirs.score, 0),
+        // Either side's hidden shows: the match is the same, whoever looks.
+        not(hiddenFromFriends(me, mine.animeId)),
+        not(hiddenFromFriends(them, mine.animeId)),
+      ),
+    );
 
   const [myMean, theirMean] = await Promise.all([meanScore(db, me), meanScore(db, them)]);
   const scoreCorrelation = cosine(
@@ -125,6 +135,7 @@ async function lovedNotOnList(db: Db, me: string, them: string) {
         eq(listEntries.userId, them),
         gte(listEntries.score, LOVED),
         ne(listEntries.status, "dropped"),
+        not(hiddenFromFriends(them, listEntries.animeId)),
         notExists(
           db
             .select({ one: sql`1` })
