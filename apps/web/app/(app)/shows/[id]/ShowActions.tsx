@@ -12,21 +12,26 @@ import { useWriteToast } from "@/lib/useWriteToast";
 import { EditSheet } from "../../list/EditSheet";
 import { AlertBell } from "./AlertBell";
 import { FavoriteButton } from "./FavoriteButton";
+import { FriendsToggle } from "./FriendsToggle";
 
 /**
  * A show page's actions: "+1 ep" and Edit for a show on your list, or Add for one that isn't.
  * Each goes through the same write path as the List screen, with a Toast and Undo. A Watching
- * show also has its episode alerts' bell, when they're on, and any show the favorites' heart.
+ * show also has its episode alerts' bell, when they're on, a show on the list whether friends see
+ * it, and any show the favorites' heart.
  */
 export function ShowActions({
   show,
   entry,
   alert = null,
+  hidden = null,
   favorite = null,
 }: {
   show: { animeId: number; title: string; numEpisodes: number | null };
   entry: Omit<EditableEntry, "animeId" | "title" | "numEpisodes"> | null;
   alert?: { muted: boolean } | null;
+  /** Whether it's hidden from friends; null (no friends) leaves the toggle out. */
+  hidden?: boolean | null;
   /** Whether it's one of the user's favorites; null leaves the heart out. */
   favorite?: boolean | null;
 }) {
@@ -103,6 +108,9 @@ export function ShowActions({
         Edit
       </button>
       {alert && <AlertBell animeId={show.animeId} title={show.title} muted={alert.muted} />}
+      {hidden !== null && (
+        <FriendsToggle animeId={show.animeId} title={show.title} hidden={hidden} />
+      )}
       {heart}
       {sheet === "edit" && (
         <EditSheet

@@ -505,6 +505,26 @@ export const episodeAlertMutes = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.malId] })],
 );
 
+/**
+ * Shows the user decided about hiding from friends. With no row, a show is hidden when MAL lists
+ * it as Hentai or Erotica (`friends/hidden.ts`). Kept apart from list_entries, so a choice
+ * outlives syncs, removals and re-adds.
+ */
+export const friendHidden = pgTable(
+  "friend_hidden",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    malId: integer("mal_id")
+      .notNull()
+      .references(() => anime.malId, { onDelete: "cascade" }),
+    hidden: boolean("hidden").notNull(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.malId] })],
+);
+
 export const briefKind = pgEnum("brief_kind", ["daily", "test"]);
 export const briefStatus = pgEnum("brief_status", [
   // Being built; nothing shown to the user yet.

@@ -230,6 +230,7 @@ export const dataExportSchema = z.object({
   briefs: exportRows,
   episodeAlerts: exportRows,
   episodeAlertMutes: exportRows,
+  friendHidden: exportRows,
   recommendations: exportRows,
   imports: exportRows,
   friends: exportRows,
@@ -509,6 +510,13 @@ export const friendLinkCheckSchema = z.object({
 /** POST /friends: the code from someone's friend link. */
 export const friendLinkAcceptSchema = z.object({ code: z.string().min(1).max(128) }).strict();
 export const friendAddedSchema = z.object({ friendId: z.uuid() });
+
+/** PUT /friends/hidden/:animeId: keep a show from friends, or show it to them. */
+export const friendHiddenRequestSchema = z.object({ hidden: z.boolean() }).strict();
+export const friendHiddenResponseSchema = z.object({
+  animeId: z.number().int().positive(),
+  hidden: z.boolean(),
+});
 
 /** PUT /friends/sharing. */
 export const sharingRequestSchema = z.object({ shareActivity: z.boolean() }).strict();
@@ -1510,6 +1518,11 @@ export const showResponseSchema = z.object({
   watchOn: z.array(watchOnSchema),
   /** Whether the user has picked streaming services, so an empty `watchOn` means none match. */
   servicesChosen: z.boolean(),
+  /**
+   * Whether friends don't see this show (the user's choice, or MAL's Hentai and Erotica genres);
+   * null for a user with no friends.
+   */
+  hiddenFromFriends: z.boolean().nullable(),
   /** The user's updates of this show, newest first (never import groups). */
   journal: z.array(journalItemSchema),
   /**

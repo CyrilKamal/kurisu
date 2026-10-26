@@ -40,6 +40,8 @@ The app has five screens, a bottom bar on phones and a rail on desktop:
 - **Chat**, for talking to the agent.
 - **You**: the user's favorite shows, the Journal (every update, by the agent, the user, an import or on MAL's site, with Undo and the user's notes, so every write is visible and reversible), stats, taste, friends and settings, including how scores look (10 points, 100 points or 5 stars, always saved as MAL's 1–10).
 
+A new account starts with a short welcome: what kurisu found (the list, and the friend who invited them), the brief and its notifications, and then a first update in Chat. Friends see what each other watch, except shows someone hides from them; MAL's Hentai and Erotica titles start hidden.
+
 The look follows the kurisu design system (https://claude.ai/artifact/UoY3mvw8Z4Yf8uutvEDYLw; copied into `apps/web/design/`): dark only, crimson for actions, teal for writes, and Chat as a command log where every reply shows its run.
 
 ## Architecture

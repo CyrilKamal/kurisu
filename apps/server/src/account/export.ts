@@ -15,6 +15,7 @@ import {
   diaryNotes,
   dropReasons,
   episodeAlertMutes,
+  friendHidden,
   episodeAlerts,
   friendships,
   imports,
@@ -215,6 +216,16 @@ export async function exportUserData(
       .from(episodeAlertMutes)
       .innerJoin(anime, eq(anime.malId, episodeAlertMutes.malId))
       .where(eq(episodeAlertMutes.userId, userId)),
+    friendHidden: await db
+      .select({
+        animeId: friendHidden.malId,
+        title: anime.title,
+        hidden: friendHidden.hidden,
+        updatedAt: friendHidden.updatedAt,
+      })
+      .from(friendHidden)
+      .innerJoin(anime, eq(anime.malId, friendHidden.malId))
+      .where(eq(friendHidden.userId, userId)),
     recommendations: await db
       .select({
         picks: recommendations.picks,

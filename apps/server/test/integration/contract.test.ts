@@ -265,6 +265,11 @@ describe("responses match the contract", () => {
     expect(() => contract.friendLinkResponseSchema.parse(reset.json())).not.toThrow();
     const sharing = await send("PUT", "/friends/sharing", { shareActivity: false });
     expect(contract.sharingResponseSchema.parse(sharing.json())).toEqual({ shareActivity: false });
+    const hidden = await send("PUT", "/friends/hidden/900001", { hidden: true });
+    expect(contract.friendHiddenResponseSchema.parse(hidden.json())).toEqual({
+      animeId: 900001,
+      hidden: true,
+    });
     expect((await send("POST", "/friends", { code: "nobody" })).statusCode).toBe(404);
     expect((await get(`/friends/${crypto.randomUUID()}`)).statusCode).toBe(404);
   });

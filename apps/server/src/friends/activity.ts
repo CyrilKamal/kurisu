@@ -1,5 +1,6 @@
 import type { Db } from "../db/client.js";
 import { loadDiary, type DiaryEntryRow } from "../diary/load.js";
+import { hiddenAmong } from "./hidden.js";
 
 /** Updates read per friend; the feed keeps the newest of all of them. */
 const PER_FRIEND = 40;
@@ -37,9 +38,15 @@ export async function friendActivity(
   const perFriend = await Promise.all(
     sharing.map(async (friend) => {
       const { entries } = await loadDiary(db, friend.id, PER_FRIEND);
+      // A show they keep from friends never shows up, whatever the update.
+      const hidden = await hiddenAmong(
+        db,
+        friend.id,
+        entries.map((entry) => entry.animeId),
+      );
       return mergeEpisodes(
         entries.flatMap((entry) => {
-          const item = activityOf(entry);
+          const item = hidden.has(entry.animeId) ? null : activityOf(entry);
           return item ? [{ ...item, friendId: friend.id, friend: friend.malUsername }] : [];
         }),
       );

@@ -228,6 +228,7 @@ export default async function ShowPage(props: PageProps<"/shows/[id]">) {
               }
             }
             alert={alert}
+            hidden={page.hiddenFromFriends}
             favorite={
               favorites ? favorites.favorites.some((f) => f.animeId === show.animeId) : null
             }
