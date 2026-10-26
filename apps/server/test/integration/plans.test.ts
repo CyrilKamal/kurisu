@@ -27,6 +27,9 @@ const AGENT = parseModelRef("ollama:test-agent");
 const RECOMMEND = parseModelRef("ollama:test-recommend");
 // TEST_MAL_USER owns this kurisu (always Pro) and invites Alex, whose plan the tests change.
 const ALEX = { id: 5151, name: "alex" };
+// Signs up without an invite (sign-up is open here).
+const SAM = { id: 6161, name: "sam" };
+const INVITE_TRIAL_UNTIL = "2099-01-01";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 let h: Harness;
@@ -35,7 +38,7 @@ const cookies = new Map<string, string>();
 
 beforeAll(async () => {
   h = await startHarness({
-    env: { OWNER_MAL_USERNAME: TEST_MAL_USER.name },
+    env: { OWNER_MAL_USERNAME: TEST_MAL_USER.name, SIGNUP: "open", INVITE_TRIAL_UNTIL },
     models,
     roles: { agent: AGENT, escalation: null, recommend: RECOMMEND },
   });
@@ -119,7 +122,8 @@ async function planOf(who: { name: string }) {
 
 describe("plans", () => {
   it("starts a new account on a 14-day Premium trial, and keeps the owner on Pro", async () => {
-    const me = contract.meResponseSchema.parse((await send(ALEX, "GET", "/me")).json());
+    await join(SAM);
+    const me = contract.meResponseSchema.parse((await send(SAM, "GET", "/me")).json());
     expect(me.plan).toMatchObject({ id: "premium", source: "trial" });
     const days = (Date.parse(me.plan.until ?? "") - Date.now()) / DAY_MS;
     expect(days).toBeGreaterThan(13.9);
@@ -139,6 +143,15 @@ describe("plans", () => {
     expect(owner.plan).toMatchObject({ id: "pro", source: "owner" });
     expect(owner.plan.features).toMatchObject({ calendar: true, fullYear: true, lab: true });
     expect(owner.usage.chat.allowance).toBeNull();
+  });
+
+  it("keeps an invited friend's trial until INVITE_TRIAL_UNTIL", async () => {
+    const me = contract.meResponseSchema.parse((await send(ALEX, "GET", "/me")).json());
+    expect(me.plan).toMatchObject({
+      id: "premium",
+      source: "trial",
+      until: `${INVITE_TRIAL_UNTIL}T00:00:00.000Z`,
+    });
   });
 
   it("shows friends a supporter badge only while a paid plan counts", async () => {

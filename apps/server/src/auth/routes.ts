@@ -191,7 +191,15 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
         if (isNew && pending.inviteId !== null) {
           const inviter = await useInvite(tx, pending.inviteId, user.id);
           if (inviter === null && closed && !isOwner) throw new InviteUnavailableError();
-          if (inviter !== null) await addFriendship(tx, inviter, user.id, "invite");
+          if (inviter !== null) {
+            await addFriendship(tx, inviter, user.id, "invite");
+            // Invited friends keep Premium until payments launch, as a longer trial: no
+            // supporter badge, and the friends' model budget still applies.
+            const until = config.inviteTrialUntil;
+            if (!isOwner && until && until.getTime() > now.getTime() + deps.trialDays * DAY_MS) {
+              await tx.update(users).set({ trialEndsAt: until }).where(eq(users.id, user.id));
+            }
+          }
         }
         await tokenStore.save(user.id, tokens, tx);
         return user.id;

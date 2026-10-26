@@ -2866,3 +2866,34 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 - **Section headings** read as names. Caps are left for badges, log levels and labels inside panels.
 - **Sheets** have no drag gesture.
 - **Not adopted:** a press scale, rem type, round portraits, 4px gaps inside text groups, and a lighter `ink-faint`.
+
+## 2026-10-26 — Small, private friend features are in scope (friends-ready batch)
+**Decision:** the design doc's non-goal "social features beyond friends' taste match and activity" becomes "public social features" (profiles, follower counts, comments from strangers). Small, private features among friends are in scope: reactions, friends in the brief, notes that unlock as you catch up, season votes. A per-show "hide from friends" comes first.
+
+**Alternatives:** keeping the non-goal until friends have used the app.
+
+**Why:** ten research agents (UX, calls to action, MAL and AniList gripes, indie trackers, small founders, friend-group apps, fun mechanics, AI, and an audit of kurisu) agreed that what keeps a small group opening an app is light, private social around the weekly episode. Cyril chose to lift it.
+
+**Consequences:** batch 2 is social. Public profiles, follower counts and chat between users stay out; friends already talk on Discord.
+
+## 2026-10-26 — Invited friends keep Premium as a longer trial (friends-ready batch)
+**Decision:** an account made with an invite has its trial run until `INVITE_TRIAL_UNTIL` (a date in the server's environment) when that's later than the usual 14 days. Today's trial banner shows only in a trial's last 14 days.
+
+**Alternatives:**
+- A `manual` subscription per friend, as `pnpm plan:grant` makes.
+- Leaving friends on the 14-day trial and Free's limits.
+
+**Why:** payments aren't live, so on day 15 a friend would drop to 30 chat updates a month with nothing to buy. A subscription would show every friend a "Premium" supporter badge and exempt them from the friends' monthly model budget, which counts only non-subscribers. A trial has neither problem, and it's one update in the sign-up transaction.
+
+**Consequences:**
+- Only invites used after the variable is set get the longer trial; older accounts need `plan:grant` or a database update.
+- When payments launch, the date decides when friends drop to Free, and the banner warns them two weeks ahead.
+
+## 2026-10-26 — Today says when the mirror is a day old (friends-ready batch)
+**Decision:** Today shows "Synced 2 days ago" with Re-sync when the last successful sync is over a day old. The sync rule is unchanged: kurisu syncs on login and after its writes.
+
+**Alternatives:** a daily sync before each user's brief, which Cyril declined (MAL's rate limits are undocumented).
+
+**Why:** friends who also update on MAL's app would otherwise see a stale Today and brief without knowing why.
+
+**Consequences:** no new MAL calls. The brief still reads the mirror as it is.
