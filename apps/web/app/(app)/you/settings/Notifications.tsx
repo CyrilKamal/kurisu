@@ -4,25 +4,17 @@ import { pushSubscriptionResponseSchema, pushTestResponseSchema } from "@kurisu/
 import { useEffect, useState } from "react";
 
 import { postApi, sendApi } from "@/lib/clientApi";
-
-type State =
-  | "checking"
-  | "unsupported"
-  /** iPhone or iPad Safari, not added to the Home Screen: push only works once it is. */
-  | "needs_install"
-  | "blocked"
-  | "off"
-  | "on";
+import { pushState, turnOnPush, type PushState } from "@/lib/pushDevice";
 
 /** This device's push notifications: turn them on or off, and send a test. */
 export function Notifications({ publicKey }: { publicKey: string | null }) {
-  const [state, setState] = useState<State>("checking");
+  const [state, setState] = useState<PushState>("checking");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
-      setState(await currentState());
+      setState(await pushState());
     })();
   }, []);
 
@@ -30,38 +22,10 @@ export function Notifications({ publicKey }: { publicKey: string | null }) {
     if (!publicKey) return;
     setBusy(true);
     setMessage(null);
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        setState(permission === "denied" ? "blocked" : "off");
-        return;
-      }
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: base64UrlToBytes(publicKey),
-      });
-      const result = await sendApi(
-        "POST",
-        "/push/subscriptions",
-        pushSubscriptionResponseSchema,
-        subscription.toJSON(),
-      );
-      if (!result.ok) {
-        await subscription.unsubscribe();
-        setMessage(
-          result.error === "unsupported_push_service"
-            ? "This browser's push service isn't supported yet."
-            : "Couldn't turn on notifications. Try again.",
-        );
-        return;
-      }
-      setState("on");
-    } catch {
-      setMessage("Couldn't turn on notifications in this browser.");
-    } finally {
-      setBusy(false);
-    }
+    const result = await turnOnPush(publicKey);
+    setState(result.state);
+    setMessage(result.message);
+    setBusy(false);
   }
 
   async function turnOff() {
@@ -101,9 +65,7 @@ export function Notifications({ publicKey }: { publicKey: string | null }) {
       <h2 className="k-title pb-2">Notifications on this device</h2>
       <div className="k-panel p-4">
         {publicKey === null ? (
-          <p className="text-ink-muted">
-            Push isn&apos;t set up on the server yet (VAPID keys are missing).
-          </p>
+          <p className="text-ink-muted">Notifications aren&apos;t available on this server yet.</p>
         ) : (
           <StateView
             state={state}
@@ -122,7 +84,7 @@ export function Notifications({ publicKey }: { publicKey: string | null }) {
 }
 
 function StateView(props: {
-  state: State;
+  state: PushState;
   busy: boolean;
   onTurnOn: () => Promise<void>;
   onTurnOff: () => Promise<void>;
@@ -187,29 +149,4 @@ export function Button(props: {
       {props.children}
     </button>
   );
-}
-
-async function currentState(): Promise<State> {
-  const supported =
-    "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
-  if (!supported) {
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const standalone = window.matchMedia("(display-mode: standalone)").matches;
-    return iOS && !standalone ? "needs_install" : "unsupported";
-  }
-  if (Notification.permission === "denied") return "blocked";
-  const registration = await navigator.serviceWorker.ready;
-  const subscription = await registration.pushManager.getSubscription();
-  return subscription && Notification.permission === "granted" ? "on" : "off";
-}
-
-/** VAPID keys come base64url-encoded; the Push API wants bytes. */
-function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
-  const base64 = (value + "=".repeat((4 - (value.length % 4)) % 4))
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-  const raw = atob(base64);
-  const bytes = new Uint8Array(new ArrayBuffer(raw.length));
-  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-  return bytes;
 }

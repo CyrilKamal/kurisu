@@ -180,6 +180,8 @@ export async function refreshDiscovery(
     const lists = await anilist.topRated([
       ...genres.map((g) => ({ key: `genre:${g.genre}`, ...aniListFilterFor(g.genre) })),
       { key: "movies", format: "MOVIE" },
+      // A new list has no favorites or scored genres to go on: top TV too, not films alone.
+      ...(seeds.length === 0 && genres.length === 0 ? [{ key: "tv", format: "TV" }] : []),
     ]);
     const strengths = poolStrengths(fans, new Map(seeds.map((s) => [s.malId, s.title])), lists);
     const strongest = [...strengths]

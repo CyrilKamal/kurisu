@@ -1,6 +1,7 @@
 "use client";
 
 import { changeResponseSchema, type ChangeView, type ListEntry } from "@kurisu/shared";
+import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { sendApi } from "@/lib/clientApi";
@@ -166,6 +167,21 @@ export function ListBrowser({
             >
               Clear filters
             </button>
+          )}
+          {entries.length === 0 && (
+            <>
+              <p className="k-empty__text">
+                Paste what you&apos;ve watched from your notes, or find a show and add it.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/list/import" className="k-btn k-btn--primary">
+                  Import from notes
+                </Link>
+                <Link href="/browse?tab=search" className="k-btn">
+                  Find shows
+                </Link>
+              </div>
+            </>
           )}
         </div>
       )}

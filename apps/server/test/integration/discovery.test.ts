@@ -11,7 +11,9 @@ import {
   briefSettings,
   discovery,
   discoveryRuns,
+  listEntries,
   seasonShows,
+  tasteGenres,
   users,
 } from "../../src/db/schema.js";
 import { parseModelRef } from "../../src/llm/modelConfig.js";
@@ -140,6 +142,18 @@ describe("discovery after a sync", () => {
     expect(row).toMatchObject({ genres: ["Slice of Life", "Iyashikei"], score: 8.4 });
     const [run] = await h.db.select().from(discoveryRuns);
     expect(run).toMatchObject({ shows: 4, error: null });
+  });
+
+  it("adds top-rated TV for a list with nothing completed and scored", async () => {
+    await h.db.update(listEntries).set({ score: 0 }).where(eq(listEntries.userId, userId));
+    await h.db.delete(tasteGenres).where(eq(tasteGenres.userId, userId));
+    const client = createAniListClient({ apiUrl: anilist.apiUrl, minIntervalMs: 0 });
+
+    await refreshDiscovery({ db: h.db, anilist: client, log: h.app.log }, userId, { force: true });
+
+    const pool = (await h.db.select().from(discovery)).map((p) => p.malId);
+    expect(pool).toContain(MOVIE);
+    expect(pool).toContain(CALM);
   });
 
   it("keeps the pool when AniList fails, and records why", async () => {
