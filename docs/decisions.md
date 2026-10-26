@@ -2925,3 +2925,23 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Why:** with no favorites to ask fans about and no scored genres, the pool was AniList's top movies alone, so a new friend asking "what should I watch?" got three films.
 
 **Consequences:** one more list in that one AniList request. Pools built from favorites and genres are unchanged.
+
+## 2026-10-26 — Every Add is the Add sheet (friends-ready batch)
+**Decision:** the Add buttons on Chat's pick cards, brief premiere cards and search results, and on a friend's "They loved", open the Add sheet (`POST /list/add` by `animeId`). They no longer send "Add <title> to my Plan to Watch" to the model.
+
+**Alternatives:** keeping Chat's confirmed add for these buttons.
+
+**Why:**
+- **It finishes an earlier decision:** the entry that added `POST /list/add` already rejected sending every add through Chat, because the tap on Add is the confirmation. These buttons were left over from before it.
+- **The old way cost more:** a model call, a chat update counted against Free's allowance, a second tap, and a title the model could match to the wrong season.
+
+**Consequences:** these adds show in the Toast and the Journal, not as a write in Chat's log. Chat reloads after one, so the card's Add turns into the show's status.
+
+## 2026-10-26 — Chat's run details are the owner's (friends-ready batch)
+**Decision:** each reply's model, tokens, prompt version, tool trace and proposal ids show only to the owner. Friends keep the writes, Undo, Confirm, a failed run's reason and Report.
+
+**Alternatives:** showing every run to everyone, as the design system's command log does; a setting to show them.
+
+**Why:** they're a showcase for the developer and noise for friends: raw tool names and JSON arguments under every reply. This was flagged before the friends beta (Milestone 6's entry on the trace).
+
+**Consequences:** Chat stays a command log in shape. Friends' failed runs still say why, and the review queue still has every run.

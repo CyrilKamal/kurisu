@@ -29,7 +29,8 @@ export default async function TastePage() {
         <div className="k-empty">
           <p className="k-empty__title">No scores yet</p>
           <p className="k-empty__text">
-            Once you score shows on MyAnimeList and re-sync, your patterns show up here.
+            Once you score shows, in Chat (&ldquo;finished Frieren, 9/10&rdquo;) or on the List,
+            your patterns show up here.
           </p>
         </div>
       ) : (

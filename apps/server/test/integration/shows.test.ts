@@ -206,6 +206,8 @@ describe("GET /shows/:animeId", () => {
       synopsis: "A quiet story & its keeper.\n\n(Source: Fixture)",
     });
     expect(page.entry).toMatchObject({ status: "watching", episodesWatched: 7 });
+    // No services picked yet, so the page asks for them rather than saying none match.
+    expect(page.servicesChosen).toBe(false);
 
     const again = contract.showResponseSchema.parse(
       (await request("GET", `/shows/${String(WATCHING)}`)).json(),
@@ -385,6 +387,7 @@ describe("GET /shows/:animeId", () => {
       (await request("GET", `/shows/${String(WATCHING)}`)).json(),
     );
     expect(page.watchOn).toEqual([{ service: "Crunchyroll", url: crunchyroll.url }]);
+    expect(page.servicesChosen).toBe(true);
     expect(page.journal).toEqual([
       expect.objectContaining({ type: "change", source: "user", after: { episodesWatched: 8 } }),
     ]);

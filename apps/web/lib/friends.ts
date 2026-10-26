@@ -42,8 +42,3 @@ export function matchLabel(match: FriendView["match"]): { value: string; basis: 
         : `from ${String(shows)} ${shows === 1 ? "show" : "shows"} you both scored`,
   };
 }
-
-/** A new chat with the add already typed, for the user to send: adds always wait for their OK. */
-export function addInChat(title: string): string {
-  return `/chat/new?draft=${encodeURIComponent(`Add ${title} to my Plan to Watch`)}`;
-}

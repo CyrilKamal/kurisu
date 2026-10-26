@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "You're invited · kurisu" };
 /** Where an invite link lands: who sent it, what joining means, and the way in. */
 export default async function InvitePage(props: PageProps<"/invite/[code]">) {
   const me = await getMe();
-  if (me) redirect("/list");
+  if (me) redirect("/today");
 
   const { code } = await props.params;
   const invite = await apiGetPublic(

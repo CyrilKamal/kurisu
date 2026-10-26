@@ -11,15 +11,17 @@ import { showDetails } from "@/lib/format";
 
 /**
  * The writes a reply made to MAL, in a dashed teal border (the design system's WriteBlock): its
- * proposal ids, then one row per show with its diff and an Undo link. The border is how a write
- * is recognised, so it's never folded into the reply's sentence.
+ * proposal ids (with `ids`, for the owner), then one row per show with its diff and an Undo link.
+ * The border is how a write is recognised, so it's never folded into the reply's sentence.
  */
 export function WriteBlock({
   changes,
   onUndo,
+  ids,
 }: {
   changes: ChangeView[];
   onUndo: (id: string) => Promise<void>;
+  ids: boolean;
 }) {
   const allUndone = changes.every((c) => c.undone);
   return (
@@ -27,9 +29,10 @@ export function WriteBlock({
       <div className="k-write__head">
         <span className="k-write__level">MAL write</span>
         <span className="k-write__id">
-          {[...changes.map((c) => shortId(c.proposalId)), allUndone ? "undone" : "committed"].join(
-            " · ",
-          )}
+          {[
+            ...(ids ? changes.map((c) => shortId(c.proposalId)) : []),
+            allUndone ? "undone" : "committed",
+          ].join(" · ")}
         </span>
       </div>
       <ul className="k-write__rows">
@@ -102,10 +105,12 @@ export function HeldWrite({
   proposal,
   onConfirm,
   onCancel,
+  ids,
 }: {
   proposal: PendingProposalView;
   onConfirm: (id: string) => Promise<void>;
   onCancel: (id: string) => Promise<void>;
+  ids: boolean;
 }) {
   const [busy, setBusy] = useState<"confirm" | "cancel" | null>(null);
   const act = (which: "confirm" | "cancel", fn: (id: string) => Promise<void>) => {
@@ -120,7 +125,7 @@ export function HeldWrite({
     <div className="k-write k-write--held">
       <div className="k-write__head">
         <span className="k-write__level">Proposed · needs your OK</span>
-        <span className="k-write__id">{shortId(proposal.id)}</span>
+        {ids && <span className="k-write__id">{shortId(proposal.id)}</span>}
       </div>
       <ul className="k-write__rows">
         <li className="k-write__row">

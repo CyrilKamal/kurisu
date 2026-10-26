@@ -12,10 +12,27 @@ import {
 /**
  * The run behind a reply, shown with it, never behind a tap (the design system's RunMeta):
  * "Model: Flash-Lite • 2.5s • 4 tools • 1,840 tok • progress-sync@17", with the tool calls
- * above it in a collapsed trace, and `report` (Report a problem) at the end of the line.
+ * above it in a collapsed trace, and `report` (Report a problem) at the end of the line. Without
+ * `details` (friends: only the owner reads runs), just a failed run's reason and the report.
  */
-export function RunMeta({ run, report }: { run: RunView; report?: React.ReactNode }) {
+export function RunMeta({
+  run,
+  details,
+  report,
+}: {
+  run: RunView;
+  details: boolean;
+  report?: React.ReactNode;
+}) {
   const tools = run.steps.length;
+  if (!details) {
+    return (
+      <div className="k-run">
+        {run.error && <span className="k-run__err">{runErrorLabel(run.error)}</span>}
+        {report}
+      </div>
+    );
+  }
   return (
     <>
       {tools > 0 && <Trace steps={run.steps} />}
