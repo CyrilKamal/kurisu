@@ -96,9 +96,20 @@ export default async function TodayPage() {
             When a show you&apos;re watching has a new episode, it shows up here, one tap from
             watched.
           </p>
-          <Link href="/chat/new?draft=what%20should%20I%20watch%3F" className="k-btn">
-            Ask kurisu what to watch
-          </Link>
+          {me.lastSync?.entriesCount === 0 ? (
+            <div className="flex flex-wrap gap-2">
+              <Link href="/list/import" className="k-btn k-btn--primary">
+                Import from notes
+              </Link>
+              <Link href="/browse" className="k-btn">
+                Find something airing
+              </Link>
+            </div>
+          ) : (
+            <Link href="/chat/new?draft=what%20should%20I%20watch%3F" className="k-btn">
+              Ask kurisu what to watch
+            </Link>
+          )}
         </div>
       )}
 

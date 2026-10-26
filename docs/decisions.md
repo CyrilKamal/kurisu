@@ -2897,3 +2897,31 @@ The app's shell honours the rail now: content moves right of it from 1024px, and
 **Why:** friends who also update on MAL's app would otherwise see a stale Today and brief without knowing why.
 
 **Consequences:** no new MAL calls. The brief still reads the mirror as it is.
+
+## 2026-10-26 — Welcome shows what kurisu found, turns on push with the brief, and ends in Chat (friends-ready batch)
+**Decision:**
+- **The first step is a reveal:** the list's size, and for an invited friend, who invited them and their taste match.
+- **The brief step's button turns on push:** "Send my brief at 8:00" saves the brief and turns on this device's notifications in the same tap. Settings uses the same helper.
+- **The end tries kurisu:** Chat, whose examples use the friend's own Watching shows, or Import for an empty list. Today is the other choice, and a button shares their friend link.
+- **Empty List, Today and Friends screens** each get one action.
+
+**Alternatives:**
+- Welcome as it was: three setup steps, ending on Today.
+- A separate Notifications switch on the brief step, as before.
+
+**Why:**
+- **Briefs need a subscription:** a brief only goes to a user with a push subscription, so a friend who skipped the separate switch got no briefs at all.
+- **Value first:** the research on calls to action and activation says new users should see the point before any setup, and should make one real update in their first session.
+
+**Consequences:**
+- **Refused or unsupported push:** Welcome says why and stays on the step; Skip moves on.
+- **On iPhone:** the brief step points to the Home Screen app first.
+
+## 2026-10-26 — A new list's discovery pool takes top TV too (friends-ready batch)
+**Decision:** a user with nothing completed and scored gets AniList's top TV in their discovery pool, beside the top movies.
+
+**Alternatives:** merging this season's popular shows into every request when the pool is small.
+
+**Why:** with no favorites to ask fans about and no scored genres, the pool was AniList's top movies alone, so a new friend asking "what should I watch?" got three films.
+
+**Consequences:** one more list in that one AniList request. Pools built from favorites and genres are unchanged.

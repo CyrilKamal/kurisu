@@ -8,6 +8,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { ShareLink } from "@/components/ShareLink";
 import { SupporterBadge } from "@/components/SupporterBadge";
 import { apiGet, getMe } from "@/lib/api";
 import { matchLabel } from "@/lib/friends";
@@ -40,9 +41,12 @@ export default async function FriendsPage() {
       <section className="pt-6">
         <h2 className="k-title pb-2">Your friends</h2>
         {data.friends.length === 0 ? (
-          <p className="k-field__hint">
-            No friends yet. Send someone on kurisu your friend link below.
-          </p>
+          <div className="flex flex-col items-start gap-2">
+            <p className="k-field__hint">
+              No friends yet. Send your link to friends on kurisu: opening it makes you friends.
+            </p>
+            <ShareLink url={data.link} text="Add me on kurisu" label="Share my link" />
+          </div>
         ) : (
           <ul className="k-rows">
             {data.friends.map((friend) => {
