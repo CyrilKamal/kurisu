@@ -71,6 +71,9 @@ const envSchema = z.object({
   // With an owner: "invite" (the default) lets new accounts in only with an invite; "open" lets
   // anyone 18 or older sign up from the landing page. Plan limits apply either way.
   SIGNUP: optional(z.enum(["invite", "open"]).default("invite")),
+  // While payments aren't live: an invited friend's trial runs until this date (YYYY-MM-DD, from
+  // midnight UTC), when that's later than the usual trial.
+  INVITE_TRIAL_UNTIL: optional(z.iso.date().optional()),
 
   // While sign-up is closed, what each friend may spend on models: runs in any 24 hours, and
   // everyone but the owner together in a calendar month (estimated at list prices, in USD).
@@ -122,6 +125,11 @@ export interface Config {
    * "open", anyone. Always "open" without an owner.
    */
   signup: "invite" | "open";
+  /**
+   * When an invited account's trial ends, if later than the usual trial (INVITE_TRIAL_UNTIL): beta
+   * friends keep Premium until payments launch.
+   */
+  inviteTrialUntil: Date | null;
   /** How the public pages say to reach kurisu (CONTACT_EMAIL). */
   contactEmail: string | null;
   /** Friends' model limits; null while sign-up is open (no owner), when nothing is limited. */
@@ -193,6 +201,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     contactEmail: parsed.CONTACT_EMAIL ?? null,
     // Without an owner (development, tests), anyone can sign up, as before.
     signup: parsed.OWNER_MAL_USERNAME ? parsed.SIGNUP : "open",
+    inviteTrialUntil: parsed.INVITE_TRIAL_UNTIL
+      ? new Date(`${parsed.INVITE_TRIAL_UNTIL}T00:00:00Z`)
+      : null,
     owner: parsed.OWNER_MAL_USERNAME
       ? {
           malUsername: parsed.OWNER_MAL_USERNAME,

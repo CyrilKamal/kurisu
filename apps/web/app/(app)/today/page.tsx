@@ -9,13 +9,17 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { ShowLink } from "@/components/ShowLink";
 import { outLabel, untilLabel } from "@/lib/airing";
 import { apiGet, getMe } from "@/lib/api";
+import { lastSyncLabel } from "@/lib/format";
 import { planName, trialDaysLeft } from "@/lib/plans";
 import { splitOut } from "@/lib/today";
 
+import { ResyncButton } from "../list/ResyncButton";
 import { ActivityFeed } from "../you/friends/ActivityFeed";
 import { EpisodeRows } from "./EpisodeRows";
 
 export const metadata: Metadata = { title: "Today · kurisu" };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** "Friday, October 10 · 3 shows with new episodes". */
 function headerLine(timeZone: string, now: Date, outCount: number): string {
@@ -51,14 +55,25 @@ export default async function TodayPage() {
     out,
     watchOn: show.watchOn.map((w) => w.service).join(", ") || null,
   });
+  // Only in a trial's last two weeks: an invited friend's longer trial stays quiet until then.
   const trialDays = trialDaysLeft(me.plan, now);
+  // kurisu syncs on login and after its writes, so changes made on MAL's site wait for a re-sync.
+  const synced = me.lastSync?.status === "succeeded" ? me.lastSync : null;
+  const stale =
+    synced !== null && now.getTime() - Date.parse(synced.finishedAt ?? synced.startedAt) > DAY_MS;
 
   return (
     <main className="mx-auto max-w-(--content-max) px-4 pb-nav">
       <ScreenHeader title="Today" sub={headerLine(today.timeZone, now, keepingUp.length)} />
 
       {/* A quiet line through the trial, so its end isn't a surprise. */}
-      {trialDays !== null && (
+      {stale && (
+        <Banner level="info" className="mt-4" action={<ResyncButton />}>
+          {lastSyncLabel(synced)}. Changes you made on MyAnimeList since then show after a re-sync.
+        </Banner>
+      )}
+
+      {trialDays !== null && trialDays <= 14 && (
         <Banner
           level={trialDays <= 3 ? "warn" : "info"}
           className="mt-4"
